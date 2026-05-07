@@ -1,49 +1,78 @@
 import React, { useContext } from "react";
-import { Linking, StyleSheet, View } from "react-native";
+import { Alert, Linking, Platform, ScrollView, StyleSheet } from "react-native";
 import { List, useTheme } from "react-native-paper";
-import { WebView } from "react-native-webview"; // This import is fine
 import { LanguageContext } from "../../_layout"; // Corrected path to root _layout
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useTheme();
-  const address = process.env.EXPO_PUBLIC_CHURCH_ADDRESS;
+  const locations = [
+    {
+      // address: "123 Church St, City, State, Zip Code",
+      // TODO: Replace with your own primary church address
+      address: "7606 41st Ave, Elmhurst, NY 11373",
+      icon: "church" as const,
+    },
+    {
+      // TODO: Replace with your own secondary branch church address
+      // Note: This must be in standard Google Maps format. Do not include specific floors or room numbers.
+      address: "5318 4th Ave, Brooklyn, NY 11220",
+      icon: "church" as const,
+    },
+  ];
   const phone = process.env.EXPO_PUBLIC_CHURCH_PHONE;
   const email = process.env.EXPO_PUBLIC_CHURCH_EMAIL;
 
   const labels = {
     en: {
       title: "Connect with Us",
-      addressLabel: "Church Address",
+      addressLabel: "Locations",
+      locationNames: [
+        // TODO: Replace with your addresses. You may add specific floors or room numbers if you wish.
+        // Please ensure translations below are updated accordingly if you change these.
+        "Elmhurst SDA Church (Main)",
+        "Brooklyn SDA Church (3rd Floor)",
+      ],
       infoLabel: "Contact Information",
     },
-    zh: { title: "聯繫我們", addressLabel: "教會地址", infoLabel: "聯絡資訊" },
+    zh: {
+      title: "聯繫我們",
+      addressLabel: "地點",
+      locationNames: ["艾姆赫斯特教會 (主堂)", "布魯克林教會 (3 樓)"],
+      infoLabel: "聯絡資訊",
+    },
     "zh-cn": {
       title: "联系我们",
-      addressLabel: "教会地址",
+      addressLabel: "地点",
+      locationNames: ["艾姆赫斯特教会 (主堂)", "布鲁克林教会 (3 楼)"],
       infoLabel: "联系信息",
     },
     es: {
       title: "Conéctate con Nosotros",
-      addressLabel: "Dirección de la iglesia",
+      addressLabel: "Ubicaciones",
+      locationNames: [
+        "Iglesia de Elmhurst (Principal)",
+        "Iglesia de Brooklyn (3er Piso)",
+      ],
       infoLabel: "Información de contacto",
     },
   }[language as "en" | "zh" | "zh-cn" | "es"] || {
     title: "Contact Us",
     addressLabel: "Address",
     infoLabel: "Contact Info",
+    locationNames: ["Main", "Brooklyn (3rd Floor)"],
   };
 
-  const openInMaps = () => {
-    if (address) {
+  const openInMaps = (addr: string) => {
+    if (addr) {
       Linking.openURL(
-        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,
       );
     }
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <List.Section>
         <List.Subheader>{labels.infoLabel}</List.Subheader>
         {phone && (
@@ -53,9 +82,26 @@ export default function ContactScreen() {
               <List.Icon {...props} icon="phone" color={theme.colors.primary} />
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() =>
-              Linking.openURL(`tel:${phone.replace(/[^\d+]/g, "")}`)
-            }
+            onPress={async () => {
+              const cleanedPhone = phone.replace(/[^\d+]/g, "");
+              // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
+              // Android only supports the standard tel: scheme.
+              const url =
+                Platform.OS === "ios"
+                  ? `telprompt:${cleanedPhone}`
+                  : `tel:${cleanedPhone}`;
+              try {
+                // Direct attempt is more reliable on Android 11+ as canOpenURL
+                // requires specific manifest queries to return true.
+                await Linking.openURL(url);
+              } catch (error) {
+                console.warn("Phone call attempt failed:", error);
+                Alert.alert(
+                  "Error",
+                  "Phone calls are not supported on this device or emulator.",
+                );
+              }
+            }}
           />
         )}
         {email && (
@@ -65,69 +111,48 @@ export default function ContactScreen() {
               <List.Icon {...props} icon="email" color={theme.colors.primary} />
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => Linking.openURL(`mailto:${email}`)}
+            onPress={async () => {
+              const url = `mailto:${email}`;
+              try {
+                await Linking.openURL(url);
+              } catch (error) {
+                console.warn("Email attempt failed:", error);
+                Alert.alert(
+                  "Error",
+                  "Email is not configured on this device or emulator.",
+                );
+              }
+            }}
           />
         )}
       </List.Section>
 
       <List.Section>
         <List.Subheader>{labels.addressLabel}</List.Subheader>
-        <List.Item
-          title={address}
-          titleNumberOfLines={3}
-          left={(props) => (
-            <List.Icon
-              {...props}
-              icon="map-marker"
-              color={theme.colors.primary}
-            />
-          )}
-          right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={openInMaps}
-        />
+        {locations.map((loc, index) => (
+          <List.Item
+            key={index}
+            title={loc.address}
+            description={labels.locationNames[index]}
+            titleNumberOfLines={3}
+            left={(props) => (
+              <List.Icon
+                {...props}
+                icon={loc.icon}
+                color={theme.colors.primary}
+              />
+            )}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => openInMaps(loc.address)}
+          />
+        ))}
       </List.Section>
-
-      <View style={styles.mapContainer}>
-        <WebView
-          style={styles.map}
-          originWhitelist={["*"]}
-          domStorageEnabled={true}
-          javaScriptEnabled={true}
-          sharedCookiesEnabled={true}
-          onShouldStartLoadWithRequest={(request) => {
-            // Intercept non-http(s) schemes like intent:// on Android to prevent ERR_UNKNOWN_URL_SCHEME
-            if (
-              !request.url.startsWith("http://") &&
-              !request.url.startsWith("https://") &&
-              !request.url.startsWith("about:blank")
-            ) {
-              Linking.openURL(request.url).catch(() => {});
-              return false;
-            }
-            return true;
-          }}
-          source={{
-            uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address || "")}`,
-          }}
-        />
-      </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-  },
-  mapContainer: {
-    flex: 1,
-    width: "100%",
-    overflow: "hidden",
-  },
-  map: {
     flex: 1,
   },
 });
