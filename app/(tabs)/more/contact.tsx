@@ -1,4 +1,3 @@
-import { Stack } from "expo-router";
 import React, { useContext } from "react";
 import { Linking, StyleSheet, View } from "react-native";
 import { List, useTheme } from "react-native-paper";
@@ -45,8 +44,6 @@ export default function ContactScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: labels.title }} />
-
       <List.Section>
         <List.Subheader>{labels.infoLabel}</List.Subheader>
         {phone && (

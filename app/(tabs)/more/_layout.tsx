@@ -1,14 +1,15 @@
 import { Stack } from "expo-router";
 import React from "react";
+import { GlobalHeader } from "../_layout";
 
 export default function MoreStackLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ header: () => <GlobalHeader /> }}>
       {/* The index.tsx in this folder will be the default screen for the 'More' tab */}
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      {/* Screens pushed onto this stack will hide the bottom tab bar */}
-      <Stack.Screen name="language" options={{ headerShown: false }} />
-      <Stack.Screen name="contact" options={{ headerShown: false }} />
+      <Stack.Screen name="index" />
+      {/* Screens pushed onto this stack */}
+      <Stack.Screen name="language" />
+      <Stack.Screen name="contact" />
     </Stack>
   );
 }

@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Appbar, Button, Card, Text, useTheme } from "react-native-paper";
+import { Button, Card, Text, useTheme } from "react-native-paper";
 import { openSabbathStream } from "../../utils/youtubeService";
 import { LanguageContext } from "../_layout";
 
@@ -53,9 +53,6 @@ export default function HomeScreen() {
 
   return (
     <>
-      <Appbar.Header elevated>
-        <Appbar.Content title={labels.header} />
-      </Appbar.Header>
       <ScrollView style={styles.container}>
         <View style={styles.hero}>
           <Text variant="headlineMedium" style={styles.welcomeText}>

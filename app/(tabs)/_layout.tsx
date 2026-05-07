@@ -1,7 +1,19 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
 import React, { useContext } from "react";
+import { Appbar, Searchbar } from "react-native-paper";
 import { LanguageContext } from "../_layout";
+
+export const GlobalHeader = () => (
+  <Appbar.Header elevated>
+    <Appbar.Action icon="church" onPress={() => {}} />
+    <Searchbar
+      placeholder="Search"
+      value=""
+      style={{ flex: 1, backgroundColor: "transparent", elevation: 0 }}
+    />
+  </Appbar.Header>
+);
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -33,7 +45,11 @@ export default function TabLayout() {
   };
 
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
+    <Tabs
+      screenOptions={{
+        header: () => <GlobalHeader />,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -61,6 +77,7 @@ export default function TabLayout() {
         name="more"
         options={{
           title: labels.more,
+          headerShown: false, // Hidden here because the nested stack handles it
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="ellipsis-h" color={color} />
           ),

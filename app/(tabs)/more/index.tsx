@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { Appbar, Divider, List, Switch } from "react-native-paper";
+import { Divider, List, Switch } from "react-native-paper";
 import { openOnlineGiving } from "../../../utils/externalLinks";
 import { LanguageContext, ThemeContext } from "../../_layout";
 
@@ -55,9 +55,6 @@ export default function MoreScreen() {
 
   return (
     <>
-      <Appbar.Header elevated>
-        <Appbar.Content title={labels.info} />
-      </Appbar.Header>
       <ScrollView style={styles.container}>
         <List.Section>
           <List.Subheader>{labels.info}</List.Subheader>
