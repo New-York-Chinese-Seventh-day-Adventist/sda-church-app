@@ -28,7 +28,7 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
-const DEFAULT_LANG = process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE;
+const DEFAULT_LANG = process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE || "en";
 
 // Simple Language Context
 export const LanguageContext = createContext({
