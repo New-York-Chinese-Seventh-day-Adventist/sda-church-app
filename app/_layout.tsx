@@ -8,7 +8,7 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -28,10 +28,18 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
+const DEFAULT_LANG = process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE;
+
 // Simple Language Context
 export const LanguageContext = createContext({
-  language: "en",
+  language: DEFAULT_LANG,
   setLanguage: (lang: string) => {},
+});
+
+// Theme Context to manage manual overrides
+export const ThemeContext = createContext({
+  isDark: false,
+  toggleTheme: () => {},
 });
 
 // Adapt themes for React Navigation compatibility
@@ -47,6 +55,10 @@ const customLightTheme = {
   colors: {
     ...MD3LightTheme.colors,
     ...LightTheme.colors,
+    primary: "#0061A4",
+    onPrimary: "#FFFFFF",
+    primaryContainer: "#D1E4FF",
+    onPrimaryContainer: "#001D36",
   },
   roundness: 3,
 };
@@ -57,6 +69,10 @@ const customDarkTheme = {
   colors: {
     ...MD3DarkTheme.colors,
     ...DarkTheme.colors,
+    primary: "#A1C9FF",
+    onPrimary: "#003258",
+    primaryContainer: "#00497D",
+    onPrimaryContainer: "#D1E4FF",
   },
   roundness: 3,
 };
@@ -65,7 +81,14 @@ const customDarkTheme = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(DEFAULT_LANG);
+  const colorScheme = useColorScheme();
+  const [isDark, setIsDark] = useState(colorScheme === "dark");
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
+
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
@@ -94,23 +117,23 @@ export default function RootLayout() {
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>
-      <RootLayoutNav />
+      <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+        <RootLayoutNav />
+      </ThemeContext.Provider>
     </LanguageContext.Provider>
   );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { isDark } = useContext(ThemeContext);
+  const { language } = useContext(LanguageContext);
 
   return (
     <SafeAreaProvider>
-      <PaperProvider
-        theme={colorScheme === "dark" ? customDarkTheme : customLightTheme}
-      >
-        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
+      <PaperProvider theme={isDark ? customDarkTheme : customLightTheme}>
+        <ThemeProvider value={isDark ? DarkTheme : LightTheme}>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="language" options={{ presentation: "modal" }} />
           </Stack>
         </ThemeProvider>
       </PaperProvider>

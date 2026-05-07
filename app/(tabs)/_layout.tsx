@@ -1,13 +1,8 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
 import React, { useContext } from "react";
-
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
 import { LanguageContext } from "../_layout";
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
@@ -16,55 +11,33 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { language } = useContext(LanguageContext);
 
   const labels = {
-    en: {
-      home: "Home",
-      sermons: "Sermons",
-      calendar: "Calendar",
-      more: "More",
-    },
-    zh: {
-      home: "主頁",
-      sermons: "講道回顧",
-      calendar: "教會日曆",
-      more: "更多",
-    },
-    "zh-cn": {
-      home: "首页",
-      sermons: "讲道回顾",
-      calendar: "教会日历",
-      more: "更多",
-    },
-    es: {
-      home: "Inicio",
-      sermons: "Sermones",
-      calendar: "Calendario",
-      more: "Más",
-    },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    home: "Home",
-    sermons: "Sermons",
-    calendar: "Calendar",
-    more: "More",
+    home:
+      { en: "Home", zh: "首頁", "zh-cn": "首页", es: "Inicio" }[
+        language as "en" | "zh" | "zh-cn" | "es"
+      ] || "Home",
+    sermons:
+      { en: "Sermons", zh: "講道回顧", "zh-cn": "讲道回顾", es: "Sermones" }[
+        language as "en" | "zh" | "zh-cn" | "es"
+      ] || "Sermons",
+    calendar:
+      { en: "Calendar", zh: "教會日曆", "zh-cn": "教会日历", es: "Calendario" }[
+        language as "en" | "zh" | "zh-cn" | "es"
+      ] || "Calendar",
+    more:
+      { en: "More", zh: "更多", "zh-cn": "更多", es: "Más" }[
+        language as "en" | "zh" | "zh-cn" | "es"
+      ] || "More",
   };
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}
-    >
+    <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen
         name="index"
         options={{
           title: labels.home,
-          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
       />
@@ -72,9 +45,7 @@ export default function TabLayout() {
         name="sermons"
         options={{
           title: labels.sermons,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="play-circle" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
         }}
       />
       <Tabs.Screen
