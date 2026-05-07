@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { Divider, List, Switch } from "react-native-paper";
@@ -55,6 +55,7 @@ export default function MoreScreen() {
 
   return (
     <>
+      <Stack.Screen options={{ title: labels.info }} />
       <ScrollView style={styles.container}>
         <List.Section>
           <List.Subheader>{labels.info}</List.Subheader>

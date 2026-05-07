@@ -1,19 +1,34 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs, router } from "expo-router";
+import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext } from "react";
 import { Appbar, Searchbar, useTheme } from "react-native-paper";
 import { LanguageContext } from "../_layout";
 
-export const GlobalHeader = () => (
-  <Appbar.Header elevated>
-    <Appbar.Action icon="church" onPress={() => router.push("/")} />
-    <Searchbar
-      placeholder="Search"
-      value=""
-      style={{ flex: 1, backgroundColor: "transparent", elevation: 0 }}
-    />
-  </Appbar.Header>
-);
+export const GlobalHeader = (props: any) => {
+  const segments = useSegments();
+  const isMoreSubPage = segments.includes("more") && segments.length > 2;
+  // Get the title from the current screen's options
+  const title = props.options?.title;
+
+  return (
+    <Appbar.Header elevated>
+      {isMoreSubPage ? (
+        <Appbar.BackAction onPress={() => router.back()} />
+      ) : (
+        <Appbar.Action icon="church" onPress={() => router.push("/")} />
+      )}
+      {isMoreSubPage ? (
+        <Appbar.Content title={title} />
+      ) : (
+        <Searchbar
+          placeholder="Search"
+          value=""
+          style={{ flex: 1, backgroundColor: "transparent", elevation: 0 }}
+        />
+      )}
+    </Appbar.Header>
+  );
+};
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -48,7 +63,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        header: () => <GlobalHeader />,
+        header: (props) => <GlobalHeader {...props} />,
         tabBarActiveTintColor: theme.colors.primary,
       }}
     >
@@ -83,6 +98,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="ellipsis-h" color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            // Ensure the More stack resets to its root whenever the tab is pressed.
+            // This solves the "stuck" state after navigating to sub-pages from Home.
+            router.navigate("/more");
+          },
         }}
       />
     </Tabs>

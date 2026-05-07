@@ -1,3 +1,4 @@
+import { Stack } from "expo-router";
 import React, { useContext } from "react";
 import { Alert, Linking, Platform, ScrollView, StyleSheet } from "react-native";
 import { List, useTheme } from "react-native-paper";
@@ -72,82 +73,93 @@ export default function ContactScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <List.Section>
-        <List.Subheader>{labels.infoLabel}</List.Subheader>
-        {phone && (
-          <List.Item
-            title={phone}
-            left={(props) => (
-              <List.Icon {...props} icon="phone" color={theme.colors.primary} />
-            )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={async () => {
-              const cleanedPhone = phone.replace(/[^\d+]/g, "");
-              // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
-              // Android only supports the standard tel: scheme.
-              const url =
-                Platform.OS === "ios"
-                  ? `telprompt:${cleanedPhone}`
-                  : `tel:${cleanedPhone}`;
-              try {
-                // Direct attempt is more reliable on Android 11+ as canOpenURL
-                // requires specific manifest queries to return true.
-                await Linking.openURL(url);
-              } catch (error) {
-                console.warn("Phone call attempt failed:", error);
-                Alert.alert(
-                  "Error",
-                  "Phone calls are not supported on this device or emulator.",
-                );
-              }
-            }}
-          />
-        )}
-        {email && (
-          <List.Item
-            title={email}
-            left={(props) => (
-              <List.Icon {...props} icon="email" color={theme.colors.primary} />
-            )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={async () => {
-              const url = `mailto:${email}`;
-              try {
-                await Linking.openURL(url);
-              } catch (error) {
-                console.warn("Email attempt failed:", error);
-                Alert.alert(
-                  "Error",
-                  "Email is not configured on this device or emulator.",
-                );
-              }
-            }}
-          />
-        )}
-      </List.Section>
+    <>
+      <Stack.Screen options={{ title: labels.title }} />
+      <ScrollView style={styles.container}>
+        <List.Section>
+          <List.Subheader>{labels.infoLabel}</List.Subheader>
+          {phone && (
+            <List.Item
+              title={phone}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="phone"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={async () => {
+                const cleanedPhone = phone.replace(/[^\d+]/g, "");
+                // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
+                // Android only supports the standard tel: scheme.
+                const url =
+                  Platform.OS === "ios"
+                    ? `telprompt:${cleanedPhone}`
+                    : `tel:${cleanedPhone}`;
+                try {
+                  // Direct attempt is more reliable on Android 11+ as canOpenURL
+                  // requires specific manifest queries to return true.
+                  await Linking.openURL(url);
+                } catch (error) {
+                  console.warn("Phone call attempt failed:", error);
+                  Alert.alert(
+                    "Error",
+                    "Phone calls are not supported on this device or emulator.",
+                  );
+                }
+              }}
+            />
+          )}
+          {email && (
+            <List.Item
+              title={email}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="email"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={async () => {
+                const url = `mailto:${email}`;
+                try {
+                  await Linking.openURL(url);
+                } catch (error) {
+                  console.warn("Email attempt failed:", error);
+                  Alert.alert(
+                    "Error",
+                    "Email is not configured on this device or emulator.",
+                  );
+                }
+              }}
+            />
+          )}
+        </List.Section>
 
-      <List.Section>
-        <List.Subheader>{labels.addressLabel}</List.Subheader>
-        {locations.map((loc, index) => (
-          <List.Item
-            key={index}
-            title={loc.address}
-            description={labels.locationNames[index]}
-            titleNumberOfLines={3}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon={loc.icon}
-                color={theme.colors.primary}
-              />
-            )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => openInMaps(loc.address)}
-          />
-        ))}
-      </List.Section>
-    </ScrollView>
+        <List.Section>
+          <List.Subheader>{labels.addressLabel}</List.Subheader>
+          {locations.map((loc, index) => (
+            <List.Item
+              key={index}
+              title={loc.address}
+              description={labels.locationNames[index]}
+              titleNumberOfLines={3}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon={loc.icon}
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() => openInMaps(loc.address)}
+            />
+          ))}
+        </List.Section>
+      </ScrollView>
+    </>
   );
 }
 
