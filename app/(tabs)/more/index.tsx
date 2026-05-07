@@ -14,7 +14,7 @@ export default function MoreScreen() {
       en: {
         info: "Church Information",
         about: "About Us",
-        contact: "Contact Us",
+        contact: "Connect with Us",
         community: "Community",
         give: "Give",
         settings: "Settings",
@@ -24,7 +24,7 @@ export default function MoreScreen() {
       zh: {
         info: "教會資訊",
         about: "關於我們",
-        contact: "聯絡我們",
+        contact: "聯繫我們",
         community: "社區與事工",
         give: "捐獻",
         settings: "設定",
@@ -44,7 +44,7 @@ export default function MoreScreen() {
       es: {
         info: "Información de la iglesia",
         about: "Sobre nosotros",
-        contact: "Contáctenos",
+        contact: "Conéctate con Nosotros",
         community: "Comunidad",
         give: "Dar",
         settings: "Ajustes",

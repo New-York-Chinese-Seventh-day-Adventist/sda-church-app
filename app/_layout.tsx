@@ -43,10 +43,23 @@ export const ThemeContext = createContext({
 });
 
 // Adapt themes for React Navigation compatibility
-const { LightTheme, DarkTheme } = adaptNavigationTheme({
-  reactNavigationLight: NavDefaultTheme,
-  reactNavigationDark: NavDarkTheme,
-});
+const { LightTheme: _LightTheme, DarkTheme: _DarkTheme } = adaptNavigationTheme(
+  {
+    reactNavigationLight: NavDefaultTheme,
+    reactNavigationDark: NavDarkTheme,
+  },
+);
+
+// Explicitly override navigation primary colors to match our brand blue.
+// Otherwise, React Navigation defaults to the Material 3 standard (purple).
+const LightTheme = {
+  ..._LightTheme,
+  colors: { ..._LightTheme.colors, primary: "#0061A4" },
+};
+const DarkTheme = {
+  ..._DarkTheme,
+  colors: { ..._DarkTheme.colors, primary: "#A1C9FF" },
+};
 
 const customLightTheme = {
   ...MD3LightTheme,

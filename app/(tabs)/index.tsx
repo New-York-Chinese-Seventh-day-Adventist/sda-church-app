@@ -16,7 +16,7 @@ export default function HomeScreen() {
       subtitle: "Happy Sabbath!",
       verse: "The Lord is my shepherd; I shall not want. - Psalm 23:1",
       livestream: "Watch Livestream",
-      contact: "Contact Us",
+      contact: "Connect with Us",
     },
     zh: {
       header: "基督復臨安息日會",
@@ -24,7 +24,7 @@ export default function HomeScreen() {
       subtitle: "安息日快樂！",
       verse: "耶和華是我的牧者，我必不致缺乏。 - 詩篇 23:1",
       livestream: "觀看直播",
-      contact: "聯絡我們",
+      contact: "聯繫我們",
     },
     "zh-cn": {
       header: "基督复临安息日会",
@@ -40,7 +40,7 @@ export default function HomeScreen() {
       subtitle: "¡Feliz Sábado!",
       verse: "Jehová es mi pastor; nada me faltará. - Salmo 23:1",
       livestream: "Ver Transmisión",
-      contact: "Contáctenos",
+      contact: "Conéctate con Nosotros",
     },
   }[language as "en" | "zh" | "zh-cn" | "es"] || {
     header: "SDA Church",
@@ -48,7 +48,7 @@ export default function HomeScreen() {
     subtitle: "",
     verse: "",
     livestream: "Watch Livestream",
-    contact: "Contact Us",
+    contact: "Connect with Us",
   };
 
   return (
@@ -82,7 +82,7 @@ export default function HomeScreen() {
           </Button>
           <Button
             mode="outlined"
-            icon="email"
+            icon="map-marker"
             onPress={() => router.push("/more/contact")}
             style={[styles.button, { marginTop: 12 }]}
           >

@@ -13,18 +13,18 @@ export default function ContactScreen() {
 
   const labels = {
     en: {
-      title: "Contact Us",
+      title: "Connect with Us",
       addressLabel: "Church Address",
       infoLabel: "Contact Information",
     },
-    zh: { title: "聯絡我們", addressLabel: "教會地址", infoLabel: "聯絡資訊" },
+    zh: { title: "聯繫我們", addressLabel: "教會地址", infoLabel: "聯絡資訊" },
     "zh-cn": {
       title: "联系我们",
       addressLabel: "教会地址",
       infoLabel: "联系信息",
     },
     es: {
-      title: "Contáctenos",
+      title: "Conéctate con Nosotros",
       addressLabel: "Dirección de la iglesia",
       infoLabel: "Información de contacto",
     },

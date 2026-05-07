@@ -1,12 +1,12 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs } from "expo-router";
+import { Tabs, router } from "expo-router";
 import React, { useContext } from "react";
-import { Appbar, Searchbar } from "react-native-paper";
+import { Appbar, Searchbar, useTheme } from "react-native-paper";
 import { LanguageContext } from "../_layout";
 
 export const GlobalHeader = () => (
   <Appbar.Header elevated>
-    <Appbar.Action icon="church" onPress={() => {}} />
+    <Appbar.Action icon="church" onPress={() => router.push("/")} />
     <Searchbar
       placeholder="Search"
       value=""
@@ -24,6 +24,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const { language } = useContext(LanguageContext);
+  const theme = useTheme();
 
   const labels = {
     home:
@@ -48,6 +49,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         header: () => <GlobalHeader />,
+        tabBarActiveTintColor: theme.colors.primary,
       }}
     >
       <Tabs.Screen
