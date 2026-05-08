@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext } from "react";
 import { Alert, Linking, Platform, ScrollView, StyleSheet } from "react-native";
 import { List, useTheme } from "react-native-paper";
@@ -6,6 +6,7 @@ import { LanguageContext } from "../../_layout"; // Corrected path to root _layo
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);
+  const { backTo } = useLocalSearchParams();
   const theme = useTheme();
   const locations = [
     {
@@ -74,7 +75,7 @@ export default function ContactScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: labels.title }} />
+      <Stack.Screen options={{ title: labels.title, backTo } as any} />
       <ScrollView style={styles.container}>
         <List.Section>
           <List.Subheader>{labels.infoLabel}</List.Subheader>

@@ -83,7 +83,12 @@ export default function HomeScreen() {
           <Button
             mode="outlined"
             icon="map-marker"
-            onPress={() => router.push("/more/contact")}
+            onPress={() =>
+              router.push({
+                pathname: "/more/contact",
+                params: { backTo: "/" },
+              })
+            }
             style={[styles.button, { marginTop: 12 }]}
           >
             {labels.contact}

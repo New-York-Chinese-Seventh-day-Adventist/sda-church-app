@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
 import { Platform, StyleSheet, View } from "react-native";
@@ -7,23 +7,22 @@ import { LanguageContext } from "../../_layout"; // Corrected path to root _layo
 
 export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
+  const { backTo } = useLocalSearchParams();
 
   const labels = {
-    en: { title: "Settings", subheader: "Language" },
-    zh: { title: "設定", subheader: "語言" },
-    "zh-cn": { title: "设置", subheader: "语言" },
-    es: { title: "Ajustes", subheader: "Idioma" },
+    en: { title: "Language" },
+    zh: { title: "語言" },
+    "zh-cn": { title: "语言" },
+    es: { title: "Idioma" },
   }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    title: "Settings",
-    subheader: "Language",
+    title: "Language",
   };
 
   return (
     <>
-      <Stack.Screen options={{ title: labels.title }} />
+      <Stack.Screen options={{ title: labels.title, backTo } as any} />
       <View style={styles.container}>
         <List.Section>
-          <List.Subheader>{labels.subheader}</List.Subheader>
           <List.Item
             title="English"
             onPress={() => setLanguage("en")}

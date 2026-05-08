@@ -9,11 +9,14 @@ export const GlobalHeader = (props: any) => {
   const isMoreSubPage = segments.includes("more") && segments.length > 2;
   // Get the title from the current screen's options
   const title = props.options?.title;
+  const backTo = props.options?.backTo;
 
   return (
     <Appbar.Header elevated>
       {isMoreSubPage ? (
-        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.BackAction
+          onPress={() => (backTo ? router.navigate(backTo) : router.back())}
+        />
       ) : (
         <Appbar.Action icon="church" onPress={() => router.push("/")} />
       )}
@@ -73,12 +76,24 @@ export default function TabLayout() {
           title: labels.home,
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/");
+          },
+        }}
       />
       <Tabs.Screen
         name="sermons"
         options={{
           title: labels.sermons,
           tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/sermons");
+          },
         }}
       />
       <Tabs.Screen
@@ -88,6 +103,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="calendar" color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/calendar");
+          },
         }}
       />
       <Tabs.Screen
@@ -100,9 +121,10 @@ export default function TabLayout() {
           ),
         }}
         listeners={{
-          tabPress: () => {
+          tabPress: (e) => {
             // Ensure the More stack resets to its root whenever the tab is pressed.
             // This solves the "stuck" state after navigating to sub-pages from Home.
+            e.preventDefault();
             router.navigate("/more");
           },
         }}
