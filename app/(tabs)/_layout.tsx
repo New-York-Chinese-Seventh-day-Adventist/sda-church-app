@@ -1,8 +1,9 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LanguageContext } from "../_layout";
 
 export const GlobalHeader = (props: any) => {
@@ -14,7 +15,9 @@ export const GlobalHeader = (props: any) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<any>(null);
+  const headerRef = useRef<View>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const insets = useSafeAreaInsets();
 
   // Clear search state whenever the navigation path changes (switching tabs or views)
   useEffect(() => {
@@ -293,10 +296,16 @@ export const GlobalHeader = (props: any) => {
 
   return (
     <Appbar.Header
+      ref={headerRef}
       elevated
-      onLayout={(e) =>
-        setHeaderHeight(e.nativeEvent.layout.y + e.nativeEvent.layout.height)
-      }
+      onLayout={(e) => {
+        const { y, height } = e.nativeEvent.layout;
+        // iOS headers often report y=0 in onLayout despite the status bar offset.
+        // Android headers (especially with Edge-to-Edge) provide the offset in 'y' or height.
+        setHeaderHeight(
+          Platform.OS === "ios" ? height + insets.top : y + height,
+        );
+      }}
     >
       {isMoreSubPage && (
         <Appbar.BackAction
