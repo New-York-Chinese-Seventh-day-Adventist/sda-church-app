@@ -263,7 +263,15 @@ export const GlobalHeader = (props: any) => {
     <Appbar.Header elevated>
       {isMoreSubPage && (
         <Appbar.BackAction
-          onPress={() => (backTo ? router.navigate(backTo) : router.back())}
+          onPress={() => {
+            if (backTo) {
+              router.navigate(backTo as any);
+            } else if (isMoreSubPage) {
+              router.navigate("/more");
+            } else {
+              router.back();
+            }
+          }}
         />
       )}
       {isMoreSubPage ? (
@@ -296,21 +304,24 @@ export const GlobalHeader = (props: any) => {
                       setSearchQuery("");
                       setIsSearching(false);
 
-                      if (item.isPage) {
-                        // Only highlight if the query matches a specific keyword but NOT the title
-                        const isTitleMatch = item.title
-                          .toLowerCase()
-                          .includes(q);
-                        router.navigate({
-                          pathname: item.route as any,
-                          params: { highlight: isTitleMatch ? undefined : q },
-                        });
-                      } else {
-                        router.navigate({
-                          pathname: item.route as any,
-                          params: { highlight: item.highlightKey },
-                        });
-                      }
+                      const targetParams = {
+                        highlight: item.isPage
+                          ? item.title.toLowerCase().includes(q)
+                            ? undefined
+                            : q
+                          : (item as any).highlightKey,
+                      };
+
+                      // If already on a subpage, replace to avoid history loops.
+                      // Otherwise, navigate normally into the stack.
+                      const navFn = isMoreSubPage
+                        ? router.replace
+                        : router.navigate;
+
+                      navFn({
+                        pathname: item.route as any,
+                        params: targetParams,
+                      });
                     }}
                   />
                 ))}
@@ -381,7 +392,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: labels.home,
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => (
+            <TabBarIcon name="home" color={color} />
+          ),
         }}
         listeners={{
           tabPress: (e) => {
@@ -395,7 +408,7 @@ export default function TabLayout() {
         options={{
           title: labels.sermons,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="book-open-variant" color={color} />
+            <TabBarIcon name="book-open-variant" color={color as string} />
           ),
         }}
         listeners={{
@@ -410,7 +423,7 @@ export default function TabLayout() {
         options={{
           title: labels.calendar,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="calendar" color={color} />
+            <TabBarIcon name="calendar" color={color as string} />
           ),
         }}
         listeners={{
@@ -422,13 +435,16 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="more"
-        options={{
-          title: labels.more,
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="dots-horizontal" color={color} />
-          ),
-        }}
+        options={
+          {
+            title: labels.more,
+            headerShown: false,
+            unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
+            tabBarIcon: ({ color }: { color: string }) => (
+              <TabBarIcon name="dots-horizontal" color={color} />
+            ),
+          } as any
+        }
         listeners={{
           tabPress: (e) => {
             // Ensure the More stack resets to its root whenever the tab is pressed.
