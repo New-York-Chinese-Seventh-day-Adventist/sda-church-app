@@ -61,10 +61,13 @@ export default function MoreScreen() {
           <List.Item
             title={labels.about}
             left={(p) => <List.Icon {...p} icon="information" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
+            onPress={() => router.push("/more/about" as any)}
           />
           <List.Item
             title={labels.contact}
             left={(p) => <List.Icon {...p} icon="email" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
             onPress={() => router.push("/more/contact")} // Navigate to the nested contact screen
           />
         </List.Section>
@@ -76,6 +79,7 @@ export default function MoreScreen() {
           <List.Item
             title={labels.language}
             left={(p) => <List.Icon {...p} icon="translate" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
             onPress={() => router.push("/more/language")} // Navigate to the nested language screen
           />
           <List.Item
@@ -92,6 +96,7 @@ export default function MoreScreen() {
           <List.Item
             title={labels.give}
             left={(p) => <List.Icon {...p} icon="gift" />}
+            right={(p) => <List.Icon {...p} icon="open-in-new" />}
             onPress={openOnlineGiving}
           />
         </List.Section>

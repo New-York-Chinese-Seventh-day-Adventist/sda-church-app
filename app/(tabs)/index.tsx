@@ -16,6 +16,7 @@ export default function HomeScreen() {
       subtitle: "Happy Sabbath!",
       verse: "The Lord is my shepherd; I shall not want. - Psalm 23:1",
       livestream: "Watch Livestream",
+      about: "About Us",
       contact: "Connect with Us",
     },
     zh: {
@@ -24,6 +25,7 @@ export default function HomeScreen() {
       subtitle: "安息日快樂！",
       verse: "耶和華是我的牧者，我必不致缺乏。 - 詩篇 23:1",
       livestream: "觀看直播",
+      about: "關於我們",
       contact: "聯繫我們",
     },
     "zh-cn": {
@@ -32,6 +34,7 @@ export default function HomeScreen() {
       subtitle: "安息日快乐！",
       verse: "耶和华是我的牧者，我必不致缺乏。 - 诗篇 23:1",
       livestream: "观看直播",
+      about: "关于我们",
       contact: "联系我们",
     },
     es: {
@@ -40,6 +43,7 @@ export default function HomeScreen() {
       subtitle: "¡Feliz Sábado!",
       verse: "Jehová es mi pastor; nada me faltará. - Salmo 23:1",
       livestream: "Ver Transmisión",
+      about: "Sobre Nosotros",
       contact: "Conéctate con Nosotros",
     },
   }[language as "en" | "zh" | "zh-cn" | "es"];
@@ -81,6 +85,15 @@ export default function HomeScreen() {
         </Card>
 
         <View style={styles.actionContainer}>
+          <Button
+            mode="contained-tonal"
+            icon="information"
+            onPress={() => router.push("/more/about" as any)}
+            style={[styles.button, { marginBottom: 12 }]}
+          >
+            {labels.about}
+          </Button>
+
           <Button
             mode="outlined"
             icon="map-marker"

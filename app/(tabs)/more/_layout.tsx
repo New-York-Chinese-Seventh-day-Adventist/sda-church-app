@@ -10,6 +10,7 @@ export default function MoreStackLayout() {
       {/* Screens pushed onto this stack */}
       <Stack.Screen name="language" />
       <Stack.Screen name="contact" />
+      <Stack.Screen name="about" />
     </Stack>
   );
 }

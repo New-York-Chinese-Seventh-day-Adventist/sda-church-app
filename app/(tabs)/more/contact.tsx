@@ -84,7 +84,7 @@ export default function ContactScreen() {
                   color={theme.colors.primary}
                 />
               )}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              right={(props) => <List.Icon {...props} icon="open-in-new" />}
               onPress={async () => {
                 const cleanedPhone = phone.replace(/[^\d+]/g, "");
                 // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
@@ -117,7 +117,7 @@ export default function ContactScreen() {
                   color={theme.colors.primary}
                 />
               )}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              right={(props) => <List.Icon {...props} icon="open-in-new" />}
               onPress={async () => {
                 const url = `mailto:${email}`;
                 try {
@@ -149,7 +149,7 @@ export default function ContactScreen() {
                   color={theme.colors.primary}
                 />
               )}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              right={(props) => <List.Icon {...props} icon="open-in-new" />}
               onPress={() => openInMaps(loc.address)}
             />
           ))}
