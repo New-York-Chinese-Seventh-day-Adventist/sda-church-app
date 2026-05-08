@@ -21,6 +21,10 @@ export default function ContactScreen() {
       address: "5318 4th Ave, Brooklyn, NY 11220",
       icon: "church" as const,
     },
+    {
+      address: "143-11 Willets Point Blvd, Whitestone, NY 11357",
+      icon: "church" as const,
+    },
   ];
   const phone = process.env.EXPO_PUBLIC_CHURCH_PHONE;
   const email = process.env.EXPO_PUBLIC_CHURCH_EMAIL;
@@ -33,20 +37,29 @@ export default function ContactScreen() {
         // TODO: Replace with your addresses. You may add specific floors or room numbers if you wish.
         // Please ensure translations below are updated accordingly if you change these.
         "Elmhurst SDA Church (Main)",
-        "Brooklyn SDA Church (3rd Floor)",
+        "Brooklyn SDA Church (Bay Ridge, 3rd Floor)",
+        "Flushing Outreach (Fellowship & Food Pantry)",
       ],
       infoLabel: "Contact Information",
     },
     zh: {
       title: "聯繫我們",
       addressLabel: "地點",
-      locationNames: ["艾姆赫斯特教會 (主堂)", "布魯克林教會 (3 樓)"],
+      locationNames: [
+        "艾姆赫斯特教會 (主堂)",
+        "布魯克林教會 (Bay Ridge, 3 樓)",
+        "法拉盛事工 (團契與食品發放)",
+      ],
       infoLabel: "聯絡資訊",
     },
     "zh-cn": {
       title: "联系我们",
       addressLabel: "地点",
-      locationNames: ["艾姆赫斯特教会 (主堂)", "布鲁克林教会 (3 楼)"],
+      locationNames: [
+        "艾姆赫斯特教会 (主堂)",
+        "布鲁克林教会 (Bay Ridge, 3 楼)",
+        "法拉盛事工 (团契与食品发放)",
+      ],
       infoLabel: "联系信息",
     },
     es: {
@@ -54,7 +67,8 @@ export default function ContactScreen() {
       addressLabel: "Ubicaciones",
       locationNames: [
         "Iglesia de Elmhurst (Principal)",
-        "Iglesia de Brooklyn (3er Piso)",
+        "Iglesia de Brooklyn (Bay Ridge, 3er Piso)",
+        "Alcance en Flushing (Compañerismo y Despensa de Alimentos)",
       ],
       infoLabel: "Información de contacto",
     },
