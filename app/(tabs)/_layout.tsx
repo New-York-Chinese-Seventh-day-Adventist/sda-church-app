@@ -14,6 +14,7 @@ export const GlobalHeader = (props: any) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<any>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   // Clear search state whenever the navigation path changes (switching tabs or views)
   useEffect(() => {
@@ -291,7 +292,12 @@ export const GlobalHeader = (props: any) => {
   };
 
   return (
-    <Appbar.Header elevated>
+    <Appbar.Header
+      elevated
+      onLayout={(e) =>
+        setHeaderHeight(e.nativeEvent.layout.y + e.nativeEvent.layout.height)
+      }
+    >
       {isMoreSubPage && (
         <Appbar.BackAction
           onPress={() => {
@@ -325,12 +331,12 @@ export const GlobalHeader = (props: any) => {
             onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
             style={{ backgroundColor: "transparent", elevation: 0 }}
           />
-          {searchQuery.length > 0 && results.length > 0 && (
+          {isSearching && searchQuery.length > 0 && results.length > 0 && (
             <Portal>
               <View
                 style={[
                   styles.resultsOverlay,
-                  { backgroundColor: theme.colors.surface, top: 100 },
+                  { backgroundColor: theme.colors.surface, top: headerHeight },
                 ]}
               >
                 {results.map((item, index) => (

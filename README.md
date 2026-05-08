@@ -53,6 +53,15 @@ This command:
 - Launches the app on the Android Emulator or a connected device
 - Verify on Android SDK 35 or higher
 
+#### WSL Debugging
+
+If you are developing in WSL2, the Android Emulator on Windows may not connect automatically to the Metro server. After running `npm run android`, you may need to manually set the bundle location:
+
+1. Press **Ctrl + M** on the emulator to open the developer menu.
+2. Select **Change Bundle Location**.
+3. Enter your WSL IP (get it by running `hostname -I` in WSL) followed by `:8081` (e.g., `172.23.202.254:8081`).
+   No special `expo start` command is needed; the standard `npm run android` is sufficient once the bundle location is updated.
+
 ## Release & Versioning
 
 This project uses **Semantic Versioning** ([npm SemVer Guide](https://docs.npmjs.com/about-semantic-versioning)) with the following rules:
