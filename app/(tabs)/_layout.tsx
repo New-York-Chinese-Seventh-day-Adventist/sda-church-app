@@ -1,4 +1,4 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext } from "react";
 import { Appbar, Searchbar, useTheme } from "react-native-paper";
@@ -13,12 +13,10 @@ export const GlobalHeader = (props: any) => {
 
   return (
     <Appbar.Header elevated>
-      {isMoreSubPage ? (
+      {isMoreSubPage && (
         <Appbar.BackAction
           onPress={() => (backTo ? router.navigate(backTo) : router.back())}
         />
-      ) : (
-        <Appbar.Action icon="church" onPress={() => router.push("/")} />
       )}
       {isMoreSubPage ? (
         <Appbar.Content title={title} />
@@ -34,68 +32,56 @@ export const GlobalHeader = (props: any) => {
 };
 
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
+  name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return (
+    <MaterialCommunityIcons size={28} style={{ marginBottom: -3 }} {...props} />
+  );
 }
 
 export default function TabLayout() {
-  const { language } = useContext(LanguageContext);
   const theme = useTheme();
+  const { language } = useContext(LanguageContext);
 
   const labels = {
-    home: { en: "Home", zh: "首頁", "zh-cn": "首页", es: "Inicio" }[
-      language as "en" | "zh" | "zh-cn" | "es"
-    ],
-    sermons: {
-      en: "Sermons",
-      zh: "講道回顧",
-      "zh-cn": "讲道回顾",
-      es: "Sermones",
-    }[language as "en" | "zh" | "zh-cn" | "es"],
-    calendar: {
-      en: "Calendar",
-      zh: "教會日曆",
-      "zh-cn": "教会日历",
-      es: "Calendario",
-    }[language as "en" | "zh" | "zh-cn" | "es"],
-    more: { en: "More", zh: "更多", "zh-cn": "更多", es: "Más" }[
-      language as "en" | "zh" | "zh-cn" | "es"
-    ],
-  };
+    en: {
+      home: "Home",
+      calendar: "Calendar",
+      sermons: "Sermons",
+      more: "More",
+    },
+    zh: { home: "首頁", calendar: "日曆", sermons: "講道", more: "更多" },
+    "zh-cn": { home: "首页", calendar: "日历", sermons: "讲道", more: "更多" },
+    es: {
+      home: "Inicio",
+      calendar: "Calendario",
+      sermons: "Sermones",
+      more: "Más",
+    },
+  }[language as "en" | "zh" | "zh-cn" | "es"];
 
   return (
     <Tabs
       screenOptions={{
-        header: (props) => <GlobalHeader {...props} />,
         tabBarActiveTintColor: theme.colors.primary,
+        header: (props) => <GlobalHeader {...props} />,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: labels.home,
-          tabBarIcon: ({ color }) => <TabBarIcon name="church" color={color} />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate("/");
-          },
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="sermons"
         options={{
           title: labels.sermons,
-          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate("/sermons");
-          },
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="book-open-variant" color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -106,29 +92,15 @@ export default function TabLayout() {
             <TabBarIcon name="calendar" color={color} />
           ),
         }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate("/calendar");
-          },
-        }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: labels.more,
-          headerShown: false, // Hidden here because the nested stack handles it
+          headerShown: false,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="ellipsis-h" color={color} />
+            <TabBarIcon name="dots-horizontal" color={color} />
           ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            // Ensure the More stack resets to its root whenever the tab is pressed.
-            // This solves the "stuck" state after navigating to sub-pages from Home.
-            e.preventDefault();
-            router.navigate("/more");
-          },
         }}
       />
     </Tabs>

@@ -1,5 +1,5 @@
 import { useColorScheme } from "@/components/useColorScheme";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   DarkTheme as NavDarkTheme,
   DefaultTheme as NavDefaultTheme,
@@ -106,7 +106,7 @@ export default function RootLayout() {
 
   const [loaded, error] = useFonts({
     AdventSans: require("../assets/fonts/AdventSans-Logo.otf"),
-    ...FontAwesome.font,
+    ...MaterialCommunityIcons.font,
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
