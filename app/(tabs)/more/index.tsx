@@ -65,22 +65,22 @@ export default function MoreScreen() {
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 400,
+          duration: 200,
           useNativeDriver: false,
         }),
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 400,
+          duration: 200,
           useNativeDriver: false,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 400,
+          duration: 200,
           useNativeDriver: false,
         }),
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 800,
+          duration: 400,
           useNativeDriver: false,
         }),
       ]).start(() => {
@@ -106,36 +106,30 @@ export default function MoreScreen() {
       <ScrollView style={styles.container}>
         <List.Section>
           <List.Subheader>{labels.info}</List.Subheader>
-          <Animated.View style={getHighlightStyle("about")}>
-            <List.Item
-              title={labels.about}
-              left={(p) => <List.Icon {...p} icon="information" />}
-              right={(p) => <List.Icon {...p} icon="chevron-right" />}
-              onPress={() => router.push("/more/about" as any)}
-            />
-          </Animated.View>
-          <Animated.View style={getHighlightStyle("contact")}>
-            <List.Item
-              title={labels.contact}
-              left={(p) => <List.Icon {...p} icon="email" />}
-              right={(p) => <List.Icon {...p} icon="chevron-right" />}
-              onPress={() => router.push("/more/contact")}
-            />
-          </Animated.View>
+          <List.Item
+            title={labels.about}
+            left={(p) => <List.Icon {...p} icon="information" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
+            onPress={() => router.push("/more/about" as any)}
+          />
+          <List.Item
+            title={labels.contact}
+            left={(p) => <List.Icon {...p} icon="email" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
+            onPress={() => router.push("/more/contact")}
+          />
         </List.Section>
 
         <Divider />
 
         <List.Section>
           <List.Subheader>{labels.settings}</List.Subheader>
-          <Animated.View style={getHighlightStyle("language")}>
-            <List.Item
-              title={labels.language}
-              left={(p) => <List.Icon {...p} icon="translate" />}
-              right={(p) => <List.Icon {...p} icon="chevron-right" />}
-              onPress={() => router.push("/more/language")}
-            />
-          </Animated.View>
+          <List.Item
+            title={labels.language}
+            left={(p) => <List.Icon {...p} icon="translate" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
+            onPress={() => router.push("/more/language")}
+          />
           <Animated.View style={getHighlightStyle("darkMode")}>
             <List.Item
               title={labels.darkMode}

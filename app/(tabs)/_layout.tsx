@@ -32,7 +32,17 @@ export const GlobalHeader = (props: any) => {
       about: { title: "About Us", keywords: ["history", "beliefs", "church"] },
       connect: {
         title: "Connect",
-        keywords: ["contact", "email", "phone", "location"],
+        keywords: [
+          "contact",
+          "email",
+          "phone",
+          "location",
+          "call",
+          "map",
+          "directions",
+          "directions",
+          "address",
+        ],
       },
       give: { title: "Give", keywords: ["tithe", "offering", "donation"] },
       language: {
@@ -57,7 +67,23 @@ export const GlobalHeader = (props: any) => {
       about: { title: "關於我們", keywords: ["歷史", "信仰", "教會", "about"] },
       connect: {
         title: "聯繫我們",
-        keywords: ["聯絡", "電子郵件", "電話", "地點", "connect", "contact"],
+        keywords: [
+          "聯絡",
+          "電子郵件",
+          "電話",
+          "地點",
+          "電郵",
+          "地圖",
+          "導航",
+          "地址",
+          "路線",
+          "connect",
+          "contact",
+          "email",
+          "phone",
+          "call",
+          "map",
+        ],
       },
       give: {
         title: "捐獻",
@@ -85,7 +111,23 @@ export const GlobalHeader = (props: any) => {
       about: { title: "关于我们", keywords: ["历史", "信仰", "教会", "about"] },
       connect: {
         title: "联系我们",
-        keywords: ["联络", "电子邮件", "电话", "地点", "connect", "contact"],
+        keywords: [
+          "联络",
+          "电子邮件",
+          "电话",
+          "地点",
+          "电邮",
+          "地图",
+          "导航",
+          "地址",
+          "路线",
+          "connect",
+          "contact",
+          "email",
+          "phone",
+          "call",
+          "map",
+        ],
       },
       give: {
         title: "捐献",
@@ -128,8 +170,14 @@ export const GlobalHeader = (props: any) => {
           "correo",
           "teléfono",
           "ubicación",
+          "llamar",
+          "mapa",
+          "direcciones",
+          "dirección",
           "connect",
           "contact",
+          "email",
+          "phone",
         ],
       },
       give: {
@@ -156,56 +204,52 @@ export const GlobalHeader = (props: any) => {
     {
       ...searchLabels.home,
       icon: "home",
-      onPress: () => router.navigate("/"),
+      route: "/",
+      isPage: true,
     },
     {
       ...searchLabels.sermons,
       icon: "book-open-variant",
-      onPress: () => router.navigate("/sermons"),
+      route: "/sermons",
+      isPage: true,
     },
     {
       ...searchLabels.calendar,
       icon: "calendar",
-      onPress: () => router.navigate("/calendar"),
+      route: "/calendar",
+      isPage: true,
     },
     {
       ...searchLabels.about,
       icon: "information",
-      onPress: () =>
-        router.navigate({ pathname: "/more", params: { highlight: "about" } }),
+      route: "/more/about",
+      isPage: true,
     },
     {
       ...searchLabels.connect,
       icon: "email",
-      onPress: () =>
-        router.navigate({
-          pathname: "/more",
-          params: { highlight: "contact" },
-        }),
+      route: "/more/contact",
+      isPage: true,
     },
     {
       ...searchLabels.give,
       icon: "gift",
-      onPress: () =>
-        router.navigate({ pathname: "/more", params: { highlight: "give" } }),
+      route: "/more",
+      isPage: false,
+      highlightKey: "give",
     },
     {
       ...searchLabels.language,
       icon: "translate",
-      onPress: () =>
-        router.navigate({
-          pathname: "/more",
-          params: { highlight: "language" },
-        }),
+      route: "/more/language",
+      isPage: true,
     },
     {
       ...searchLabels.darkMode,
       icon: "theme-light-dark",
-      onPress: () =>
-        router.navigate({
-          pathname: "/more",
-          params: { highlight: "darkMode" },
-        }),
+      route: "/more",
+      isPage: false,
+      highlightKey: "darkMode",
     },
   ];
 
@@ -248,9 +292,25 @@ export const GlobalHeader = (props: any) => {
                     title={item.title}
                     left={(p) => <List.Icon {...p} icon={item.icon} />}
                     onPress={() => {
+                      const q = searchQuery.toLowerCase();
                       setSearchQuery("");
                       setIsSearching(false);
-                      item.onPress();
+
+                      if (item.isPage) {
+                        // Only highlight if the query matches a specific keyword but NOT the title
+                        const isTitleMatch = item.title
+                          .toLowerCase()
+                          .includes(q);
+                        router.navigate({
+                          pathname: item.route as any,
+                          params: { highlight: isTitleMatch ? undefined : q },
+                        });
+                      } else {
+                        router.navigate({
+                          pathname: item.route as any,
+                          params: { highlight: item.highlightKey },
+                        });
+                      }
                     }}
                   />
                 ))}
