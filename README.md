@@ -55,6 +55,8 @@ This command:
 
 #### WSL Debugging
 
+> Error: Unable to load script. Make sure you're running Metro or that your bundle 'index.android.bundle'...
+
 If you are developing in WSL2, the Android Emulator on Windows may not connect automatically to the Metro server. After running `npm run android`, you may need to manually set the bundle location:
 
 1. Press **Ctrl + M** on the emulator to open the developer menu.

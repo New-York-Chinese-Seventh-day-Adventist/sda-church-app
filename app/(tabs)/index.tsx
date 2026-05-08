@@ -1,9 +1,9 @@
+import { LanguageContext } from "@/constants/Contexts";
 import { router } from "expo-router";
 import React, { useContext } from "react";
 import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Text, useTheme } from "react-native-paper";
 import { openSabbathStream } from "../../utils/youtubeService";
-import { LanguageContext } from "../_layout";
 
 export default function HomeScreen() {
   const { language } = useContext(LanguageContext);

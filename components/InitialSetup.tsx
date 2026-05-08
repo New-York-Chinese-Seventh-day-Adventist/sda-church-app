@@ -1,3 +1,8 @@
+import {
+  LanguageContext,
+  SupportedLanguage,
+  ThemeContext,
+} from "@/constants/Contexts";
 import React, { useContext } from "react";
 import { StyleSheet, View } from "react-native";
 import {
@@ -8,11 +13,6 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import {
-  LanguageContext,
-  SupportedLanguage,
-  ThemeContext,
-} from "../app/_layout";
 
 interface InitialSetupProps {
   onComplete: () => void;

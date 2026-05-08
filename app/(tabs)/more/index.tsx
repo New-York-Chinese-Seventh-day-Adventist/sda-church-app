@@ -1,9 +1,9 @@
+import { LanguageContext, ThemeContext } from "@/constants/Contexts";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Animated, ScrollView, StyleSheet } from "react-native";
 import { Divider, List, Switch, useTheme } from "react-native-paper";
 import { openOnlineGiving } from "../../../utils/externalLinks";
-import { LanguageContext, ThemeContext } from "../../_layout";
 
 export default function MoreScreen() {
   const { language } = useContext(LanguageContext);

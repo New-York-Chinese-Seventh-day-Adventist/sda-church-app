@@ -1,5 +1,11 @@
 import { InitialSetup } from "@/components/InitialSetup";
 import { useColorScheme } from "@/components/useColorScheme";
+import {
+  DEFAULT_LANG,
+  LanguageContext,
+  SupportedLanguage,
+  ThemeContext,
+} from "@/constants/Contexts";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -11,8 +17,8 @@ import { useFonts } from "expo-font";
 import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { createContext, useContext, useEffect, useState } from "react";
-import { Alert, DevSettings, Platform } from "react-native";
+import { useContext, useEffect, useState } from "react";
+import { Alert, DevSettings, LogBox, Platform } from "react-native";
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -27,14 +33,13 @@ export {
   ErrorBoundary,
 } from "expo-router";
 
+// Suppress all warning logs in the UI
+LogBox.ignoreAllLogs();
+
 export const unstable_settings = {
   // Ensure that reloading on `/language` keeps a back button present.
   initialRouteName: "(tabs)",
 };
-
-export type SupportedLanguage = "en" | "zh" | "zh-cn" | "es";
-const DEFAULT_LANG =
-  (process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE as SupportedLanguage) || "en";
 
 const getSystemLanguage = (): SupportedLanguage => {
   const locales = Localization.getLocales();
@@ -52,18 +57,6 @@ const getSystemLanguage = (): SupportedLanguage => {
   if (languageCode === "es") return "es";
   return "en";
 };
-
-// Simple Language Context
-export const LanguageContext = createContext({
-  language: DEFAULT_LANG as SupportedLanguage,
-  setLanguage: (lang: SupportedLanguage) => {},
-});
-
-// Theme Context to manage manual overrides
-export const ThemeContext = createContext({
-  isDark: false,
-  toggleTheme: (val?: any) => {},
-});
 
 // Adapt themes for React Navigation compatibility
 const { LightTheme: _LightTheme, DarkTheme: _DarkTheme } = adaptNavigationTheme(

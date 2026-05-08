@@ -1,3 +1,4 @@
+import { LanguageContext } from "@/constants/Contexts";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
@@ -10,7 +11,6 @@ import {
 } from "react-native";
 import { List, useTheme } from "react-native-paper";
 import { openInMaps } from "../../../utils/googleMapsService";
-import { LanguageContext } from "../../_layout"; // Corrected path to root _layout
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);

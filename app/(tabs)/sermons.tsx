@@ -1,9 +1,9 @@
+import { LanguageContext } from "@/constants/Contexts";
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { Button, Card, Text, useTheme } from "react-native-paper";
 import { openSpotifyPodcast } from "../../utils/spotifyService";
 import { openSabbathStream } from "../../utils/youtubeService";
-import { LanguageContext } from "../_layout";
 
 export default function SermonsScreen() {
   const theme = useTheme();

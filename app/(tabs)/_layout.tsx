@@ -1,10 +1,10 @@
+import { LanguageContext } from "@/constants/Contexts";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LanguageContext } from "../_layout";
 
 export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);

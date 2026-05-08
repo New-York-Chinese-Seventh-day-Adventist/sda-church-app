@@ -1,7 +1,7 @@
+import { LanguageContext } from "@/constants/Contexts";
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Divider, List, useTheme } from "react-native-paper";
-import { LanguageContext } from "../_layout";
 
 export default function CalendarScreen() {
   const theme = useTheme();
