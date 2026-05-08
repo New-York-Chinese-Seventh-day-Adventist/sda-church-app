@@ -74,6 +74,12 @@ export default function TabLayout() {
           title: labels.home,
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/");
+          },
+        }}
       />
       <Tabs.Screen
         name="sermons"
@@ -82,6 +88,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="book-open-variant" color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/sermons");
+          },
         }}
       />
       <Tabs.Screen
@@ -92,6 +104,12 @@ export default function TabLayout() {
             <TabBarIcon name="calendar" color={color} />
           ),
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/calendar");
+          },
+        }}
       />
       <Tabs.Screen
         name="more"
@@ -101,6 +119,14 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="dots-horizontal" color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // Ensure the More stack resets to its root whenever the tab is pressed.
+            // This solves the "stuck" state after navigating to sub-pages from Home.
+            e.preventDefault();
+            router.navigate("/more");
+          },
         }}
       />
     </Tabs>
