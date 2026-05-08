@@ -76,7 +76,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: labels.home,
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="church" color={color} />,
         }}
         listeners={{
           tabPress: (e) => {
