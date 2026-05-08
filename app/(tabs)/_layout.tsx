@@ -45,22 +45,24 @@ export default function TabLayout() {
   const theme = useTheme();
 
   const labels = {
-    home:
-      { en: "Home", zh: "首頁", "zh-cn": "首页", es: "Inicio" }[
-        language as "en" | "zh" | "zh-cn" | "es"
-      ] || "Home",
-    sermons:
-      { en: "Sermons", zh: "講道回顧", "zh-cn": "讲道回顾", es: "Sermones" }[
-        language as "en" | "zh" | "zh-cn" | "es"
-      ] || "Sermons",
-    calendar:
-      { en: "Calendar", zh: "教會日曆", "zh-cn": "教会日历", es: "Calendario" }[
-        language as "en" | "zh" | "zh-cn" | "es"
-      ] || "Calendar",
-    more:
-      { en: "More", zh: "更多", "zh-cn": "更多", es: "Más" }[
-        language as "en" | "zh" | "zh-cn" | "es"
-      ] || "More",
+    home: { en: "Home", zh: "首頁", "zh-cn": "首页", es: "Inicio" }[
+      language as "en" | "zh" | "zh-cn" | "es"
+    ],
+    sermons: {
+      en: "Sermons",
+      zh: "講道回顧",
+      "zh-cn": "讲道回顾",
+      es: "Sermones",
+    }[language as "en" | "zh" | "zh-cn" | "es"],
+    calendar: {
+      en: "Calendar",
+      zh: "教會日曆",
+      "zh-cn": "教会日历",
+      es: "Calendario",
+    }[language as "en" | "zh" | "zh-cn" | "es"],
+    more: { en: "More", zh: "更多", "zh-cn": "更多", es: "Más" }[
+      language as "en" | "zh" | "zh-cn" | "es"
+    ],
   };
 
   return (

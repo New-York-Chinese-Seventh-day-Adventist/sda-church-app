@@ -28,12 +28,14 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
-const DEFAULT_LANG = process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE || "en";
+export type SupportedLanguage = "en" | "zh" | "zh-cn" | "es";
+const DEFAULT_LANG =
+  (process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE as SupportedLanguage) || "en";
 
 // Simple Language Context
 export const LanguageContext = createContext({
-  language: DEFAULT_LANG,
-  setLanguage: (lang: string) => {},
+  language: DEFAULT_LANG as SupportedLanguage,
+  setLanguage: (lang: SupportedLanguage) => {},
 });
 
 // Theme Context to manage manual overrides

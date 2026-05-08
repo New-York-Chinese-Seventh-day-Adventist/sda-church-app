@@ -14,9 +14,7 @@ export default function LanguageScreen() {
     zh: { title: "語言" },
     "zh-cn": { title: "语言" },
     es: { title: "Idioma" },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    title: "Language",
-  };
+  }[language as "en" | "zh" | "zh-cn" | "es"];
 
   return (
     <>

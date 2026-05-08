@@ -42,12 +42,7 @@ export default function CalendarScreen() {
         "Sociedad de Jóvenes (AYS)",
       ],
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    header: "Calendar",
-    schedule: "Schedule",
-    days: [],
-    events: [],
-  };
+  }[language as "en" | "zh" | "zh-cn" | "es"];
 
   const events = [
     {

@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { Button, Card, useTheme } from "react-native-paper";
+import { Button, Card, Text, useTheme } from "react-native-paper";
+import { openSpotifyPodcast } from "../../utils/spotifyService";
+import { openSabbathStream } from "../../utils/youtubeService";
 import { LanguageContext } from "../_layout";
 
 export default function SermonsScreen() {
@@ -9,100 +11,102 @@ export default function SermonsScreen() {
 
   const labels = {
     en: {
-      header: "Sermons",
-      watch: "Watch",
-      audio: "Audio",
-      speakers: ["Pastor John Doe", "Elder Sarah Smith", "Pastor Mark Wilson"],
-      titles: [
-        "Faith in Action",
-        "The Power of Prayer",
-        "Walking by the Spirit",
-      ],
+      title: "Study Podcast",
+      description: "Explore our library of teachings in English and Mandarin.",
+      button: "Listen on Spotify",
+      youtubeTitle: "Past Services",
+      youtubeDescription: "Watch our archive or join us live on YouTube",
+      youtubeButton: "Watch our past sermons on YouTube",
     },
     zh: {
-      header: "講道回顧",
-      watch: "觀看",
-      audio: "音頻",
-      speakers: ["約翰·多牧師", "莎拉·史密斯長老", "馬克·威爾遜牧師"],
-      titles: ["信心與行動", "禱告的力量", "隨聖靈行事"],
+      title: "研經播客",
+      description: "探索我們的英文和國語教學庫。",
+      button: "在 Spotify 上收聽",
+      youtubeTitle: "歷次聚會",
+      youtubeDescription: "在 YouTube 上收看我們的存檔或加入直播",
+      youtubeButton: "在 YouTube 上觀看過往講道",
     },
     "zh-cn": {
-      header: "讲道回顾",
-      watch: "观看",
-      audio: "音频",
-      speakers: ["约翰·多牧师", "莎拉·史密斯长老", "马克·威尔逊牧师"],
-      titles: ["信心与行动", "祷告的力量", "随圣灵行事"],
+      title: "研经播客",
+      description: "探索我们的英文和国语教学库。",
+      button: "在 Spotify 上收听",
+      youtubeTitle: "历次聚会",
+      youtubeDescription: "在 YouTube 上收看我们的存档或加入直播",
+      youtubeButton: "在 YouTube 上观看过往讲道",
     },
     es: {
-      header: "Sermones",
-      watch: "Ver",
-      audio: "Audio",
-      speakers: [
-        "Pastor Juan Doe",
-        "Anciana Sarah Smith",
-        "Pastor Mark Wilson",
-      ],
-      titles: [
-        "Fe en Acción",
-        "El Poder de la Oración",
-        "Caminando por el Espíritu",
-      ],
+      title: "Podcast de Estudio",
+      description:
+        "Explore nuestra biblioteca de enseñanzas en inglés y mandarín.",
+      button: "Escuchar en Spotify",
+      youtubeTitle: "Servicios Pasados",
+      youtubeDescription:
+        "Vea nuestro archivo o únase a nosotros en vivo en YouTube",
+      youtubeButton: "Vea nuestros sermones pasados en YouTube",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    header: "Sermons",
-    watch: "Watch",
-    audio: "Audio",
-    speakers: [],
-    titles: [],
-  };
-
-  const sermons = [
-    {
-      id: "1",
-      title: labels.titles[0],
-      speaker: labels.speakers[0],
-      date: "Oct 26, 2024",
-      image: "https://picsum.photos/id/10/700",
-    },
-    {
-      id: "2",
-      title: labels.titles[1],
-      speaker: labels.speakers[1],
-      date: "Oct 19, 2024",
-      image: "https://picsum.photos/id/20/700",
-    },
-    {
-      id: "3",
-      title: labels.titles[2],
-      speaker: labels.speakers[2],
-      date: "Oct 12, 2024",
-      image: "https://picsum.photos/id/30/700",
-    },
-  ];
+  }[language as "en" | "zh" | "zh-cn" | "es"];
 
   return (
-    <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {sermons.map((sermon) => (
-          <Card key={sermon.id} style={styles.card} mode="elevated">
-            <Card.Cover source={{ uri: sermon.image }} />
-            <Card.Title
-              title={sermon.title}
-              subtitle={`${sermon.speaker} • ${sermon.date}`}
-            />
-            <Card.Actions>
-              <Button icon="play" mode="contained-tonal">
-                {labels.watch}
-              </Button>
-              <Button icon="download">{labels.audio}</Button>
-            </Card.Actions>
-          </Card>
-        ))}
-      </ScrollView>
-    </>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <Card style={styles.card} mode="elevated">
+        <Card.Cover source={require("../../assets/images/youtube_art.png")} />
+        <Card.Content style={styles.cardContent}>
+          <Text variant="headlineSmall" style={styles.title}>
+            {labels.youtubeTitle}
+          </Text>
+          <Text variant="bodyMedium" style={styles.description}>
+            {labels.youtubeDescription}
+          </Text>
+        </Card.Content>
+        <Card.Actions style={styles.actions}>
+          <Button
+            icon="youtube"
+            mode="contained"
+            onPress={openSabbathStream}
+            buttonColor="#FF0000" // YouTube Brand Red
+            textColor="#FFFFFF"
+            style={styles.button}
+          >
+            {labels.youtubeButton}
+          </Button>
+        </Card.Actions>
+      </Card>
+
+      <Card style={styles.card} mode="elevated">
+        <Card.Cover
+          source={require("../../assets/images/spotify_podcast_art.png")}
+        />
+        <Card.Content style={styles.cardContent}>
+          <Text variant="headlineSmall" style={styles.title}>
+            {labels.title}
+          </Text>
+          <Text variant="bodyMedium" style={styles.description}>
+            {labels.description}
+          </Text>
+        </Card.Content>
+        <Card.Actions style={styles.actions}>
+          <Button
+            icon="spotify"
+            mode="contained"
+            onPress={openSpotifyPodcast}
+            buttonColor="#1DB954" // Spotify Brand Green
+            textColor="#FFFFFF"
+            style={styles.button}
+          >
+            {labels.button}
+          </Button>
+        </Card.Actions>
+        <Text
+          variant="labelSmall"
+          style={[styles.spotifyBranding, { color: theme.colors.outline }]}
+        >
+          Powered by Spotify
+        </Text>
+      </Card>
+    </ScrollView>
   );
 }
 
@@ -116,5 +120,27 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 16,
+    overflow: "hidden",
+  },
+  cardContent: {
+    marginTop: 16,
+  },
+  title: {
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  description: {
+    lineHeight: 20,
+  },
+  actions: {
+    padding: 16,
+    justifyContent: "center",
+  },
+  button: {
+    width: "100%",
+  },
+  spotifyBranding: {
+    textAlign: "center",
+    marginBottom: 12,
   },
 });

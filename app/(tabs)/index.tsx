@@ -42,14 +42,7 @@ export default function HomeScreen() {
       livestream: "Ver Transmisión",
       contact: "Conéctate con Nosotros",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    header: "SDA Church",
-    welcome: "Welcome",
-    subtitle: "",
-    verse: "",
-    livestream: "Watch Livestream",
-    contact: "Connect with Us",
-  };
+  }[language as "en" | "zh" | "zh-cn" | "es"];
 
   return (
     <>
@@ -63,6 +56,22 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        <Card style={styles.card} onPress={openSabbathStream}>
+          <Card.Cover source={require("../../assets/images/youtube_art.png")} />
+          <Card.Content style={{ marginTop: 16, alignItems: "center" }}>
+            <Button
+              mode="contained"
+              icon="youtube"
+              onPress={openSabbathStream}
+              buttonColor="#FF0000" // YouTube Brand Red
+              textColor="#FFFFFF"
+              style={styles.button}
+            >
+              {labels.livestream}
+            </Button>
+          </Card.Content>
+        </Card>
+
         <Card style={styles.card}>
           <Card.Content>
             <Text variant="bodyLarge" style={styles.verseText}>
@@ -73,14 +82,6 @@ export default function HomeScreen() {
 
         <View style={styles.actionContainer}>
           <Button
-            mode="contained"
-            icon="youtube"
-            onPress={openSabbathStream}
-            style={styles.button}
-          >
-            {labels.livestream}
-          </Button>
-          <Button
             mode="outlined"
             icon="map-marker"
             onPress={() =>
@@ -89,7 +90,7 @@ export default function HomeScreen() {
                 params: { backTo: "/" },
               })
             }
-            style={[styles.button, { marginTop: 12 }]}
+            style={styles.button}
           >
             {labels.contact}
           </Button>

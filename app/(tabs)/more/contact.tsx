@@ -58,12 +58,7 @@ export default function ContactScreen() {
       ],
       infoLabel: "Información de contacto",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    title: "Contact Us",
-    addressLabel: "Address",
-    infoLabel: "Contact Info",
-    locationNames: ["Main", "Brooklyn (3rd Floor)"],
-  };
+  }[language as "en" | "zh" | "zh-cn" | "es"];
 
   const openInMaps = (addr: string) => {
     if (addr) {
