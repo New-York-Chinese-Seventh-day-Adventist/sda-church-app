@@ -62,7 +62,7 @@ export default function MoreScreen() {
     if (highlight) {
       setActiveHighlight(highlight as string);
 
-      // Instant Highlight
+      // Instant Highlight flicker
       // Based on platform motion standards:
       // - Material Design 3: Uses 'Standard' tokens for small-area transitions (300ms).
       // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration
@@ -74,7 +74,6 @@ export default function MoreScreen() {
           duration: 100,
           useNativeDriver: false,
         }),
-        // Gentle fade away
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 200,
@@ -84,32 +83,6 @@ export default function MoreScreen() {
         setActiveHighlight(null);
         router.setParams({ highlight: undefined });
       });
-      // // Flicker animation: pulse the background
-      // Animated.sequence([
-      //   Animated.timing(fadeAnim, {
-      //     toValue: 1,
-      //     duration: 200,
-      //     useNativeDriver: false,
-      //   }),
-      //   Animated.timing(fadeAnim, {
-      //     toValue: 0,
-      //     duration: 200,
-      //     useNativeDriver: false,
-      //   }),
-      //   Animated.timing(fadeAnim, {
-      //     toValue: 1,
-      //     duration: 200,
-      //     useNativeDriver: false,
-      //   }),
-      //   Animated.timing(fadeAnim, {
-      //     toValue: 0,
-      //     duration: 400,
-      //     useNativeDriver: false,
-      //   }),
-      // ]).start(() => {
-      //   setActiveHighlight(null);
-      //   router.setParams({ highlight: undefined });
-      // });
     }
   }, [highlight]);
 

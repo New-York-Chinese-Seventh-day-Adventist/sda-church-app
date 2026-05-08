@@ -259,6 +259,29 @@ export const GlobalHeader = (props: any) => {
       item.keywords.some((k) => k.includes(searchQuery.toLowerCase())),
   );
 
+  const handleSelectResult = (item: (typeof searchableItems)[0]) => {
+    const q = searchQuery.toLowerCase();
+    setSearchQuery("");
+    setIsSearching(false);
+
+    const targetParams = {
+      highlight: item.isPage
+        ? item.title.toLowerCase().includes(q)
+          ? undefined
+          : q
+        : (item as any).highlightKey,
+    };
+
+    // If already on a subpage, replace to avoid history loops.
+    // Otherwise, navigate normally into the stack.
+    const navFn = isMoreSubPage ? router.replace : router.navigate;
+
+    navFn({
+      pathname: item.route as any,
+      params: targetParams,
+    });
+  };
+
   return (
     <Appbar.Header elevated>
       {isMoreSubPage && (
@@ -283,6 +306,12 @@ export const GlobalHeader = (props: any) => {
             onChangeText={setSearchQuery}
             value={searchQuery}
             onFocus={() => setIsSearching(true)}
+            returnKeyType="search"
+            onSubmitEditing={() => {
+              if (results.length > 0) {
+                handleSelectResult(results[0]);
+              }
+            }}
             onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
             style={{ backgroundColor: "transparent", elevation: 0 }}
           />
@@ -299,30 +328,7 @@ export const GlobalHeader = (props: any) => {
                     key={index}
                     title={item.title}
                     left={(p) => <List.Icon {...p} icon={item.icon} />}
-                    onPress={() => {
-                      const q = searchQuery.toLowerCase();
-                      setSearchQuery("");
-                      setIsSearching(false);
-
-                      const targetParams = {
-                        highlight: item.isPage
-                          ? item.title.toLowerCase().includes(q)
-                            ? undefined
-                            : q
-                          : (item as any).highlightKey,
-                      };
-
-                      // If already on a subpage, replace to avoid history loops.
-                      // Otherwise, navigate normally into the stack.
-                      const navFn = isMoreSubPage
-                        ? router.replace
-                        : router.navigate;
-
-                      navFn({
-                        pathname: item.route as any,
-                        params: targetParams,
-                      });
-                    }}
+                    onPress={() => handleSelectResult(item)}
                   />
                 ))}
               </View>
