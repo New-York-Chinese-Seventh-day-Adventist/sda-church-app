@@ -1,5 +1,5 @@
 import { useColorScheme } from "@/components/useColorScheme";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   DarkTheme as NavDarkTheme,
   DefaultTheme as NavDefaultTheme,
@@ -28,12 +28,14 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
-const DEFAULT_LANG = process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE || "en";
+export type SupportedLanguage = "en" | "zh" | "zh-cn" | "es";
+const DEFAULT_LANG =
+  (process.env.EXPO_PUBLIC_DEFAULT_LANGUAGE as SupportedLanguage) || "en";
 
 // Simple Language Context
 export const LanguageContext = createContext({
-  language: DEFAULT_LANG,
-  setLanguage: (lang: string) => {},
+  language: DEFAULT_LANG as SupportedLanguage,
+  setLanguage: (lang: SupportedLanguage) => {},
 });
 
 // Theme Context to manage manual overrides
@@ -103,8 +105,8 @@ export default function RootLayout() {
   };
 
   const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-    ...FontAwesome.font,
+    AdventSans: require("../assets/fonts/AdventSans-Logo.otf"),
+    ...MaterialCommunityIcons.font,
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.

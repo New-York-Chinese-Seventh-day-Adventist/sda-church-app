@@ -9,14 +9,14 @@ export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
 
-  const labels = {
+  const allLabels = {
     en: { title: "Language" },
     zh: { title: "語言" },
     "zh-cn": { title: "语言" },
     es: { title: "Idioma" },
-  }[language as "en" | "zh" | "zh-cn" | "es"] || {
-    title: "Language",
   };
+
+  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   return (
     <>
