@@ -30,7 +30,7 @@ export default function AboutScreen() {
         "• 1987: The congregation was officially organized.\n" +
         "• 1996: The church was formally accepted into the sisterhood of churches within the New York Conference.\n" +
         "• 1999: After years of planning and faith, the community celebrated the opening of its permanent home at 7606 41st Avenue in Elmhurst.\n\n" +
-        "Today, we are a vibrant, multilingual community offering services in Mandarin, Cantonese, and English. We remain dedicated to our mission of outreach, supporting our neighbors in Queens and Brooklyn through community programs and the planting of new fellowships.",
+        "Today, we are a vibrant, bilingual community offering services in Mandarin and English. We remain dedicated to our mission of outreach, supporting our neighbors in Queens and Brooklyn through community programs and the planting of new fellowships.",
       beliefs: "Our Beliefs",
       beliefsSubtext:
         "The 28 Fundamental Beliefs outline how Seventh-day Adventists apply Sola Scriptura principles in daily life.",
@@ -48,7 +48,7 @@ export default function AboutScreen() {
         "• 1987：會眾正式成立。\n" +
         "• 1996：教會正式加入紐約區會。\n" +
         "• 1999：經過多年的規劃和信心，社群慶祝了位於 Elmhurst 41 大道 7606 號的永久會所落成。\n\n" +
-        "今天，我們是一個充滿活力的多語種社群，提供國語、粵語和英語服務。我們始終致力於外展使命，透過社區計劃和建立新的團契來支持皇后區和布魯克林的鄰居。",
+        "今天，我們是一個充滿活力的雙語社群，提供國語和英語服務。我們始終致力於外展使命，透過社區計劃和建立新的團契來支持皇后區和布魯克林的鄰居。",
       beliefs: "我們的信仰",
       beliefsSubtext:
         "28 條基本信仰概述了基督復臨安息日會信徒如何在日常生活中應用唯獨聖經的原則。",
@@ -66,7 +66,7 @@ export default function AboutScreen() {
         "• 1987：会众正式成立。\n" +
         "• 1996：教会正式加入纽约区会。\n" +
         "• 1999：经过多年的规划和信心，社群庆祝了位于 Elmhurst 41 大道 7606 号的永久会所落成。\n\n" +
-        "今天，我们是一个充满活力的多语种社群，提供国语、粤语和英语服务。我们始终致力于外展使命，通过社区计划和建立新的团契来支持皇后区和布鲁克林的邻居。",
+        "今天，我们是一个充满活力的双语社群，提供国语和英语服务。我们始终致力于外展使命，通过社区计划和建立新的团契来支持皇后区和布鲁克林的邻居。",
       beliefs: "我们的信仰",
       beliefsSubtext:
         "28 条基本信仰概述了基督复临安息日会信徒如何在日常生活中应用唯独圣经的原则。",
@@ -84,7 +84,7 @@ export default function AboutScreen() {
         "• 1987: La congregación fue organizada oficialmente.\n" +
         "• 1996: La iglesia fue aceptada formalmente en la hermandad de iglesias dentro de la Conferencia de Nueva York.\n" +
         "• 1999: Después de años de planificación y fe, la comunidad celebró la apertura de su hogar permanente en 7606 41st Avenue en Elmhurst.\n\n" +
-        "Hoy, somos una comunidad vibrante y multilingüe que ofrece servicios en mandarín, cantonés e inglés. Seguimos dedicados a nuestra misión de alcance, apoyando a nuestros vecinos en Queens y Brooklyn a través de programas comunitarios y la plantación de nuevos compañerismos.",
+        "Hoy, somos una comunidad vibrante y bilingüe que ofrece servicios en mandarín e inglés. Seguimos dedicados a nuestra misión de alcance, apoyando a nuestros vecinos en Queens y Brooklyn a través de programas comunitarios y la plantación de nuevos compañerismos.",
       beliefs: "Nuestras Creencias",
       beliefsSubtext:
         "Las 28 Creencias Fundamentales describen cómo los Adventistas del Séptimo Día aplican los principios de Sola Scriptura en la vida diaria.",
