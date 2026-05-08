@@ -257,7 +257,7 @@ export default function CalendarScreen() {
                 <List.Icon
                   {...props}
                   icon={event.icon}
-                  color={theme.colors.secondary}
+                  color={theme.colors.primary}
                 />
               )}
             />
