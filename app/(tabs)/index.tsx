@@ -1,169 +1,110 @@
 import { router } from "expo-router";
 import React, { useContext } from "react";
-import { ScrollView, StyleSheet } from "react-native";
-import { Appbar, Button, Card, List, Text, useTheme } from "react-native-paper";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Button, Card, Text, useTheme } from "react-native-paper";
+import { openSabbathStream } from "../../utils/youtubeService";
 import { LanguageContext } from "../_layout";
 
-export default function TabOneScreen() {
-  const theme = useTheme();
+export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
+  const theme = useTheme();
 
-  const content =
-    {
-      en: {
-        header: "SDA Church",
-        streamTitle: "Sabbath Livestream",
-        streamDesc: "Join us live every Saturday at 11:00 AM",
-        watch: "Watch Now",
-        bulletin: "Weekly Bulletin",
-        date: "Saturday, Oct 26",
-        bulletinDesc:
-          'Join us for our divine service this Sabbath. Our guest speaker will be sharing a message on "Faith in Action".',
-        view: "View Program",
-        resources: "Resources",
-        giving: "Online Giving",
-        prayer: "Prayer Request",
-      },
-      zh: {
-        header: "基督復臨安息日會",
-        streamTitle: "安息日崇拜直播",
-        streamDesc: "請於每週六上午 11:00 參加我們的直播",
-        watch: "現在收看",
-        bulletin: "每週週報",
-        date: "10月26日 星期六",
-        bulletinDesc:
-          "誠邀您在本安息日參加我們的崇拜聚會。我們的客座講員將分享題目為「信心與行動」的信息。",
-        view: "查看程序表",
-        resources: "資源",
-        giving: "網上捐款",
-        prayer: "代禱請求",
-      },
-      "zh-cn": {
-        header: "基督复临安息日会",
-        streamTitle: "安息日崇拜直播",
-        streamDesc: "请于每周六上午 11:00 参加我们的直播",
-        watch: "现在收看",
-        bulletin: "每周周报",
-        date: "10月26日 星期六",
-        bulletinDesc:
-          "诚邀您在本安息日参加我们的崇拜聚会。我们的客座讲员将分享题目为「信心与行动」的信息。",
-        view: "查看程序表",
-        resources: "资源",
-        giving: "网上捐款",
-        prayer: "代祷请求",
-      },
-      es: {
-        header: "Iglesia ASD",
-        streamTitle: "Transmisión en vivo",
-        streamDesc: "Únete a nosotros todos los sábados a las 11:00 AM",
-        watch: "Ver ahora",
-        bulletin: "Boletín semanal",
-        date: "Sábado, 26 de oct",
-        bulletinDesc:
-          'Únete a nosotros para el culto de este sábado. Nuestro orador invitado compartirá un mensaje sobre "Fe en acción".',
-        view: "Ver programa",
-        resources: "Recursos",
-        giving: "Donaciones en línea",
-        prayer: "Petición de oración",
-      },
-    }[language as "en" | "zh" | "zh-cn" | "es"] || {};
+  const labels = {
+    en: {
+      header: "SDA Church",
+      welcome: "Welcome to our Community",
+      subtitle: "Happy Sabbath!",
+      verse: "The Lord is my shepherd; I shall not want. - Psalm 23:1",
+      livestream: "Watch Livestream",
+      contact: "Connect with Us",
+    },
+    zh: {
+      header: "基督復臨安息日會",
+      welcome: "歡迎來到我們的社區",
+      subtitle: "安息日快樂！",
+      verse: "耶和華是我的牧者，我必不致缺乏。 - 詩篇 23:1",
+      livestream: "觀看直播",
+      contact: "聯繫我們",
+    },
+    "zh-cn": {
+      header: "基督复临安息日会",
+      welcome: "欢迎来到我们的社区",
+      subtitle: "安息日快乐！",
+      verse: "耶和华是我的牧者，我必不致缺乏。 - 诗篇 23:1",
+      livestream: "观看直播",
+      contact: "联系我们",
+    },
+    es: {
+      header: "Iglesia Adventista",
+      welcome: "Bienvenido a nuestra comunidad",
+      subtitle: "¡Feliz Sábado!",
+      verse: "Jehová es mi pastor; nada me faltará. - Salmo 23:1",
+      livestream: "Ver Transmisión",
+      contact: "Conéctate con Nosotros",
+    },
+  }[language as "en" | "zh" | "zh-cn" | "es"] || {
+    header: "SDA Church",
+    welcome: "Welcome",
+    subtitle: "",
+    verse: "",
+    livestream: "Watch Livestream",
+    contact: "Connect with Us",
+  };
 
   return (
     <>
-      <Appbar.Header elevated>
-        <Appbar.Content title={content.header} />
-        <Appbar.Action
-          icon="translate"
-          onPress={() => router.push("/language")}
-        />
-      </Appbar.Header>
+      <ScrollView style={styles.container}>
+        <View style={styles.hero}>
+          <Text variant="headlineMedium" style={styles.welcomeText}>
+            {labels.welcome}
+          </Text>
+          <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
+            {labels.subtitle}
+          </Text>
+        </View>
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {/* Livestream Priority Section */}
-        <Card
-          style={[
-            styles.card,
-            { backgroundColor: theme.colors.primaryContainer },
-          ]}
-          mode="contained"
-        >
+        <Card style={styles.card}>
           <Card.Content>
-            <Text
-              variant="titleMedium"
-              style={{
-                color: theme.colors.onPrimaryContainer,
-                fontWeight: "bold",
-              }}
-            >
-              {content.streamTitle}
+            <Text variant="bodyLarge" style={styles.verseText}>
+              {labels.verse}
             </Text>
-            <Text
-              variant="bodySmall"
-              style={{
-                color: theme.colors.onPrimaryContainer,
-                marginBottom: 12,
-              }}
-            >
-              {content.streamDesc}
-            </Text>
-            <Button
-              mode="contained"
-              icon="video"
-              onPress={() => {
-                /* Link to livestream */
-              }}
-              style={{ backgroundColor: theme.colors.primary }}
-            >
-              {content.watch}
-            </Button>
           </Card.Content>
         </Card>
 
-        <Card style={styles.card} mode="elevated">
-          <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-          <Card.Title title={content.bulletin} subtitle={content.date} />
-          <Card.Content>
-            <Text variant="bodyMedium">{content.bulletinDesc}</Text>
-          </Card.Content>
-          <Card.Actions>
-            <Button mode="contained-tonal">{content.view}</Button>
-          </Card.Actions>
-        </Card>
-
-        <Text variant="titleMedium" style={styles.sectionTitle}>
-          {content.resources}
-        </Text>
-        <List.Item
-          title={content.giving}
-          left={(props) => <List.Icon {...props} icon="heart" />}
-          onPress={() => {}}
-        />
-        <List.Item
-          title={content.prayer}
-          left={(props) => <List.Icon {...props} icon="hands-pray" />}
-          onPress={() => {}}
-        />
+        <View style={styles.actionContainer}>
+          <Button
+            mode="contained"
+            icon="youtube"
+            onPress={openSabbathStream}
+            style={styles.button}
+          >
+            {labels.livestream}
+          </Button>
+          <Button
+            mode="outlined"
+            icon="map-marker"
+            onPress={() =>
+              router.push({
+                pathname: "/more/contact",
+                params: { backTo: "/" },
+              })
+            }
+            style={[styles.button, { marginTop: 12 }]}
+          >
+            {labels.contact}
+          </Button>
+        </View>
       </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  contentContainer: {
-    paddingBottom: 20,
-  },
-  card: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    marginVertical: 8,
-    fontWeight: "bold",
-  },
+  container: { flex: 1 },
+  hero: { padding: 24, alignItems: "center", justifyContent: "center" },
+  welcomeText: { fontWeight: "bold", textAlign: "center", marginBottom: 8 },
+  card: { margin: 16, padding: 8 },
+  verseText: { fontStyle: "italic", textAlign: "center" },
+  actionContainer: { padding: 16, alignItems: "center" },
+  button: { width: "80%" },
 });

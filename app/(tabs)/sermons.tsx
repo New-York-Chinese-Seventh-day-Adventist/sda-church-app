@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { Appbar, Button, Card, useTheme } from "react-native-paper";
+import { Button, Card, useTheme } from "react-native-paper";
 import { LanguageContext } from "../_layout";
 
 export default function SermonsScreen() {
@@ -82,9 +82,6 @@ export default function SermonsScreen() {
 
   return (
     <>
-      <Appbar.Header elevated>
-        <Appbar.Content title={labels.header} />
-      </Appbar.Header>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
