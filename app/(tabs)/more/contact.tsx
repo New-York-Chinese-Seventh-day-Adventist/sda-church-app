@@ -1,14 +1,24 @@
-import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useContext } from "react";
-import { Alert, Linking, Platform, ScrollView, StyleSheet } from "react-native";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Animated,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { List, useTheme } from "react-native-paper";
 import { openInMaps } from "../../../utils/googleMapsService";
 import { LanguageContext } from "../../_layout"; // Corrected path to root _layout
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);
-  const { backTo } = useLocalSearchParams();
+  const { backTo, highlight } = useLocalSearchParams();
   const theme = useTheme();
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   const locations = [
     {
       // TODO: Replace with your own church addresses, starting with primary branch if multiple
@@ -82,6 +92,78 @@ export default function ContactScreen() {
 
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
+  // Group keywords into categories to avoid brittle if/else chains
+  const CATEGORY_KEYWORDS: Record<string, string[]> = {
+    email: ["email", "電郵", "correo"],
+    phone: ["phone", "call", "電話", "llamar"],
+    location: [
+      "location",
+      "map",
+      "direction",
+      "地點",
+      "地圖",
+      "導航",
+      "ubicación",
+      "mapa",
+      "dirección",
+      "address",
+      "地址",
+      "路线",
+    ],
+  };
+
+  useEffect(() => {
+    if (highlight) {
+      const q = (highlight as string).toLowerCase();
+
+      // Find the first category that matches any of the keyword synonyms
+      const target = Object.keys(CATEGORY_KEYWORDS).find((key) =>
+        CATEGORY_KEYWORDS[key].some((keyword) =>
+          q.includes(keyword.toLowerCase()),
+        ),
+      );
+
+      if (target) {
+        setActiveHighlight(target);
+        Animated.sequence([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: false,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: false,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: false,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: false,
+          }),
+        ]).start(() => {
+          setActiveHighlight(null);
+          router.setParams({ highlight: undefined });
+        });
+      }
+    }
+  }, [highlight]);
+
+  const getHighlightStyle = (key: string) => {
+    if (activeHighlight !== key) return {};
+    return {
+      backgroundColor: fadeAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["transparent", theme.colors.primaryContainer],
+      }),
+    };
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
@@ -89,85 +171,91 @@ export default function ContactScreen() {
         <List.Section>
           <List.Subheader>{labels.infoLabel}</List.Subheader>
           {phone && (
-            <List.Item
-              title={phone}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon="phone"
-                  color={theme.colors.primary}
-                />
-              )}
-              right={(props) => <List.Icon {...props} icon="open-in-new" />}
-              onPress={async () => {
-                const cleanedPhone = phone.replace(/[^\d+]/g, "");
-                // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
-                // Android only supports the standard tel: scheme.
-                const url =
-                  Platform.OS === "ios"
-                    ? `telprompt:${cleanedPhone}`
-                    : `tel:${cleanedPhone}`;
-                try {
-                  // Direct attempt is more reliable on Android 11+ as canOpenURL
-                  // requires specific manifest queries to return true.
-                  await Linking.openURL(url);
-                } catch (error) {
-                  console.warn("Phone call attempt failed:", error);
-                  Alert.alert(
-                    "Error",
-                    "Phone calls are not supported on this device or emulator.",
-                  );
-                }
-              }}
-            />
+            <Animated.View style={getHighlightStyle("phone")}>
+              <List.Item
+                title={phone}
+                left={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon="phone"
+                    color={theme.colors.primary}
+                  />
+                )}
+                right={(props) => <List.Icon {...props} icon="open-in-new" />}
+                onPress={async () => {
+                  const cleanedPhone = phone.replace(/[^\d+]/g, "");
+                  // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
+                  // Android only supports the standard tel: scheme.
+                  const url =
+                    Platform.OS === "ios"
+                      ? `telprompt:${cleanedPhone}`
+                      : `tel:${cleanedPhone}`;
+                  try {
+                    // Direct attempt is more reliable on Android 11+ as canOpenURL
+                    // requires specific manifest queries to return true.
+                    await Linking.openURL(url);
+                  } catch (error) {
+                    console.warn("Phone call attempt failed:", error);
+                    Alert.alert(
+                      "Error",
+                      "Phone calls are not supported on this device or emulator.",
+                    );
+                  }
+                }}
+              />
+            </Animated.View>
           )}
           {email && (
-            <List.Item
-              title={email}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon="email"
-                  color={theme.colors.primary}
-                />
-              )}
-              right={(props) => <List.Icon {...props} icon="open-in-new" />}
-              onPress={async () => {
-                const url = `mailto:${email}`;
-                try {
-                  await Linking.openURL(url);
-                } catch (error) {
-                  console.warn("Email attempt failed:", error);
-                  Alert.alert(
-                    "Error",
-                    "Email is not configured on this device or emulator.",
-                  );
-                }
-              }}
-            />
+            <Animated.View style={getHighlightStyle("email")}>
+              <List.Item
+                title={email}
+                left={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon="email"
+                    color={theme.colors.primary}
+                  />
+                )}
+                right={(props) => <List.Icon {...props} icon="open-in-new" />}
+                onPress={async () => {
+                  const url = `mailto:${email}`;
+                  try {
+                    await Linking.openURL(url);
+                  } catch (error) {
+                    console.warn("Email attempt failed:", error);
+                    Alert.alert(
+                      "Error",
+                      "Email is not configured on this device or emulator.",
+                    );
+                  }
+                }}
+              />
+            </Animated.View>
           )}
         </List.Section>
 
         <List.Section>
           <List.Subheader>{labels.addressLabel}</List.Subheader>
-          {locations.map((loc, index) => (
-            <List.Item
-              key={index}
-              title={labels.locationNames[index]}
-              description={loc.address}
-              titleNumberOfLines={2}
-              descriptionNumberOfLines={3}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon={loc.icon}
-                  color={theme.colors.primary}
-                />
-              )}
-              right={(props) => <List.Icon {...props} icon="open-in-new" />}
-              onPress={() => openInMaps((loc as any).searchQuery)}
-            />
-          ))}
+          <Animated.View style={getHighlightStyle("location")}>
+            {locations.map((loc, index) => (
+              <List.Item
+                key={index}
+                title={labels.locationNames[index]}
+                description={loc.address}
+                titleNumberOfLines={2}
+                descriptionNumberOfLines={3}
+                left={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon={loc.icon}
+                    color={theme.colors.primary}
+                  />
+                )}
+                right={(props) => <List.Icon {...props} icon="open-in-new" />}
+                onPress={() => openInMaps((loc as any).searchQuery)}
+              />
+            ))}
+          </Animated.View>
         </List.Section>
       </ScrollView>
     </>

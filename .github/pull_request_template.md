@@ -12,6 +12,5 @@ _What does your change do?_
 
 ## Testing
 
-- [ ] Unit tests passed
 - [ ] Verified on Android SDK 35 or higher
 - [ ] Verified on iOS 18.0 or higher
