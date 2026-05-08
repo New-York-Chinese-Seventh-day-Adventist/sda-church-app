@@ -62,6 +62,16 @@ If you are developing in WSL2, the Android Emulator on Windows may not connect a
 3. Enter your WSL IP (get it by running `hostname -I` in WSL) followed by `:8081` (e.g., `172.23.202.254:8081`).
    No special `expo start` command is needed; the standard `npm run android` is sufficient once the bundle location is updated.
 
+### Debugging First-Time Launch
+
+The app tracks setup completion in `AsyncStorage`. To re-test the onboarding flow without wiping the emulator's system data (which preserves your "Change Bundle Location" IP):
+
+1. Open the Developer Menu (**Ctrl + M** on Android, **Cmd + D** on iOS).
+2. Select **Debug: Reset Onboarding**.
+3. Reload the app.
+
+This programmatically clears the `has-completed-setup` flag while keeping your development environment settings intact.
+
 ## Release & Versioning
 
 This project uses **Semantic Versioning** ([npm SemVer Guide](https://docs.npmjs.com/about-semantic-versioning)) with the following rules:
