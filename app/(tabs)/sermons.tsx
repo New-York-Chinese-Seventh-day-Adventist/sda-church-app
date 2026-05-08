@@ -9,7 +9,7 @@ export default function SermonsScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
 
-  const labels = {
+  const allLabels = {
     en: {
       title: "Study Podcast",
       description: "Explore our library of teachings in English and Mandarin.",
@@ -44,7 +44,9 @@ export default function SermonsScreen() {
         "Vea nuestro archivo o únase a nosotros en vivo en YouTube",
       youtubeButton: "Vea nuestros sermones pasados en YouTube",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"];
+  };
+
+  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   return (
     <ScrollView

@@ -25,7 +25,7 @@ export default function ContactScreen() {
   const phone = process.env.EXPO_PUBLIC_CHURCH_PHONE;
   const email = process.env.EXPO_PUBLIC_CHURCH_EMAIL;
 
-  const labels = {
+  const allLabels = {
     en: {
       title: "Connect with Us",
       addressLabel: "Locations",
@@ -58,7 +58,9 @@ export default function ContactScreen() {
       ],
       infoLabel: "Información de contacto",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"];
+  };
+
+  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   const openInMaps = (addr: string) => {
     if (addr) {

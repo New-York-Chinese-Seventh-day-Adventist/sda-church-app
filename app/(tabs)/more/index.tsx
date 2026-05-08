@@ -9,7 +9,7 @@ export default function MoreScreen() {
   const { language } = useContext(LanguageContext);
   const { isDark, toggleTheme } = useContext(ThemeContext);
 
-  const labels = {
+  const allLabels = {
     en: {
       info: "Church Information",
       about: "About Us",
@@ -50,7 +50,9 @@ export default function MoreScreen() {
       language: "Idioma",
       darkMode: "Modo oscuro",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"];
+  };
+
+  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   return (
     <>

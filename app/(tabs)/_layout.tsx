@@ -44,7 +44,7 @@ export default function TabLayout() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
 
-  const labels = {
+  const allLabels = {
     en: {
       home: "Home",
       calendar: "Calendar",
@@ -59,7 +59,9 @@ export default function TabLayout() {
       sermons: "Sermones",
       more: "Más",
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"];
+  };
+
+  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   return (
     <Tabs

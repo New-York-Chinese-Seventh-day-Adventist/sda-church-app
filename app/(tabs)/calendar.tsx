@@ -7,7 +7,7 @@ export default function CalendarScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
 
-  const labels = {
+  const allLabels = {
     en: {
       header: "Calendar",
       schedule: "Weekly Schedule",
@@ -42,7 +42,9 @@ export default function CalendarScreen() {
         "Sociedad de Jóvenes (AYS)",
       ],
     },
-  }[language as "en" | "zh" | "zh-cn" | "es"];
+  };
+
+  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   const events = [
     {
