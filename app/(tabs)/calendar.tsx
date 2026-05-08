@@ -10,9 +10,9 @@ export default function CalendarScreen() {
   const allLabels = {
     en: {
       header: "Calendar",
-      elmhurstTitle: "Elmhurst (Main Church)",
+      elmhurstTitle: "Elmhurst",
       brooklynTitle: "Brooklyn (Bay Ridge)",
-      outreachTitle: "Flushing Outreach",
+      flushingFellowshipTitle: "Flushing Fellowship (Mandarin)",
       saturday: "Saturday",
       thursday: "Thursday",
       locations: {
@@ -32,15 +32,14 @@ export default function CalendarScreen() {
         brooklynSS: "Song Service & Sabbath School",
         brooklynWorship: "Worship Service & Sermon",
         brooklynLunch: "Fellowship Lunch",
-        foodPantry: "Community Food Pantry",
-        outreach: "Fellowship & Food Pantry",
+        dinner: "Dinner & Devotion",
       },
     },
     zh: {
       header: "教會日曆",
-      elmhurstTitle: "艾姆赫斯特 (主堂)",
+      elmhurstTitle: "艾姆赫斯特",
       brooklynTitle: "布魯克林 (Bay Ridge)",
-      outreachTitle: "法拉盛事工",
+      flushingFellowshipTitle: "法拉盛團契 (國語)",
       saturday: "星期六",
       thursday: "星期四",
       locations: {
@@ -60,15 +59,14 @@ export default function CalendarScreen() {
         brooklynSS: "詩歌崇拜 & 安息日學",
         brooklynWorship: "崇拜聚會 & 證道",
         brooklynLunch: "團契午餐",
-        foodPantry: "社區食品發放 (Food Pantry)",
-        outreach: "團契與食品發放",
+        dinner: "晚餐與靈修",
       },
     },
     "zh-cn": {
       header: "教会日历",
-      elmhurstTitle: "艾姆赫斯特 (主堂)",
+      elmhurstTitle: "艾姆赫斯特",
       brooklynTitle: "布鲁克林 (Bay Ridge)",
-      outreachTitle: "法拉盛事工",
+      flushingFellowshipTitle: "法拉盛团契 (国语)",
       saturday: "星期六",
       thursday: "星期四",
       locations: {
@@ -88,15 +86,14 @@ export default function CalendarScreen() {
         brooklynSS: "诗歌崇拜 & 安息日学",
         brooklynWorship: "崇拜聚会 & 证道",
         brooklynLunch: "团契午餐",
-        foodPantry: "社区食品发放 (Food Pantry)",
-        outreach: "团契与食品发放",
+        dinner: "晚餐与灵修",
       },
     },
     es: {
       header: "Calendario",
-      elmhurstTitle: "Elmhurst (Iglesia Principal)",
+      elmhurstTitle: "Elmhurst",
       brooklynTitle: "Brooklyn (Bay Ridge)",
-      outreachTitle: "Alcance en Flushing",
+      flushingFellowshipTitle: "Compañerismo en Flushing (Mandarín)",
       saturday: "Sábado",
       thursday: "Jueves",
       locations: {
@@ -116,8 +113,7 @@ export default function CalendarScreen() {
         brooklynSS: "Canto y Escuela Sabática",
         brooklynWorship: "Adoración y Sermón",
         brooklynLunch: "Almuerzo de Compañerismo",
-        foodPantry: "Despensa de Alimentos",
-        outreach: "Compañerismo y Despensa de Alimentos",
+        dinner: "Cena y Devoción",
       },
     },
   };
@@ -127,43 +123,43 @@ export default function CalendarScreen() {
   const elmhurstEvents = [
     {
       title: labels.eventNames.song,
-      time: "10:00 AM",
+      time: `${labels.saturday}, 10:00 AM`,
       loc: labels.locations.f3,
       icon: "music-note",
     },
     {
       title: labels.eventNames.ss,
-      time: "10:30 AM",
+      time: `${labels.saturday}, 10:30 AM`,
       loc: `${labels.locations.f2} / ${labels.locations.f3}`,
       icon: "book-open-variant",
     },
     {
       title: labels.eventNames.youth,
-      time: "10:30 AM",
+      time: `${labels.saturday}, 10:30 AM`,
       loc: labels.locations.f2,
       icon: "account-group",
     },
     {
       title: labels.eventNames.worship,
-      time: "11:30 AM",
+      time: `${labels.saturday}, 11:30 AM`,
       loc: labels.locations.f3,
       icon: "church",
     },
     {
       title: labels.eventNames.lunch,
-      time: "1:00 PM",
+      time: `${labels.saturday}, 1:00 PM`,
       loc: labels.locations.basement,
       icon: "silverware-fork-knife",
     },
     {
       title: labels.eventNames.choir,
-      time: "2:00 PM",
+      time: `${labels.saturday}, 2:00 PM`,
       loc: labels.locations.f2,
       icon: "microphone",
     },
     {
       title: labels.eventNames.closing,
-      time: "3:00 PM",
+      time: `${labels.saturday}, 3:00 PM`,
       loc: labels.locations.basement,
       icon: "clock-outline",
     },
@@ -172,19 +168,19 @@ export default function CalendarScreen() {
   const brooklynEvents = [
     {
       title: labels.eventNames.brooklynSS,
-      time: "10:00 - 11:30 AM",
+      time: `${labels.saturday}, 10:00 - 11:30 AM`,
       loc: labels.locations.f3,
       icon: "music-note",
     },
     {
       title: labels.eventNames.brooklynWorship,
-      time: "11:45 AM - 12:30 PM",
+      time: `${labels.saturday}, 11:45 AM - 12:30 PM`,
       loc: labels.locations.f3,
       icon: "church",
     },
     {
       title: labels.eventNames.brooklynLunch,
-      time: "12:30 - 1:00 PM",
+      time: `${labels.saturday}, 12:30 - 1:00 PM`,
       loc: labels.locations.f3,
       icon: "silverware-fork-knife",
     },
@@ -192,10 +188,10 @@ export default function CalendarScreen() {
 
   const otherEvents = [
     {
-      title: labels.eventNames.outreach,
+      title: labels.eventNames.dinner,
       time: `${labels.thursday}, 6:30 - 8:00 PM`,
       loc: labels.locations.basement,
-      icon: "heart-outline",
+      icon: "silverware-fork-knife",
     },
   ];
 
@@ -206,7 +202,7 @@ export default function CalendarScreen() {
     >
       <List.Section>
         <List.Subheader style={styles.subheader}>
-          {labels.elmhurstTitle} - {labels.saturday}
+          {labels.elmhurstTitle}
         </List.Subheader>
         {elmhurstEvents.map((event, index) => (
           <View key={`elm-${index}`}>
@@ -228,7 +224,7 @@ export default function CalendarScreen() {
 
       <List.Section>
         <List.Subheader style={styles.subheader}>
-          {labels.brooklynTitle} (Mandarin) - {labels.saturday}
+          {labels.brooklynTitle}
         </List.Subheader>
         {brooklynEvents.map((event, index) => (
           <View key={`brk-${index}`}>
@@ -250,7 +246,7 @@ export default function CalendarScreen() {
 
       <List.Section>
         <List.Subheader style={styles.subheader}>
-          {labels.outreachTitle}
+          {labels.flushingFellowshipTitle}
         </List.Subheader>
         {otherEvents.map((event, index) => (
           <View key={`oth-${index}`}>

@@ -36,9 +36,9 @@ export default function ContactScreen() {
       locationNames: [
         // TODO: Replace with your addresses. You may add specific floors or room numbers if you wish.
         // Please ensure translations below are updated accordingly if you change these.
-        "Elmhurst SDA Church (Main)",
-        "Brooklyn SDA Church (Bay Ridge, 3rd Floor)",
-        "Flushing Outreach (Fellowship & Food Pantry)",
+        "Elmhurst SDA Church",
+        "Brooklyn SDA Church (Bay Ridge)",
+        "Flushing Fellowship (Mandarin)",
       ],
       infoLabel: "Contact Information",
     },
@@ -47,8 +47,8 @@ export default function ContactScreen() {
       addressLabel: "地點",
       locationNames: [
         "艾姆赫斯特教會 (主堂)",
-        "布魯克林教會 (Bay Ridge, 3 樓)",
-        "法拉盛事工 (團契與食品發放)",
+        "布魯克林教會 (Bay Ridge)",
+        "法拉盛團契 (晚餐與靈修) (國語)",
       ],
       infoLabel: "聯絡資訊",
     },
@@ -57,8 +57,8 @@ export default function ContactScreen() {
       addressLabel: "地点",
       locationNames: [
         "艾姆赫斯特教会 (主堂)",
-        "布鲁克林教会 (Bay Ridge, 3 楼)",
-        "法拉盛事工 (团契与食品发放)",
+        "布鲁克林教会 (Bay Ridge)",
+        "法拉盛团契 (晚餐与灵修) (国语)",
       ],
       infoLabel: "联系信息",
     },
@@ -67,8 +67,8 @@ export default function ContactScreen() {
       addressLabel: "Ubicaciones",
       locationNames: [
         "Iglesia de Elmhurst (Principal)",
-        "Iglesia de Brooklyn (Bay Ridge, 3er Piso)",
-        "Alcance en Flushing (Compañerismo y Despensa de Alimentos)",
+        "Iglesia de Brooklyn (Bay Ridge)",
+        "Compañerismo en Flushing (Cena y Devoción) (Mandarín)",
       ],
       infoLabel: "Información de contacto",
     },
@@ -155,9 +155,10 @@ export default function ContactScreen() {
           {locations.map((loc, index) => (
             <List.Item
               key={index}
-              title={loc.address}
-              description={labels.locationNames[index]}
-              titleNumberOfLines={3}
+              title={labels.locationNames[index]}
+              description={loc.address}
+              titleNumberOfLines={2}
+              descriptionNumberOfLines={3}
               left={(props) => (
                 <List.Icon
                   {...props}
