@@ -61,32 +61,55 @@ export default function MoreScreen() {
   useEffect(() => {
     if (highlight) {
       setActiveHighlight(highlight as string);
-      // Flicker animation: pulse the background
+
+      // Instant Highlight
+      // Based on platform motion standards:
+      // - Material Design 3: Uses 'Standard' tokens for small-area transitions (300ms).
+      // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration
+      // - Apple HIG (Responsiveness & Motion) is vague, but underlying libraries typically use 300-500ms
+      // https://developer.apple.com/design/human-interface-guidelines/motion#Best-practices
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 200,
+          duration: 100,
           useNativeDriver: false,
         }),
+        // Gentle fade away
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 200,
-          useNativeDriver: false,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: false,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 400,
           useNativeDriver: false,
         }),
       ]).start(() => {
         setActiveHighlight(null);
         router.setParams({ highlight: undefined });
       });
+      // // Flicker animation: pulse the background
+      // Animated.sequence([
+      //   Animated.timing(fadeAnim, {
+      //     toValue: 1,
+      //     duration: 200,
+      //     useNativeDriver: false,
+      //   }),
+      //   Animated.timing(fadeAnim, {
+      //     toValue: 0,
+      //     duration: 200,
+      //     useNativeDriver: false,
+      //   }),
+      //   Animated.timing(fadeAnim, {
+      //     toValue: 1,
+      //     duration: 200,
+      //     useNativeDriver: false,
+      //   }),
+      //   Animated.timing(fadeAnim, {
+      //     toValue: 0,
+      //     duration: 400,
+      //     useNativeDriver: false,
+      //   }),
+      // ]).start(() => {
+      //   setActiveHighlight(null);
+      //   router.setParams({ highlight: undefined });
+      // });
     }
   }, [highlight]);
 
