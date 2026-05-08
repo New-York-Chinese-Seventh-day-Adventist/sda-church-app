@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs, router, useSegments } from "expo-router";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
 import { LanguageContext } from "../_layout";
@@ -13,6 +13,13 @@ export const GlobalHeader = (props: any) => {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const searchRef = useRef<any>(null);
+
+  // Clear search state whenever the navigation path changes (switching tabs or views)
+  useEffect(() => {
+    setSearchQuery("");
+    setIsSearching(false);
+  }, [segments.join("/")]);
 
   const isMoreSubPage = segments.includes("more") && segments.length > 2;
   const title = props.options?.title;
@@ -263,6 +270,7 @@ export const GlobalHeader = (props: any) => {
     const q = searchQuery.toLowerCase();
     setSearchQuery("");
     setIsSearching(false);
+    searchRef.current?.blur();
 
     const targetParams = {
       highlight: item.isPage
@@ -302,10 +310,12 @@ export const GlobalHeader = (props: any) => {
       ) : (
         <View style={{ flex: 1 }}>
           <Searchbar
+            ref={searchRef}
             placeholder="Search app..."
             onChangeText={setSearchQuery}
             value={searchQuery}
             onFocus={() => setIsSearching(true)}
+            blurOnSubmit={false}
             returnKeyType="search"
             onSubmitEditing={() => {
               if (results.length > 0) {
@@ -315,7 +325,7 @@ export const GlobalHeader = (props: any) => {
             onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
             style={{ backgroundColor: "transparent", elevation: 0 }}
           />
-          {searchQuery.length > 0 && (
+          {searchQuery.length > 0 && results.length > 0 && (
             <Portal>
               <View
                 style={[
