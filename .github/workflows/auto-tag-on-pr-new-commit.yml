@@ -36,3 +36,42 @@ jobs:
             exit 1
           fi
           echo "Validation Passed: Version was changed from $BASE_VER to $HEAD_VER."
+
+  # Job 2: Automatically syncs configuration files if they are out of date
+  sync:
+    needs: enforce-tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Use GITHUB_TOKEN or a PAT if the release branch is protected
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync configuration files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Identify current version
+          VERSION=$(jq -r .version package.json)
+          echo "Syncing files to version: $VERSION"
+
+          # Run the sync script
+          npm run sync-version
+
+          # Commit and push if changes were made
+          git add app.json public/sw.js
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: sync configuration files to $VERSION [skip ci]"
+            git push origin HEAD:${{ github.ref }}
+          else
+            echo "Files are already in sync."
+          fi
