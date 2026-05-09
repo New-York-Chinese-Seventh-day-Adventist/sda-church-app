@@ -25,33 +25,14 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.sdachurchapp",
-      "minSdkVersion": 24,
-      "targetSdkVersion": 36,
-      "compileSdkVersion": 36,
-      "buildToolsVersion": "36.0.0"
+      "package": "com.anonymous.sdachurchapp"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 36,
-            "targetSdkVersion": 36,
-            "buildToolsVersion": "36.0.0",
-            "kotlinVersion": "2.1.20"
-          }
-        }
-      ],
-      "expo-localization",
-      "./withAndroidSDKOverride"
-    ],
+    "plugins": ["expo-router", "expo-localization", "./withAndroidSDKOverride"],
     "experiments": {
       "typedRoutes": true
     }

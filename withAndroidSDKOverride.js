@@ -1,6 +1,6 @@
 const { withProjectBuildGradle } = require("@expo/config-plugins");
 
-module.exports = (config) => {
+const withAndroidSDKOverride = (config) => {
   return withProjectBuildGradle(config, (config) => {
     if (config.modResults.language === "groovy") {
       config.modResults.contents = addAndroidOverride(
@@ -14,7 +14,10 @@ module.exports = (config) => {
 function addAndroidOverride(buildGradle) {
   const overrideBlock = `
 allprojects {
-  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+  ext {
+    kotlinVersion = "2.1.20"
+  }
+  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
       jvmTarget = "17"
     }
@@ -27,15 +30,22 @@ subprojects {
       p.android {
         compileSdkVersion 36
         buildToolsVersion "36.0.0"
-        defaultConfig { targetSdkVersion 36 }
+        defaultConfig {
+          minSdkVersion 24
+          targetSdkVersion 36
+        }
       }
     }
   }
   if (it.state.executed) configureAndroid(it) else it.afterEvaluate { configureAndroid(it) }
 }
 `;
-  if (!buildGradle.includes("subprojects {")) {
+
+  // Check for the specific version to prevent duplicate injections
+  if (!buildGradle.includes("compileSdkVersion 36")) {
     return buildGradle + overrideBlock;
   }
   return buildGradle;
 }
+
+module.exports = withAndroidSDKOverride;

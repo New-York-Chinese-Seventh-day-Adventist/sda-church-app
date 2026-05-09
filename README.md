@@ -59,10 +59,15 @@ This command:
 
 If you are developing in WSL2, the Android Emulator on Windows may not connect automatically to the Metro server. After running `npm run android`, you may need to manually set the bundle location:
 
-1. Press **Ctrl + M** on the emulator to open the developer menu.
-2. Select **Change Bundle Location**.
-3. Enter your WSL IP (get it by running `hostname -I` in WSL) followed by `:8081` (e.g., `172.23.202.254:8081`).
-   No special `expo start` command is needed; the standard `npm run android` is sufficient once the bundle location is updated.
+1. **ADB Reverse (Recommended)**: Run `adb reverse tcp:8081 tcp:8081` in your terminal. This tunnels the emulator's traffic directly to WSL.
+2. **Manual IP**: If the above fails, press **Ctrl + M** on the emulator -> **Change Bundle Location** -> Enter your WSL IP (run `hostname -I`) followed by `:8081`.
+3. **Firewall**: Ensure Windows Firewall allows inbound traffic on port `8081`.
+
+If you see a **black screen**, it usually means the connection is blocked or the Metro server is not reachable. Try starting the app with the specific WSL host IP:
+
+```bash
+npm run android
+```
 
 ### Debugging First-Time Launch
 
