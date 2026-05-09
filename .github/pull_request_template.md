@@ -1,10 +1,8 @@
-## Versioning (REQUIRED)
+## Versioning
 
-_Please leave exactly one tag below visible to trigger the [semantic version](https://docs.npmjs.com/about-semantic-versioning) bump depending on your change's [backward compatibility](https://en.wikipedia.org/wiki/Backward_compatibility). Including none or more than one of these tag strings (e.g. #tag) will fail the automated check and your PR will not be merged:_
+**Note**: Ensure you have incremented the `version` field in `package.json`. The CI will automatically synchronize `package-lock.json`, `app.json`, and `public/sw.js` by pushing a fix commit to your branch if they differ.
 
-- #patch - Backward compatible bug fixes
-- #minor - Backward compatible new features
-- #major - Changes that break backward compatibility
+- [ ] Incremented `package.json` version for this release
 
 ## Description
 
@@ -19,5 +17,3 @@ Target version should always be [latest stable Android SDK](https://developer.an
 - [ ] Verified on XCode/iOS 26.3 or higher
 
 Target version should always be [latest stable XCode](https://developer.apple.com/support/xcode/)
-
-- [ ] Updated app.json and package.json to track latest release version

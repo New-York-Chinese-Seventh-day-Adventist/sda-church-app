@@ -72,11 +72,13 @@ jobs:
           TAG="v$VERSION"
           echo "Version identified: $VERSION"
 
-          # Sync other files (sw.js, app.json) to match package.json
+          # Sync configuration files to match package.json
+          # This refreshes package-lock.json version without a full install
+          npm install --package-lock-only
           npm run sync-version
 
-          # Commit and push sync changes if any exist (e.g. if dev forgot to run sync locally)
-          git add app.json public/sw.js
+          git add app.json public/sw.js package-lock.json
+
           if ! git diff --cached --quiet; then
             git commit -m "chore: sync configuration files for $TAG [skip ci]"
             git push origin main
