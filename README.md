@@ -53,12 +53,7 @@ Once deployed, you may install app directly from browser `codesammich.github.io/
 npm run ios
 ````
 
-This command:
-
-- Builds the iOS app using Expo
-- Requires a Mac with Xcode installed
-- Launches the app on the iOS Simulator or a connected device
-- Verify on iOS 15.0 - 26.3
+This command launches the iOS simulator, but may fail to build the app. That is fine, since we are installing PWA from Safari -> codesammich.github.io/sda-church-app/ -> Share -> Add to Home Screen to avoid App Store fees and complications.
 
 ### Android
 

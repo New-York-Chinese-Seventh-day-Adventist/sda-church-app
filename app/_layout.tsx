@@ -16,13 +16,17 @@ import { useFonts } from "expo-font";
 import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Alert, DevSettings, LogBox, Platform } from "react-native";
 import {
+  Button,
+  Dialog,
   MD3DarkTheme,
   MD3LightTheme,
   PaperProvider,
+  Portal,
   Snackbar,
+  Text,
   adaptNavigationTheme,
 } from "react-native-paper";
 import "react-native-reanimated";
@@ -109,6 +113,19 @@ const customDarkTheme = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * Context to manage PWA updates across the application.
+ */
+export const UpdateContext = createContext<{
+  updateAvailable: boolean;
+  onUpdate: () => void;
+  onManualCheck: () => Promise<void>;
+}>({
+  updateAvailable: false,
+  onUpdate: () => {},
+  onManualCheck: async () => {},
+});
+
 export default function RootLayout() {
   const [language, setLanguage] = useState<SupportedLanguage>(DEFAULT_LANG);
   const colorScheme = useColorScheme();
@@ -117,6 +134,9 @@ export default function RootLayout() {
   const [showSetup, setShowSetup] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<any>(null);
+  const [updateStatus, setUpdateStatus] = useState<
+    "idle" | "checking" | "up-to-date"
+  >("idle");
 
   useEffect(() => {
     // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
@@ -137,6 +157,7 @@ export default function RootLayout() {
 
     // Register service worker for PWA support on web
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      let refreshing = false;
       const registerSW = async () => {
         // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
         const swUrl = window.location.pathname.includes("sda-church-app")
@@ -146,6 +167,7 @@ export default function RootLayout() {
         try {
           const registration = await navigator.serviceWorker.register(swUrl);
           console.log("SW registered with scope:", registration.scope);
+          registration.update();
 
           // 1. Check if there is already an updated worker waiting
           if (registration.waiting) {
@@ -158,12 +180,14 @@ export default function RootLayout() {
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker) {
+              setUpdateStatus("checking");
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === "installed") {
                   if (navigator.serviceWorker.controller) {
                     console.log("New SW content fetched and ready.");
                     setWaitingWorker(installingWorker);
                     setUpdateAvailable(true);
+                    setUpdateStatus("idle");
                   } else {
                     console.log("SW installed for the first time.");
                   }
@@ -171,6 +195,10 @@ export default function RootLayout() {
               };
             }
           };
+
+          // Check for updates when the app becomes visible again
+          const handleFocus = () => registration.update().catch(console.error);
+          window.addEventListener("focus", handleFocus);
         } catch (error) {
           console.error("SW registration failed:", error);
         }
@@ -178,8 +206,11 @@ export default function RootLayout() {
 
       // Refresh the page automatically when the new service worker takes over
       navigator.serviceWorker.addEventListener("controllerchange", () => {
-        console.log("New SW activated, reloading...");
-        window.location.reload();
+        if (!refreshing) {
+          refreshing = true;
+          console.log("New SW activated, reloading...");
+          window.location.reload();
+        }
       });
 
       if (document.readyState === "complete") {
@@ -236,8 +267,41 @@ export default function RootLayout() {
   };
 
   const handleUpdate = () => {
-    waitingWorker?.postMessage({ type: "SKIP_WAITING" });
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: "SKIP_WAITING" });
+    } else if (Platform.OS === "web") {
+      // Fallback: manually reload if no worker is found but update was requested
+      window.location.reload();
+    }
     setUpdateAvailable(false);
+  };
+
+  const handleManualCheck = async () => {
+    if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      setUpdateStatus("checking");
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          // Triggers the browser's native PWA update check (compares sw.js).
+          await registration.update();
+
+          if (registration.waiting) {
+            setWaitingWorker(registration.waiting);
+            setUpdateAvailable(true);
+            setUpdateStatus("idle");
+          } else if (!registration.installing) {
+            // No update was found during registration.update() and no worker is installing.
+            setUpdateStatus("up-to-date");
+          } else {
+            // An update is currently installing; the onupdatefound listener
+            // in useEffect will handle showing the dialog once it's finished.
+            console.log("Update is being installed...");
+          }
+        }
+      } catch (e) {
+        console.error("Manual update check failed:", e);
+      }
+    }
   };
 
   const onCompleteSetup = async () => {
@@ -282,12 +346,22 @@ export default function RootLayout() {
       value={{ language, setLanguage: handleSetLanguage }}
     >
       <ThemeContext.Provider value={{ isDark, toggleTheme: handleToggleTheme }}>
-        <RootLayoutNav
-          showSetup={showSetup}
-          onCompleteSetup={onCompleteSetup}
-          updateAvailable={updateAvailable}
-          onUpdate={handleUpdate}
-        />
+        <UpdateContext.Provider
+          value={{
+            updateAvailable,
+            onUpdate: handleUpdate,
+            onManualCheck: handleManualCheck,
+          }}
+        >
+          <RootLayoutNav
+            showSetup={showSetup}
+            onCompleteSetup={onCompleteSetup}
+            updateAvailable={updateAvailable}
+            onUpdate={handleUpdate}
+            updateStatus={updateStatus}
+            onDismissStatus={() => setUpdateStatus("idle")}
+          />
+        </UpdateContext.Provider>
       </ThemeContext.Provider>
     </LanguageContext.Provider>
   );
@@ -298,20 +372,37 @@ function RootLayoutNav({
   onCompleteSetup,
   updateAvailable,
   onUpdate,
+  updateStatus,
+  onDismissStatus,
 }: {
   showSetup: boolean;
   onCompleteSetup: () => void;
   updateAvailable: boolean;
   onUpdate: () => void;
+  updateStatus: "idle" | "checking" | "up-to-date";
+  onDismissStatus: () => void;
 }) {
   const { isDark } = useContext(ThemeContext);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const { language } = useContext(LanguageContext);
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
-    if (updateAvailable) {
-      setSnackbarVisible(true);
-    }
+    setDialogVisible(updateAvailable);
   }, [updateAvailable]);
+
+  const snackbarLabels = {
+    en: { checking: "Checking for updates...", upToDate: "App is up to date" },
+    zh: { checking: "正在檢查更新...", upToDate: "應用程式已是最新版本" },
+    "zh-cn": { checking: "正在检查更新...", upToDate: "应用已是最新版本" },
+    es: {
+      checking: "Buscando actualizaciones...",
+      upToDate: "La aplicación está actualizada",
+    },
+  };
+
+  const labels =
+    snackbarLabels[language as keyof typeof snackbarLabels] ||
+    snackbarLabels.en;
 
   return (
     <SafeAreaProvider>
@@ -321,16 +412,34 @@ function RootLayoutNav({
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
           {showSetup && <InitialSetup onComplete={onCompleteSetup} />}
+
+          <Portal>
+            <Dialog
+              visible={dialogVisible}
+              onDismiss={() => setDialogVisible(false)}
+            >
+              <Dialog.Title>Update Available</Dialog.Title>
+              <Dialog.Content>
+                <Text variant="bodyMedium">
+                  A new version of the app is ready with the latest features and
+                  fixes. Would you like to update now?
+                </Text>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={() => setDialogVisible(false)}>Later</Button>
+                <Button onPress={onUpdate}>Update Now</Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
+
           <Snackbar
-            visible={snackbarVisible}
-            onDismiss={() => setSnackbarVisible(false)}
-            action={{
-              label: "Update",
-              onPress: onUpdate,
-            }}
-            duration={Snackbar.DURATION_INDEFINITE}
+            visible={updateStatus !== "idle"}
+            onDismiss={onDismissStatus}
+            duration={
+              updateStatus === "checking" ? Snackbar.DURATION_INDEFINITE : 3000
+            }
           >
-            New version ready!
+            {updateStatus === "checking" ? labels.checking : labels.upToDate}
           </Snackbar>
         </ThemeProvider>
       </PaperProvider>

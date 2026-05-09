@@ -1,13 +1,16 @@
 import { LanguageContext, ThemeContext } from "@/constants/Contexts";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet } from "react-native";
-import { Divider, List, Switch, useTheme } from "react-native-paper";
+import { Animated, Platform, ScrollView, StyleSheet } from "react-native";
+import { Divider, List, Switch, Text, useTheme } from "react-native-paper";
+import packageJson from "../../../package.json";
 import { openOnlineGiving } from "../../../utils/externalLinks";
+import { UpdateContext } from "../../_layout";
 
 export default function MoreScreen() {
   const { language } = useContext(LanguageContext);
   const { isDark, toggleTheme } = useContext(ThemeContext);
+  const { onManualCheck } = useContext(UpdateContext);
   const theme = useTheme();
   const { highlight } = useLocalSearchParams();
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
@@ -23,6 +26,7 @@ export default function MoreScreen() {
       settings: "Settings",
       language: "Language",
       darkMode: "Dark Mode",
+      update: "Check for Updates",
     },
     zh: {
       info: "教會資訊",
@@ -33,6 +37,7 @@ export default function MoreScreen() {
       settings: "設定",
       language: "語言設定",
       darkMode: "深色模式",
+      update: "檢查更新",
     },
     "zh-cn": {
       info: "教会信息",
@@ -43,6 +48,7 @@ export default function MoreScreen() {
       settings: "设置",
       language: "语言设置",
       darkMode: "深色模式",
+      update: "检查更新",
     },
     es: {
       info: "Información de la iglesia",
@@ -53,6 +59,7 @@ export default function MoreScreen() {
       settings: "Ajustes",
       language: "Idioma",
       darkMode: "Modo oscuro",
+      update: "Buscar actualizaciones",
     },
   };
 
@@ -135,6 +142,21 @@ export default function MoreScreen() {
               )}
             />
           </Animated.View>
+          {Platform.OS === "web" && (
+            <List.Item
+              title={labels.update}
+              left={(p) => <List.Icon {...p} icon="update" />}
+              right={() => (
+                <Text
+                  variant="bodyLarge"
+                  style={{ alignSelf: "center", opacity: 0.6, marginRight: 8 }}
+                >
+                  v{packageJson.version}
+                </Text>
+              )}
+              onPress={onManualCheck}
+            />
+          )}
         </List.Section>
 
         <Divider />
