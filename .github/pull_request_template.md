@@ -19,3 +19,5 @@ Target version should always be [latest stable Android SDK](https://developer.an
 - [ ] Verified on XCode/iOS 26.3 or higher
 
 Target version should always be [latest stable XCode](https://developer.apple.com/support/xcode/)
+
+- [ ] Updated app.json and package.json to track latest release version
