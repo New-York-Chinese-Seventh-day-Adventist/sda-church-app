@@ -237,7 +237,13 @@ git checkout main && git pull origin main
 # 2. Create release branch
 git checkout -b release/0.2.0
 
-# 3. Bump version manually in package.json
+# 3. Bump version manually in package.json or npm version major|minor|patch
+# https://docs.npmjs.com/about-semantic-versioning
+# npm version major   Changes that break backward compatibility
+# npm version minor   Backward compatible new features
+# npm version patch   Backward compatible bug fixes
+npm version minor
+
 # Ensures CI validation passes on first push
 git push -u origin release/0.2.0
 
