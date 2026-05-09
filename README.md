@@ -42,11 +42,16 @@ This command:
 
 ### Android
 
-To build and launch the app with the bundling IP automatically configured for WSL2:
+To start the Metro bundler and launch the app:
 
 ```bash
-export REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}')
-npx expo run:android
+# For Expo Go (recommended for most development):
+npx expo start --host lan
+# Then scan the QR code with the Expo Go app on your Android Emulator or device.
+
+# For a development build (if you need custom native modules):
+# export REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}') # This attempts to auto-configure the bundler IP
+# npx expo run:android
 ```
 
 This command:

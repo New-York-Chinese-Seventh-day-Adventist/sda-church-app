@@ -18,7 +18,7 @@ import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useContext, useEffect, useState } from "react";
-import { Alert, DevSettings, LogBox, Platform } from "react-native";
+import { Alert, DevSettings, Platform } from "react-native";
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -34,7 +34,8 @@ export {
 } from "expo-router";
 
 // Suppress all warning logs in the UI
-LogBox.ignoreAllLogs();
+// Comment this out during debugging so you can see why the screen is black
+// LogBox.ignoreAllLogs();
 
 export const unstable_settings = {
   // Ensure that reloading on `/language` keeps a back button present.
@@ -200,6 +201,9 @@ export default function RootLayout() {
     }
   }, [loaded, isReady]);
 
+  // If fonts are not loaded OR initial setup is not ready, keep the splash screen visible.
+  // We return null here to prevent rendering the app content until everything is ready.
+  // If there's an error loading fonts, the `useEffect` above will log it and hide the splash screen.
   if (!loaded || !isReady) {
     return null;
   }

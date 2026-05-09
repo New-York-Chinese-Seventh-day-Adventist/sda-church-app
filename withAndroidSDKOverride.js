@@ -15,7 +15,7 @@ function addAndroidOverride(buildGradle) {
   const overrideBlock = `
 allprojects {
   ext {
-    kotlinVersion = "2.1.20"
+    kotlinVersion = project.properties['android.kotlinVersion'] ?: "2.1.20"
   }
   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
@@ -37,12 +37,13 @@ subprojects {
       }
     }
   }
-  if (it.state.executed) configureAndroid(it) else it.afterEvaluate { configureAndroid(it) }
+  if (it.state.executed) { configureAndroid(it) } else { it.afterEvaluate { configureAndroid(it) } }
 }
 `;
 
-  // Check for the specific version to prevent duplicate injections
-  if (!buildGradle.includes("compileSdkVersion 36")) {
+  // Check for the unique subprojects override block to avoid duplicates
+  const marker = "compileSdkVersion 36";
+  if (!buildGradle.includes(marker)) {
     return buildGradle + overrideBlock;
   }
   return buildGradle;
