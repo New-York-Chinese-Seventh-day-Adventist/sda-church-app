@@ -120,7 +120,11 @@ export default function RootLayout() {
     // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
     if (__DEV__ && Platform.OS !== "web") {
       DevSettings.addMenuItem("Debug: Reset Onboarding", async () => {
-        await AsyncStorage.removeItem("has-completed-setup");
+        await AsyncStorage.multiRemove([
+          "has-completed-setup",
+          "user-language",
+          "user-theme",
+        ]);
         Alert.alert(
           "Onboarding Reset",
           "The first-time flag has been cleared. Reload the app (press 'r' in terminal or use the dev menu) to see the setup screen again.",
@@ -137,13 +141,15 @@ export default function RootLayout() {
           AsyncStorage.getItem("has-completed-setup"),
         ]);
 
-        if (setupDone === "true") {
-          if (savedLang) setLanguage(savedLang as SupportedLanguage);
-          if (savedTheme) setIsDark(savedTheme === "dark");
-        } else {
-          // Default to system settings for initial setup
-          setLanguage(getSystemLanguage());
-          setIsDark(colorScheme === "dark");
+        // Always determine fallbacks first
+        const systemLang = getSystemLanguage();
+        const systemThemeIsDark = colorScheme === "dark";
+
+        // Use saved settings if they exist, otherwise fallback to system defaults
+        setLanguage((savedLang as SupportedLanguage) || systemLang);
+        setIsDark(savedTheme ? savedTheme === "dark" : systemThemeIsDark);
+
+        if (setupDone !== "true") {
           setShowSetup(true);
         }
       } catch (e) {
@@ -174,7 +180,13 @@ export default function RootLayout() {
   };
 
   const onCompleteSetup = async () => {
-    await AsyncStorage.setItem("has-completed-setup", "true");
+    // Persist current settings when completing setup to ensure they stick on reload
+    // even if the user didn't explicitly change them from system defaults.
+    await Promise.all([
+      AsyncStorage.setItem("has-completed-setup", "true"),
+      AsyncStorage.setItem("user-language", language),
+      AsyncStorage.setItem("user-theme", isDark ? "dark" : "light"),
+    ]);
     setShowSetup(false);
   };
 
