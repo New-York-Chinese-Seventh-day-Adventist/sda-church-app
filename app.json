@@ -2,7 +2,7 @@
   "expo": {
     "name": "sda-church-app",
     "slug": "sda-church-app",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon-1024x1024.png",
     "scheme": "sdachurchapp",
