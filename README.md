@@ -2,6 +2,12 @@
 
 A React Native mobile application built with Expo for Seventh-day Adventist church community features.
 
+For latest production build, you may install app directly from browser
+
+https://codesammich.github.io/sda-church-app/
+
+on Safari (iOS) or Chrome (Android).
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -18,8 +24,6 @@ A React Native mobile application built with Expo for Seventh-day Adventist chur
 - Java Development Kit (JDK) 17
 - For iOS: Xcode (macOS only) supporting iOS 15.0 - 26.3 (Deployment Target) as defined [by Xcode Releases](https://developer.apple.com/support/xcode/)
 - For Android: Android Studio, Android SDK 36 (latest), and `ANDROID_HOME` environment variable
-
-### Installation
 
 ```bash
 npm install
