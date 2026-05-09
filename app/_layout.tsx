@@ -6,7 +6,6 @@ import {
   SupportedLanguage,
   ThemeContext,
 } from "@/constants/Contexts";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DarkTheme as NavDarkTheme,
@@ -30,7 +29,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary
+  ErrorBoundary,
 } from "expo-router";
 
 // Suppress all warning logs in the UI
@@ -203,7 +202,7 @@ export default function RootLayout() {
 
   const [loaded, error] = useFonts({
     AdventSans: require("./../assets/fonts/AdventSans-Logo.otf"),
-    ...MaterialCommunityIcons.font,
+    "material-community": require("../assets/fonts/MaterialCommunityIcons.ttf"),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
