@@ -31,6 +31,15 @@ To start the app in a web browser:
 
 ````bash
 npx expo start --web
+```
+
+For PWA mobile testing, setup GitHub pages and run this to deploy.
+
+```bash
+npm run deploy
+```
+
+Once deployed, you may install app directly from browser `codesammich.github.io/sda-church-app/` on Safari (iOS) or Chrome (Android).
 
 ## Testing
 

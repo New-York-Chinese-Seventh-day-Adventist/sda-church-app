@@ -4,12 +4,12 @@
     "slug": "sda-church-app",
     "version": "0.8.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-1024x1024.png",
     "scheme": "sdachurchapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/icon-2048x2048.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -20,7 +20,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png",
+      "favicon": "./assets/images/icon-48x48.png",
       "display": "standalone",
       "themeColor": "#0061A4",
       "backgroundColor": "#ffffff",
@@ -35,7 +35,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon-1024x1024.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": false,

@@ -29,7 +29,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from "expo-router";
 
 // Suppress all warning logs in the UI
@@ -135,11 +135,16 @@ export default function RootLayout() {
     // Register service worker for PWA support on web
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/sda-church-app/sw.js")
-          .catch((error) => {
-            console.warn("Service Worker registration failed:", error);
-          });
+        // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
+        const swUrl = window.location.pathname.includes("sda-church-app")
+          ? "/sda-church-app/sw.js"
+          : "/sw.js";
+        navigator.serviceWorker.register(swUrl).catch((error) => {
+          console.warn(
+            `Service Worker registration failed at ${swUrl}:`,
+            error,
+          );
+        });
       });
     }
 
