@@ -34,7 +34,7 @@ export {
 } from "expo-router";
 
 // Suppress all warning logs in the UI
-// LogBox.ignoreAllLogs();
+LogBox.ignoreAllLogs();
 
 export const unstable_settings = {
   // Ensure that reloading on `/language` keeps a back button present.
