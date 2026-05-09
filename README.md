@@ -93,7 +93,7 @@ Then check `localhost:8081` on your WSL (VSCode) and Windows browser (localhost:
 npm run android
 ```
 
-If that still black screens, simply try:
+If that still black screens, simply try this command with Ctrl+M **Change Bundle Location** to `localhost:8081`:
 
 ```bash
 npx expo start --dev-client --tunnel
