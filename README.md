@@ -16,7 +16,7 @@ A React Native mobile application built with Expo for Seventh-day Adventist chur
 - Node.js (v20 or higher)
 - npm
 - Java Development Kit (JDK) 17
-- For iOS: Xcode (macOS only) supporting iOS 15.0 - 26.2 (Deployment Target) as defined [by Xcode Releases](https://developer.apple.com/support/xcode/)
+- For iOS: Xcode (macOS only) supporting iOS 15.0 - 26.3 (Deployment Target) as defined [by Xcode Releases](https://developer.apple.com/support/xcode/)
 - For Android: Android Studio, Android SDK 36 (latest), and `ANDROID_HOME` environment variable
 
 ### Installation
@@ -38,7 +38,7 @@ This command:
 - Builds the iOS app using Expo
 - Requires a Mac with Xcode installed
 - Launches the app on the iOS Simulator or a connected device
-- Verify on iOS 15.0 - 26.2
+- Verify on iOS 15.0 - 26.3
 
 ### Android
 

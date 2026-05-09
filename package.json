@@ -6,7 +6,7 @@
     "start": "expo start",
     "android": "ANDROID_HOME=$ANDROID_HOME npx expo run:android",
     "wsl": "npx expo start --dev-client --tunnel",
-    "ios": "expo run:ios",
+    "ios": "echo \"export NODE_BINARY=$(which node)\" > ios/.xcode.env && expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
