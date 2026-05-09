@@ -1,5 +1,5 @@
 // This version string is automatically synced from package.json via scripts/sync-version.js
-const VERSION = "0.8.0";
+const VERSION = "0.8.1";
 
 self.addEventListener("install", (event) => {});
 
