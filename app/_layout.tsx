@@ -18,7 +18,7 @@ import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useContext, useEffect, useState } from "react";
-import { Alert, DevSettings, Platform } from "react-native";
+import { Alert, DevSettings, LogBox, Platform } from "react-native";
 import {
   MD3DarkTheme,
   MD3LightTheme,
