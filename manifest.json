@@ -19,5 +19,5 @@
   "theme_color": "#0061A4",
   "background_color": "#FFFFFF",
   "orientation": "portrait",
-  "scope": "/"
+  "scope": "/sda-church-app/"
 }
