@@ -6,6 +6,11 @@ on:
     branches:
       - main
 
+env:
+  # Opt into Node.js 24 for all JavaScript actions to resolve deprecation warnings
+  # for actions/checkout@v4 and actions/setup-node@v4.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # Job 1: Ensures the version in package.json was updated
   enforce-tag:
@@ -55,7 +60,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "lts/*"
 
       - name: Sync and Tag from package.json
         run: |
