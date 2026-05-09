@@ -45,6 +45,9 @@ This command:
 To start the Metro bundler and launch the app:
 
 ```bash
+# Default
+npm run android
+
 # For Expo Go (recommended for most development):
 npx expo start --host lan
 # Then scan the QR code with the Expo Go app on your Android Emulator or device.
