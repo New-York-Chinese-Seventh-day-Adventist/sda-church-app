@@ -42,8 +42,11 @@ This command:
 
 ### Android
 
+To build and launch the app with the bundling IP automatically configured for WSL2:
+
 ```bash
-npm run android
+export REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}')
+npx expo run:android
 ```
 
 This command:
@@ -59,11 +62,24 @@ This command:
 
 If you are developing in WSL2, the Android Emulator on Windows may not connect automatically to the Metro server. After running `npm run android`, you may need to manually set the bundle location:
 
-1. **ADB Reverse (Recommended)**: Run `adb reverse tcp:8081 tcp:8081` in your terminal. This tunnels the emulator's traffic directly to WSL.
-2. **Manual IP**: If the above fails, press **Ctrl + M** on the emulator -> **Change Bundle Location** -> Enter your WSL IP (run `hostname -I`) followed by `:8081`.
-3. **Firewall**: Ensure Windows Firewall allows inbound traffic on port `8081`.
+Note: `adb reverse` is NOT the fix for emulator! As long as `adb devices` shows a connected `device`, you're okay.
 
-If you see a **black screen**, it usually means the connection is blocked or the Metro server is not reachable. Try starting the app with the specific WSL host IP:
+```bash
+$ adb devices
+List of devices attached
+emulator-5554   device
+```
+
+- In the Emulator: **Ctrl + M** -> **Change Bundle Location** -> Set to `172.23.202.254:8081` (or whatever your local WSL server is like).
+
+> › Installing /home/dev/dev/sda-church-app/android/app/build/outputs/apk/debug/app-debug.apk
+> › Opening sdachurchapp://expo-development-client/?url=http%3A%2F%2F172.23.202.254%3A8081 on Pixel_9a
+
+If it bundles, you're on the right track.
+
+> Android Bundled 1536ms node_modules/expo-router/entry.js (1759 modules)
+
+Then check `localhost:8081` on your WSL (VSCode) and Windows browser (localhost:8001 or 172.23.202.254:8081). If they both load the app, you're one step closer.
 
 ```bash
 npm run android
