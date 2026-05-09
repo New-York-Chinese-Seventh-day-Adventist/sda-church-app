@@ -6,7 +6,6 @@ import {
   SupportedLanguage,
   ThemeContext,
 } from "@/constants/Contexts";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DarkTheme as NavDarkTheme,
@@ -23,6 +22,7 @@ import {
   MD3DarkTheme,
   MD3LightTheme,
   PaperProvider,
+  Snackbar,
   adaptNavigationTheme,
 } from "react-native-paper";
 import "react-native-reanimated";
@@ -30,7 +30,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from "expo-router";
 
 // Suppress all warning logs in the UI
@@ -115,6 +115,8 @@ export default function RootLayout() {
   const [isDark, setIsDark] = useState(colorScheme === "dark");
   const [isReady, setIsReady] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [waitingWorker, setWaitingWorker] = useState<any>(null);
 
   useEffect(() => {
     // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
@@ -131,6 +133,60 @@ export default function RootLayout() {
           [{ text: "OK" }],
         );
       });
+    }
+
+    // Register service worker for PWA support on web
+    if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      const registerSW = async () => {
+        // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
+        const swUrl = window.location.pathname.includes("sda-church-app")
+          ? "/sda-church-app/sw.js"
+          : "/sw.js";
+
+        try {
+          const registration = await navigator.serviceWorker.register(swUrl);
+          console.log("SW registered with scope:", registration.scope);
+
+          // 1. Check if there is already an updated worker waiting
+          if (registration.waiting) {
+            console.log("New SW already waiting.");
+            setWaitingWorker(registration.waiting);
+            setUpdateAvailable(true);
+          }
+
+          // 2. Listen for new updates being found
+          registration.onupdatefound = () => {
+            const installingWorker = registration.installing;
+            if (installingWorker) {
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === "installed") {
+                  if (navigator.serviceWorker.controller) {
+                    console.log("New SW content fetched and ready.");
+                    setWaitingWorker(installingWorker);
+                    setUpdateAvailable(true);
+                  } else {
+                    console.log("SW installed for the first time.");
+                  }
+                }
+              };
+            }
+          };
+        } catch (error) {
+          console.error("SW registration failed:", error);
+        }
+      };
+
+      // Refresh the page automatically when the new service worker takes over
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        console.log("New SW activated, reloading...");
+        window.location.reload();
+      });
+
+      if (document.readyState === "complete") {
+        registerSW();
+      } else {
+        window.addEventListener("load", registerSW);
+      }
     }
 
     async function prepare() {
@@ -179,6 +235,11 @@ export default function RootLayout() {
     await AsyncStorage.setItem("user-theme", next ? "dark" : "light");
   };
 
+  const handleUpdate = () => {
+    waitingWorker?.postMessage({ type: "SKIP_WAITING" });
+    setUpdateAvailable(false);
+  };
+
   const onCompleteSetup = async () => {
     // Persist current settings when completing setup to ensure they stick on reload
     // even if the user didn't explicitly change them from system defaults.
@@ -191,8 +252,8 @@ export default function RootLayout() {
   };
 
   const [loaded, error] = useFonts({
-    AdventSans: require("../assets/fonts/AdventSans-Logo.otf"),
-    ...MaterialCommunityIcons.font,
+    AdventSans: require("./../assets/fonts/AdventSans-Logo.otf"),
+    "material-community": require("../assets/fonts/MaterialCommunityIcons.ttf"),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -224,6 +285,8 @@ export default function RootLayout() {
         <RootLayoutNav
           showSetup={showSetup}
           onCompleteSetup={onCompleteSetup}
+          updateAvailable={updateAvailable}
+          onUpdate={handleUpdate}
         />
       </ThemeContext.Provider>
     </LanguageContext.Provider>
@@ -233,11 +296,22 @@ export default function RootLayout() {
 function RootLayoutNav({
   showSetup,
   onCompleteSetup,
+  updateAvailable,
+  onUpdate,
 }: {
   showSetup: boolean;
   onCompleteSetup: () => void;
+  updateAvailable: boolean;
+  onUpdate: () => void;
 }) {
   const { isDark } = useContext(ThemeContext);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+
+  useEffect(() => {
+    if (updateAvailable) {
+      setSnackbarVisible(true);
+    }
+  }, [updateAvailable]);
 
   return (
     <SafeAreaProvider>
@@ -247,6 +321,17 @@ function RootLayoutNav({
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
           {showSetup && <InitialSetup onComplete={onCompleteSetup} />}
+          <Snackbar
+            visible={snackbarVisible}
+            onDismiss={() => setSnackbarVisible(false)}
+            action={{
+              label: "Update",
+              onPress: onUpdate,
+            }}
+            duration={Snackbar.DURATION_INDEFINITE}
+          >
+            New version ready!
+          </Snackbar>
         </ThemeProvider>
       </PaperProvider>
     </SafeAreaProvider>

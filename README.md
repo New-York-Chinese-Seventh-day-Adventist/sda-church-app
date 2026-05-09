@@ -2,6 +2,12 @@
 
 A React Native mobile application built with Expo for Seventh-day Adventist church community features.
 
+For latest production build, you may install app directly from browser
+
+https://codesammich.github.io/sda-church-app/
+
+on Safari (iOS) or Chrome (Android).
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -13,17 +19,31 @@ A React Native mobile application built with Expo for Seventh-day Adventist chur
 
 ### Prerequisites
 
-- Node.js (v20 or higher)
+- Node.js (LTS)
 - npm
 - Java Development Kit (JDK) 17
 - For iOS: Xcode (macOS only) supporting iOS 15.0 - 26.3 (Deployment Target) as defined [by Xcode Releases](https://developer.apple.com/support/xcode/)
 - For Android: Android Studio, Android SDK 36 (latest), and `ANDROID_HOME` environment variable
 
-### Installation
-
 ```bash
 npm install
 ```
+
+### Web (PWA)
+
+To start the app in a web browser:
+
+````bash
+npx expo start --web
+```
+
+For PWA mobile testing, setup GitHub pages and run this to deploy.
+
+```bash
+npm run deploy
+```
+
+Once deployed, you may install app directly from browser `codesammich.github.io/sda-church-app/` on Safari (iOS) or Chrome (Android).
 
 ## Testing
 
@@ -31,7 +51,7 @@ npm install
 
 ```bash
 npm run ios
-```
+````
 
 This command:
 
@@ -118,46 +138,37 @@ This programmatically clears the `has-completed-setup` flag while keeping your d
 
 ## Release & Versioning
 
-This project uses **Semantic Versioning** ([npm SemVer Guide](https://docs.npmjs.com/about-semantic-versioning)) with the following rules:
-
-- **#patch** — Backward compatible bug fixes (e.g., `0.1.0` → `0.1.1`)
-- **#minor** — Backward compatible new features (e.g., `0.1.0` → `0.2.0`)
-- **#major** — Breaking changes (e.g., `0.1.0` → `1.0.0`)
+This project uses **Semantic Versioning** (npm SemVer Guide). The `package.json` file serves as the single source of truth for the application version.
 
 ### Release Process
+
+The versioning workflow is automated via GitHub Actions to ensure consistency across the mobile app, PWA, and repository tags.
 
 1. **Create a Release Branch** from `main`:
 
    ```bash
    git checkout main
    git pull origin main
-   git checkout -b release/0.2.1  # Replace 0.2.1 with the next semantic version
-   git push -u origin release/0.2.1
+   git checkout -b release/v0.8.2
    ```
 
-   Check the [latest tag](https://github.com/CodeSammich/sda-church-app/tags) to determine the appropriate next version. For details on semantic versioning, see [npm Semantic Versioning Guide](https://docs.npmjs.com/about-semantic-versioning).
+   Check the latest tag to determine the next version.
 
-   **All work**, including patches, minor features, and major updates, must go through a release branch. This ensures consistent versioning and automated tagging.
+2. **Update the Version and Push**:
+   - Increment the `version` field in `package.json` manually (or use `npm version patch`).
+   - Push the changes: `git push -u origin release/v0.8.2`.
+   - The CI will validate the bump and automatically synchronize `app.json` and `sw.js` via automated commits.
 
-2. **Create a Pull Request** from your release branch → `main`:
-   - Add exactly one version tag in the PR description: `#patch`, `#minor`, or `#major`
-   - Complete testing checklist
-   - Wait for PR checks to pass
-   - Branch name must start with `release/` and match the next semantic version from the latest [tag](https://github.com/CodeSammich/sda-church-app/tags)
-
-3. **Automated Tag Creation**:
-   - The `Release Auto-Tag` workflow validates the PR body
-   - On merge, it automatically creates a git tag (e.g., `v0.2.0`)
-   - The version is bumped based on your chosen semantic version tag
+3. **Create a Pull Request**:
+   - Open a PR from your release branch → `main`.
+   - The CI will validate that the version in `package.json` is higher than the current version on `main`.
+   - Complete the testing checklist and wait for reviews.
 
 4. **Merge to Main**:
-   - Merge the PR to `main`
-   - A release tag is automatically created on the merge commit
-   - The tag follows the format: `v{major}.{minor}.{patch}`
+   - Once approved and merged, the `Release - Tagging and Sync` workflow triggers.
+   - It creates a Git tag (e.g., `v0.8.2`) matching the `package.json` version and ensures all deployment files are perfectly in sync.
 
 ## Branch Protection & Workflow
-
-### Branch Hierarchy
 
 ```
 main (stable)
@@ -181,12 +192,11 @@ main (stable)
 #### `release/*` Branches
 
 - **Source**: Created from `main` for each release
-- **Naming convention**: `release/0.2.0` (matches semantic version)
+- **Naming convention**: `release/*` (e.g., `release/0.8.2` or `release/v1-beta`)
 - **Purpose**: Prepare the release and validate the version bump
 - **PR validation**:
-  - Enforces exactly one version tag (`#patch`, `#minor`, or `#major`)
-  - Prevents PRs without a version tag
-  - Prevents PRs with multiple version tags
+  - Enforces that the version in `package.json` has been incremented compared to `main`.
+  - Automatically synchronizes `sw.js` and `app.json` version strings if they drift.
 
 #### Feature/Work Branches
 
@@ -201,31 +211,26 @@ main (stable)
 2. **Make your changes** and commit with clear messages
 3. **Push to origin** and create a PR
 4. **Fill PR template**:
-   - Select one version tag: `#patch`, `#minor`, or `#major`
    - Complete testing checklist
    - Add description of changes
 5. **Await checks**:
    - Workflow validates version tag
-   - Tests and linting run
+   - Version bump is verified against `main`
    - Reviews are requested
 6. **Merge**: Once approved, merge the PR
 7. **If merging to main**: Automatic release tag is created
 
 ### Automated Checks
 
-#### `Release Auto-Tag` Workflow (`.github/workflows/auto-tag.yml`)
+#### `Release - Commit Validation` (`.github/workflows/release-validation.yml`)
 
-**Pre-merge check** (`enforce-tag` job):
+- **Enforce Version Change**: Compares `package.json` against `main` to ensure a version bump occurred.
+- **Auto-Sync**: Synchronizes `package-lock.json`, `sw.js`, and `app.json`. Pushes a fix commit to the PR branch if files drift from the version in `package.json`.
 
-- Runs on: PR open, edit, sync, new commits
-- Validates: Exactly one semantic version tag in PR description
-- Fails if: No tag or multiple tags found
+#### `Release - Tagging and Sync` (`.github/workflows/release-tagging.yml`)
 
-**Release tagging** (`tag` job):
-
-- Runs on: PR merge to `main` from `release/*` branch
-- Creates: Semantic version tag (e.g., `v0.2.0`)
-- Bump type: Determined by `#major`, `#minor`, or `#patch` in PR body
+- **Final Validation**: Ensures the merged version is unique.
+- **Automated Tagging**: Creates a new Git tag (e.g., `v0.8.2`) matching the `package.json` version.
 
 ### Example Workflow
 
@@ -235,20 +240,26 @@ git checkout main && git pull origin main
 
 # 2. Create release branch
 git checkout -b release/0.2.0
+
+# 3. Bump version manually in package.json or npm version major|minor|patch
+# https://docs.npmjs.com/about-semantic-versioning
+# npm version major   Changes that break backward compatibility
+# npm version minor   Backward compatible new features
+# npm version patch   Backward compatible bug fixes
+npm version minor
+
+# Ensures CI validation passes on first push
 git push -u origin release/0.2.0
 
-# 3. Create feature branch from release
+# 4. Create feature branch from release
 git checkout -b feature/new-calendar-view
 # ... make changes ...
 git commit -m "feat: add calendar view for sermon schedule"
 git push -u origin feature/new-calendar-view
+git checkout release/0.2.0 && git merge feature/new-calendar-view
 
-# 4. Create PR: feature/new-calendar-view → release/0.2.0
-# Add "#minor" to PR description (new feature)
-# Get approval and merge
-
-# 5. Create PR: release/0.2.0 → main
-# Add "#minor" to PR description (matches version bump)
+# 5. Push changes and create PR: release/0.2.0 → main
+git push origin release/0.2.0
 # Get approval and merge
 
 # 6. Automated: Tag v0.2.0 is created on merge commit
@@ -259,4 +270,4 @@ git push -u origin feature/new-calendar-view
 
 ---
 
-**Last Updated**: April 2026
+**Last Updated**: May 2026

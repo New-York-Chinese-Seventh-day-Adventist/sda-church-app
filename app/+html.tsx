@@ -1,4 +1,4 @@
-import { ScrollViewStyleReset } from 'expo-router/html';
+import { ScrollViewStyleReset } from "expo-router/html";
 
 // This file is web-only and used to configure the root HTML for every
 // web page during static rendering.
@@ -10,7 +10,18 @@ export default function Root({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+        />
+
+        {/* PWA Meta Tags */}
+        <meta name="theme-color" content="#0061A4" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="SDA Church" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="icon-192x192.png" />
+        <link rel="manifest" href="manifest.json" />
 
         {/* 
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native. 
@@ -19,7 +30,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <ScrollViewStyleReset />
 
         {/* Using raw CSS styles as an escape-hatch to ensure the background color never flickers in dark-mode. */}
-        <style dangerouslySetInnerHTML={{ __html: responsiveBackground }} />
+        <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
         {/* Add any additional <head> elements that you want globally available on web... */}
       </head>
       <body>{children}</body>
@@ -27,9 +38,10 @@ export default function Root({ children }: { children: React.ReactNode }) {
   );
 }
 
-const responsiveBackground = `
+const globalStyles = `
 body {
   background-color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   body {

@@ -1,10 +1,12 @@
-## Versioning (REQUIRED)
+## Issue
 
-_Please leave exactly one tag below visible to trigger the [semantic version](https://docs.npmjs.com/about-semantic-versioning) bump depending on your change's [backward compatibility](https://en.wikipedia.org/wiki/Backward_compatibility). Including none or more than one of these tag strings (e.g. #tag) will fail the automated check and your PR will not be merged:_
+Add your [issue](https://github.com/CodeSammich/sda-church-app/issues) link here
 
-- #patch - Backward compatible bug fixes
-- #minor - Backward compatible new features
-- #major - Changes that break backward compatibility
+## Versioning
+
+**Note**: Ensure you have incremented the `version` field in `package.json`. The CI will automatically synchronize `package-lock.json`, `app.json`, and `public/sw.js` by pushing a fix commit to your branch if they differ.
+
+- [ ] Incremented `package.json` version for this release. `npm version patch`, `npm version minor` or `npm version patch` recommended ([docs](https://docs.npmjs.com/cli/v11/commands/npm-version))
 
 ## Description
 
