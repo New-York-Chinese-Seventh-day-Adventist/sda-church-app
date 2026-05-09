@@ -90,13 +90,16 @@ Then check `localhost:8081` on your WSL (VSCode) and Windows browser (localhost:
 npm run android
 ```
 
+TODO: fix black screen issue
+
 ### Debugging First-Time Launch
 
 The app tracks setup completion in `AsyncStorage`. To re-test the onboarding flow without wiping the emulator's system data (which preserves your "Change Bundle Location" IP):
 
-1. Open the Developer Menu (**Ctrl + M** on Android, **Cmd + D** on iOS).
-2. Select **Debug: Reset Onboarding**.
-3. Reload the app.
+1. Ensure the app has bundled and isn't showing a black screen (check terminal for errors).
+2. Open the Developer Menu (**Ctrl + M** on Android Emulator).
+3. Select **Debug: Reset Onboarding**.
+4. Reload the app.
 
 This programmatically clears the `has-completed-setup` flag while keeping your development environment settings intact.
 

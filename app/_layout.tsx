@@ -34,7 +34,6 @@ export {
 } from "expo-router";
 
 // Suppress all warning logs in the UI
-// Comment this out during debugging so you can see why the screen is black
 // LogBox.ignoreAllLogs();
 
 export const unstable_settings = {
@@ -201,9 +200,6 @@ export default function RootLayout() {
     }
   }, [loaded, isReady]);
 
-  // If fonts are not loaded OR initial setup is not ready, keep the splash screen visible.
-  // We return null here to prevent rendering the app content until everything is ready.
-  // If there's an error loading fonts, the `useEffect` above will log it and hide the splash screen.
   if (!loaded || !isReady) {
     return null;
   }
