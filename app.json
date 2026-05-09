@@ -26,9 +26,10 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp",
-      "targetSdkVersion": 35,
-      "compileSdkVersion": 35,
-      "buildtoolsVersion": "35.0.0"
+      "minSdkVersion": 24,
+      "targetSdkVersion": 36,
+      "compileSdkVersion": 36,
+      "buildToolsVersion": "36.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -41,13 +42,15 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0"
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "kotlinVersion": "2.1.20"
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "./withAndroidSDKOverride"
     ],
     "experiments": {
       "typedRoutes": true

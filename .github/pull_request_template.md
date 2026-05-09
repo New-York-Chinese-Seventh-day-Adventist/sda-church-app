@@ -12,5 +12,8 @@ _What does your change do?_
 
 ## Testing
 
-- [ ] Verified on Android SDK 35 or higher
+- [ ] Verified on Android SDK 36 (Target version must always be latest Android SDK)
+
+Target version should always be [latest stable Android SDK](https://developer.android.com/tools/releases/platforms)
+
 - [ ] Verified on iOS 18.0 or higher

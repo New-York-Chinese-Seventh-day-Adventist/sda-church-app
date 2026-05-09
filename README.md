@@ -17,7 +17,7 @@ A React Native mobile application built with Expo for Seventh-day Adventist chur
 - npm
 - Java Development Kit (JDK) 17
 - For iOS: Xcode (macOS only) targeting iPhone 16 on iOS 18.0 or higher
-- For Android: Android Studio, Android SDK 35+, and `ANDROID_HOME` environment variable
+- For Android: Android Studio, Android SDK 36 (latest), and `ANDROID_HOME` environment variable
 
 ### Installation
 
@@ -51,7 +51,7 @@ This command:
 - Builds the Android app using Expo
 - Requires Android Studio or Android SDK set up
 - Launches the app on the Android Emulator or a connected device
-- Verify on Android SDK 35 or higher
+- Verify on Android SDK 36 or higher
 
 #### WSL Debugging
 
