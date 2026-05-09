@@ -51,7 +51,10 @@ npx expo start --host lan
 
 # For a development build (if you need custom native modules):
 # export REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}') # This attempts to auto-configure the bundler IP
-# npx expo run:android
+npx expo run:android
+
+# For WSL
+npx expo start --dev-client --tunnel
 ```
 
 This command:
@@ -90,7 +93,11 @@ Then check `localhost:8081` on your WSL (VSCode) and Windows browser (localhost:
 npm run android
 ```
 
-TODO: fix black screen issue
+If that still black screens, simply try:
+
+```bash
+npx expo start --dev-client --tunnel
+```
 
 ### Debugging First-Time Launch
 
