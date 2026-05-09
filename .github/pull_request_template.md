@@ -16,4 +16,6 @@ _What does your change do?_
 
 Target version should always be [latest stable Android SDK](https://developer.android.com/tools/releases/platforms)
 
-- [ ] Verified on iOS 18.0 or higher
+- [ ] Verified on XCode/iOS 26.3 or higher
+
+Target version should always be [latest stable XCode](https://developer.apple.com/support/xcode/)
