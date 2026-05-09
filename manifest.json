@@ -1,0 +1,23 @@
+{
+  "short_name": "SDA Church",
+  "name": "SDA Church App",
+  "description": "Seventh-day Adventist church community app.",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0061A4",
+  "background_color": "#FFFFFF",
+  "orientation": "portrait",
+  "scope": "/"
+}
