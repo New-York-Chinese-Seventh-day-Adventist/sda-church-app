@@ -16,8 +16,8 @@ A React Native mobile application built with Expo for Seventh-day Adventist chur
 - Node.js (v20 or higher)
 - npm
 - Java Development Kit (JDK) 17
-- For iOS: Xcode (macOS only) targeting iPhone 16 on iOS 18.0 or higher
-- For Android: Android Studio, Android SDK 35+, and `ANDROID_HOME` environment variable
+- For iOS: Xcode (macOS only) supporting iOS 15.0 - 26.3 (Deployment Target) as defined [by Xcode Releases](https://developer.apple.com/support/xcode/)
+- For Android: Android Studio, Android SDK 36 (latest), and `ANDROID_HOME` environment variable
 
 ### Installation
 
@@ -38,12 +38,26 @@ This command:
 - Builds the iOS app using Expo
 - Requires a Mac with Xcode installed
 - Launches the app on the iOS Simulator or a connected device
-- Verify on iOS 18.0 or higher
+- Verify on iOS 15.0 - 26.3
 
 ### Android
 
+To start the Metro bundler and launch the app:
+
 ```bash
+# Default
 npm run android
+
+# For Expo Go (recommended for most development):
+npx expo start --host lan
+# Then scan the QR code with the Expo Go app on your Android Emulator or device.
+
+# For a development build (if you need custom native modules):
+# export REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}') # This attempts to auto-configure the bundler IP
+npx expo run:android
+
+# For WSL
+npx expo start --dev-client --tunnel
 ```
 
 This command:
@@ -51,16 +65,56 @@ This command:
 - Builds the Android app using Expo
 - Requires Android Studio or Android SDK set up
 - Launches the app on the Android Emulator or a connected device
-- Verify on Android SDK 35 or higher
+- Verify on Android SDK 36 or higher
 
 #### WSL Debugging
 
+> Error: Unable to load script. Make sure you're running Metro or that your bundle 'index.android.bundle'...
+
 If you are developing in WSL2, the Android Emulator on Windows may not connect automatically to the Metro server. After running `npm run android`, you may need to manually set the bundle location:
 
-1. Press **Ctrl + M** on the emulator to open the developer menu.
-2. Select **Change Bundle Location**.
-3. Enter your WSL IP (get it by running `hostname -I` in WSL) followed by `:8081` (e.g., `172.23.202.254:8081`).
-   No special `expo start` command is needed; the standard `npm run android` is sufficient once the bundle location is updated.
+Note: `adb reverse` is NOT the fix for emulator! As long as `adb devices` shows a connected `device`, you're okay.
+
+```bash
+$ adb devices
+List of devices attached
+emulator-5554   device
+```
+
+- In the Emulator: **Ctrl + M** -> **Change Bundle Location** -> Set to `172.23.202.254:8081` (or whatever your local WSL server is like).
+
+> › Installing /home/dev/dev/sda-church-app/android/app/build/outputs/apk/debug/app-debug.apk
+> › Opening sdachurchapp://expo-development-client/?url=http%3A%2F%2F172.23.202.254%3A8081 on Pixel_9a
+
+If it bundles, you're on the right track.
+
+> Android Bundled 1536ms node_modules/expo-router/entry.js (1759 modules)
+
+Then check `localhost:8081` on your WSL (VSCode) and Windows browser (localhost:8001 or 172.23.202.254:8081). If they both load the app, you're one step closer.
+
+```bash
+npm run android
+```
+
+If that still black screens, simply try this command with Ctrl+M **Change Bundle Location** to `localhost:8081`. Note you have to press `a` for Android.
+
+```bash
+npx expo start --dev-client --tunnel
+
+# or alternatively
+npm run wsl
+```
+
+### Debugging First-Time Launch
+
+The app tracks setup completion in `AsyncStorage`. To re-test the onboarding flow without wiping the emulator's system data (which preserves your "Change Bundle Location" IP):
+
+1. Ensure the app has bundled and isn't showing a black screen (check terminal for errors).
+2. Open the Developer Menu (**Ctrl + M** on Android Emulator).
+3. Select **Debug: Reset Onboarding**.
+4. Reload the app.
+
+This programmatically clears the `has-completed-setup` flag while keeping your development environment settings intact.
 
 ## Release & Versioning
 

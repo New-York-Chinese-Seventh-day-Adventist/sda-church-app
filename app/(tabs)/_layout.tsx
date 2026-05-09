@@ -1,10 +1,10 @@
+import { LanguageContext } from "@/constants/Contexts";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LanguageContext } from "../_layout";
 
 export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);
@@ -31,6 +31,7 @@ export const GlobalHeader = (props: any) => {
 
   const allSearchLabels = {
     en: {
+      searchPlaceholder: "Search app...",
       home: { title: "Home", keywords: ["welcome", "start"] },
       sermons: {
         title: "Sermons",
@@ -66,6 +67,7 @@ export const GlobalHeader = (props: any) => {
       },
     },
     zh: {
+      searchPlaceholder: "搜尋...",
       home: { title: "首頁", keywords: ["歡迎", "開始", "home"] },
       sermons: {
         title: "講道播客",
@@ -110,6 +112,7 @@ export const GlobalHeader = (props: any) => {
       },
     },
     "zh-cn": {
+      searchPlaceholder: "搜索...",
       home: { title: "首页", keywords: ["欢迎", "开始", "home"] },
       sermons: {
         title: "讲道播客",
@@ -154,6 +157,7 @@ export const GlobalHeader = (props: any) => {
       },
     },
     es: {
+      searchPlaceholder: "Buscar...",
       home: { title: "Inicio", keywords: ["bienvenido", "comenzar", "home"] },
       sermons: {
         title: "Sermones",
@@ -326,7 +330,7 @@ export const GlobalHeader = (props: any) => {
         <View style={{ flex: 1 }}>
           <Searchbar
             ref={searchRef}
-            placeholder="Search app..."
+            placeholder={searchLabels.searchPlaceholder}
             onChangeText={setSearchQuery}
             value={searchQuery}
             onFocus={() => setIsSearching(true)}

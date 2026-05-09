@@ -1,3 +1,4 @@
+import { LanguageContext } from "@/constants/Contexts";
 import { Stack } from "expo-router";
 import React, { useContext } from "react";
 import { Image, Linking, ScrollView, StyleSheet, View } from "react-native";
@@ -9,7 +10,6 @@ import {
   Title,
   useTheme,
 } from "react-native-paper";
-import { LanguageContext } from "../../_layout";
 
 export default function AboutScreen() {
   const { language } = useContext(LanguageContext);

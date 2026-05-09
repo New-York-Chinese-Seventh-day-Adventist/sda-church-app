@@ -1,9 +1,9 @@
+import { LanguageContext } from "@/constants/Contexts";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { Divider, List, RadioButton } from "react-native-paper";
-import { LanguageContext } from "../../_layout"; // Corrected path to root _layout
 
 export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
