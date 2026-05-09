@@ -25,13 +25,20 @@ A React Native mobile application built with Expo for Seventh-day Adventist chur
 npm install
 ```
 
+### Web (PWA)
+
+To start the app in a web browser:
+
+````bash
+npx expo start --web
+
 ## Testing
 
 ### iOS
 
 ```bash
 npm run ios
-```
+````
 
 This command:
 

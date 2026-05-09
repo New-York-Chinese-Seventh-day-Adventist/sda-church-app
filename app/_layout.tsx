@@ -30,7 +30,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from "expo-router";
 
 // Suppress all warning logs in the UI
@@ -133,6 +133,17 @@ export default function RootLayout() {
       });
     }
 
+    // Register service worker for PWA support on web
+    if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sda-church-app/sw.js")
+          .catch((error) => {
+            console.warn("Service Worker registration failed:", error);
+          });
+      });
+    }
+
     async function prepare() {
       try {
         const [savedLang, savedTheme, setupDone] = await Promise.all([
@@ -191,7 +202,7 @@ export default function RootLayout() {
   };
 
   const [loaded, error] = useFonts({
-    AdventSans: require("../assets/fonts/AdventSans-Logo.otf"),
+    AdventSans: require("./../assets/fonts/AdventSans-Logo.otf"),
     ...MaterialCommunityIcons.font,
   });
 

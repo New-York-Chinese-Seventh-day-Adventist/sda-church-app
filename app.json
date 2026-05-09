@@ -13,6 +13,21 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/sda-church-app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "display": "standalone",
+      "themeColor": "#0061A4",
+      "backgroundColor": "#ffffff",
+      "description": "Seventh-day Adventist church community application.",
+      "shortName": "SDA Church",
+      "lang": "en"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.sdachurchapp",
@@ -27,14 +42,6 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp"
     },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": ["expo-router", "expo-localization", "./withAndroidSDKOverride"],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "plugins": ["expo-router", "expo-localization", "./withAndroidSDKOverride"]
   }
 }
