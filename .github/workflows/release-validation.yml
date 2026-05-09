@@ -1,4 +1,4 @@
-name: Release Auto-Tag
+name: Release - Commit Validation
 on:
   # ensure that subsequent commits on PR also trigger the workflow
   push:

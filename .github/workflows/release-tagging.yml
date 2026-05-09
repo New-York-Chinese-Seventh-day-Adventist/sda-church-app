@@ -1,4 +1,4 @@
-name: Release Auto-Tag
+name: Release - Tagging and Sync
 on:
   # ensure that workflows are run on various PR events
   pull_request:
