@@ -138,12 +138,6 @@ export default function MoreScreen() {
 
         <List.Section>
           <List.Subheader>{labels.settings}</List.Subheader>
-          <List.Item
-            title={labels.language}
-            left={(p) => <List.Icon {...p} icon="translate" />}
-            right={(p) => <List.Icon {...p} icon="chevron-right" />}
-            onPress={() => router.push("/more/language")}
-          />
           <Animated.View style={getHighlightStyle("darkMode")}>
             <List.Item
               title={labels.darkMode}
@@ -153,6 +147,12 @@ export default function MoreScreen() {
               )}
             />
           </Animated.View>
+          <List.Item
+            title={labels.language}
+            left={(p) => <List.Icon {...p} icon="translate" />}
+            right={(p) => <List.Icon {...p} icon="chevron-right" />}
+            onPress={() => router.push("/more/language")}
+          />
         </List.Section>
 
         <View style={styles.footer}>
