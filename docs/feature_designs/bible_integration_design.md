@@ -159,10 +159,11 @@ KJV will be maintained for reference purposes, while modern translations like BS
 **Supported Translations:**
 
 1. BSB
-2. CUV (Traditional) - 1919 edition (Public Domain).
-3. CUVS (Simplified) - Public Domain.
-4. RVR09 (Spanish Traditional) - Public Domain.
-5. SSE (Spanish Modern) - Public Domain.
+2. KJV
+3. CUV (Traditional) - 1919 edition (Public Domain).
+4. CUVS (Simplified) - Public Domain.
+5. RVR09 (Spanish Traditional) - Public Domain.
+6. SSE (Spanish Modern) - Public Domain.
 
 ## 4. Future Work
 
