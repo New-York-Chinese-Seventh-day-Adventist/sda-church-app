@@ -250,11 +250,6 @@ export default function RootLayout() {
 
     // Register service worker for PWA support on web
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
-      // Execute an immediate "Nuclear Refresh" to clear any stale cache storage
-      // on cold start. This ensures the very first check for sw.js bypasses
-      // any stubborn system-level HTTP caches.
-      nuclearRefresh();
-
       let refreshing = false;
       const registerSW = async () => {
         const swUrl = getSwUrl();
