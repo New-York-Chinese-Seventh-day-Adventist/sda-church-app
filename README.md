@@ -45,6 +45,10 @@ npm run deploy
 
 Once deployed, you may install app directly from browser `codesammich.github.io/sda-church-app/` on Safari (iOS) or Chrome (Android).
 
+Note, if you get a black screen, open the link in browser -> Network tab to see if any assets failed to load. Any failed asset loading (400s) will cause the entire app to fail to load.
+
+New dev builds can be pushed by updating package.json version number and deploying. Existing installations update automatically or can be manually refreshed by tapping More -> Version number.
+
 ## Testing
 
 ### iOS
@@ -53,12 +57,7 @@ Once deployed, you may install app directly from browser `codesammich.github.io/
 npm run ios
 ````
 
-This command:
-
-- Builds the iOS app using Expo
-- Requires a Mac with Xcode installed
-- Launches the app on the iOS Simulator or a connected device
-- Verify on iOS 15.0 - 26.3
+This command launches the iOS simulator, but may fail to build the app. That is fine, since we are installing PWA from Safari -> codesammich.github.io/sda-church-app/ -> Share -> Add to Home Screen to avoid App Store fees and complications.
 
 ### Android
 

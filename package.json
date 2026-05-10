@@ -1,7 +1,7 @@
 {
   "name": "sda-church-app",
   "main": "expo-router/entry",
-  "version": "0.8.6",
+  "version": "0.9.0",
   "homepage": "https://codesammich.github.io/sda-church-app",
   "scripts": {
     "sync-version": "node public/sync-version.js",
@@ -11,7 +11,7 @@
     "ios": "echo \"export NODE_BINARY=$(which node)\" > ios/.xcode.env && expo run:ios",
     "web": "expo start --web",
     "predeploy": "rm -rf dist && npx expo export --platform web --clear",
-    "deploy": "npx gh-pages -d dist --dotfiles"
+    "deploy": "npm run sync-version && npx gh-pages -d dist --dotfiles"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.11",
