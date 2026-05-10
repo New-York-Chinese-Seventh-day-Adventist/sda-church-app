@@ -115,16 +115,12 @@ SplashScreen.preventAutoHideAsync();
 export const UpdateContext = createContext<{
   updateAvailable: boolean;
   onUpdate: () => void;
-  onManualCheck: () => Promise<void>;
-  dismissUpdateDialog: () => void;
-  resetUpdateDialog: () => void;
+  onManualCheck: (options?: { isAuto?: boolean }) => Promise<void>;
   updateStatus: "idle" | "checking" | "up-to-date";
 }>({
   updateAvailable: false,
   onUpdate: () => {},
   onManualCheck: async () => {},
-  dismissUpdateDialog: () => {},
-  resetUpdateDialog: () => {},
   updateStatus: "idle",
 });
 
@@ -139,17 +135,6 @@ export default function RootLayout() {
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "checking" | "up-to-date"
   >("idle");
-  const [updateDialogDismissed, setUpdateDialogDismissed] = useState(false);
-
-  const handleDismissUpdateDialog = async () => {
-    setUpdateDialogDismissed(true);
-    await AsyncStorage.setItem("update-dismissed", "true");
-  };
-
-  const handleResetUpdateDialog = async () => {
-    setUpdateDialogDismissed(false);
-    await AsyncStorage.setItem("update-dismissed", "false");
-  };
 
   const getSwUrl = () => {
     // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
@@ -173,6 +158,79 @@ export default function RootLayout() {
     }
   };
 
+  const handleUpdate = async () => {
+    await nuclearRefresh();
+
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: "SKIP_WAITING" });
+    } else if (Platform.OS === "web") {
+      // Fallback: manually reload if no worker is found but update was requested
+      window.location.reload();
+    }
+    setUpdateAvailable(false);
+  };
+
+  const handleManualCheck = async (options?: { isAuto?: boolean }) => {
+    if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      // Only show the "Checking..." snackbar for manual clicks to avoid UI noise on launch
+      if (!options?.isAuto) {
+        setUpdateStatus("checking");
+      }
+
+      try {
+        const swUrl = getSwUrl();
+
+        // Step 1: Nuclear Refresh (Clear all caches)
+        await nuclearRefresh();
+
+        // Step 2: Bypass sw.js cache
+        await fetch(swUrl, { cache: "reload" }).catch(() => {});
+
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          // Step 3: Trigger the browser's update check
+          await registration.update();
+
+          // Step 4: The Magic Wait - give registration properties time to populate
+          await new Promise((resolve) => setTimeout(resolve, 800));
+
+          if (registration.waiting) {
+            setWaitingWorker(registration.waiting);
+            setUpdateAvailable(true);
+            setUpdateStatus("idle");
+            await handleUpdate();
+          } else if (registration.installing) {
+            const installingWorker = registration.installing;
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === "installed") {
+                setWaitingWorker(installingWorker);
+                setUpdateAvailable(true);
+                handleUpdate();
+              }
+            };
+          } else {
+            // No update found
+            setUpdateAvailable(false);
+
+            if (!options?.isAuto) {
+              // For manual clicks, we show success and reload anyway to be safe
+              setUpdateStatus("up-to-date");
+              setTimeout(() => handleUpdate(), 1200);
+            } else {
+              // For auto-checks, we just go back to idle to avoid a reload loop
+              setUpdateStatus("idle");
+            }
+          }
+        } else {
+          setUpdateStatus("idle");
+        }
+      } catch (e) {
+        console.error("Manual update check failed:", e);
+        setUpdateStatus("idle");
+      }
+    }
+  };
+
   useEffect(() => {
     // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
     if (__DEV__ && Platform.OS !== "web") {
@@ -192,6 +250,11 @@ export default function RootLayout() {
 
     // Register service worker for PWA support on web
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      // Execute an immediate "Nuclear Refresh" to clear any stale cache storage
+      // on cold start. This ensures the very first check for sw.js bypasses
+      // any stubborn system-level HTTP caches.
+      nuclearRefresh();
+
       let refreshing = false;
       const registerSW = async () => {
         const swUrl = getSwUrl();
@@ -241,13 +304,24 @@ export default function RootLayout() {
           };
 
           // Check for updates when the app becomes visible again
-          const handleFocus = async () => {
-            // Every time the user reopens the app (e.g., coming back from the home screen),
-            // we clean the cache and check for updates to ensure they aren't on a stale version.
-            await nuclearRefresh();
-            registration.update().catch(console.error);
+          const handleVisibilityChange = async () => {
+            if (document.visibilityState === "visible") {
+              console.log("App resumed - performing freshness check");
+              // Force clear cache and fetch index to ensure the update check sees fresh metadata
+              await nuclearRefresh();
+
+              const reg = await navigator.serviceWorker.getRegistration();
+              if (reg) {
+                // If a worker is already waiting (from a previous background check), activate it immediately.
+                if (reg.waiting) {
+                  reg.waiting.postMessage({ type: "SKIP_WAITING" });
+                } else {
+                  reg.update().catch(console.error);
+                }
+              }
+            }
           };
-          window.addEventListener("focus", handleFocus);
+          window.addEventListener("visibilitychange", handleVisibilityChange);
         } catch (error) {
           console.error("SW registration failed:", error);
         }
@@ -262,7 +336,12 @@ export default function RootLayout() {
         }
       });
 
-      if (document.readyState === "complete") {
+      // Check both 'complete' and 'interactive' to ensure we start the SW
+      // as soon as the browser allows, minimizing the "reversion" window.
+      if (
+        document.readyState === "complete" ||
+        document.readyState === "interactive"
+      ) {
         registerSW();
       } else {
         window.addEventListener("load", registerSW);
@@ -271,13 +350,11 @@ export default function RootLayout() {
 
     async function prepare() {
       try {
-        const [savedLang, savedTheme, setupDone, dismissedUpdate] =
-          await Promise.all([
-            AsyncStorage.getItem("user-language"),
-            AsyncStorage.getItem("user-theme"),
-            AsyncStorage.getItem("has-completed-setup"),
-            AsyncStorage.getItem("update-dismissed"),
-          ]);
+        const [savedLang, savedTheme, setupDone] = await Promise.all([
+          AsyncStorage.getItem("user-language"),
+          AsyncStorage.getItem("user-theme"),
+          AsyncStorage.getItem("has-completed-setup"),
+        ]);
 
         // Always determine fallbacks first
         const systemLang = getSystemLanguage();
@@ -286,7 +363,6 @@ export default function RootLayout() {
         // Use saved settings if they exist, otherwise fallback to system defaults
         setLanguage((savedLang as SupportedLanguage) || systemLang);
         setIsDark(savedTheme ? savedTheme === "dark" : systemThemeIsDark);
-        setUpdateDialogDismissed(dismissedUpdate === "true");
 
         if (setupDone !== "true") {
           setShowSetup(true);
@@ -295,6 +371,10 @@ export default function RootLayout() {
         console.warn("Failed to load settings", e);
       } finally {
         setIsReady(true);
+        // LITERALLY "press" the check for updates button on every app launch
+        if (Platform.OS === "web") {
+          handleManualCheck({ isAuto: true });
+        }
       }
     }
     prepare();
@@ -316,78 +396,6 @@ export default function RootLayout() {
     }
     setIsDark(next);
     await AsyncStorage.setItem("user-theme", next ? "dark" : "light");
-  };
-
-  const handleUpdate = async () => {
-    await nuclearRefresh();
-
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: "SKIP_WAITING" });
-    } else if (Platform.OS === "web") {
-      // Fallback: manually reload if no worker is found but update was requested
-      window.location.reload();
-    }
-    setUpdateAvailable(false);
-  };
-
-  const handleManualCheck = async () => {
-    if (Platform.OS === "web" && "serviceWorker" in navigator) {
-      // Reset the dismissal flag immediately so the "Check for Updates" button
-      // is responsive even if the user previously clicked "Later".
-      handleResetUpdateDialog();
-      setUpdateStatus("checking");
-      try {
-        const swUrl = getSwUrl();
-
-        await nuclearRefresh();
-
-        // FORCE a remote check by fetching the SW file with 'reload' cache mode.
-        // This bypasses the local HTTP cache and ensures the browser has the latest
-        // byte-code for comparison when registration.update() is called.
-        await fetch(swUrl, { cache: "reload" }).catch(() => {});
-
-        const registration = await navigator.serviceWorker.getRegistration();
-        if (registration) {
-          // Triggers the browser's native PWA update check (compares sw.js).
-          await registration.update();
-
-          // Give the browser a moment to update properties on the registration object
-          // as 'waiting' or 'installing' might not be populated immediately.
-          await new Promise((resolve) => setTimeout(resolve, 800));
-
-          if (registration.waiting) {
-            setWaitingWorker(registration.waiting);
-            setUpdateAvailable(true);
-            setUpdateStatus("idle");
-            // Auto-trigger the total refresh for manual checks as requested.
-            await handleUpdate();
-          } else if (registration.installing) {
-            // If an update is currently installing, wait for it to finish and then auto-update.
-            setUpdateStatus("checking");
-            const installingWorker = registration.installing;
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === "installed") {
-                setWaitingWorker(installingWorker);
-                setUpdateAvailable(true);
-                handleUpdate();
-              }
-            };
-          } else {
-            // No update was found; clear any potentially stale state.
-            setUpdateAvailable(false);
-            setUpdateStatus("up-to-date");
-            // Even if "up-to-date", we trigger a reload after a short delay
-            // to fulfill the "total refresh" request and clear any potential reversions.
-            setTimeout(() => handleUpdate(), 1200);
-          }
-        } else {
-          setUpdateStatus("idle");
-        }
-      } catch (e) {
-        console.error("Manual update check failed:", e);
-        setUpdateStatus("idle");
-      }
-    }
   };
 
   const onCompleteSetup = async () => {
@@ -437,8 +445,6 @@ export default function RootLayout() {
             updateAvailable,
             onUpdate: handleUpdate,
             onManualCheck: handleManualCheck,
-            dismissUpdateDialog: handleDismissUpdateDialog,
-            resetUpdateDialog: handleResetUpdateDialog,
             updateStatus,
           }}
         >
@@ -449,7 +455,6 @@ export default function RootLayout() {
             onUpdate={handleUpdate}
             updateStatus={updateStatus}
             onDismissStatus={() => setUpdateStatus("idle")}
-            updateDialogDismissed={updateDialogDismissed}
           />
         </UpdateContext.Provider>
       </ThemeContext.Provider>
@@ -464,7 +469,6 @@ function RootLayoutNav({
   onUpdate,
   updateStatus,
   onDismissStatus,
-  updateDialogDismissed,
 }: {
   showSetup: boolean;
   onCompleteSetup: () => void;
@@ -472,26 +476,9 @@ function RootLayoutNav({
   onUpdate: () => void;
   updateStatus: "idle" | "checking" | "up-to-date";
   onDismissStatus: () => void;
-  updateDialogDismissed: boolean;
 }) {
   const { isDark } = useContext(ThemeContext);
   const { language } = useContext(LanguageContext);
-  const { dismissUpdateDialog, resetUpdateDialog } = useContext(UpdateContext);
-  const [dialogVisible, setDialogVisible] = useState(false);
-
-  useEffect(() => {
-    if (!updateAvailable) {
-      resetUpdateDialog();
-    }
-  }, [updateAvailable, resetUpdateDialog]);
-
-  useEffect(() => {
-    if (updateAvailable && !updateDialogDismissed) {
-      setDialogVisible(true);
-    } else {
-      setDialogVisible(false);
-    }
-  }, [updateAvailable, updateDialogDismissed]);
 
   const snackbarLabels = {
     en: { checking: "Checking for updates...", upToDate: "App is up to date" },
