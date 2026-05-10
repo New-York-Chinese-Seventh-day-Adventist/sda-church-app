@@ -42,6 +42,10 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp"
     },
-    "plugins": ["expo-router", "expo-localization", "./withAndroidSDKOverride"]
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "./withAndroidSDKOverride"
+    ]
   }
 }
