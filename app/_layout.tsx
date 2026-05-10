@@ -19,14 +19,10 @@ import * as SplashScreen from "expo-splash-screen";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Alert, DevSettings, LogBox, Platform } from "react-native";
 import {
-  Button,
-  Dialog,
   MD3DarkTheme,
   MD3LightTheme,
   PaperProvider,
-  Portal,
   Snackbar,
-  Text,
   adaptNavigationTheme,
 } from "react-native-paper";
 import "react-native-reanimated";
@@ -162,6 +158,21 @@ export default function RootLayout() {
       : "/sw.js";
   };
 
+  const nuclearRefresh = async () => {
+    if (Platform.OS === "web") {
+      try {
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+        // Bypass HTTP cache for the main entry point to ensure fresh index.html
+        await fetch(window.location.href, { cache: "reload" }).catch(() => {});
+      } catch (e) {
+        console.warn("Update cleanup failed:", e);
+      }
+    }
+  };
+
   useEffect(() => {
     // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
     if (__DEV__ && Platform.OS !== "web") {
@@ -202,25 +213,22 @@ export default function RootLayout() {
 
           // 1. Check if there is already an updated worker waiting
           if (registration.waiting) {
-            console.log("New SW already waiting.");
-            setWaitingWorker(registration.waiting);
-            setUpdateAvailable(true);
-            handleResetUpdateDialog(); // Ensure prompt shows if update hasn't been applied
+            console.log("New SW already waiting. Auto-updating...");
+            await nuclearRefresh();
+            registration.waiting.postMessage({ type: "SKIP_WAITING" });
           }
 
           // 2. Listen for new updates being found
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker) {
-              setUpdateStatus("checking");
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === "installed") {
                   if (navigator.serviceWorker.controller) {
-                    console.log("New SW content fetched and ready.");
-                    setWaitingWorker(installingWorker);
-                    setUpdateAvailable(true);
-                    handleResetUpdateDialog(); // Force show for fresh updates
-                    setUpdateStatus("idle");
+                    console.log("New SW content ready. Auto-updating...");
+                    nuclearRefresh().then(() => {
+                      installingWorker.postMessage({ type: "SKIP_WAITING" });
+                    });
                   } else {
                     console.log("SW installed for the first time.");
                   }
@@ -303,21 +311,7 @@ export default function RootLayout() {
   };
 
   const handleUpdate = async () => {
-    // Perform a "Nuclear Refresh" for web to prevent reversions.
-    if (Platform.OS === "web") {
-      try {
-        // 1. Clear all Cache Storage buckets.
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key)));
-        }
-        // 2. Bypass HTTP cache for the main entry point. This forces the browser
-        // to fetch a fresh index.html from the server before the reload.
-        await fetch(window.location.href, { cache: "reload" }).catch(() => {});
-      } catch (e) {
-        console.warn("Update cleanup failed:", e);
-      }
-    }
+    await nuclearRefresh();
 
     if (waitingWorker) {
       waitingWorker.postMessage({ type: "SKIP_WAITING" });
@@ -337,15 +331,7 @@ export default function RootLayout() {
       try {
         const swUrl = getSwUrl();
 
-        // Force clear all Cache Storage buckets. This ensures that if the manual check
-        // discovers a new version, the browser doesn't have any lingering old assets
-        // that could cause a reversion on the next cold start.
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key))).catch(
-            () => {},
-          );
-        }
+        await nuclearRefresh();
 
         // FORCE a remote check by fetching the SW file with 'reload' cache mode.
         // This bypasses the local HTTP cache and ensures the browser has the latest
@@ -521,35 +507,6 @@ function RootLayoutNav({
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
           {showSetup && <InitialSetup onComplete={onCompleteSetup} />}
-
-          <Portal>
-            <Dialog
-              visible={dialogVisible}
-              onDismiss={() => {
-                setDialogVisible(false);
-                dismissUpdateDialog();
-              }}
-            >
-              <Dialog.Title>Update Available</Dialog.Title>
-              <Dialog.Content>
-                <Text variant="bodyMedium">
-                  A new version of the app is ready with the latest features and
-                  fixes. Would you like to update now?
-                </Text>
-              </Dialog.Content>
-              <Dialog.Actions>
-                <Button
-                  onPress={() => {
-                    setDialogVisible(false);
-                    dismissUpdateDialog();
-                  }}
-                >
-                  Later
-                </Button>
-                <Button onPress={onUpdate}>Update Now</Button>
-              </Dialog.Actions>
-            </Dialog>
-          </Portal>
 
           <Snackbar
             visible={updateStatus !== "idle"}
