@@ -25,10 +25,9 @@ export default function MoreScreen() {
 
   const allLabels = {
     en: {
-      info: "Church Information",
+      info: "Community",
       about: "About Us",
       contact: "Connect with Us",
-      community: "Community",
       give: "Give",
       settings: "Settings",
       language: "Language",
@@ -36,10 +35,9 @@ export default function MoreScreen() {
       update: "Check for Updates",
     },
     zh: {
-      info: "教會資訊",
+      info: "社區與事工",
       about: "關於我們",
       contact: "聯繫我們",
-      community: "社區與事工",
       give: "捐獻",
       settings: "設定",
       language: "語言設定",
@@ -47,10 +45,9 @@ export default function MoreScreen() {
       update: "檢查更新",
     },
     "zh-cn": {
-      info: "教会信息",
+      info: "社区与事工",
       about: "关于我们",
       contact: "联系我们",
-      community: "社区与事工",
       give: "捐献",
       settings: "设置",
       language: "语言设置",
@@ -58,10 +55,9 @@ export default function MoreScreen() {
       update: "检查更新",
     },
     es: {
-      info: "Información de la iglesia",
+      info: "Comunidad",
       about: "Sobre nosotros",
       contact: "Conéctate con Nosotros",
-      community: "Comunidad",
       give: "Dar",
       settings: "Ajustes",
       language: "Idioma",
@@ -128,6 +124,14 @@ export default function MoreScreen() {
             right={(p) => <List.Icon {...p} icon="chevron-right" />}
             onPress={() => router.push("/more/contact")}
           />
+          <Animated.View style={getHighlightStyle("give")}>
+            <List.Item
+              title={labels.give}
+              left={(p) => <List.Icon {...p} icon="gift" />}
+              right={(p) => <List.Icon {...p} icon="open-in-new" />}
+              onPress={openOnlineGiving}
+            />
+          </Animated.View>
         </List.Section>
 
         <Divider />
@@ -147,20 +151,6 @@ export default function MoreScreen() {
               right={() => (
                 <Switch value={isDark} onValueChange={toggleTheme} />
               )}
-            />
-          </Animated.View>
-        </List.Section>
-
-        <Divider />
-
-        <List.Section>
-          <List.Subheader>{labels.community}</List.Subheader>
-          <Animated.View style={getHighlightStyle("give")}>
-            <List.Item
-              title={labels.give}
-              left={(p) => <List.Icon {...p} icon="gift" />}
-              right={(p) => <List.Icon {...p} icon="open-in-new" />}
-              onPress={openOnlineGiving}
             />
           </Animated.View>
         </List.Section>
