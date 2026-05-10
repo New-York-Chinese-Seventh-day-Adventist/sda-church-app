@@ -120,10 +120,14 @@ export const UpdateContext = createContext<{
   updateAvailable: boolean;
   onUpdate: () => void;
   onManualCheck: () => Promise<void>;
+  dismissUpdateDialog: () => void;
+  resetUpdateDialog: () => void;
 }>({
   updateAvailable: false,
   onUpdate: () => {},
   onManualCheck: async () => {},
+  dismissUpdateDialog: () => {},
+  resetUpdateDialog: () => {},
 });
 
 export default function RootLayout() {
@@ -137,6 +141,14 @@ export default function RootLayout() {
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "checking" | "up-to-date"
   >("idle");
+  const [updateDialogDismissed, setUpdateDialogDismissed] = useState(false);
+
+  const getSwUrl = () => {
+    // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
+    return window.location.pathname.includes("sda-church-app")
+      ? "/sda-church-app/sw.js"
+      : "/sw.js";
+  };
 
   useEffect(() => {
     // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
@@ -159,10 +171,7 @@ export default function RootLayout() {
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
       let refreshing = false;
       const registerSW = async () => {
-        // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
-        const swUrl = window.location.pathname.includes("sda-church-app")
-          ? "/sda-church-app/sw.js"
-          : "/sw.js";
+        const swUrl = getSwUrl();
 
         try {
           const registration = await navigator.serviceWorker.register(swUrl);
@@ -174,6 +183,7 @@ export default function RootLayout() {
             console.log("New SW already waiting.");
             setWaitingWorker(registration.waiting);
             setUpdateAvailable(true);
+            setUpdateDialogDismissed(false); // Allow dialog to show
           }
 
           // 2. Listen for new updates being found
@@ -187,6 +197,7 @@ export default function RootLayout() {
                     console.log("New SW content fetched and ready.");
                     setWaitingWorker(installingWorker);
                     setUpdateAvailable(true);
+                    setUpdateDialogDismissed(false); // Allow dialog to show
                     setUpdateStatus("idle");
                   } else {
                     console.log("SW installed for the first time.");
@@ -278,18 +289,21 @@ export default function RootLayout() {
 
   const handleManualCheck = async () => {
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      // If we already know an update is available but the user dismissed it,
+      // just show the dialog again immediately.
+      if (updateAvailable) {
+        setUpdateDialogDismissed(false);
+        return;
+      }
+
       setUpdateStatus("checking");
       try {
-        const swUrl = window.location.pathname.includes("sda-church-app")
-          ? "/sda-church-app/sw.js"
-          : "/sw.js";
+        const swUrl = getSwUrl();
 
         // FORCE a remote check by fetching the SW file with 'reload' cache mode.
         // This bypasses the local HTTP cache and ensures the browser has the latest
         // byte-code for comparison when registration.update() is called.
-        await fetch(swUrl, { cache: "reload", mode: "no-cors" }).catch(
-          () => {},
-        );
+        await fetch(swUrl, { cache: "reload" }).catch(() => {});
 
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
@@ -303,19 +317,23 @@ export default function RootLayout() {
           if (registration.waiting) {
             setWaitingWorker(registration.waiting);
             setUpdateAvailable(true);
+            setUpdateDialogDismissed(false); // Allow dialog to show again
             setUpdateStatus("idle");
-          } else if (!registration.installing && !registration.waiting) {
-            // No update was found during registration.update() and no worker is installing.
-            setUpdateStatus("up-to-date");
-          } else {
-            // An update is currently installing; the onupdatefound listener
+          } else if (registration.installing) {
+            // An update is already installing; the onupdatefound listener
             // in useEffect will handle showing the dialog once it's finished.
             console.log("Update is being installed...");
             setUpdateStatus("idle");
+          } else {
+            // No update was found during registration.update() and no worker is installing.
+            setUpdateStatus("up-to-date");
           }
+        } else {
+          setUpdateStatus("idle");
         }
       } catch (e) {
         console.error("Manual update check failed:", e);
+        setUpdateStatus("idle");
       }
     }
   };
@@ -367,6 +385,8 @@ export default function RootLayout() {
             updateAvailable,
             onUpdate: handleUpdate,
             onManualCheck: handleManualCheck,
+            dismissUpdateDialog: () => setUpdateDialogDismissed(true),
+            resetUpdateDialog: () => setUpdateDialogDismissed(false),
           }}
         >
           <RootLayoutNav
@@ -376,6 +396,7 @@ export default function RootLayout() {
             onUpdate={handleUpdate}
             updateStatus={updateStatus}
             onDismissStatus={() => setUpdateStatus("idle")}
+            updateDialogDismissed={updateDialogDismissed}
           />
         </UpdateContext.Provider>
       </ThemeContext.Provider>
@@ -390,6 +411,7 @@ function RootLayoutNav({
   onUpdate,
   updateStatus,
   onDismissStatus,
+  updateDialogDismissed,
 }: {
   showSetup: boolean;
   onCompleteSetup: () => void;
@@ -397,14 +419,24 @@ function RootLayoutNav({
   onUpdate: () => void;
   updateStatus: "idle" | "checking" | "up-to-date";
   onDismissStatus: () => void;
+  updateDialogDismissed: boolean;
 }) {
   const { isDark } = useContext(ThemeContext);
   const { language } = useContext(LanguageContext);
+  const { dismissUpdateDialog, resetUpdateDialog } = useContext(UpdateContext);
   const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
-    setDialogVisible(updateAvailable);
-  }, [updateAvailable]);
+    if (!updateAvailable) {
+      resetUpdateDialog();
+    }
+  }, [updateAvailable, resetUpdateDialog]);
+
+  useEffect(() => {
+    if (updateAvailable && !updateDialogDismissed) {
+      setDialogVisible(true);
+    }
+  }, [updateAvailable, updateDialogDismissed]);
 
   const snackbarLabels = {
     en: { checking: "Checking for updates...", upToDate: "App is up to date" },
@@ -432,7 +464,10 @@ function RootLayoutNav({
           <Portal>
             <Dialog
               visible={dialogVisible}
-              onDismiss={() => setDialogVisible(false)}
+              onDismiss={() => {
+                setDialogVisible(false);
+                dismissUpdateDialog();
+              }}
             >
               <Dialog.Title>Update Available</Dialog.Title>
               <Dialog.Content>
@@ -442,7 +477,14 @@ function RootLayoutNav({
                 </Text>
               </Dialog.Content>
               <Dialog.Actions>
-                <Button onPress={() => setDialogVisible(false)}>Later</Button>
+                <Button
+                  onPress={() => {
+                    setDialogVisible(false);
+                    dismissUpdateDialog();
+                  }}
+                >
+                  Later
+                </Button>
                 <Button onPress={onUpdate}>Update Now</Button>
               </Dialog.Actions>
             </Dialog>

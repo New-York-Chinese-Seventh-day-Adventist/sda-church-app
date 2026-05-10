@@ -154,7 +154,7 @@ export default function MoreScreen() {
                   v{packageJson.version}
                 </Text>
               )}
-              onPress={onManualCheck}
+              onPress={() => onManualCheck()}
             />
           )}
         </List.Section>
