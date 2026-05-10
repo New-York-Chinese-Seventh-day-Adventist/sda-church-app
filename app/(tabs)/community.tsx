@@ -3,13 +3,13 @@ import React, { useContext } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Divider, List, useTheme } from "react-native-paper";
 
-export default function CalendarScreen() {
+export default function CommunityScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
 
   const allLabels = {
     en: {
-      header: "Calendar",
+      header: "Community",
       elmhurstTitle: "Elmhurst",
       brooklynTitle: "Brooklyn (Bay Ridge)",
       flushingFellowshipTitle: "Flushing Fellowship (Mandarin)",
@@ -36,7 +36,7 @@ export default function CalendarScreen() {
       },
     },
     zh: {
-      header: "教會日曆",
+      header: "教會社群",
       elmhurstTitle: "艾姆赫斯特",
       brooklynTitle: "布魯克林 (Bay Ridge)",
       flushingFellowshipTitle: "法拉盛團契 (國語)",
@@ -63,7 +63,7 @@ export default function CalendarScreen() {
       },
     },
     "zh-cn": {
-      header: "教会日历",
+      header: "教会社区",
       elmhurstTitle: "艾姆赫斯特",
       brooklynTitle: "布鲁克林 (Bay Ridge)",
       flushingFellowshipTitle: "法拉盛团契 (国语)",
@@ -90,7 +90,7 @@ export default function CalendarScreen() {
       },
     },
     es: {
-      header: "Calendario",
+      header: "Comunidad",
       elmhurstTitle: "Elmhurst",
       brooklynTitle: "Brooklyn (Bay Ridge)",
       flushingFellowshipTitle: "Compañerismo en Flushing (Mandarín)",

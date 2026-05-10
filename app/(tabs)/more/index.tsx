@@ -25,7 +25,7 @@ export default function MoreScreen() {
 
   const allLabels = {
     en: {
-      info: "Community",
+      info: "Information",
       about: "About Us",
       contact: "Connect with Us",
       give: "Give",
@@ -35,7 +35,7 @@ export default function MoreScreen() {
       update: "Check for Updates",
     },
     zh: {
-      info: "社區與事工",
+      info: "教會資訊",
       about: "關於我們",
       contact: "聯繫我們",
       give: "捐獻",
@@ -45,7 +45,7 @@ export default function MoreScreen() {
       update: "檢查更新",
     },
     "zh-cn": {
-      info: "社区与事工",
+      info: "教会信息",
       about: "关于我们",
       contact: "联系我们",
       give: "捐献",
@@ -55,7 +55,7 @@ export default function MoreScreen() {
       update: "检查更新",
     },
     es: {
-      info: "Comunidad",
+      info: "Información",
       about: "Sobre nosotros",
       contact: "Conéctate con Nosotros",
       give: "Dar",

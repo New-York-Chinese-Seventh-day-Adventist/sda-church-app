@@ -33,13 +33,29 @@ export const GlobalHeader = (props: any) => {
     en: {
       searchPlaceholder: "Search app...",
       home: { title: "Home", keywords: ["welcome", "start"] },
-      sermons: {
-        title: "Sermons",
-        keywords: ["video", "preach", "message", "spotify", "youtube"],
+      resources: {
+        title: "Resources",
+        keywords: [
+          "video",
+          "preach",
+          "message",
+          "spotify",
+          "youtube",
+          "bible",
+          "hymnal",
+          "spiritual",
+        ],
       },
-      calendar: {
-        title: "Calendar",
-        keywords: ["events", "schedule", "sabbath"],
+      community: {
+        title: "Community",
+        keywords: [
+          "events",
+          "schedule",
+          "sabbath",
+          "groups",
+          "volunteer",
+          "in-person",
+        ],
       },
       about: { title: "About Us", keywords: ["history", "beliefs", "church"] },
       connect: {
@@ -69,13 +85,31 @@ export const GlobalHeader = (props: any) => {
     zh: {
       searchPlaceholder: "搜尋...",
       home: { title: "首頁", keywords: ["歡迎", "開始", "home"] },
-      sermons: {
-        title: "講道播客",
-        keywords: ["視頻", "證道", "信息", "spotify", "youtube", "sermons"],
+      resources: {
+        title: "資源庫",
+        keywords: [
+          "視頻",
+          "證道",
+          "信息",
+          "spotify",
+          "youtube",
+          "聖經",
+          "詩歌",
+          "sermons",
+          "resources",
+        ],
       },
-      calendar: {
-        title: "教會日曆",
-        keywords: ["活動", "時間表", "安息日", "calendar"],
+      community: {
+        title: "教會社群",
+        keywords: [
+          "活動",
+          "時間表",
+          "安息日",
+          "小組",
+          "義工",
+          "calendar",
+          "community",
+        ],
       },
       about: { title: "關於我們", keywords: ["歷史", "信仰", "教會", "about"] },
       connect: {
@@ -114,13 +148,31 @@ export const GlobalHeader = (props: any) => {
     "zh-cn": {
       searchPlaceholder: "搜索...",
       home: { title: "首页", keywords: ["欢迎", "开始", "home"] },
-      sermons: {
-        title: "讲道播客",
-        keywords: ["视频", "证道", "信息", "spotify", "youtube", "sermons"],
+      resources: {
+        title: "资源库",
+        keywords: [
+          "视频",
+          "证道",
+          "信息",
+          "spotify",
+          "youtube",
+          "圣经",
+          "诗歌",
+          "sermons",
+          "resources",
+        ],
       },
-      calendar: {
-        title: "教会日历",
-        keywords: ["活动", "时间表", "安息日", "calendar"],
+      community: {
+        title: "教会社区",
+        keywords: [
+          "活动",
+          "时间表",
+          "安息日",
+          "小组",
+          "义工",
+          "calendar",
+          "community",
+        ],
       },
       about: { title: "关于我们", keywords: ["历史", "信仰", "教会", "about"] },
       connect: {
@@ -159,20 +211,31 @@ export const GlobalHeader = (props: any) => {
     es: {
       searchPlaceholder: "Buscar...",
       home: { title: "Inicio", keywords: ["bienvenido", "comenzar", "home"] },
-      sermons: {
-        title: "Sermones",
+      resources: {
+        title: "Recursos",
         keywords: [
           "video",
           "predicación",
           "mensaje",
           "spotify",
           "youtube",
+          "biblia",
+          "himnario",
           "sermons",
+          "resources",
         ],
       },
-      calendar: {
-        title: "Calendario",
-        keywords: ["eventos", "horario", "sábado", "calendar"],
+      community: {
+        title: "Comunidad",
+        keywords: [
+          "eventos",
+          "horario",
+          "sábado",
+          "grupos",
+          "voluntario",
+          "calendar",
+          "community",
+        ],
       },
       about: {
         title: "Sobre Nosotros",
@@ -223,15 +286,15 @@ export const GlobalHeader = (props: any) => {
       isPage: true,
     },
     {
-      ...searchLabels.sermons,
-      icon: "book-open-variant",
-      route: "/sermons",
+      ...searchLabels.community,
+      icon: "account-group",
+      route: "/community",
       isPage: true,
     },
     {
-      ...searchLabels.calendar,
-      icon: "calendar",
-      route: "/calendar",
+      ...searchLabels.resources,
+      icon: "book-open-variant",
+      route: "/resources",
       isPage: true,
     },
     {
@@ -400,16 +463,26 @@ export default function TabLayout() {
   const allLabels = {
     en: {
       home: "Home",
-      calendar: "Calendar",
-      sermons: "Sermons",
+      community: "Community",
+      resources: "Resources",
       more: "More",
     },
-    zh: { home: "首頁", calendar: "日曆", sermons: "講道", more: "更多" },
-    "zh-cn": { home: "首页", calendar: "日历", sermons: "讲道", more: "更多" },
+    zh: {
+      home: "首頁",
+      community: "教會社群",
+      resources: "資源庫",
+      more: "更多",
+    },
+    "zh-cn": {
+      home: "首页",
+      community: "教会社区",
+      resources: "资源库",
+      more: "更多",
+    },
     es: {
       home: "Inicio",
-      calendar: "Calendario",
-      sermons: "Sermones",
+      community: "Comunidad",
+      resources: "Recursos",
       more: "Más",
     },
   };
@@ -439,9 +512,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="sermons"
+        name="community"
         options={{
-          title: labels.sermons,
+          title: labels.community,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="account-group" color={color as string} />
+          ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.navigate("/community");
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="resources"
+        options={{
+          title: labels.resources,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="book-open-variant" color={color as string} />
           ),
@@ -449,22 +537,7 @@ export default function TabLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.navigate("/sermons");
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: labels.calendar,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="calendar" color={color as string} />
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate("/calendar");
+            router.navigate("/resources");
           },
         }}
       />

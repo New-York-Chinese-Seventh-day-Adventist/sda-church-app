@@ -5,7 +5,7 @@ import { Button, Card, Text, useTheme } from "react-native-paper";
 import { openSpotifyPodcast } from "../../utils/spotifyService";
 import { openSabbathStream } from "../../utils/youtubeService";
 
-export default function SermonsScreen() {
+export default function ResourcesScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
 
