@@ -424,37 +424,68 @@ export default function AboutScreen() {
             style={styles.image}
             accessibilityLabel="Church banner"
           />
-          <Title style={styles.churchName}>{churchName}</Title>
+          <Title style={[styles.churchName, { color: theme.colors.primary }]}>
+            {churchName}
+          </Title>
         </View>
 
         <View style={styles.section}>
-          <Title style={styles.sectionTitle}>{labels.aboutSDA}</Title>
+          <Title
+            style={[
+              styles.sectionTitle,
+              {
+                color: theme.colors.primary,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {labels.aboutSDA}
+          </Title>
           <Paragraph style={styles.description}>
             {labels.sdaDescription}
           </Paragraph>
           <View style={styles.pillarContainer}>
             {(labels as any).pillarItems.map((item: any, index: number) => (
-              <View key={index} style={styles.pillarCard}>
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={24}
-                  color={theme.colors.primary}
-                />
-                <Text
-                  variant="labelSmall"
-                  style={styles.pillarText}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  {item.title}
-                </Text>
-              </View>
+              <Card key={index} style={styles.pillarCard} mode="elevated">
+                <View style={styles.pillarContent}>
+                  <Avatar.Icon
+                    size={40}
+                    icon={({ size, color }) => (
+                      <MaterialCommunityIcons
+                        name={item.icon}
+                        size={size}
+                        color={color}
+                      />
+                    )}
+                    backgroundColor={theme.colors.primary}
+                    color={theme.colors.onPrimary}
+                  />
+                  <Text
+                    variant="labelSmall"
+                    style={styles.pillarText}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {item.title}
+                  </Text>
+                </View>
+              </Card>
             ))}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Title style={styles.sectionTitle}>{labels.history}</Title>
+          <Title
+            style={[
+              styles.sectionTitle,
+              {
+                color: theme.colors.primary,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {labels.history}
+          </Title>
           <Text variant="bodyMedium">{labels.historySubtext}</Text>
           <View style={styles.timelineContainer}>
             {(labels as any).milestoneItems.map((item: any, index: number) => (
@@ -465,9 +496,18 @@ export default function AboutScreen() {
                     { backgroundColor: theme.colors.primary },
                   ]}
                 >
-                  <Text style={styles.yearText}>{item.year}</Text>
+                  <Text
+                    style={[styles.yearText, { color: theme.colors.onPrimary }]}
+                  >
+                    {item.year}
+                  </Text>
                 </View>
-                <View style={styles.connectorLine} />
+                <View
+                  style={[
+                    styles.connectorLine,
+                    { backgroundColor: theme.colors.outlineVariant },
+                  ]}
+                />
                 <Text variant="labelSmall" style={styles.milestoneEvent}>
                   {item.event}
                 </Text>
@@ -477,7 +517,17 @@ export default function AboutScreen() {
         </View>
 
         <View style={styles.section}>
-          <Title style={styles.sectionTitle}>{labels.beliefs}</Title>
+          <Title
+            style={[
+              styles.sectionTitle,
+              {
+                color: theme.colors.primary,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {labels.beliefs}
+          </Title>
           <Text variant="bodyMedium" style={styles.subtext}>
             {labels.beliefsSubtext}
           </Text>
@@ -526,7 +576,17 @@ export default function AboutScreen() {
         </View>
 
         <View style={styles.section}>
-          <Title style={styles.sectionTitle}>{labels.organization}</Title>
+          <Title
+            style={[
+              styles.sectionTitle,
+              {
+                color: theme.colors.primary,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {labels.organization}
+          </Title>
           <Card style={styles.orgCard} mode="outlined">
             <Card.Content>
               <Text
@@ -598,7 +658,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "bold",
     fontSize: 26,
-    color: "#1A237E",
+    color: undefined, // Will be set by theme in style array if needed, but we'll use inline
   },
   section: {
     paddingHorizontal: 16,
@@ -606,10 +666,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 12,
-    color: "#1A237E", // Primary Dark Blue
     fontWeight: "bold",
     borderBottomWidth: 2,
-    borderBottomColor: "#E0E0E0",
     paddingBottom: 4,
   },
   description: {
@@ -639,11 +697,12 @@ const styles = StyleSheet.create({
   },
   pillarCard: {
     flex: 1,
-    backgroundColor: "#F0F4F8",
-    borderRadius: 12,
+    marginHorizontal: 4,
+  },
+  pillarContent: {
     padding: 12,
     alignItems: "center",
-    marginHorizontal: 4,
+    justifyContent: "center",
   },
   pillarText: {
     marginTop: 4,
@@ -666,14 +725,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   yearText: {
-    color: "white",
     fontWeight: "bold",
     fontSize: 12,
   },
   connectorLine: {
     width: 2,
     height: 30,
-    backgroundColor: "#E0E0E0",
   },
   milestoneEvent: {
     textAlign: "center",
