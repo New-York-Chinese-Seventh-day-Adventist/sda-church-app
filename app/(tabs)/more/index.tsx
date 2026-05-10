@@ -1,8 +1,15 @@
 import { LanguageContext, ThemeContext } from "@/constants/Contexts";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Animated, Platform, ScrollView, StyleSheet } from "react-native";
-import { Divider, List, Switch, Text, useTheme } from "react-native-paper";
+import { Animated, Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Divider,
+  List,
+  Switch,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import packageJson from "../../../package.json";
 import { openOnlineGiving } from "../../../utils/externalLinks";
 import { UpdateContext } from "../../_layout";
@@ -142,25 +149,6 @@ export default function MoreScreen() {
               )}
             />
           </Animated.View>
-          {Platform.OS === "web" && (
-            <List.Item
-              title={labels.update}
-              left={(p) => <List.Icon {...p} icon="update" />}
-              right={() => (
-                <Text
-                  variant="bodyLarge"
-                  style={{ alignSelf: "center", opacity: 0.6, marginRight: 8 }}
-                >
-                  v{packageJson.version}
-                </Text>
-              )}
-              onPress={updateStatus === "idle" ? onManualCheck : undefined}
-              style={[
-                updateStatus !== "idle" && { opacity: 0.5 },
-                { backgroundColor: "transparent" },
-              ]}
-            />
-          )}
         </List.Section>
 
         <Divider />
@@ -176,6 +164,18 @@ export default function MoreScreen() {
             />
           </Animated.View>
         </List.Section>
+
+        <View style={styles.footer}>
+          <TouchableRipple
+            onPress={Platform.OS === "web" ? () => onManualCheck() : undefined}
+            disabled={updateStatus !== "idle"}
+            style={styles.versionRipple}
+          >
+            <Text variant="labelSmall" style={styles.versionText}>
+              Version {packageJson.version}
+            </Text>
+          </TouchableRipple>
+        </View>
       </ScrollView>
     </>
   );
@@ -184,5 +184,18 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  footer: {
+    marginTop: 20,
+    marginBottom: 40,
+    alignItems: "center",
+  },
+  versionRipple: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  versionText: {
+    opacity: 0.5,
   },
 });
