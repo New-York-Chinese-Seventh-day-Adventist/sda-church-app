@@ -197,6 +197,9 @@ export default function RootLayout() {
         const swUrl = getSwUrl();
 
         try {
+          // Ensure we start with a clean cache on every app launch to prevent reversions.
+          await nuclearRefresh();
+
           // Bypassing the HTTP cache for the service worker file itself ensures that
           // the browser sees the byte-change immediately on app start. This prevents
           // "reversions" where the app might otherwise load an old cached registration
@@ -238,7 +241,12 @@ export default function RootLayout() {
           };
 
           // Check for updates when the app becomes visible again
-          const handleFocus = () => registration.update().catch(console.error);
+          const handleFocus = async () => {
+            // Every time the user reopens the app (e.g., coming back from the home screen),
+            // we clean the cache and check for updates to ensure they aren't on a stale version.
+            await nuclearRefresh();
+            registration.update().catch(console.error);
+          };
           window.addEventListener("focus", handleFocus);
         } catch (error) {
           console.error("SW registration failed:", error);
