@@ -17,7 +17,14 @@ import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Alert, DevSettings, LogBox, Platform, StyleSheet } from "react-native";
+import {
+  Alert,
+  AppState,
+  DevSettings,
+  LogBox,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -260,6 +267,7 @@ export default function RootLayout() {
     }
 
     // Register service worker for PWA support on web
+    let subscription: { remove: () => void } | undefined;
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
       let refreshing = false;
       const registerSW = async () => {
@@ -308,26 +316,6 @@ export default function RootLayout() {
               };
             }
           };
-
-          // Check for updates when the app becomes visible again
-          const handleVisibilityChange = async () => {
-            if (document.visibilityState === "visible") {
-              console.log("App resumed - performing freshness check");
-              // Force clear cache and fetch index to ensure the update check sees fresh metadata
-              await nuclearRefresh();
-
-              const reg = await navigator.serviceWorker.getRegistration();
-              if (reg) {
-                // If a worker is already waiting (from a previous background check), activate it immediately.
-                if (reg.waiting) {
-                  reg.waiting.postMessage({ type: "SKIP_WAITING" });
-                } else {
-                  reg.update().catch(console.error);
-                }
-              }
-            }
-          };
-          window.addEventListener("visibilitychange", handleVisibilityChange);
         } catch (error) {
           console.error("SW registration failed:", error);
         }
@@ -339,6 +327,14 @@ export default function RootLayout() {
           refreshing = true;
           console.log("New SW activated, reloading...");
           window.location.reload();
+        }
+      });
+
+      // Use AppState to detect when the PWA is resumed from suspension (common on iOS)
+      subscription = AppState.addEventListener("change", (nextAppState) => {
+        if (nextAppState === "active") {
+          console.log("App resumed - performing freshness check");
+          handleManualCheck({ isAuto: true });
         }
       });
 
@@ -384,6 +380,10 @@ export default function RootLayout() {
       }
     }
     prepare();
+
+    return () => {
+      if (subscription) subscription.remove();
+    };
   }, []);
 
   const handleSetLanguage = async (lang: SupportedLanguage) => {
