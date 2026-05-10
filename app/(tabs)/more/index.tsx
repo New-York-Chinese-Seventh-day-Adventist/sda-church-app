@@ -10,7 +10,7 @@ import { UpdateContext } from "../../_layout";
 export default function MoreScreen() {
   const { language } = useContext(LanguageContext);
   const { isDark, toggleTheme } = useContext(ThemeContext);
-  const { onManualCheck } = useContext(UpdateContext);
+  const { onManualCheck, updateStatus } = useContext(UpdateContext);
   const theme = useTheme();
   const { highlight } = useLocalSearchParams();
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
@@ -154,7 +154,11 @@ export default function MoreScreen() {
                   v{packageJson.version}
                 </Text>
               )}
-              onPress={() => onManualCheck()}
+              onPress={updateStatus === "idle" ? onManualCheck : undefined}
+              style={[
+                updateStatus !== "idle" && { opacity: 0.5 },
+                { backgroundColor: "transparent" },
+              ]}
             />
           )}
         </List.Section>

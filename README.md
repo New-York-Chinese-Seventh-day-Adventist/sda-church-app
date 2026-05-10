@@ -45,6 +45,8 @@ npm run deploy
 
 Once deployed, you may install app directly from browser `codesammich.github.io/sda-church-app/` on Safari (iOS) or Chrome (Android).
 
+Note, if you get a black screen, open the link in browser -> Network tab to see if any assets failed to load. Any failed asset loading (400s) will cause the entire app to fail to load.
+
 ## Testing
 
 ### iOS

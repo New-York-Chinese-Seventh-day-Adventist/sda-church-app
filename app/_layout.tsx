@@ -34,7 +34,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary
+  ErrorBoundary,
 } from "expo-router";
 
 // Suppress all warning logs in the UI
@@ -122,12 +122,14 @@ export const UpdateContext = createContext<{
   onManualCheck: () => Promise<void>;
   dismissUpdateDialog: () => void;
   resetUpdateDialog: () => void;
+  updateStatus: "idle" | "checking" | "up-to-date";
 }>({
   updateAvailable: false,
   onUpdate: () => {},
   onManualCheck: async () => {},
   dismissUpdateDialog: () => {},
   resetUpdateDialog: () => {},
+  updateStatus: "idle",
 });
 
 export default function RootLayout() {
@@ -142,6 +144,16 @@ export default function RootLayout() {
     "idle" | "checking" | "up-to-date"
   >("idle");
   const [updateDialogDismissed, setUpdateDialogDismissed] = useState(false);
+
+  const handleDismissUpdateDialog = async () => {
+    setUpdateDialogDismissed(true);
+    await AsyncStorage.setItem("update-dismissed", "true");
+  };
+
+  const handleResetUpdateDialog = async () => {
+    setUpdateDialogDismissed(false);
+    await AsyncStorage.setItem("update-dismissed", "false");
+  };
 
   const getSwUrl = () => {
     // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
@@ -174,7 +186,17 @@ export default function RootLayout() {
         const swUrl = getSwUrl();
 
         try {
-          const registration = await navigator.serviceWorker.register(swUrl);
+          // Bypassing the HTTP cache for the service worker file itself ensures that
+          // the browser sees the byte-change immediately on app start. This prevents
+          // "reversions" where the app might otherwise load an old cached registration
+          // during a cold start/restart.
+          await fetch(swUrl, { cache: "reload" }).catch(() => {});
+
+          const registration = await navigator.serviceWorker.register(swUrl, {
+            // Ensures the browser checks the network for sw.js instead of its HTTP cache,
+            // which is a primary cause of "reversion" issues on cold starts.
+            updateViaCache: "none",
+          });
           console.log("SW registered with scope:", registration.scope);
           registration.update();
 
@@ -183,7 +205,7 @@ export default function RootLayout() {
             console.log("New SW already waiting.");
             setWaitingWorker(registration.waiting);
             setUpdateAvailable(true);
-            setUpdateDialogDismissed(false); // Allow dialog to show
+            handleResetUpdateDialog(); // Ensure prompt shows if update hasn't been applied
           }
 
           // 2. Listen for new updates being found
@@ -197,7 +219,7 @@ export default function RootLayout() {
                     console.log("New SW content fetched and ready.");
                     setWaitingWorker(installingWorker);
                     setUpdateAvailable(true);
-                    setUpdateDialogDismissed(false); // Allow dialog to show
+                    handleResetUpdateDialog(); // Force show for fresh updates
                     setUpdateStatus("idle");
                   } else {
                     console.log("SW installed for the first time.");
@@ -233,11 +255,13 @@ export default function RootLayout() {
 
     async function prepare() {
       try {
-        const [savedLang, savedTheme, setupDone] = await Promise.all([
-          AsyncStorage.getItem("user-language"),
-          AsyncStorage.getItem("user-theme"),
-          AsyncStorage.getItem("has-completed-setup"),
-        ]);
+        const [savedLang, savedTheme, setupDone, dismissedUpdate] =
+          await Promise.all([
+            AsyncStorage.getItem("user-language"),
+            AsyncStorage.getItem("user-theme"),
+            AsyncStorage.getItem("has-completed-setup"),
+            AsyncStorage.getItem("update-dismissed"),
+          ]);
 
         // Always determine fallbacks first
         const systemLang = getSystemLanguage();
@@ -246,6 +270,7 @@ export default function RootLayout() {
         // Use saved settings if they exist, otherwise fallback to system defaults
         setLanguage((savedLang as SupportedLanguage) || systemLang);
         setIsDark(savedTheme ? savedTheme === "dark" : systemThemeIsDark);
+        setUpdateDialogDismissed(dismissedUpdate === "true");
 
         if (setupDone !== "true") {
           setShowSetup(true);
@@ -277,7 +302,23 @@ export default function RootLayout() {
     await AsyncStorage.setItem("user-theme", next ? "dark" : "light");
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
+    // Perform a "Nuclear Refresh" for web to prevent reversions.
+    if (Platform.OS === "web") {
+      try {
+        // 1. Clear all Cache Storage buckets.
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+        // 2. Bypass HTTP cache for the main entry point. This forces the browser
+        // to fetch a fresh index.html from the server before the reload.
+        await fetch(window.location.href, { cache: "reload" }).catch(() => {});
+      } catch (e) {
+        console.warn("Update cleanup failed:", e);
+      }
+    }
+
     if (waitingWorker) {
       waitingWorker.postMessage({ type: "SKIP_WAITING" });
     } else if (Platform.OS === "web") {
@@ -289,16 +330,22 @@ export default function RootLayout() {
 
   const handleManualCheck = async () => {
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
-      // If we already know an update is available but the user dismissed it,
-      // just show the dialog again immediately.
-      if (updateAvailable) {
-        setUpdateDialogDismissed(false);
-        return;
-      }
-
+      // Reset the dismissal flag immediately so the "Check for Updates" button
+      // is responsive even if the user previously clicked "Later".
+      handleResetUpdateDialog();
       setUpdateStatus("checking");
       try {
         const swUrl = getSwUrl();
+
+        // Force clear all Cache Storage buckets. This ensures that if the manual check
+        // discovers a new version, the browser doesn't have any lingering old assets
+        // that could cause a reversion on the next cold start.
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key))).catch(
+            () => {},
+          );
+        }
 
         // FORCE a remote check by fetching the SW file with 'reload' cache mode.
         // This bypasses the local HTTP cache and ensures the browser has the latest
@@ -317,16 +364,27 @@ export default function RootLayout() {
           if (registration.waiting) {
             setWaitingWorker(registration.waiting);
             setUpdateAvailable(true);
-            setUpdateDialogDismissed(false); // Allow dialog to show again
             setUpdateStatus("idle");
+            // Auto-trigger the total refresh for manual checks as requested.
+            await handleUpdate();
           } else if (registration.installing) {
-            // An update is already installing; the onupdatefound listener
-            // in useEffect will handle showing the dialog once it's finished.
-            console.log("Update is being installed...");
-            setUpdateStatus("idle");
+            // If an update is currently installing, wait for it to finish and then auto-update.
+            setUpdateStatus("checking");
+            const installingWorker = registration.installing;
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === "installed") {
+                setWaitingWorker(installingWorker);
+                setUpdateAvailable(true);
+                handleUpdate();
+              }
+            };
           } else {
-            // No update was found during registration.update() and no worker is installing.
+            // No update was found; clear any potentially stale state.
+            setUpdateAvailable(false);
             setUpdateStatus("up-to-date");
+            // Even if "up-to-date", we trigger a reload after a short delay
+            // to fulfill the "total refresh" request and clear any potential reversions.
+            setTimeout(() => handleUpdate(), 1200);
           }
         } else {
           setUpdateStatus("idle");
@@ -385,8 +443,9 @@ export default function RootLayout() {
             updateAvailable,
             onUpdate: handleUpdate,
             onManualCheck: handleManualCheck,
-            dismissUpdateDialog: () => setUpdateDialogDismissed(true),
-            resetUpdateDialog: () => setUpdateDialogDismissed(false),
+            dismissUpdateDialog: handleDismissUpdateDialog,
+            resetUpdateDialog: handleResetUpdateDialog,
+            updateStatus,
           }}
         >
           <RootLayoutNav
@@ -435,6 +494,8 @@ function RootLayoutNav({
   useEffect(() => {
     if (updateAvailable && !updateDialogDismissed) {
       setDialogVisible(true);
+    } else {
+      setDialogVisible(false);
     }
   }, [updateAvailable, updateDialogDismissed]);
 

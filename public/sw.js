@@ -2,12 +2,20 @@
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
 // This controls a pop-up notification to users when a new version of the app is available for install
 // DO NOT EDIT THIS MANUALLY, as it will be overwritten by the next PR update.
-const VERSION = "0.9.3";
+const VERSION = "0.9.19";
 
 self.addEventListener("install", (event) => {});
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      // Force clear any browser-level caches that might be holding onto old versions of index.html or JS bundles.
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((key) => caches.delete(key)))),
+    ]),
+  );
 });
 
 self.addEventListener("fetch", (event) => {
