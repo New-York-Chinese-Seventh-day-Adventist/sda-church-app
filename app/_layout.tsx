@@ -280,22 +280,38 @@ export default function RootLayout() {
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
       setUpdateStatus("checking");
       try {
+        const swUrl = window.location.pathname.includes("sda-church-app")
+          ? "/sda-church-app/sw.js"
+          : "/sw.js";
+
+        // FORCE a remote check by fetching the SW file with 'reload' cache mode.
+        // This bypasses the local HTTP cache and ensures the browser has the latest
+        // byte-code for comparison when registration.update() is called.
+        await fetch(swUrl, { cache: "reload", mode: "no-cors" }).catch(
+          () => {},
+        );
+
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
           // Triggers the browser's native PWA update check (compares sw.js).
           await registration.update();
 
+          // Give the browser a moment to update properties on the registration object
+          // as 'waiting' or 'installing' might not be populated immediately.
+          await new Promise((resolve) => setTimeout(resolve, 800));
+
           if (registration.waiting) {
             setWaitingWorker(registration.waiting);
             setUpdateAvailable(true);
             setUpdateStatus("idle");
-          } else if (!registration.installing) {
+          } else if (!registration.installing && !registration.waiting) {
             // No update was found during registration.update() and no worker is installing.
             setUpdateStatus("up-to-date");
           } else {
             // An update is currently installing; the onupdatefound listener
             // in useEffect will handle showing the dialog once it's finished.
             console.log("Update is being installed...");
+            setUpdateStatus("idle");
           }
         }
       } catch (e) {
