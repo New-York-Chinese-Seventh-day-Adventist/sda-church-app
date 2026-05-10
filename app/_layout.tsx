@@ -17,7 +17,7 @@ import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Alert, DevSettings, LogBox, Platform } from "react-native";
+import { Alert, DevSettings, LogBox, Platform, StyleSheet } from "react-native";
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -26,7 +26,10 @@ import {
   adaptNavigationTheme,
 } from "react-native-paper";
 import "react-native-reanimated";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -145,6 +148,11 @@ export default function RootLayout() {
 
   const nuclearRefresh = async () => {
     if (Platform.OS === "web") {
+      // If the user is offline, we must NOT clear the caches.
+      // Wiping the cache while offline would immediately break the PWA's
+      // ability to serve the app on the next reload or lazy-load navigation.
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
+
       try {
         if ("caches" in window) {
           const keys = await caches.keys();
@@ -172,6 +180,9 @@ export default function RootLayout() {
 
   const handleManualCheck = async (options?: { isAuto?: boolean }) => {
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      // Do not attempt to check for updates if we know we are offline.
+      if (!navigator.onLine) return;
+
       // Only show the "Checking..." snackbar for manual clicks to avoid UI noise on launch
       if (!options?.isAuto) {
         setUpdateStatus("checking");
@@ -431,29 +442,33 @@ export default function RootLayout() {
   }
 
   return (
-    <LanguageContext.Provider
-      value={{ language, setLanguage: handleSetLanguage }}
-    >
-      <ThemeContext.Provider value={{ isDark, toggleTheme: handleToggleTheme }}>
-        <UpdateContext.Provider
-          value={{
-            updateAvailable,
-            onUpdate: handleUpdate,
-            onManualCheck: handleManualCheck,
-            updateStatus,
-          }}
+    <SafeAreaProvider>
+      <LanguageContext.Provider
+        value={{ language, setLanguage: handleSetLanguage }}
+      >
+        <ThemeContext.Provider
+          value={{ isDark, toggleTheme: handleToggleTheme }}
         >
-          <RootLayoutNav
-            showSetup={showSetup}
-            onCompleteSetup={onCompleteSetup}
-            updateAvailable={updateAvailable}
-            onUpdate={handleUpdate}
-            updateStatus={updateStatus}
-            onDismissStatus={() => setUpdateStatus("idle")}
-          />
-        </UpdateContext.Provider>
-      </ThemeContext.Provider>
-    </LanguageContext.Provider>
+          <UpdateContext.Provider
+            value={{
+              updateAvailable,
+              onUpdate: handleUpdate,
+              onManualCheck: handleManualCheck,
+              updateStatus,
+            }}
+          >
+            <RootLayoutNav
+              showSetup={showSetup}
+              onCompleteSetup={onCompleteSetup}
+              updateAvailable={updateAvailable}
+              onUpdate={handleUpdate}
+              updateStatus={updateStatus}
+              onDismissStatus={() => setUpdateStatus("idle")}
+            />
+          </UpdateContext.Provider>
+        </ThemeContext.Provider>
+      </LanguageContext.Provider>
+    </SafeAreaProvider>
   );
 }
 
@@ -474,14 +489,32 @@ function RootLayoutNav({
 }) {
   const { isDark } = useContext(ThemeContext);
   const { language } = useContext(LanguageContext);
+  const insets = useSafeAreaInsets();
 
   const snackbarLabels = {
-    en: { checking: "Checking for updates...", upToDate: "App is up to date" },
-    zh: { checking: "正在檢查更新...", upToDate: "應用程式已是最新版本" },
-    "zh-cn": { checking: "正在检查更新...", upToDate: "应用已是最新版本" },
+    en: {
+      checking: "Checking for updates...",
+      upToDate: "App is up to date",
+      available: "Update available",
+      refresh: "RESTART",
+    },
+    zh: {
+      checking: "正在檢查更新...",
+      upToDate: "應用程式已是最新版本",
+      available: "發現新版本",
+      refresh: "重啟",
+    },
+    "zh-cn": {
+      checking: "正在检查更新...",
+      upToDate: "应用已是最新版本",
+      available: "发现新版本",
+      refresh: "重启",
+    },
     es: {
       checking: "Buscando actualizaciones...",
       upToDate: "La aplicación está actualizada",
+      available: "Actualización disponible",
+      refresh: "REINICIAR",
     },
   };
 
@@ -489,26 +522,52 @@ function RootLayoutNav({
     snackbarLabels[language as keyof typeof snackbarLabels] ||
     snackbarLabels.en;
 
-  return (
-    <SafeAreaProvider>
-      <PaperProvider theme={isDark ? customDarkTheme : customLightTheme}>
-        <ThemeProvider value={isDark ? DarkTheme : LightTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-          {showSetup && <InitialSetup onComplete={onCompleteSetup} />}
+  // Positioning the snackbar at the top avoids conflicts with bottom navigation,
+  // gesture indicators, and the software keyboard.
+  const topOffset = insets.top + 8;
 
-          <Snackbar
-            visible={updateStatus !== "idle"}
-            onDismiss={onDismissStatus}
-            duration={
-              updateStatus === "checking" ? Snackbar.DURATION_INDEFINITE : 3000
-            }
-          >
-            {updateStatus === "checking" ? labels.checking : labels.upToDate}
-          </Snackbar>
-        </ThemeProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
+  return (
+    <PaperProvider theme={isDark ? customDarkTheme : customLightTheme}>
+      <ThemeProvider value={isDark ? DarkTheme : LightTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        {showSetup && <InitialSetup onComplete={onCompleteSetup} />}
+
+        <Snackbar
+          visible={updateStatus !== "idle" || updateAvailable}
+          onDismiss={onDismissStatus}
+          duration={
+            updateStatus === "checking" || updateAvailable
+              ? Snackbar.DURATION_INDEFINITE
+              : 3000
+          }
+          wrapperStyle={[
+            styles.snackbarWrapper,
+            { top: topOffset, bottom: "auto" },
+          ]}
+          action={
+            updateAvailable
+              ? {
+                  label: labels.refresh,
+                  onPress: onUpdate,
+                }
+              : undefined
+          }
+        >
+          {updateAvailable
+            ? labels.available
+            : updateStatus === "checking"
+              ? labels.checking
+              : labels.upToDate}
+        </Snackbar>
+      </ThemeProvider>
+    </PaperProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  snackbarWrapper: {
+    // Positioned at the top to clear navigation and keyboard
+  },
+});

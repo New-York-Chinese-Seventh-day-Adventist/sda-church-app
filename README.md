@@ -47,6 +47,8 @@ Once deployed, you may install app directly from browser `codesammich.github.io/
 
 Note, if you get a black screen, open the link in browser -> Network tab to see if any assets failed to load. Any failed asset loading (400s) will cause the entire app to fail to load.
 
+New dev builds can be pushed by updating package.json version number and deploying. Existing installations update automatically or can be manually refreshed by tapping More -> Version number.
+
 ## Testing
 
 ### iOS
