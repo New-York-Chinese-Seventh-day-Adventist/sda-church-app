@@ -500,11 +500,14 @@ export default function AboutScreen() {
                 <View
                   style={[
                     styles.yearCircle,
-                    { backgroundColor: theme.colors.primary },
+                    { backgroundColor: theme.colors.tertiary },
                   ]}
                 >
                   <Text
-                    style={[styles.yearText, { color: theme.colors.onPrimary }]}
+                    style={[
+                      styles.yearText,
+                      { color: theme.colors.onTertiary },
+                    ]}
                   >
                     {item.year}
                   </Text>
@@ -549,21 +552,19 @@ export default function AboutScreen() {
                 ]}
                 mode="contained"
               >
-                <Card.Title
-                  title={item.title}
-                  titleVariant="titleMedium"
-                  left={(props) => (
-                    <MaterialCommunityIcons
-                      {...props}
-                      name={item.icon as any}
-                      size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
-                      color={theme.colors.tertiary}
-                    />
-                  )}
-                />
-                <Card.Content>
+                <View style={styles.cardHeader}>
+                  <MaterialCommunityIcons
+                    name={item.icon as any}
+                    size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+                    color={theme.colors.tertiary}
+                  />
+                  <Text variant="titleMedium" style={styles.cardTitleText}>
+                    {item.title}
+                  </Text>
+                </View>
+                <View style={styles.cardContent}>
                   <Text variant="bodySmall">{item.description}</Text>
-                </Card.Content>
+                </View>
               </Card>
             ))}
           </View>
@@ -689,6 +690,21 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 12,
   },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  cardTitleText: {
+    marginLeft: 12,
+    fontWeight: "bold",
+  },
+  cardContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
   button: {
     marginTop: 8,
   },
@@ -725,9 +741,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   yearCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE,
+    height: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE,
+    borderRadius: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE / 2,
     justifyContent: "center",
     alignItems: "center",
   },
