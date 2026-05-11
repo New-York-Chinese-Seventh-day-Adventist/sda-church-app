@@ -1,3 +1,4 @@
+import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -171,91 +172,73 @@ export default function ContactScreen() {
         <List.Section>
           <List.Subheader>{labels.infoLabel}</List.Subheader>
           {phone && (
-            <Animated.View style={getHighlightStyle("phone")}>
-              <List.Item
-                title={phone}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon="phone"
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="open-in-new" />}
-                onPress={async () => {
-                  const cleanedPhone = phone.replace(/[^\d+]/g, "");
-                  // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
-                  // Android only supports the standard tel: scheme.
-                  const url =
-                    Platform.OS === "ios"
-                      ? `telprompt:${cleanedPhone}`
-                      : `tel:${cleanedPhone}`;
-                  try {
-                    // Direct attempt is more reliable on Android 11+ as canOpenURL
-                    // requires specific manifest queries to return true.
-                    await Linking.openURL(url);
-                  } catch (error) {
-                    console.warn("Phone call attempt failed:", error);
-                    Alert.alert(
-                      "Error",
-                      "Phone calls are not supported on this device or emulator.",
-                    );
-                  }
-                }}
-              />
-            </Animated.View>
+            <MenuCard
+              title={phone}
+              icon="phone"
+              iconColor={theme.colors.primary}
+              rightIcon="open-in-new"
+              style={getHighlightStyle("phone")}
+              onPress={async () => {
+                const cleanedPhone = phone.replace(/[^\d+]/g, "");
+                // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
+                // Android only supports the standard tel: scheme.
+                const url =
+                  Platform.OS === "ios"
+                    ? `telprompt:${cleanedPhone}`
+                    : `tel:${cleanedPhone}`;
+                try {
+                  // Direct attempt is more reliable on Android 11+ as canOpenURL
+                  // requires specific manifest queries to return true.
+                  await Linking.openURL(url);
+                } catch (error) {
+                  console.warn("Phone call attempt failed:", error);
+                  Alert.alert(
+                    "Error",
+                    "Phone calls are not supported on this device or emulator.",
+                  );
+                }
+              }}
+            />
           )}
           {email && (
-            <Animated.View style={getHighlightStyle("email")}>
-              <List.Item
-                title={email}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon="email"
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="open-in-new" />}
-                onPress={async () => {
-                  const url = `mailto:${email}`;
-                  try {
-                    await Linking.openURL(url);
-                  } catch (error) {
-                    console.warn("Email attempt failed:", error);
-                    Alert.alert(
-                      "Error",
-                      "Email is not configured on this device or emulator.",
-                    );
-                  }
-                }}
-              />
-            </Animated.View>
+            <MenuCard
+              title={email}
+              icon="email"
+              iconColor={theme.colors.primary}
+              rightIcon="open-in-new"
+              style={getHighlightStyle("email")}
+              onPress={async () => {
+                const url = `mailto:${email}`;
+                try {
+                  await Linking.openURL(url);
+                } catch (error) {
+                  console.warn("Email attempt failed:", error);
+                  Alert.alert(
+                    "Error",
+                    "Email is not configured on this device or emulator.",
+                  );
+                }
+              }}
+            />
           )}
         </List.Section>
 
         <List.Section>
-          <List.Subheader>{labels.addressLabel}</List.Subheader>
-          <Animated.View style={getHighlightStyle("location")}>
-            {locations.map((loc, index) => (
-              <List.Item
-                key={index}
-                title={labels.locationNames[index]}
-                description={loc.address}
-                titleNumberOfLines={2}
-                descriptionNumberOfLines={3}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon={loc.icon}
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="open-in-new" />}
-                onPress={() => openInMaps((loc as any).searchQuery)}
-              />
-            ))}
-          </Animated.View>
+          <List.Subheader style={styles.subheader}>
+            {labels.addressLabel}
+          </List.Subheader>
+          {locations.map((loc, index) => (
+            <MenuCard
+              key={index}
+              title={labels.locationNames[index]}
+              description={loc.address}
+              icon={loc.icon}
+              iconColor={theme.colors.primary}
+              rightIcon="open-in-new"
+              style={getHighlightStyle("location")}
+              onPress={() => openInMaps((loc as any).searchQuery)}
+            />
+          ))}
         </List.Section>
       </ScrollView>
     </>
@@ -265,5 +248,10 @@ export default function ContactScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
+  },
+  subheader: {
+    color: "#004B87",
+    fontWeight: "bold",
   },
 });

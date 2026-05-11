@@ -1,9 +1,10 @@
+import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-import { Divider, List, RadioButton } from "react-native-paper";
+import { List } from "react-native-paper";
 
 export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
@@ -23,52 +24,31 @@ export default function LanguageScreen() {
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
       <View style={styles.container}>
         <List.Section>
-          <List.Item
+          <MenuCard
             title="English"
+            icon="translate"
             onPress={() => setLanguage("en")}
-            right={() => (
-              <RadioButton
-                value="en"
-                status={language === "en" ? "checked" : "unchecked"}
-                onPress={() => setLanguage("en")}
-              />
-            )}
+            rightIcon={language === "en" ? "radiobox-marked" : "radiobox-blank"}
           />
-          <Divider />
-          <List.Item
+          <MenuCard
             title="繁體中文 (Traditional Chinese)"
+            icon="translate"
             onPress={() => setLanguage("zh")}
-            right={() => (
-              <RadioButton
-                value="zh"
-                status={language === "zh" ? "checked" : "unchecked"}
-                onPress={() => setLanguage("zh")}
-              />
-            )}
+            rightIcon={language === "zh" ? "radiobox-marked" : "radiobox-blank"}
           />
-          <Divider />
-          <List.Item
+          <MenuCard
             title="简体中文 (Simplified Chinese)"
+            icon="translate"
             onPress={() => setLanguage("zh-cn")}
-            right={() => (
-              <RadioButton
-                value="zh-cn"
-                status={language === "zh-cn" ? "checked" : "unchecked"}
-                onPress={() => setLanguage("zh-cn")}
-              />
-            )}
+            rightIcon={
+              language === "zh-cn" ? "radiobox-marked" : "radiobox-blank"
+            }
           />
-          <Divider />
-          <List.Item
+          <MenuCard
             title="Español (Spanish)"
+            icon="translate"
             onPress={() => setLanguage("es")}
-            right={() => (
-              <RadioButton
-                value="es"
-                status={language === "es" ? "checked" : "unchecked"}
-                onPress={() => setLanguage("es")}
-              />
-            )}
+            rightIcon={language === "es" ? "radiobox-marked" : "radiobox-blank"}
           />
         </List.Section>
 
@@ -82,7 +62,7 @@ export default function LanguageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
+    padding: 16,
   },
   title: {
     fontWeight: "bold",

@@ -1,7 +1,8 @@
+import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import React, { useContext } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Divider, List, useTheme } from "react-native-paper";
+import { ScrollView, StyleSheet } from "react-native";
+import { List, useTheme } from "react-native-paper";
 
 export default function CommunityScreen() {
   const theme = useTheme();
@@ -205,20 +206,14 @@ export default function CommunityScreen() {
           {labels.elmhurstTitle}
         </List.Subheader>
         {elmhurstEvents.map((event, index) => (
-          <View key={`elm-${index}`}>
-            <List.Item
-              title={event.title}
-              description={`${event.time} • ${event.loc}`}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon={event.icon}
-                  color={theme.colors.primary}
-                />
-              )}
-            />
-            {index < elmhurstEvents.length - 1 && <Divider inset />}
-          </View>
+          <MenuCard
+            key={`elm-${index}`}
+            title={event.title}
+            description={`${event.time} • ${event.loc}`}
+            icon={event.icon as any}
+            rightIcon={null}
+            style={styles.eventCard}
+          />
         ))}
       </List.Section>
 
@@ -227,20 +222,14 @@ export default function CommunityScreen() {
           {labels.brooklynTitle}
         </List.Subheader>
         {brooklynEvents.map((event, index) => (
-          <View key={`brk-${index}`}>
-            <List.Item
-              title={event.title}
-              description={`${event.time} • ${event.loc}`}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon={event.icon}
-                  color={theme.colors.primary}
-                />
-              )}
-            />
-            {index < brooklynEvents.length - 1 && <Divider inset />}
-          </View>
+          <MenuCard
+            key={`brk-${index}`}
+            title={event.title}
+            description={`${event.time} • ${event.loc}`}
+            icon={event.icon as any}
+            rightIcon={null}
+            style={styles.eventCard}
+          />
         ))}
       </List.Section>
 
@@ -249,20 +238,14 @@ export default function CommunityScreen() {
           {labels.flushingFellowshipTitle}
         </List.Subheader>
         {otherEvents.map((event, index) => (
-          <View key={`oth-${index}`}>
-            <List.Item
-              title={event.title}
-              description={`${event.time} • ${event.loc}`}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon={event.icon}
-                  color={theme.colors.primary}
-                />
-              )}
-            />
-            {index < otherEvents.length - 1 && <Divider inset />}
-          </View>
+          <MenuCard
+            key={`oth-${index}`}
+            title={event.title}
+            description={`${event.time} • ${event.loc}`}
+            icon={event.icon as any}
+            rightIcon={null}
+            style={styles.eventCard}
+          />
         ))}
       </List.Section>
     </ScrollView>
@@ -280,6 +263,9 @@ const styles = StyleSheet.create({
   subheader: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#0061A4",
+    color: "#004B87",
+  },
+  eventCard: {
+    marginBottom: 8,
   },
 });

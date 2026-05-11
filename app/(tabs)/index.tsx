@@ -1,3 +1,4 @@
+import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { router } from "expo-router";
 import React, { useContext } from "react";
@@ -96,19 +97,15 @@ export default function HomeScreen() {
         </Card>
 
         <View style={styles.actionContainer}>
-          <Button
-            mode="contained"
+          <MenuCard
+            title={labels.about}
             icon="information"
             onPress={() => router.push("/more/about" as any)}
-            style={[styles.button, { marginBottom: 12 }]}
-            buttonColor={theme.colors.primary}
-            textColor={theme.colors.onPrimary}
-          >
-            {labels.about}
-          </Button>
+            style={{ marginBottom: 12 }}
+          />
 
-          <Button
-            mode="outlined"
+          <MenuCard
+            title={labels.contact}
             icon="map-marker"
             onPress={() =>
               router.push({
@@ -116,10 +113,7 @@ export default function HomeScreen() {
                 params: { backTo: "/" },
               })
             }
-            style={styles.button}
-          >
-            {labels.contact}
-          </Button>
+          />
         </View>
       </ScrollView>
     </>
@@ -131,6 +125,5 @@ const styles = StyleSheet.create({
   hero: { padding: 24, alignItems: "center", justifyContent: "center" },
   welcomeText: { fontWeight: "bold", textAlign: "center", marginBottom: 8 },
   card: { margin: 16, padding: 8 },
-  actionContainer: { padding: 16, alignItems: "center" },
-  button: { width: "80%" },
+  actionContainer: { paddingHorizontal: 16, paddingBottom: 24 },
 });

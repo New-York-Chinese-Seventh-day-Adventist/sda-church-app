@@ -1,3 +1,4 @@
+import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { fetchBooks, fetchChapter, TRANSLATIONS } from "@/utils/bibleService";
 import { openSpotifyPodcast } from "@/utils/spotifyService";
@@ -145,166 +146,53 @@ export default function ResourcesScreen() {
 
   const renderMenu = () => (
     <ScrollView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
       <Text style={[styles.title, { color: theme.colors.onBackground }]}>
         {labels.title}
       </Text>
 
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.colors.surface }]}
+      <MenuCard
+        title={labels.bible}
+        description={labels.bibleSub}
+        icon="book-open-variant"
         onPress={() => setMode("bible")}
-      >
-        <MaterialCommunityIcons
-          name="book-open-variant"
-          size={32}
-          color={theme.colors.onSurfaceVariant}
-        />
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
-            {labels.bible}
-          </Text>
-          <Text
-            style={[
-              styles.cardSubtitle,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            {labels.bibleSub}
-          </Text>
-        </View>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={24}
-          color={theme.colors.onSurfaceVariant}
-        />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.colors.surface }]}
+      <MenuCard
+        title={labels.youtube}
+        description={labels.youtubeSub}
+        icon="youtube"
+        iconColor={theme.dark ? undefined : "#FF0000"}
         onPress={openSabbathStream}
-      >
-        <MaterialCommunityIcons
-          name="youtube"
-          size={32}
-          color={theme.dark ? theme.colors.onSurface : "#FF0000"}
-        />
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
-            {labels.youtube}
-          </Text>
-          <Text
-            style={[
-              styles.cardSubtitle,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            {labels.youtubeSub}
-          </Text>
-        </View>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={24}
-          color={theme.colors.onSurfaceVariant}
-        />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.colors.surface }]}
+      <MenuCard
+        title={labels.spotify}
+        description={labels.spotifySub}
+        icon="spotify"
+        iconColor={theme.dark ? undefined : "#1DB954"}
         onPress={openSpotifyPodcast}
-      >
-        <MaterialCommunityIcons
-          name="spotify"
-          size={32}
-          color={theme.dark ? theme.colors.onSurface : "#1DB954"}
-        />
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
-            {labels.spotify}
-          </Text>
-          <Text
-            style={[
-              styles.cardSubtitle,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            {labels.spotifySub}
-          </Text>
-        </View>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={24}
-          color={theme.colors.onSurfaceVariant}
-        />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.colors.surface }]}
+      <MenuCard
+        title={labels.hymnal}
+        description={labels.hymnalSub}
+        icon="music-note"
         onPress={() => handleExternalLink("https://www.adventisthymnals.com/")}
-      >
-        <MaterialCommunityIcons
-          name="music-note"
-          size={32}
-          color={theme.colors.onSurfaceVariant}
-        />
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
-            {labels.hymnal}
-          </Text>
-          <Text
-            style={[
-              styles.cardSubtitle,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            {labels.hymnalSub}
-          </Text>
-        </View>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={24}
-          color={theme.colors.onSurfaceVariant}
-        />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.colors.surface }]}
-      >
-        <MaterialCommunityIcons
-          name="library"
-          size={32}
-          color={theme.colors.onSurfaceVariant}
-        />
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
-            {labels.library}
-          </Text>
-          <Text
-            style={[
-              styles.cardSubtitle,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            {labels.librarySub}
-          </Text>
-        </View>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={24}
-          color={theme.colors.onSurfaceVariant}
-        />
-      </TouchableOpacity>
+      <MenuCard
+        title={labels.library}
+        description={labels.librarySub}
+        icon="library"
+      />
     </ScrollView>
   );
 
   const renderBibleReader = () => (
-    <View
-      style={[
-        styles.readerContainer,
-        { backgroundColor: theme.colors.background },
-      ]}
-    >
+    <View style={styles.readerContainer}>
       <SafeAreaView
         style={[
           styles.readerHeader,
@@ -511,19 +399,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
   },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)", // Subtle border as requested
-    elevation: 0,
-  },
-  cardContent: { flex: 1, marginLeft: 16 },
-  cardTitle: { fontSize: 18, fontWeight: "700" },
-  cardSubtitle: { fontSize: 14, marginTop: 2 },
 
   // Bible Reader
   readerContainer: { flex: 1 },
