@@ -31,7 +31,7 @@ export default function AboutScreen() {
       sdaDescription:
         "Seventh-day Adventists are a global Christian community that regards the Bible as the supreme authority in their lives. We adhere to the principle of Sola Scriptura (By Scripture Alone), which means that the Bible is the sole infallible source of authority for Christian faith and practice, and the standard by which all teachings and experiences are measured.",
       pillarItems: [
-        { title: "Bible-Centered", icon: "book-open-variant" },
+        { title: "Bible-Centered", icon: "book-cross" },
         { title: "Faith & Love", icon: "heart-flash" },
         { title: "Community", icon: "account-group" },
       ],
@@ -128,7 +128,7 @@ export default function AboutScreen() {
       sdaDescription:
         "基督復臨安息日會是一個全球性的基督徒團體, 將聖經視為生活的最高權威。我們堅持「唯獨聖經」(Sola Scriptura) 的原則, 這意味著聖經是基督徒信仰和實踐的唯一無誤權威來源, 也是衡量所有教導和經驗的標準。",
       pillarItems: [
-        { title: "以聖經為中心", icon: "book-open-variant" },
+        { title: "以聖經為中心", icon: "book-cross" },
         { title: "信仰與愛", icon: "heart-flash" },
         { title: "社群", icon: "account-group" },
       ],
@@ -224,7 +224,7 @@ export default function AboutScreen() {
       sdaDescription:
         "基督复临安息日会是一个全球性的基督徒团体, 将圣经视为生活的最高权威。我们坚持“唯独圣经”(Sola Scriptura) 的原则, 这意味着圣经是基督徒信仰和实践的唯一无误权威来源, 也是衡量所有教导和经验的标准。",
       pillarItems: [
-        { title: "以圣经为中心", icon: "book-open-variant" },
+        { title: "以圣经为中心", icon: "book-cross" },
         { title: "信仰与爱", icon: "heart-flash" },
         { title: "社区", icon: "account-group" },
       ],
@@ -320,7 +320,7 @@ export default function AboutScreen() {
       sdaDescription:
         "Los Adventistas del Séptimo Día son una comunidad cristiana global que considera la Biblia como la autoridad suprema en sus vidas. Nos adherimos al principio de Sola Scriptura (Solo por la Escritura), lo que significa que la Biblia es la única fuente infalible de autoridad para la fe y la práctica cristiana, y el estándar por el cual se miden todas las enseñanzas y experiencias.",
       pillarItems: [
-        { title: "Biblia", icon: "book-open-variant" },
+        { title: "Biblia", icon: "book-cross" },
         { title: "Fe y Amor", icon: "heart-flash" },
         { title: "Comunidad", icon: "account-group" },
       ],

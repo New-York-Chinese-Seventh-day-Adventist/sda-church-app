@@ -330,7 +330,7 @@ export const GlobalHeader = (props: any) => {
     },
     {
       ...searchLabels.resources,
-      icon: "book-open-variant",
+      icon: "bookmark-multiple",
       route: "/resources",
       isPage: true,
     },
@@ -454,7 +454,21 @@ export const GlobalHeader = (props: any) => {
                 }
               }}
               onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
-              style={{ backgroundColor: "transparent", elevation: 0 }}
+              style={{
+                backgroundColor: theme.dark ? "#1E1E1E" : "#F1F3F4",
+                elevation: 0,
+                borderRadius: 24,
+                height: 44,
+                marginHorizontal: 12,
+              }}
+              inputStyle={{
+                minHeight: 0,
+                paddingBottom: 0,
+                paddingTop: 0,
+                fontSize: 16,
+              }}
+              iconColor={theme.dark ? "#AAAAAA" : "#606060"}
+              placeholderTextColor={theme.dark ? "#AAAAAA" : "#606060"}
             />
             {isSearching && searchQuery.length > 0 && results.length > 0 && (
               <Portal>
@@ -514,9 +528,22 @@ const styles = StyleSheet.create({
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   color: string;
+  focused: boolean;
 }) {
+  let iconName = props.name;
+
+  // Logic to switch between solid and outline variants
+  if (!props.focused) {
+    iconName = `${props.name}-outline` as any;
+  }
+
   return (
-    <MaterialCommunityIcons size={28} style={{ marginBottom: -3 }} {...props} />
+    <MaterialCommunityIcons
+      name={iconName}
+      size={28}
+      style={{ marginBottom: -3 }}
+      color={props.color}
+    />
   );
 }
 
@@ -556,7 +583,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.primary,
+        tabBarActiveTintColor: theme.dark ? "#FFFFFF" : "#0F0F0F",
+        tabBarInactiveTintColor: theme.dark ? "#FFFFFF" : "#0F0F0F",
         headerTransparent: true,
         header: (props) => <GlobalHeader {...props} />,
         tabBarStyle: {
@@ -580,8 +608,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: labels.home,
-          tabBarIcon: ({ color }: { color: string }) => (
-            <TabBarIcon name="home" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="home" color={color} focused={focused} />
           ),
         }}
         listeners={{
@@ -595,8 +623,12 @@ export default function TabLayout() {
         name="community"
         options={{
           title: labels.community,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="account-group" color={color as string} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name="account-group"
+              color={color as string}
+              focused={focused}
+            />
           ),
         }}
         listeners={{
@@ -610,8 +642,12 @@ export default function TabLayout() {
         name="resources"
         options={{
           title: labels.resources,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="book-open-variant" color={color as string} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name="bookmark-multiple"
+              color={color as string}
+              focused={focused}
+            />
           ),
         }}
         listeners={{
@@ -628,8 +664,12 @@ export default function TabLayout() {
             title: labels.more,
             headerShown: false,
             unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
-            tabBarIcon: ({ color }: { color: string }) => (
-              <TabBarIcon name="dots-horizontal" color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon
+                name="dots-horizontal-circle"
+                color={color as string}
+                focused={focused}
+              />
             ),
           } as any
         }

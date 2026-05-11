@@ -137,7 +137,7 @@ export default function CommunityScreen() {
       title: labels.eventNames.ss,
       time: `${labels.saturday}, 10:30 AM`,
       loc: `${labels.locations.f2} / ${labels.locations.f3}`,
-      icon: "book-open-variant",
+      icon: "forum",
     },
     {
       title: labels.eventNames.youth,
@@ -167,7 +167,7 @@ export default function CommunityScreen() {
       title: labels.eventNames.seminary,
       time: `${labels.saturday}, 3:00 - 6:00 PM`,
       loc: labels.locations.f2,
-      icon: "clock-outline",
+      icon: "school",
     },
   ];
 

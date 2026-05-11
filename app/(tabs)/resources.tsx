@@ -17,18 +17,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTheme } from "react-native-paper";
+import { List, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const allLabels = {
   en: {
     title: "Resources",
+    sermonsWorship: "Watch & Listen",
+    studyLiturgy: "Study & Liturgy",
     bible: "Holy Bible",
     bibleSub: "Read scripture in multiple languages",
-    youtube: "YouTube Sermons",
+    youtube: "Full Services",
     youtubeSub: "Watch our latest worship services",
-    spotify: "Spotify Podcast",
-    spotifySub: "Listen to our latest messages",
+    spotify: "Audio Archive",
+    spotifySub: "Listen to our sermons and Bible study classes",
     hymnal: "Hymnal",
     hymnalSub: "Lyrics and music for worship",
     library: "Library",
@@ -40,12 +42,14 @@ const allLabels = {
   },
   zh: {
     title: "資源庫",
+    sermonsWorship: "觀看與收聽",
+    studyLiturgy: "研經與禮儀",
     bible: "聖經",
     bibleSub: "閱讀多種語言的聖經",
-    youtube: "YouTube 證道",
+    youtube: "完整崇拜服務",
     youtubeSub: "觀看最新的崇拜服務",
-    spotify: "Spotify 播客",
-    spotifySub: "收聽最新的信息",
+    spotify: "音頻檔案",
+    spotifySub: "收聽我們的證道與研經課程",
     hymnal: "詩歌本",
     hymnalSub: "敬拜用的歌詞與音樂",
     library: "圖書館",
@@ -57,12 +61,14 @@ const allLabels = {
   },
   "zh-cn": {
     title: "资源库",
+    sermonsWorship: "观看与收听",
+    studyLiturgy: "研经与礼仪",
     bible: "圣经",
     bibleSub: "阅读多种语言的圣经",
-    youtube: "YouTube 证道",
+    youtube: "完整崇拜服务",
     youtubeSub: "观看最新的崇拜服务",
-    spotify: "Spotify 播客",
-    spotifySub: "收听最新的信息",
+    spotify: "音频存档",
+    spotifySub: "收听我们的证道与研经课程",
     hymnal: "诗歌本",
     hymnalSub: "敬拜用的歌词与音乐",
     library: "图书馆",
@@ -74,12 +80,14 @@ const allLabels = {
   },
   es: {
     title: "Recursos",
+    sermonsWorship: "Ver y Escuchar",
+    studyLiturgy: "Estudio y Liturgia",
     bible: "Santa Biblia",
     bibleSub: "Lee las escrituras en varios idiomas",
-    youtube: "Sermones en YouTube",
+    youtube: "Servicios Completos",
     youtubeSub: "Mira nuestros últimos servicios de adoración",
-    spotify: "Podcast en Spotify",
-    spotifySub: "Escucha nuestros mensajes más recientes",
+    spotify: "Archivo de Audio",
+    spotifySub: "Escucha nuestros sermones y clases de estudio bíblico",
     hymnal: "Himnario",
     hymnalSub: "Letras y música para la adoración",
     library: "Biblioteca",
@@ -161,41 +169,53 @@ export default function ResourcesScreen() {
         {labels.title}
       </Text>
 
-      <MenuCard
-        title={labels.bible}
-        description={labels.bibleSub}
-        icon="book-open-variant"
-        onPress={() => setMode("bible")}
-      />
+      <List.Section>
+        <List.Subheader style={styles.subheader}>
+          {labels.sermonsWorship}
+        </List.Subheader>
+        <MenuCard
+          title={labels.youtube}
+          description={labels.youtubeSub}
+          icon="youtube"
+          iconColor={theme.dark ? undefined : "#FF0000"}
+          onPress={openSabbathStream}
+        />
 
-      <MenuCard
-        title={labels.youtube}
-        description={labels.youtubeSub}
-        icon="youtube"
-        iconColor={theme.dark ? undefined : "#FF0000"}
-        onPress={openSabbathStream}
-      />
+        <MenuCard
+          title={labels.spotify}
+          description={labels.spotifySub}
+          icon="spotify"
+          iconColor={theme.dark ? undefined : "#1DB954"}
+          onPress={openSpotifyPodcast}
+        />
+      </List.Section>
 
-      <MenuCard
-        title={labels.spotify}
-        description={labels.spotifySub}
-        icon="spotify"
-        iconColor={theme.dark ? undefined : "#1DB954"}
-        onPress={openSpotifyPodcast}
-      />
+      <List.Section>
+        <List.Subheader style={styles.subheader}>
+          {labels.studyLiturgy}
+        </List.Subheader>
+        <MenuCard
+          title={labels.bible}
+          description={labels.bibleSub}
+          icon="book-cross"
+          onPress={() => setMode("bible")}
+        />
 
-      <MenuCard
-        title={labels.hymnal}
-        description={labels.hymnalSub}
-        icon="music-note"
-        onPress={() => handleExternalLink("https://www.adventisthymnals.com/")}
-      />
+        <MenuCard
+          title={labels.hymnal}
+          description={labels.hymnalSub}
+          icon="music-note"
+          onPress={() =>
+            handleExternalLink("https://www.adventisthymnals.com/")
+          }
+        />
 
-      <MenuCard
-        title={labels.library}
-        description={labels.librarySub}
-        icon="library"
-      />
+        <MenuCard
+          title={labels.library}
+          description={labels.librarySub}
+          icon="bookshelf"
+        />
+      </List.Section>
     </ScrollView>
   );
 
@@ -406,6 +426,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 20,
+  },
+  subheader: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "#004B87",
   },
 
   // Bible Reader

@@ -13,6 +13,24 @@ To uphold **Tenet 5 (Radical Simplicity)** and **Tenet 7 (Destination, Not a Lau
 3.  **Iconography:** Icons across all pillars (Bible, Hymnal, Library) utilize consistent stroke weights and monochrome styling. This provides a "premium" feel and ensures accessibility across both light and dark modes.
 4.  **Cohesive Sanctuary:** By standardizing external logos, we visually reinforce that the user remains within their "Digital Home," even when accessing external media. This reduces the psychological friction of switching between ecosystems.
 
+### Bottom Tab Bar Carveout (YouTube Treatment)
+
+To ensure the focus remains entirely on the content within the sanctuary, the bottom navigation utilizes a strict neutral treatment. Selection is indicated by a "Fill" state (solid icon) rather than a change in brand color.
+
+| Mode           | Active (Filled)        | Inactive (Outline)     | Rationale                                         |
+| :------------- | :--------------------- | :--------------------- | :------------------------------------------------ |
+| **Light Mode** | `#0F0F0F` (Deep Black) | `#0F0F0F` (Deep Black) | High contrast. Indicated by fill state only.      |
+| **Dark Mode**  | `#FFFFFF` (Pure White) | `#FFFFFF` (Pure White) | Maximum visibility. Indicated by fill state only. |
+
+### Top Search Bar (M3 "Pill" Treatment)
+
+To maintain the YouTube-style "content-first" aesthetic, the top search bar is rendered as a clean monochrome pill.
+
+| Mode           | Background | Icon/Text | Rationale                                        |
+| :------------- | :--------- | :-------- | :----------------------------------------------- |
+| **Light Mode** | `#F1F3F4`  | `#606060` | Subtle contrast against the opaque header.       |
+| **Dark Mode**  | `#1E1E1E`  | `#AAAAAA` | Recedes into the header to minimize distraction. |
+
 ### The Accent: Deep Cathedral Navy
 
 This choice bridges the gap between a "Digital Sanctuary" and "Practical Utility." Navy functions as a "neutral plus"—it maintains authority and stability while providing the necessary contrast for accessibility, especially for elderly users.
