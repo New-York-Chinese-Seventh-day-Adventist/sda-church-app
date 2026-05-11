@@ -22,7 +22,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const allLabels = {
   en: {
-    title: "Resources",
     sermonsWorship: "Watch & Listen",
     studyLiturgy: "Study & Liturgy",
     bible: "Holy Bible",
@@ -41,7 +40,6 @@ const allLabels = {
     select: "Select",
   },
   zh: {
-    title: "資源庫",
     sermonsWorship: "觀看與收聽",
     studyLiturgy: "研經與禮儀",
     bible: "聖經",
@@ -60,7 +58,6 @@ const allLabels = {
     select: "選擇",
   },
   "zh-cn": {
-    title: "资源库",
     sermonsWorship: "观看与收听",
     studyLiturgy: "研经与礼仪",
     bible: "圣经",
@@ -79,7 +76,6 @@ const allLabels = {
     select: "选择",
   },
   es: {
-    title: "Recursos",
     sermonsWorship: "Ver y Escuchar",
     studyLiturgy: "Estudio y Liturgia",
     bible: "Santa Biblia",
@@ -165,10 +161,6 @@ export default function ResourcesScreen() {
         { paddingTop: headerHeight },
       ]}
     >
-      <Text style={[styles.title, { color: theme.colors.onBackground }]}>
-        {labels.title}
-      </Text>
-
       <List.Section>
         <List.Subheader
           style={[styles.subheader, { color: theme.colors.primary }]}
@@ -429,11 +421,6 @@ export default function ResourcesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: { padding: 20 },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
   subheader: {
     fontWeight: "bold",
     fontSize: 16,

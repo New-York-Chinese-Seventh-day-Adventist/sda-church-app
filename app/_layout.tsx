@@ -6,12 +6,14 @@ import {
   SupportedLanguage,
   ThemeContext,
 } from "@/constants/Contexts";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  DarkTheme as NavDarkTheme,
-  DefaultTheme as NavDefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+  DarkTheme,
+  LightTheme,
+  customDarkTheme,
+  customLightTheme,
+} from "@/constants/Themes";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as Localization from "expo-localization";
 import { Stack } from "expo-router";
@@ -25,13 +27,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import {
-  MD3DarkTheme,
-  MD3LightTheme,
-  PaperProvider,
-  Snackbar,
-  adaptNavigationTheme,
-} from "react-native-paper";
+import { PaperProvider, Snackbar } from "react-native-paper";
 import "react-native-reanimated";
 import {
   SafeAreaProvider,
@@ -52,96 +48,28 @@ export const unstable_settings = {
 };
 
 const getSystemLanguage = (): SupportedLanguage => {
-  const locales = Localization.getLocales();
-  if (!locales || locales.length === 0) return DEFAULT_LANG;
+  const [primaryLocale] = Localization.getLocales();
 
-  const { languageCode, scriptCode, languageTag } = locales[0];
-
-  if (languageCode === "zh") {
-    // Map Chinese variants (Simplified vs Traditional)
-    if (scriptCode === "Hans" || languageTag.toLowerCase().includes("cn")) {
-      return "zh-cn";
-    }
-    return "zh";
+  if (!primaryLocale?.languageCode) {
+    return DEFAULT_LANG;
   }
-  if (languageCode === "es") return "es";
-  return "en";
-};
 
-// Adapt themes for React Navigation compatibility
-const { LightTheme: _LightTheme, DarkTheme: _DarkTheme } = adaptNavigationTheme(
-  {
-    reactNavigationLight: NavDefaultTheme,
-    reactNavigationDark: NavDarkTheme,
-  },
-);
+  const { languageCode, languageTag } = primaryLocale;
+  const scriptCode = (primaryLocale as any).scriptCode;
 
-// Explicitly override navigation primary colors to match our brand blue.
-// Otherwise, React Navigation defaults to the Material 3 standard (purple).
-const LightTheme = {
-  ..._LightTheme,
-  colors: { ..._LightTheme.colors, primary: "#3056D3", background: "#F8F9FA" },
-};
-const DarkTheme = {
-  ..._DarkTheme,
-  colors: { ..._DarkTheme.colors, primary: "#5E7BCB", background: "#121212" },
-};
+  // Handle Chinese variants (Simplified vs Traditional mapping)
+  if (languageCode === "zh") {
+    // Prioritize scriptCode (standard for modern OS), fall back to region tags
+    const isSimplified =
+      scriptCode === "Hans" || /hans|cn|sg|my/i.test(languageTag);
+    return isSimplified ? "zh-cn" : "zh";
+  }
 
-const customLightTheme = {
-  ...MD3LightTheme,
-  version: 3,
-  isV3: true,
-  colors: {
-    ...MD3LightTheme.colors,
-    ...LightTheme.colors,
-    primary: "#3056D3", // Lapis Blue (Spec)
-    onPrimary: "#FFFFFF", // Inverted Text (Spec)
-    primaryContainer: "#E3F2FD", // Selection Container (Spec)
-    onPrimaryContainer: "#3056D3", // Lapis Blue (Spec)
-    secondaryContainer: "#F1F3F4", // Top Search Bar Background (Spec)
-    onSecondaryContainer: "#1A1A1A", // Core Content Text (Spec)
-    background: "#F8F9FA", // Background (Spec)
-    surface: "#FFFFFF", // Surface (Spec)
-    surfaceVariant: "#F1F3F4", // Surface Variant (Spec)
-    onSurface: "#1A1A1A", // Core Content Text (Spec)
-    onSurfaceVariant: "#606060", // Top Search Bar Icon/Text (Spec)
-    outline: "#CAC4D0", // Boundary (Outline) (Spec)
-    outlineVariant: "#E0E0E0", // Boundary (Subtle) (Spec)
-    tertiary: "#3EA6FF", // Sanctuary Blue (Spec)
-    onTertiary: "#FFFFFF", // Inverted Text (Spec)
-    onBackground: "#0F0F0F", // Bottom Tab Bar (Spec)
-    brandYoutube: "#FF0000", // YouTube Brand (Spec)
-    brandSpotify: "#1DB954", // Spotify Brand (Spec)
-  },
-  roundness: 3,
-};
-const customDarkTheme = {
-  ...MD3DarkTheme,
-  version: 3,
-  isV3: true,
-  colors: {
-    ...MD3DarkTheme.colors,
-    ...DarkTheme.colors,
-    primary: "#5E7BCB", // Steel Blue (Spec)
-    onPrimary: "#121212", // Inverted Text (Spec)
-    primaryContainer: "#2C2C2C", // Selection Container (Spec)
-    onPrimaryContainer: "#5E7BCB", // Steel Blue (Spec)
-    secondaryContainer: "#1E1E1E", // Top Search Bar Background (Spec)
-    onSecondaryContainer: "#F5F5F5", // Core Content Text (Spec)
-    background: "#121212", // Background (Spec)
-    surface: "#1E1E1E", // Surface (Spec)
-    surfaceVariant: "#2C2C2C", // Surface Variant (Spec)
-    onSurface: "#F5F5F5", // Core Content Text (Spec)
-    onSurfaceVariant: "#AAAAAA", // Top Search Bar Icon/Text (Spec)
-    outline: "#938F99", // Boundary (Outline) (Spec)
-    outlineVariant: "#333333", // Boundary (Subtle) (Spec)
-    tertiary: "#FFFFFF", // Sanctuary Blue (Spec)
-    onTertiary: "#121212", // Inverted Text (Spec)
-    onBackground: "#FFFFFF", // Bottom Tab Bar (Spec)
-    brandYoutube: "#FFFFFF", // YouTube Brand (Spec)
-    brandSpotify: "#FFFFFF", // Spotify Brand (Spec)
-  },
-  roundness: 3,
+  const SUPPORTED_MAP: Partial<Record<string, SupportedLanguage>> = {
+    es: "es",
+    en: "en",
+  };
+  return SUPPORTED_MAP[languageCode] ?? "en";
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
