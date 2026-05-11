@@ -1,232 +1,163 @@
+import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext, ThemeContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { Animated, Platform, ScrollView, StyleSheet, View } from "react-native";
-import {
-  Divider,
-  List,
-  Switch,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
+import { NavigationStyles } from "@/styles/NavigationStyles";
+import { router, Stack } from "expo-router";
+import React, { useContext } from "react";
+import { ScrollView, StyleSheet } from "react-native";
+import { List, Switch, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import packageJson from "../../../package.json";
-import { openOnlineGiving } from "../../../utils/externalLinks";
-import { UpdateContext } from "../../_layout";
+
+const allLabels = {
+  en: {
+    title: "More",
+    settings: "Settings",
+    give: "Give",
+    giveSub: "Support our ministry",
+    darkMode: "Dark Mode",
+    darkModeSub: "Toggle between light and dark themes",
+    language: "Language",
+    languageSub: "Change app language",
+    about: "About Us",
+    aboutSub: "Learn about our church's history and beliefs",
+    contact: "Connect",
+    contactSub: "Contact information and locations",
+  },
+  zh: {
+    title: "更多",
+    settings: "設定",
+    give: "奉獻",
+    giveSub: "支持我們的聖工",
+    darkMode: "深色模式",
+    darkModeSub: "切換淺色和深色主題",
+    language: "語言",
+    languageSub: "更改應用程式語言",
+    about: "關於我們",
+    aboutSub: "了解我們教會的歷史和信仰",
+    contact: "聯繫",
+    contactSub: "聯繫方式和地點",
+  },
+  "zh-cn": {
+    title: "更多",
+    settings: "设置",
+    give: "奉献",
+    giveSub: "支持我们的圣工",
+    darkMode: "深色模式",
+    darkModeSub: "切换浅色和深色主题",
+    language: "语言",
+    languageSub: "更改应用语言",
+    about: "关于我们",
+    aboutSub: "了解我们教会的历史和信仰",
+    contact: "联系",
+    contactSub: "联系方式和地点",
+  },
+  es: {
+    title: "Más",
+    settings: "Ajustes",
+    give: "Dar",
+    giveSub: "Apoya nuestro ministerio",
+    darkMode: "Modo Oscuro",
+    darkModeSub: "Alternar entre temas claros y oscuros",
+    language: "Idioma",
+    languageSub: "Cambiar idioma de la aplicación",
+    about: "Sobre Nosotros",
+    aboutSub: "Conoce la historia y creencias de nuestra iglesia",
+    contact: "Conectar",
+    contactSub: "Información de contacto y ubicaciones",
+  },
+};
 
 export default function MoreScreen() {
+  const theme = useTheme();
   const { language } = useContext(LanguageContext);
   const { isDark, toggleTheme } = useContext(ThemeContext);
-  const { onManualCheck, updateStatus } = useContext(UpdateContext);
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
-
-  const { highlight } = useLocalSearchParams();
-  const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  const allLabels = {
-    en: {
-      info: "Information",
-      about: "About Us",
-      contact: "Connect with Us",
-      give: "Give",
-      settings: "Settings",
-      language: "Language",
-      darkMode: "Dark Mode",
-      update: "Check for Updates",
-    },
-    zh: {
-      info: "教會資訊",
-      about: "關於我們",
-      contact: "聯繫我們",
-      give: "捐獻",
-      settings: "設定",
-      language: "語言設定",
-      darkMode: "深色模式",
-      update: "檢查更新",
-    },
-    "zh-cn": {
-      info: "教会信息",
-      about: "关于我们",
-      contact: "联系我们",
-      give: "捐献",
-      settings: "设置",
-      language: "语言设置",
-      darkMode: "深色模式",
-      update: "检查更新",
-    },
-    es: {
-      info: "Información",
-      about: "Sobre nosotros",
-      contact: "Conéctate con Nosotros",
-      give: "Dar",
-      settings: "Ajustes",
-      language: "Idioma",
-      darkMode: "Modo oscuro",
-      update: "Buscar actualizaciones",
-    },
-  };
-
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
-
-  useEffect(() => {
-    if (highlight) {
-      setActiveHighlight(highlight as string);
-
-      // Instant Highlight flicker
-      // Based on platform motion standards:
-      // - Material Design 3: Uses 'Standard' tokens for small-area transitions (300ms).
-      // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration
-      // - Apple HIG (Responsiveness & Motion) is vague, but underlying libraries typically use 300-500ms
-      // https://developer.apple.com/design/human-interface-guidelines/motion#Best-practices
-      Animated.sequence([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }),
-      ]).start(() => {
-        setActiveHighlight(null);
-        router.setParams({ highlight: undefined });
-      });
-    }
-  }, [highlight]);
-
-  const getHighlightStyle = (key: string) => {
-    if (activeHighlight !== key) return {};
-    return {
-      backgroundColor: fadeAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: ["transparent", theme.colors.primaryContainer],
-      }),
-    };
-  };
 
   return (
     <>
-      <Stack.Screen options={{ title: labels.info }} />
+      <Stack.Screen options={{ title: labels.title }} />
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingTop: headerHeight }}
+        style={NavigationStyles.container}
+        contentContainerStyle={[
+          NavigationStyles.contentContainer,
+          { paddingTop: headerHeight },
+        ]}
       >
         <List.Section>
           <List.Subheader
-            style={[styles.subheader, { color: theme.colors.onBackground }]}
-          >
-            {labels.info}
-          </List.Subheader>
-          <List.Item
-            title={labels.about}
-            left={(p) => (
-              <List.Icon
-                {...p}
-                icon="information"
-                color={theme.colors.tertiary}
-              />
-            )}
-            right={(p) => <List.Icon {...p} icon="chevron-right" />}
-            onPress={() => router.push("/more/about" as any)}
-          />
-          <List.Item
-            title={labels.contact}
-            left={(p) => (
-              <List.Icon {...p} icon="email" color={theme.colors.tertiary} />
-            )}
-            right={(p) => <List.Icon {...p} icon="chevron-right" />}
-            onPress={() => router.push("/more/contact")}
-          />
-          <Animated.View style={getHighlightStyle("give")}>
-            <List.Item
-              title={labels.give}
-              left={(p) => (
-                <List.Icon {...p} icon="gift" color={theme.colors.tertiary} />
-              )}
-              right={(p) => <List.Icon {...p} icon="open-in-new" />}
-              onPress={openOnlineGiving}
-            />
-          </Animated.View>
-        </List.Section>
-
-        <Divider />
-
-        <List.Section>
-          <List.Subheader
-            style={[styles.subheader, { color: theme.colors.onBackground }]}
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
           >
             {labels.settings}
           </List.Subheader>
-          <Animated.View style={getHighlightStyle("darkMode")}>
-            <List.Item
-              title={labels.darkMode}
-              left={(p) => (
-                <List.Icon
-                  {...p}
-                  icon="theme-light-dark"
-                  color={theme.colors.tertiary}
-                />
-              )}
-              right={() => (
-                <Switch value={isDark} onValueChange={toggleTheme} />
-              )}
-            />
-          </Animated.View>
-          <List.Item
-            title={labels.language}
-            left={(p) => (
-              <List.Icon
-                {...p}
-                icon="translate"
-                color={theme.colors.tertiary}
-              />
+          <MenuCard
+            title={labels.darkMode}
+            description={labels.darkModeSub}
+            icon="theme-light-dark"
+            iconColor={theme.colors.primary} // Use primary color for dark mode toggle
+            rightElement={() => (
+              <Switch value={isDark} onValueChange={toggleTheme} />
             )}
-            right={(p) => <List.Icon {...p} icon="chevron-right" />}
-            onPress={() => router.push("/more/language")}
+            onPress={() => toggleTheme()}
+          />
+          <MenuCard
+            title={labels.language}
+            description={labels.languageSub}
+            icon="translate"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push("/more/language" as any)}
           />
         </List.Section>
 
-        <View style={styles.footer}>
-          <TouchableRipple
-            onPress={Platform.OS === "web" ? () => onManualCheck() : undefined}
-            disabled={updateStatus !== "idle"}
-            style={styles.versionRipple}
+        <List.Section>
+          <List.Subheader
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
           >
-            <Text variant="labelSmall" style={styles.versionText}>
-              Version {packageJson.version}
-            </Text>
-          </TouchableRipple>
-        </View>
+            {labels.about}
+          </List.Subheader>
+          <MenuCard
+            title={labels.about}
+            description={labels.aboutSub}
+            icon="information"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push("/more/about" as any)}
+          />
+          <MenuCard
+            title={labels.contact}
+            description={labels.contactSub}
+            icon="email"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push("/more/contact" as any)}
+          />
+        </List.Section>
+
+        <List.Section>
+          <List.Subheader
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
+          >
+            {labels.give}
+          </List.Subheader>
+          <MenuCard
+            title={labels.give}
+            description={labels.giveSub}
+            icon="gift"
+            iconColor={theme.colors.tertiary}
+            onPress={() => {}} // TODO: Implement giving page
+          />
+        </List.Section>
       </ScrollView>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  subheader: {
-    fontWeight: "bold",
-  },
-  footer: {
-    marginTop: 20,
-    marginBottom: 80,
-    alignItems: "center",
-  },
-  versionRipple: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  versionText: {
-    opacity: 0.5,
-  },
-});
+const styles = StyleSheet.create({});

@@ -1,5 +1,6 @@
 import { LanguageContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { DocumentStyles } from "@/styles/DocumentStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
 import React, { useContext } from "react";
@@ -415,7 +416,7 @@ export default function AboutScreen() {
     <>
       <Stack.Screen options={{ title: labels.title }} />
       <ScrollView
-        style={styles.container}
+        style={DocumentStyles.container}
         contentContainerStyle={{ paddingTop: headerHeight }}
       >
         <View style={styles.header}>
@@ -426,17 +427,17 @@ export default function AboutScreen() {
           />
           <Text
             variant="titleLarge"
-            style={[styles.churchName, { color: theme.colors.onSurface }]}
+            style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
           >
             {churchName}
           </Text>
         </View>
 
-        <View style={styles.section}>
+        <View style={DocumentStyles.section}>
           <Text
             variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
                 color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
@@ -446,7 +447,10 @@ export default function AboutScreen() {
             {labels.aboutSDA}
           </Text>
           <Paragraph
-            style={[styles.description, { color: theme.colors.onSurface }]}
+            style={[
+              DocumentStyles.description,
+              { color: theme.colors.onSurface },
+            ]}
           >
             {labels.sdaDescription}
           </Paragraph>
@@ -483,11 +487,11 @@ export default function AboutScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={DocumentStyles.section}>
           <Text
             variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
                 color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
@@ -537,11 +541,11 @@ export default function AboutScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={DocumentStyles.section}>
           <Text
             variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
                 color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
@@ -562,7 +566,7 @@ export default function AboutScreen() {
               <Card
                 key={index}
                 style={[
-                  styles.card,
+                  DocumentStyles.card,
                   { borderWidth: 1, borderColor: theme.colors.outlineVariant },
                 ]}
                 mode="contained"
@@ -597,7 +601,10 @@ export default function AboutScreen() {
 
           <Text
             variant="bodyMedium"
-            style={[styles.note, { color: theme.colors.onSurfaceVariant }]}
+            style={[
+              DocumentStyles.note,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
           >
             {labels.beliefsNote}
           </Text>
@@ -607,18 +614,18 @@ export default function AboutScreen() {
             onPress={openBeliefs}
             buttonColor={theme.colors.primary}
             textColor={theme.colors.onPrimary}
-            style={styles.button}
+            style={DocumentStyles.button}
             icon="open-in-new"
           >
             {labels.learnMore}
           </Button>
         </View>
 
-        <View style={styles.section}>
+        <View style={DocumentStyles.section}>
           <Text
             variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
                 color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
@@ -703,9 +710,6 @@ export default function AboutScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   header: {
     marginBottom: 8,
   },
@@ -713,34 +717,11 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 200,
   },
-  churchName: {
-    padding: 16,
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 26,
-    color: undefined, // Will be set by theme in style array if needed, but we'll use inline
-  },
-  section: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    marginBottom: 12,
-    fontWeight: "bold",
-    borderBottomWidth: 2,
-    paddingBottom: 4,
-  },
-  description: {
-    lineHeight: 22,
-  },
   subtext: {
     marginBottom: 12,
   },
   cardContainer: {
     marginVertical: 8,
-  },
-  card: {
-    marginBottom: 12,
   },
   cardHeader: {
     flexDirection: "row",
@@ -756,13 +737,6 @@ const styles = StyleSheet.create({
   cardContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-  },
-  button: {
-    marginTop: 8,
-  },
-  note: {
-    marginVertical: 12,
-    fontStyle: "italic",
   },
   pillarContainer: {
     flexDirection: "row",

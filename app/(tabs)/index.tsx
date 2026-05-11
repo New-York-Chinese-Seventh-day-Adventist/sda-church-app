@@ -1,6 +1,7 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router } from "expo-router";
 import React, { useContext } from "react";
 import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
@@ -60,7 +61,7 @@ export default function HomeScreen() {
   return (
     <>
       <ScrollView
-        style={styles.container}
+        style={NavigationStyles.container}
         contentContainerStyle={{ paddingTop: headerHeight }}
       >
         <ImageBackground
@@ -108,9 +109,12 @@ export default function HomeScreen() {
           </Card.Content>
         </Card>
 
-        <List.Section style={styles.actionContainer}>
+        <List.Section style={NavigationStyles.contentContainer}>
           <List.Subheader
-            style={[styles.subheader, { color: theme.colors.onBackground }]}
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
           >
             {labels.explore}
           </List.Subheader>
@@ -118,7 +122,7 @@ export default function HomeScreen() {
             title={labels.about}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/more/about" as any)}
+            onPress={() => router.push("/more/about")}
             style={{ marginBottom: 12 }}
           />
 
@@ -140,9 +144,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   hero: { padding: 24, alignItems: "center", justifyContent: "center" },
   welcomeText: {
     fontWeight: "bold",
@@ -150,6 +151,4 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   card: { margin: 16, padding: 8 },
-  actionContainer: { paddingHorizontal: 16, paddingBottom: 80 },
-  subheader: { fontWeight: "bold" },
 });

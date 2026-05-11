@@ -21,6 +21,7 @@ interface MenuCardProps {
   iconColor?: string;
   onPress?: () => void;
   rightIcon?: keyof typeof MaterialCommunityIcons.glyphMap | null;
+  rightElement?: () => React.ReactNode;
   style?: ViewStyle | any;
 }
 
@@ -31,6 +32,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   iconColor,
   onPress,
   rightIcon = "chevron-right",
+  rightElement,
   style,
 }) => {
   const theme = useTheme();
@@ -68,13 +70,15 @@ export const MenuCard: React.FC<MenuCardProps> = ({
           </Text>
         )}
       </View>
-      {rightIcon && (
-        <MaterialCommunityIcons
-          name={rightIcon}
-          size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
-          color={theme.colors.onSurfaceVariant}
-        />
-      )}
+      {rightElement
+        ? rightElement()
+        : rightIcon && (
+            <MaterialCommunityIcons
+              name={rightIcon}
+              size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+              color={theme.colors.onSurfaceVariant}
+            />
+          )}
     </AnimatedTouchableOpacity>
   );
 };

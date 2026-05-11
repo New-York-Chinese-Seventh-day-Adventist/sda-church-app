@@ -1,93 +1,45 @@
-import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { ReaderStyles } from "@/styles/ReaderStyles";
 import { fetchBooks, fetchChapter, TRANSLATIONS } from "@/utils/bibleService";
-import { openSpotifyPodcast } from "@/utils/spotifyService";
-import { openSabbathStream } from "@/utils/youtubeService";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { router, Stack } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Linking,
-  Platform,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { List, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const allLabels = {
+const bibleLabels = {
   en: {
-    sermonsWorship: "Watch & Listen",
-    studyLiturgy: "Study & Liturgy",
     bible: "Holy Bible",
-    bibleSub: "Read scripture in multiple languages",
-    youtube: "Full Services",
-    youtubeSub: "Watch our latest worship services",
-    spotify: "Audio Archive",
-    spotifySub: "Listen to our sermons and Bible study classes",
-    hymnal: "Hymnal",
-    hymnalSub: "Lyrics and music for worship",
-    library: "Library",
-    librarySub: "Devotionals, PDFs and guides",
     book: "Book",
     chapter: "Chapter",
     translation: "Translation",
     select: "Select",
   },
   zh: {
-    sermonsWorship: "觀看與收聽",
-    studyLiturgy: "研經與禮儀",
     bible: "聖經",
-    bibleSub: "閱讀多種語言的聖經",
-    youtube: "完整崇拜服務",
-    youtubeSub: "觀看最新的崇拜服務",
-    spotify: "音頻檔案",
-    spotifySub: "收聽我們的證道與研經課程",
-    hymnal: "詩歌本",
-    hymnalSub: "敬拜用的歌詞與音樂",
-    library: "圖書館",
-    librarySub: "靈修資料、PDF 與指南",
     book: "書卷",
     chapter: "章節",
     translation: "譯本",
     select: "選擇",
   },
   "zh-cn": {
-    sermonsWorship: "观看与收听",
-    studyLiturgy: "研经与礼仪",
     bible: "圣经",
-    bibleSub: "阅读多种语言的圣经",
-    youtube: "完整崇拜服务",
-    youtubeSub: "观看最新的崇拜服务",
-    spotify: "音频存档",
-    spotifySub: "收听我们的证道与研经课程",
-    hymnal: "诗歌本",
-    hymnalSub: "敬拜用的歌词与音乐",
-    library: "图书馆",
-    librarySub: "灵修资料、PDF 与指南",
     book: "书卷",
     chapter: "章节",
     translation: "译本",
     select: "选择",
   },
   es: {
-    sermonsWorship: "Ver y Escuchar",
-    studyLiturgy: "Estudio y Liturgia",
     bible: "Santa Biblia",
-    bibleSub: "Lee las escrituras en varios idiomas",
-    youtube: "Servicios Completos",
-    youtubeSub: "Mira nuestros últimos servicios de adoración",
-    spotify: "Archivo de Audio",
-    spotifySub: "Escucha nuestros sermones y clases de estudio bíblico",
-    hymnal: "Himnario",
-    hymnalSub: "Letras y música para la adoración",
-    library: "Biblioteca",
-    librarySub: "Devocionales, PDFs y guías",
     book: "Libro",
     chapter: "Capítulo",
     translation: "Traducción",
@@ -95,16 +47,26 @@ const allLabels = {
   },
 };
 
-export default function ResourcesScreen() {
+export default function BibleReaderScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
-  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
+  const labels =
+    bibleLabels[language as keyof typeof bibleLabels] || bibleLabels.en;
 
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
-  const [mode, setMode] = useState<"menu" | "bible">("menu");
-  const [translation, setTranslation] = useState("BSB");
+  // Map the app UI language to the most appropriate default Bible translation
+  const getDefaultTranslation = (lang: string) => {
+    if (lang === "zh") return "CUV";
+    if (lang === "zh-cn") return "CUVS";
+    if (lang === "es") return "SSE";
+    return "BSB";
+  };
+
+  const [translation, setTranslation] = useState(() =>
+    getDefaultTranslation(language),
+  );
   const [book, setBook] = useState<any>(null);
   const [chapter, setChapter] = useState(1);
   const [verses, setVerses] = useState<any[]>([]);
@@ -113,13 +75,6 @@ export default function ResourcesScreen() {
   const [selecting, setSelecting] = useState<
     "translation" | "book" | "chapter" | null
   >(null);
-
-  // Helper to open external links safely
-  const handleExternalLink = (url: string) => {
-    Linking.openURL(url).catch((err) =>
-      console.error("Couldn't load page", err),
-    );
-  };
 
   // Initial load: Fetch book list for the default translation
   useEffect(() => {
@@ -137,7 +92,7 @@ export default function ResourcesScreen() {
 
   // Lazy-load Chapter Content: Triggered when user navigates to a new chapter or changes translation
   useEffect(() => {
-    if (mode === "bible" && book) {
+    if (book) {
       const loadVerses = async () => {
         setLoading(true);
         try {
@@ -151,78 +106,16 @@ export default function ResourcesScreen() {
       };
       loadVerses();
     }
-  }, [mode, translation, book, chapter]);
+  }, [translation, book, chapter]);
 
-  const renderMenu = () => (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingTop: headerHeight },
-      ]}
-    >
-      <List.Section>
-        <List.Subheader
-          style={[styles.subheader, { color: theme.colors.onBackground }]}
-        >
-          {labels.sermonsWorship}
-        </List.Subheader>
-        <MenuCard
-          title={labels.youtube}
-          description={labels.youtubeSub}
-          icon="youtube"
-          iconColor={(theme.colors as any).brandYoutube}
-          onPress={openSabbathStream}
-        />
-
-        <MenuCard
-          title={labels.spotify}
-          description={labels.spotifySub}
-          icon="spotify"
-          iconColor={(theme.colors as any).brandSpotify}
-          onPress={openSpotifyPodcast}
-        />
-      </List.Section>
-
-      <List.Section>
-        <List.Subheader
-          style={[styles.subheader, { color: theme.colors.onBackground }]}
-        >
-          {labels.studyLiturgy}
-        </List.Subheader>
-        <MenuCard
-          title={labels.bible}
-          description={labels.bibleSub}
-          icon="book-cross"
-          iconColor={theme.colors.tertiary}
-          onPress={() => setMode("bible")}
-        />
-
-        <MenuCard
-          title={labels.hymnal}
-          description={labels.hymnalSub}
-          icon="music-note"
-          iconColor={theme.colors.tertiary}
-          onPress={() =>
-            handleExternalLink("https://www.adventisthymnals.com/")
-          }
-        />
-
-        <MenuCard
-          title={labels.library}
-          description={labels.librarySub}
-          icon="bookshelf"
-          iconColor={theme.colors.tertiary}
-        />
-      </List.Section>
-    </ScrollView>
-  );
-
-  const renderBibleReader = () => (
-    <View style={[styles.readerContainer, { paddingTop: headerHeight }]}>
+  return (
+    <View style={[ReaderStyles.readerContainer, { paddingTop: headerHeight }]}>
+      <Stack.Screen
+        options={{ title: labels.bible, backTo: "/resources" } as any}
+      />
       <View
         style={[
-          styles.readerHeader,
+          ReaderStyles.readerHeader,
           {
             backgroundColor: theme.colors.surface,
             borderBottomColor: theme.colors.outlineVariant,
@@ -230,8 +123,8 @@ export default function ResourcesScreen() {
         ]}
       >
         <TouchableOpacity
-          onPress={() => setMode("menu")}
-          style={styles.backButton}
+          onPress={() => router.back()}
+          style={ReaderStyles.backButton}
         >
           <MaterialCommunityIcons
             name="arrow-left"
@@ -239,42 +132,51 @@ export default function ResourcesScreen() {
             color={theme.colors.tertiary}
           />
         </TouchableOpacity>
-        <View style={styles.selectorRow}>
+        <View style={ReaderStyles.selectorRow}>
           <TouchableOpacity
             style={[
-              styles.selector,
+              ReaderStyles.selector,
               { backgroundColor: theme.colors.secondaryContainer },
             ]}
             onPress={() => setSelecting("book")}
           >
             <Text
-              style={[styles.selectorText, { color: theme.colors.primary }]}
+              style={[
+                ReaderStyles.selectorText,
+                { color: theme.colors.primary },
+              ]}
             >
               {book?.name || labels.book}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
-              styles.selector,
+              ReaderStyles.selector,
               { backgroundColor: theme.colors.secondaryContainer },
             ]}
             onPress={() => setSelecting("chapter")}
           >
             <Text
-              style={[styles.selectorText, { color: theme.colors.primary }]}
+              style={[
+                ReaderStyles.selectorText,
+                { color: theme.colors.primary },
+              ]}
             >
               {chapter}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
-              styles.selector,
+              ReaderStyles.selector,
               { backgroundColor: theme.colors.secondaryContainer },
             ]}
             onPress={() => setSelecting("translation")}
           >
             <Text
-              style={[styles.selectorText, { color: theme.colors.primary }]}
+              style={[
+                ReaderStyles.selectorText,
+                { color: theme.colors.primary },
+              ]}
             >
               {translation}
             </Text>
@@ -283,21 +185,27 @@ export default function ResourcesScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
+        <View style={ReaderStyles.center}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : (
         <ScrollView
-          style={styles.bibleScroll}
-          contentContainerStyle={styles.bibleContent}
+          style={ReaderStyles.bibleScroll}
+          contentContainerStyle={ReaderStyles.bibleContent}
         >
           {verses.map((v) => (
             <Text
               key={v.number}
-              style={[styles.verseText, { color: theme.colors.onBackground }]}
+              style={[
+                ReaderStyles.verseText,
+                { color: theme.colors.onBackground },
+              ]}
             >
               <Text
-                style={[styles.verseNumber, { color: theme.colors.primary }]}
+                style={[
+                  ReaderStyles.verseNumber,
+                  { color: theme.colors.primary },
+                ]}
               >
                 {v.number}
               </Text>
@@ -311,17 +219,23 @@ export default function ResourcesScreen() {
       {/* Selection Overlays */}
       {selecting && (
         <View
-          style={[styles.overlay, { backgroundColor: theme.colors.background }]}
+          style={[
+            ReaderStyles.overlay,
+            { backgroundColor: theme.colors.background },
+          ]}
         >
           <SafeAreaView style={{ flex: 1 }}>
             <View
               style={[
-                styles.modalHeader,
+                ReaderStyles.modalHeader,
                 { borderBottomColor: theme.colors.outlineVariant },
               ]}
             >
               <Text
-                style={[styles.modalTitle, { color: theme.colors.onSurface }]}
+                style={[
+                  ReaderStyles.modalTitle,
+                  { color: theme.colors.onSurface },
+                ]}
               >
                 {labels.select}{" "}
                 {labels[selecting as keyof typeof labels] || selecting}
@@ -340,7 +254,7 @@ export default function ResourcesScreen() {
                   <TouchableOpacity
                     key={t.id}
                     style={[
-                      styles.modalItem,
+                      ReaderStyles.modalItem,
                       { borderBottomColor: theme.colors.outlineVariant },
                     ]}
                     onPress={() => {
@@ -350,7 +264,7 @@ export default function ResourcesScreen() {
                   >
                     <Text
                       style={[
-                        styles.modalItemText,
+                        ReaderStyles.modalItemText,
                         { color: theme.colors.onSurface },
                       ]}
                     >
@@ -363,7 +277,7 @@ export default function ResourcesScreen() {
                   <TouchableOpacity
                     key={b.id}
                     style={[
-                      styles.modalItem,
+                      ReaderStyles.modalItem,
                       { borderBottomColor: theme.colors.outlineVariant },
                     ]}
                     onPress={() => {
@@ -374,7 +288,7 @@ export default function ResourcesScreen() {
                   >
                     <Text
                       style={[
-                        styles.modalItemText,
+                        ReaderStyles.modalItemText,
                         { color: theme.colors.onSurface },
                       ]}
                     >
@@ -389,7 +303,7 @@ export default function ResourcesScreen() {
                     <TouchableOpacity
                       key={c}
                       style={[
-                        styles.modalItem,
+                        ReaderStyles.modalItem,
                         { borderBottomColor: theme.colors.outlineVariant },
                       ]}
                       onPress={() => {
@@ -399,7 +313,7 @@ export default function ResourcesScreen() {
                     >
                       <Text
                         style={[
-                          styles.modalItemText,
+                          ReaderStyles.modalItemText,
                           { color: theme.colors.onSurface },
                         ]}
                       >
@@ -414,72 +328,4 @@ export default function ResourcesScreen() {
       )}
     </View>
   );
-
-  return mode === "menu" ? renderMenu() : renderBibleReader();
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  contentContainer: { padding: 20 },
-  subheader: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-
-  // Bible Reader
-  readerContainer: { flex: 1 },
-  readerHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 0.5,
-    zIndex: 10,
-    height: 56,
-  },
-  backButton: { padding: 15 },
-  selectorRow: {
-    flexDirection: "row",
-    flex: 1,
-    justifyContent: "flex-start",
-    gap: 8,
-    paddingRight: 15,
-  },
-  selector: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-  },
-  selectorText: { fontWeight: "700", fontSize: 13 },
-  bibleScroll: { flex: 1 },
-  bibleContent: { padding: 20, paddingBottom: 80 },
-  verseText: {
-    fontSize: 19,
-    lineHeight: 30,
-    marginBottom: 14,
-    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
-  },
-  verseNumber: {
-    fontSize: 12,
-    fontWeight: "800",
-    opacity: 0.5,
-  },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // Modals
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 100,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    borderBottomWidth: 0.5,
-  },
-  modalTitle: { fontSize: 20, fontWeight: "800" },
-  modalItem: {
-    padding: 18,
-    borderBottomWidth: 0.5,
-  },
-  modalItemText: { fontSize: 16 },
-});

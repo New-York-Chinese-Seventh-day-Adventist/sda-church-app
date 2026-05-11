@@ -10,6 +10,7 @@
 !/constants/
 !/docs/
 !/public/
+!/styles/
 !/utils/
 
 # 3. Re-include files in the root directory

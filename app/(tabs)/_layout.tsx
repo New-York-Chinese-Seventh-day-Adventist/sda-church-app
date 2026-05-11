@@ -27,7 +27,10 @@ export const GlobalHeader = (props: any) => {
     setIsSearching(false);
   }, [segments.join("/")]);
 
-  const isMoreSubPage = segments.includes("more") && segments.length > 2;
+  const isSubPage =
+    (segments.includes("more") || segments.includes("resources")) &&
+    segments.length > 2;
+
   const title = props.options?.title;
   const backTo = props.options?.backTo;
 
@@ -391,7 +394,7 @@ export const GlobalHeader = (props: any) => {
 
     // If already on a subpage, replace to avoid history loops.
     // Otherwise, navigate normally into the stack.
-    const navFn = isMoreSubPage ? router.replace : router.navigate;
+    const navFn = isSubPage ? router.replace : router.navigate;
 
     navFn({
       pathname: item.route as any,
@@ -421,20 +424,22 @@ export const GlobalHeader = (props: any) => {
           setHeaderHeight(height + insets.top);
         }}
       >
-        {isMoreSubPage && (
+        {isSubPage && (
           <Appbar.BackAction
             onPress={() => {
               if (backTo) {
                 router.navigate(backTo as any);
-              } else if (isMoreSubPage) {
-                router.navigate("/more");
+              } else if (segments.includes("more")) {
+                router.navigate("/more" as any);
+              } else if (segments.includes("resources")) {
+                router.navigate("/resources" as any);
               } else {
                 router.back();
               }
             }}
           />
         )}
-        {isMoreSubPage ? (
+        {isSubPage ? (
           <Appbar.Content
             title={title}
             titleStyle={{ color: theme.colors.onSurface, fontWeight: "bold" }}
