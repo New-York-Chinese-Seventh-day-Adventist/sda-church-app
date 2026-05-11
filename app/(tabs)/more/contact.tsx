@@ -178,7 +178,11 @@ export default function ContactScreen() {
         contentContainerStyle={{ paddingTop: headerHeight }}
       >
         <List.Section>
-          <List.Subheader>{labels.infoLabel}</List.Subheader>
+          <List.Subheader
+            style={[styles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.infoLabel}
+          </List.Subheader>
           {phone && (
             <MenuCard
               title={phone}
@@ -233,7 +237,7 @@ export default function ContactScreen() {
 
         <List.Section>
           <List.Subheader
-            style={[styles.subheader, { color: theme.colors.primary }]}
+            style={[styles.subheader, { color: theme.colors.onBackground }]}
           >
             {labels.addressLabel}
           </List.Subheader>

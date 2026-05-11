@@ -456,7 +456,7 @@ export const GlobalHeader = (props: any) => {
               }}
               onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
               style={{
-                backgroundColor: theme.colors.secondaryContainer,
+                backgroundColor: theme.colors.surfaceVariant,
                 elevation: 0,
                 borderRadius: 24,
                 height: 44,

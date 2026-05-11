@@ -38,48 +38,51 @@ const { LightTheme: _LightTheme, DarkTheme: _DarkTheme } = adaptNavigationTheme(
  */
 export const LightTheme = {
   ..._LightTheme,
-  colors: { ..._LightTheme.colors, primary: "#3056D3", background: "#F8F9FA" },
+  colors: { ..._LightTheme.colors, primary: "#3EA6FF", background: "#F8F9FA" },
 };
 
 export const DarkTheme = {
   ..._DarkTheme,
-  colors: { ..._DarkTheme.colors, primary: "#5E7BCB", background: "#121212" },
+  colors: { ..._DarkTheme.colors, primary: "#FFFFFF", background: "#0F0F0F" },
 };
 
 /**
- * REACT NATIVE PAPER THEMES (Component Content)
- *
- * These objects are passed to <PaperProvider /> and follow the full MD3 spec.
- * They control internal component logic: Buttons, Cards, Dialogs, and Text.
- *
- * We spread the Navigation colors into these themes to ensure color tokens
- * like 'primary' are identical across both the Chrome and the Content.
+ * REACT NATIVE PAPER THEMES
+ * Logic mapping follows the color mapping in UI_UX.md.
+ * Surface/Background relationships prioritize the 'Hierarchy of Light' (Tenet 5).
  */
+
 export const customLightTheme = {
   ...MD3LightTheme,
   version: 3,
   isV3: true,
   colors: {
     ...MD3LightTheme.colors,
-    ...LightTheme.colors,
-    primary: "#3056D3", // Lapis Blue (Spec)
-    onPrimary: "#FFFFFF", // Inverted Text (Spec)
-    primaryContainer: "#E3F2FD", // Selection Container (Spec)
-    onPrimaryContainer: "#3056D3", // Lapis Blue (Spec)
-    secondaryContainer: "#F1F3F4", // Top Search Bar Background (Spec)
-    onSecondaryContainer: "#1A1A1A", // Core Content Text (Spec)
-    background: "#F8F9FA", // Background (Spec)
-    surface: "#FFFFFF", // Surface (Spec)
-    surfaceVariant: "#F1F3F4", // Surface Variant (Spec)
-    onSurface: "#1A1A1A", // Core Content Text (Spec)
-    onSurfaceVariant: "#606060", // Top Search Bar Icon/Text (Spec)
-    outline: "#CAC4D0", // Boundary (Outline) (Spec)
-    outlineVariant: "#E0E0E0", // Boundary (Subtle) (Spec)
-    tertiary: "#3EA6FF", // Sanctuary Blue (Spec)
-    onTertiary: "#FFFFFF", // Inverted Text (Spec)
-    onBackground: "#0F0F0F", // Bottom Tab Bar (Spec)
-    brandYoutube: "#FF0000", // YouTube Brand (Spec)
-    brandSpotify: "#1DB954", // Spotify Brand (Spec)
+    // Primary: Sanctuary Blue #3EA6FF
+    primary: "#3EA6FF", // Primary Interaction Color Accent
+    onPrimary: "#FFFFFF", // Inverted Text
+    primaryContainer: "#E3F2FD", // Selection Container
+    onPrimaryContainer: "#3EA6FF", // General Iconography
+
+    // Backgrounds & Surfaces
+    background: "#F8F9FA", // The Canvas
+    onBackground: "#1A1A1A", // The Ink: High-contrast text on Canvas
+    surface: "#FFFFFF", // The Object: Cards/Containers
+    onSurface: "#1A1A1A", // The Ink: High-contrast text on Surfaces
+
+    // UI Variants & Boundaries
+    surfaceVariant: "#F1F3F4", // Secondary UI / Top Search Bar BG
+    onSurfaceVariant: "#606060", // Muted Intent: Top Search Bar Icon/Text
+    outline: "#CAC4D0", // Boundary (Outline)
+    outlineVariant: "#E0E0E0", // Boundary (Subtle) / Divider
+
+    // Tertiary: Identical to Primary in Light Mode for uniform UI color
+    tertiary: "#3EA6FF",
+    onTertiary: "#FFFFFF",
+
+    // Branding (Special External Brand Colors)
+    brandYoutube: "#FF0000",
+    brandSpotify: "#1DB954",
   },
   roundness: 3,
 };
@@ -90,25 +93,31 @@ export const customDarkTheme = {
   isV3: true,
   colors: {
     ...MD3DarkTheme.colors,
-    ...DarkTheme.colors,
-    primary: "#5E7BCB", // Steel Blue (Spec)
-    onPrimary: "#121212", // Inverted Text (Spec)
-    primaryContainer: "#2C2C2C", // Selection Container (Spec)
-    onPrimaryContainer: "#5E7BCB", // Steel Blue (Spec)
-    secondaryContainer: "#1E1E1E", // Top Search Bar Background (Spec)
-    onSecondaryContainer: "#F5F5F5", // Core Content Text (Spec)
-    background: "#121212", // Background (Spec)
-    surface: "#1E1E1E", // Surface (Spec)
-    surfaceVariant: "#2C2C2C", // Surface Variant (Spec)
-    onSurface: "#F5F5F5", // Core Content Text (Spec)
-    onSurfaceVariant: "#AAAAAA", // Top Search Bar Icon/Text (Spec)
-    outline: "#938F99", // Boundary (Outline) (Spec)
-    outlineVariant: "#333333", // Boundary (Subtle) (Spec)
-    tertiary: "#FFFFFF", // Sanctuary Blue (Spec)
-    onTertiary: "#121212", // Inverted Text (Spec)
-    onBackground: "#FFFFFF", // Bottom Tab Bar (Spec)
-    brandYoutube: "#FFFFFF", // YouTube Brand (Spec)
-    brandSpotify: "#FFFFFF", // Spotify Brand (Spec)
+    // Primary: Active Focus #FFFFFF (Spotlight Effect)
+    primary: "#FFFFFF", // Primary Interaction Color Accent
+    onPrimary: "#0F0F0F", // The Stencil / Inverted Text
+    primaryContainer: "#2C2C2C", // Selection Container
+    onPrimaryContainer: "#FFFFFF", // General Iconography
+
+    // Backgrounds & Surfaces
+    background: "#0F0F0F", // The Canvas
+    onBackground: "#F5F5F5", // The Ink: Soft White to mitigate Irradiation Illusion
+    surface: "#1E1E1E", // The Object: Cards/Containers
+    onSurface: "#F5F5F5", // The Ink: Soft White to prevent Halation
+
+    // UI Variants & Boundaries
+    surfaceVariant: "#2C2C2C", // Secondary UI
+    onSurfaceVariant: "#AAAAAA", // Muted Intent: Top Search Bar Icon/Text
+    outline: "#938F99", // Boundary (Outline)
+    outlineVariant: "#3F3F3F", // Boundary (Subtle) / Divider
+
+    // Tertiary: Matches Primary (Active Focus) in Dark Mode
+    tertiary: "#FFFFFF",
+    onTertiary: "#0F0F0F", // Matches Background/Stencil
+
+    // Branding (Standardized Monochrome in Dark Mode)
+    brandYoutube: "#FFFFFF",
+    brandSpotify: "#FFFFFF",
   },
   roundness: 3,
 };
