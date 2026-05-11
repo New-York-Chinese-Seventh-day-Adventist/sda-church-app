@@ -492,7 +492,13 @@ export const GlobalHeader = (props: any) => {
                     <List.Item
                       key={index}
                       title={item.title}
-                      left={(p) => <List.Icon {...p} icon={item.icon} />}
+                      left={(p) => (
+                        <List.Icon
+                          {...p}
+                          icon={item.icon}
+                          color={theme.dark ? "#FFFFFF" : theme.colors.primary}
+                        />
+                      )}
                       onPress={() => handleSelectResult(item)}
                     />
                   ))}

@@ -232,7 +232,9 @@ export default function ContactScreen() {
         </List.Section>
 
         <List.Section>
-          <List.Subheader style={styles.subheader}>
+          <List.Subheader
+            style={[styles.subheader, { color: theme.colors.primary }]}
+          >
             {labels.addressLabel}
           </List.Subheader>
           {locations.map((loc, index) => (
@@ -259,7 +261,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   subheader: {
-    color: "#004B87",
     fontWeight: "bold",
   },
 });

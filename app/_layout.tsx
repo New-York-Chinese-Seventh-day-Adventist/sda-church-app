@@ -80,7 +80,7 @@ const { LightTheme: _LightTheme, DarkTheme: _DarkTheme } = adaptNavigationTheme(
 // Otherwise, React Navigation defaults to the Material 3 standard (purple).
 const LightTheme = {
   ..._LightTheme,
-  colors: { ..._LightTheme.colors, primary: "#004B87", background: "#F8F9FA" },
+  colors: { ..._LightTheme.colors, primary: "#3EA6FF", background: "#F8F9FA" },
 };
 const DarkTheme = {
   ..._DarkTheme,
@@ -94,7 +94,7 @@ const customLightTheme = {
   colors: {
     ...MD3LightTheme.colors,
     ...LightTheme.colors,
-    primary: "#004B87",
+    primary: "#3EA6FF",
     onPrimary: "#FFFFFF",
     primaryContainer: "#E0E0E0",
     onPrimaryContainer: "#1A1A1A",

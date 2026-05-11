@@ -210,7 +210,9 @@ export default function CommunityScreen() {
       ]}
     >
       <List.Section>
-        <List.Subheader style={styles.subheader}>
+        <List.Subheader
+          style={[styles.subheader, { color: theme.colors.primary }]}
+        >
           {labels.elmhurstTitle}
         </List.Subheader>
         {elmhurstEvents.map((event, index) => (
@@ -226,7 +228,9 @@ export default function CommunityScreen() {
       </List.Section>
 
       <List.Section>
-        <List.Subheader style={styles.subheader}>
+        <List.Subheader
+          style={[styles.subheader, { color: theme.colors.primary }]}
+        >
           {labels.brooklynTitle}
         </List.Subheader>
         {brooklynEvents.map((event, index) => (
@@ -242,7 +246,9 @@ export default function CommunityScreen() {
       </List.Section>
 
       <List.Section>
-        <List.Subheader style={styles.subheader}>
+        <List.Subheader
+          style={[styles.subheader, { color: theme.colors.primary }]}
+        >
           {labels.flushingFellowshipTitle}
         </List.Subheader>
         {otherEvents.map((event, index) => (
@@ -271,7 +277,7 @@ const styles = StyleSheet.create({
   subheader: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#004B87",
+    color: undefined, // Handled by theme in render
   },
   eventCard: {
     marginBottom: 8,

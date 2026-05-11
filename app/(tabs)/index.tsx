@@ -108,6 +108,7 @@ export default function HomeScreen() {
           <MenuCard
             title={labels.about}
             icon="information"
+            iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
             onPress={() => router.push("/more/about" as any)}
             style={{ marginBottom: 12 }}
           />
@@ -115,6 +116,7 @@ export default function HomeScreen() {
           <MenuCard
             title={labels.contact}
             icon="map-marker"
+            iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
             onPress={() =>
               router.push({
                 pathname: "/more/contact",

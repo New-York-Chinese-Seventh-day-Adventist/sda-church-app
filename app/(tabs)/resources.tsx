@@ -170,14 +170,16 @@ export default function ResourcesScreen() {
       </Text>
 
       <List.Section>
-        <List.Subheader style={styles.subheader}>
+        <List.Subheader
+          style={[styles.subheader, { color: theme.colors.primary }]}
+        >
           {labels.sermonsWorship}
         </List.Subheader>
         <MenuCard
           title={labels.youtube}
           description={labels.youtubeSub}
           icon="youtube"
-          iconColor={theme.dark ? undefined : "#FF0000"}
+          iconColor={theme.dark ? "#FFFFFF" : "#FF0000"}
           onPress={openSabbathStream}
         />
 
@@ -185,19 +187,22 @@ export default function ResourcesScreen() {
           title={labels.spotify}
           description={labels.spotifySub}
           icon="spotify"
-          iconColor={theme.dark ? undefined : "#1DB954"}
+          iconColor={theme.dark ? "#FFFFFF" : "#1DB954"}
           onPress={openSpotifyPodcast}
         />
       </List.Section>
 
       <List.Section>
-        <List.Subheader style={styles.subheader}>
+        <List.Subheader
+          style={[styles.subheader, { color: theme.colors.primary }]}
+        >
           {labels.studyLiturgy}
         </List.Subheader>
         <MenuCard
           title={labels.bible}
           description={labels.bibleSub}
           icon="book-cross"
+          iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
           onPress={() => setMode("bible")}
         />
 
@@ -205,6 +210,7 @@ export default function ResourcesScreen() {
           title={labels.hymnal}
           description={labels.hymnalSub}
           icon="music-note"
+          iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
           onPress={() =>
             handleExternalLink("https://www.adventisthymnals.com/")
           }
@@ -214,6 +220,7 @@ export default function ResourcesScreen() {
           title={labels.library}
           description={labels.librarySub}
           icon="bookshelf"
+          iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
         />
       </List.Section>
     </ScrollView>
@@ -237,7 +244,7 @@ export default function ResourcesScreen() {
           <MaterialCommunityIcons
             name="arrow-left"
             size={24}
-            color={theme.colors.primary}
+            color={theme.dark ? "#FFFFFF" : theme.colors.primary}
           />
         </TouchableOpacity>
         <View style={styles.selectorRow}>
@@ -331,7 +338,7 @@ export default function ResourcesScreen() {
                 <MaterialCommunityIcons
                   name="close"
                   size={24}
-                  color={theme.colors.onSurface}
+                  color={theme.dark ? "#FFFFFF" : theme.colors.primary}
                 />
               </TouchableOpacity>
             </View>
@@ -430,7 +437,6 @@ const styles = StyleSheet.create({
   subheader: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#004B87",
   },
 
   // Bible Reader

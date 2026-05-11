@@ -6,14 +6,13 @@ This is a Progressive Web App (PWA) and not a native iOS or Android binary. Ther
 
 To uphold **Tenet 5 (Radical Simplicity)** and **Tenet 7 (Destination, Not a Launcher)**, the application adopts a monochrome (grayscale-first) design palette.
 
-### Key Principles:
+### Color Accents: Lapis Blue (light) and Steel Blue (dark)
 
-1.  **Brand Neutrality:** Following YouTube's "Neutral Treatment" guidelines, third-party logos are rendered in monochrome variants. This removes "brand noise" and ensures the app feels like a cohesive sanctuary rather than a collection of disparate services.
-2.  **Visual Hierarchy (The 90/10 Rule):** 90% of the interface remains monochrome (White, Off-White, Grays) to maintain a peaceful environment. 10% of the interface utilizes a **Deep Cathedral Navy** accent for critical interactive elements (Active tabs, primary buttons, "pop" utility).
-3.  **Iconography:** Icons across all pillars (Bible, Hymnal, Library) utilize consistent stroke weights and monochrome styling. This provides a "premium" feel and ensures accessibility across both light and dark modes.
-4.  **Cohesive Sanctuary:** By standardizing external logos, we visually reinforce that the user remains within their "Digital Home," even when accessing external media. This reduces the psychological friction of switching between ecosystems.
+Lapis Blue #3056D3 and Steel Blue #5E7BCB bridges the gap between a "Digital Sanctuary" and "Practical Utility." Lapis Blue functions as a "neutral plus"—it maintains authority and stability while providing the necessary contrast for accessibility, especially for elderly users.
 
-### Bottom Tab Bar Carveout (YouTube Treatment)
+Finally, Sanctuary Blue #3EA6FF is slightly brighter for contrast with modern tech branding and is useful for special cases where doubly "popping positive" visuals are needed, such as iconography.
+
+### Bottom Tab Bar Icon Edge Case (YouTube Treatment)
 
 To ensure the focus remains entirely on the content within the sanctuary, the bottom navigation utilizes a strict neutral treatment. Selection is indicated by a "Fill" state (solid icon) rather than a change in brand color.
 
@@ -21,6 +20,26 @@ To ensure the focus remains entirely on the content within the sanctuary, the bo
 | :------------- | :--------------------- | :--------------------- | :------------------------------------------------ |
 | **Light Mode** | `#0F0F0F` (Deep Black) | `#0F0F0F` (Deep Black) | High contrast. Indicated by fill state only.      |
 | **Dark Mode**  | `#FFFFFF` (Pure White) | `#FFFFFF` (Pure White) | Maximum visibility. Indicated by fill state only. |
+
+### Core Monochrome Palette:
+
+| Element                          | Light Mode Hex | Dark Mode Hex | Rationale                                                           |
+| :------------------------------- | :------------- | :------------ | :------------------------------------------------------------------ |
+| **Background**                   | #F8F9FA        | #121212       | Aligned with YouTube's background aesthetic to minimize eye strain. |
+| **Surface (Cards/Containers)**   | #FFFFFF        | #1E1E1E       | Soft surfaces to distinguish content from the background.           |
+| **Text**                         | #1A1A1A        | #F5F5F5       | High-contrast monochrome for core content.                          |
+| **Primary Interaction (Accent)** | #3056D3        | #5E7BCB       | Lapis Blue (Light) and a desaturated variant for Dark.              |
+
+### Key Principles & Edge Cases:
+
+1.  **Brand Neutrality:** Following YouTube's "Neutral Treatment" guidelines, third-party logos are generally rendered in monochrome variants. By standardizing external logos, we visually reinforce that the user remains within their "Digital Home," even when accessing external media.
+    - **Exception:** YouTube (`#FF0000`) and Spotify (`#1DB954`) icons utilize their respective brand colors in **Light Mode** to aid immediate recognition and content surfacing, while adhering to the dark mode monochrome palette.
+2.  **Visual Hierarchy (The 90/10 Rule):** 90% of the interface remains monochrome to maintain a peaceful environment. 10% of the interface utilizes a **Lapis Blue** #3056D3 and Steel Blue #5E7BCB accent for most critical interactive elements (Primary buttons, "pop" utility) in light mode and dark mode. Sanctuary Blue #3EA6FF is reserved for extremely special cases, such as iconography.
+3.  **Iconography:** Icons across all pillars utilize consistent stroke weights and monochrome styling. This provides a "premium" feel and ensures accessibility across both light and dark modes.
+    - **Colors:** Generally use **Sanctuary Blue** #3EA6FF in Light Mode and **Pure White** #FFFFFF in Dark Mode for high visibility.
+    - **Exceptions:**
+      - **Top Search Bar:** See section below. Special case from [Material design](https://m3.material.io/components/app-bars/specs).
+      - **Bottom Tab Bar:** See section below.
 
 ### Top Search Bar (M3 "Pill" Treatment)
 
@@ -31,24 +50,23 @@ To maintain the YouTube-style "content-first" aesthetic, the top search bar is r
 | **Light Mode** | `#F1F3F4`  | `#606060` | Subtle contrast against the opaque header.       |
 | **Dark Mode**  | `#1E1E1E`  | `#AAAAAA` | Recedes into the header to minimize distraction. |
 
-### The Accent: Deep Cathedral Navy
+### Bottom Tab Bar Icon Edge Case (YouTube Treatment)
 
-This choice bridges the gap between a "Digital Sanctuary" and "Practical Utility." Navy functions as a "neutral plus"—it maintains authority and stability while providing the necessary contrast for accessibility, especially for elderly users.
+To ensure the focus remains entirely on the content within the sanctuary, the bottom navigation utilizes a strict neutral treatment. Selection is indicated by a "Fill" state (solid icon) rather than a change in brand color.
 
-### Core Monochrome Palette:
+| Mode           | Active (Filled)        | Inactive (Outline)     | Rationale                                         |
+| :------------- | :--------------------- | :--------------------- | :------------------------------------------------ |
+| **Light Mode** | `#0F0F0F` (Deep Black) | `#0F0F0F` (Deep Black) | High contrast. Indicated by fill state only.      |
+| **Dark Mode**  | `#FFFFFF` (Pure White) | `#FFFFFF` (Pure White) | Maximum visibility. Indicated by fill state only. |
 
-| Element                        | Light Mode Hex | Dark Mode Hex | Rationale                                                                             |
-| :----------------------------- | :------------- | :------------ | :------------------------------------------------------------------------------------ |
-| **Primary (Accent)**           | `#004B87`      | `#7FB5FF`     | "Deep Cathedral Navy" (Light) and a desaturated variant (Dark) for interactive "pop". |
-| **Surface (Cards/Containers)** | `#FFFFFF`      | `#1E1E1E`     | Soft surfaces to distinguish content from the background.                             |
-| **Background**                 | `#F8F9FA`      | `#121212`     | Aligned with YouTube's deep-dark aesthetic to minimize eye strain.                    |
-| **Text / Base Icons**          | `#1A1A1A`      | `#F5F5F5`     | High-contrast monochrome for core content.                                            |
-
-### Elevation & Translucency (The "Glass" Rule)
+#### Elevation & Translucency (The "Glass" Rule)
 
 To maintain a modern, native feel and satisfy **Tenet 5 (Radical Simplicity)**, the app utilizes translucent surfaces for persistent navigation and search elements.
 
 - **Glassmorphism:** Blur (Intensity 50) for bottom navigation and search overlays.
+- **Edge-to-Edge Immersive UI:** The app must blend seamlessly into the device's physical boundaries, extending the UI to the very edge of the screen at both the top (status bar) and bottom (home indicator/navigation bar).
+  - **Immersive Canvas:** Eliminate "letterboxing" or hard-coded safe area gutters. The background content or translucent navigation bars should bleed into the system safe areas (using `viewport-fit=cover` for PWA).
+  - **Hardware-Software Synergy:** Like the YouTube app, this design choice removes the visual separation between the app and the device hardware, reinforcing the "Digital Sanctuary" metaphor by making the interface feel like an integrated environment rather than a window inside a frame.
 - **Header Opacity:** The top header is completely opaque (using the base background color) to provide a solid anchor for the "Digital Sanctuary."
 - **Absolute Positioning & Offset:** Global navigation elements are positioned absolute. To prevent initial overlap, screens must apply a `paddingTop` equal to the total header height (Status Bar + 64px).
 - **Boundary Definition:** Do not use any boundary definition for the bottom tab navigation bar so there will be a smooth transition from blurred tab bar to unblurred content.
