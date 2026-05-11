@@ -1,5 +1,7 @@
 # UI/UX Design: The "Four-Pillar" App Structure
 
+This is a Progressive Web App (PWA) and not a native iOS or Android binary. Therefore, please be careful with the UI libraries you use.
+
 ## Design Language: Monochrome & Simplicity
 
 To uphold **Tenet 5 (Radical Simplicity)** and **Tenet 7 (Destination, Not a Launcher)**, the application adopts a monochrome (grayscale-first) design palette.
@@ -23,6 +25,17 @@ This choice bridges the gap between a "Digital Sanctuary" and "Practical Utility
 | **Surface (Cards/Containers)** | `#FFFFFF`      | `#1E1E1E`     | Soft surfaces to distinguish content from the background.                             |
 | **Background**                 | `#F8F9FA`      | `#121212`     | Aligned with YouTube's deep-dark aesthetic to minimize eye strain.                    |
 | **Text / Base Icons**          | `#1A1A1A`      | `#F5F5F5`     | High-contrast monochrome for core content.                                            |
+
+### Elevation & Translucency (The "Glass" Rule)
+
+To maintain a modern, native feel and satisfy **Tenet 5 (Radical Simplicity)**, the app utilizes translucent surfaces for persistent navigation and search elements.
+
+- **Glassmorphism:** Blur (Intensity 50) for bottom navigation and search overlays.
+- **Header Opacity:** The top header is completely opaque (using the base background color) to provide a solid anchor for the "Digital Sanctuary."
+- **Absolute Positioning & Offset:** Global navigation elements are positioned absolute. To prevent initial overlap, screens must apply a `paddingTop` equal to the total header height (Status Bar + 64px).
+- **Boundary Definition:** Use a 0.5px border (translucent gray: `rgba(255,255,255,0.1)` in dark mode or `rgba(0,0,0,0.1)` in light mode) on the edge of blurred and persistent navigation surfaces to provide crisp definition.
+- **Browser Fallback:** For browsers that do not support `backdrop-filter`, the high-opacity `rgba` background serves as a graceful fallback to ensure legibility.
+- **Future-Proofing:** It shifts your design from "Standard App" to a custom "Digital Sanctuary." That blurred effect mimics light passing through a window, which is a subtle but powerful spiritual metaphor for a church app.
 
 ### Theme & Dark Mode:
 

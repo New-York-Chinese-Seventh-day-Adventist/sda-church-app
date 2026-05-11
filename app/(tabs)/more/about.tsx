@@ -1,4 +1,5 @@
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
 import React, { useContext } from "react";
@@ -12,10 +13,14 @@ import {
   Title,
   useTheme,
 } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AboutScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+
   const churchName = process.env.EXPO_PUBLIC_CHURCH_NAME || "SDA Church";
   const aboutImageUrl = process.env.EXPO_PUBLIC_ABOUT_IMAGE_URL;
 
@@ -417,7 +422,10 @@ export default function AboutScreen() {
   return (
     <>
       <Stack.Screen options={{ title: labels.title }} />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: headerHeight }}
+      >
         <View style={styles.header}>
           <Image
             source={{ uri: aboutImageUrl }}

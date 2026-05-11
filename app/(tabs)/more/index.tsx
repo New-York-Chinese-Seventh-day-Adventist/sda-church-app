@@ -1,4 +1,5 @@
 import { LanguageContext, ThemeContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Animated, Platform, ScrollView, StyleSheet, View } from "react-native";
@@ -10,6 +11,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import packageJson from "../../../package.json";
 import { openOnlineGiving } from "../../../utils/externalLinks";
 import { UpdateContext } from "../../_layout";
@@ -19,6 +21,9 @@ export default function MoreScreen() {
   const { isDark, toggleTheme } = useContext(ThemeContext);
   const { onManualCheck, updateStatus } = useContext(UpdateContext);
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+
   const { highlight } = useLocalSearchParams();
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -109,7 +114,10 @@ export default function MoreScreen() {
   return (
     <>
       <Stack.Screen options={{ title: labels.info }} />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: headerHeight }}
+      >
         <List.Section>
           <List.Subheader>{labels.info}</List.Subheader>
           <List.Item
@@ -177,7 +185,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 20,
-    marginBottom: 40,
+    marginBottom: 80,
     alignItems: "center",
   },
   versionRipple: {

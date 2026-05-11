@@ -31,17 +31,17 @@ We proactively mitigate privacy and legal risks (e.g., CCPA, GDPR), even if the 
 
 > _"Behold, I am sending you out like sheep among wolves. Therefore be as shrewd as snakes and as innocent as doves."_ — **Matthew 10:16**
 
-### 3. Community Over Complexity
+### 3. Informed Sanctuary (Privacy by Design)
+
+We prioritize total anonymity, treating the digital experience as a secure refuge. While we use aggregate data to help leadership make Informed Decisions about community needs, we strictly reject the collection or storage of Personally Identifiable Information (PII). A church is a "third space" and a final refuge; our technology must be a shade from the heat, not a source of surveillance.
+
+> _"For You have been a refuge for the poor, a stronghold for the needy in distress, a refuge from the storm, a shade from the heat."_ — **Isaiah 25:4**
+
+### 4. Community Over Complexity
 
 Every feature must serve the goal of promoting **in-person fellowship**. Digital tools—such as event sign-ups or notifications—are high-value only if they make it easier for a member to show up to a physical gathering. We facilitate connection without requiring or compromising Personally Identifiable Information (PII).
 
 > _"And let us consider how to spur one another on to love and good deeds. Let us not neglect meeting together, as some have made a habit, but let us encourage one another..."_ — **Hebrews 10:24-25**
-
-### 4. Anonymous Utility, Not Surveillance
-
-We prioritize anonymity and use data only in the aggregate. Technical insights and "informed decisions" are used to help leadership understand community needs, but this must never cross into individual tracking. Churches are among the last refuge and third space for huddled masses as a safe, private sanctuary.
-
-> _"For You have been a refuge for the poor, a stronghold for the needy in distress, a refuge from the storm, a shade from the heat."_ — **Isaiah 25:4**
 
 ### 5. Radical Simplicity in Design
 

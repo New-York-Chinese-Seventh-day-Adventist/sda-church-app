@@ -1,14 +1,18 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { List } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   const allLabels = {
     en: { title: "Language" },
@@ -22,7 +26,12 @@ export default function LanguageScreen() {
   return (
     <>
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { paddingTop: headerHeight + DESIGN_TOKENS.VIEW_PADDING },
+        ]}
+      >
         <List.Section>
           <MenuCard
             title="English"

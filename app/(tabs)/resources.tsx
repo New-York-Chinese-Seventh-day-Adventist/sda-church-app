@@ -1,5 +1,6 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import { fetchBooks, fetchChapter, TRANSLATIONS } from "@/utils/bibleService";
 import { openSpotifyPodcast } from "@/utils/spotifyService";
 import { openSabbathStream } from "@/utils/youtubeService";
@@ -17,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const allLabels = {
   en: {
@@ -94,6 +96,9 @@ export default function ResourcesScreen() {
   const { language } = useContext(LanguageContext);
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+
   const [mode, setMode] = useState<"menu" | "bible">("menu");
   const [translation, setTranslation] = useState("BSB");
   const [book, setBook] = useState<any>(null);
@@ -147,7 +152,10 @@ export default function ResourcesScreen() {
   const renderMenu = () => (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: headerHeight },
+      ]}
     >
       <Text style={[styles.title, { color: theme.colors.onBackground }]}>
         {labels.title}
@@ -192,8 +200,8 @@ export default function ResourcesScreen() {
   );
 
   const renderBibleReader = () => (
-    <View style={styles.readerContainer}>
-      <SafeAreaView
+    <View style={[styles.readerContainer, { paddingTop: headerHeight }]}>
+      <View
         style={[
           styles.readerHeader,
           {
@@ -253,7 +261,7 @@ export default function ResourcesScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
 
       {loading ? (
         <View style={styles.center}>
@@ -405,10 +413,9 @@ const styles = StyleSheet.create({
   readerHeader: {
     flexDirection: "row",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    backgroundColor: "#fff",
+    borderBottomWidth: 0.5,
     zIndex: 10,
+    height: 56,
   },
   backButton: { padding: 15 },
   selectorRow: {
@@ -425,7 +432,7 @@ const styles = StyleSheet.create({
   },
   selectorText: { fontWeight: "700", fontSize: 13 },
   bibleScroll: { flex: 1 },
-  bibleContent: { padding: 20, paddingBottom: 50 },
+  bibleContent: { padding: 20, paddingBottom: 80 },
   verseText: {
     fontSize: 19,
     lineHeight: 30,
@@ -449,13 +456,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomWidth: 0.5,
   },
   modalTitle: { fontSize: 20, fontWeight: "800" },
   modalItem: {
     padding: 18,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
   },
   modalItemText: { fontSize: 16 },
 });

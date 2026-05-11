@@ -1,8 +1,9 @@
 import { LanguageContext } from "@/constants/Contexts";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { BlurView } from "expo-blur";
 import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -63,17 +64,6 @@ export const GlobalHeader = (props: any) => {
           "pdf",
           "devotional",
           "reader",
-        ],
-      },
-      community: {
-        title: "Community",
-        keywords: [
-          "events",
-          "schedule",
-          "sabbath",
-          "groups",
-          "volunteer",
-          "in-person",
         ],
       },
       about: { title: "About Us", keywords: ["history", "beliefs", "church"] },
@@ -408,92 +398,116 @@ export const GlobalHeader = (props: any) => {
     });
   };
 
+  const glassBorder = theme.dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+
   return (
-    <Appbar.Header
-      ref={headerRef}
-      elevated
-      onLayout={(e) => {
-        const { y, height } = e.nativeEvent.layout;
-        // iOS headers often report y=0 in onLayout despite the status bar offset.
-        // Android headers (especially with Edge-to-Edge) provide the offset in 'y' or height.
-        setHeaderHeight(
-          Platform.OS === "ios" ? height + insets.top : y + height,
-        );
-      }}
+    <View
+      style={[
+        styles.headerWrapper,
+        {
+          borderBottomWidth: 0.5,
+          borderBottomColor: glassBorder,
+          backgroundColor: theme.colors.background,
+        },
+      ]}
     >
-      {isMoreSubPage && (
-        <Appbar.BackAction
-          onPress={() => {
-            if (backTo) {
-              router.navigate(backTo as any);
-            } else if (isMoreSubPage) {
-              router.navigate("/more");
-            } else {
-              router.back();
-            }
-          }}
-        />
-      )}
-      {isMoreSubPage ? (
-        <Appbar.Content
-          title={title}
-          titleStyle={{ color: theme.colors.primary, fontWeight: "bold" }}
-        />
-      ) : (
-        <View style={{ flex: 1 }}>
-          <Searchbar
-            ref={searchRef}
-            placeholder={searchLabels.searchPlaceholder}
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            onFocus={() => setIsSearching(true)}
-            blurOnSubmit={false}
-            returnKeyType="search"
-            onSubmitEditing={() => {
-              if (results.length > 0) {
-                handleSelectResult(results[0]);
+      <Appbar.Header
+        ref={headerRef}
+        style={{ backgroundColor: "transparent", elevation: 0 }}
+        onLayout={(e) => {
+          const { y, height } = e.nativeEvent.layout;
+          // In a PWA, we use the combined height of the inset (status bar) and the Appbar
+          setHeaderHeight(height + insets.top);
+        }}
+      >
+        {isMoreSubPage && (
+          <Appbar.BackAction
+            onPress={() => {
+              if (backTo) {
+                router.navigate(backTo as any);
+              } else if (isMoreSubPage) {
+                router.navigate("/more");
+              } else {
+                router.back();
               }
             }}
-            onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
-            style={{ backgroundColor: "transparent", elevation: 0 }}
           />
-          {isSearching && searchQuery.length > 0 && results.length > 0 && (
-            <Portal>
-              <View
-                style={[
-                  styles.resultsOverlay,
-                  { backgroundColor: theme.colors.surface, top: headerHeight },
-                ]}
-              >
-                {results.map((item, index) => (
-                  <List.Item
-                    key={index}
-                    title={item.title}
-                    left={(p) => <List.Icon {...p} icon={item.icon} />}
-                    onPress={() => handleSelectResult(item)}
+        )}
+        {isMoreSubPage ? (
+          <Appbar.Content
+            title={title}
+            titleStyle={{ color: theme.colors.primary, fontWeight: "bold" }}
+          />
+        ) : (
+          <View style={{ flex: 1 }}>
+            <Searchbar
+              ref={searchRef}
+              placeholder={searchLabels.searchPlaceholder}
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              onFocus={() => setIsSearching(true)}
+              blurOnSubmit={false}
+              returnKeyType="search"
+              onSubmitEditing={() => {
+                if (results.length > 0) {
+                  handleSelectResult(results[0]);
+                }
+              }}
+              onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
+              style={{ backgroundColor: "transparent", elevation: 0 }}
+            />
+            {isSearching && searchQuery.length > 0 && results.length > 0 && (
+              <Portal>
+                <View
+                  style={[
+                    styles.resultsOverlay,
+                    {
+                      top: headerHeight,
+                      backgroundColor: "transparent",
+                      borderWidth: 0.5,
+                      borderColor: glassBorder,
+                    },
+                  ]}
+                >
+                  <BlurView
+                    intensity={50}
+                    tint={theme.dark ? "dark" : "light"}
+                    style={StyleSheet.absoluteFill}
                   />
-                ))}
-              </View>
-            </Portal>
-          )}
-        </View>
-      )}
-    </Appbar.Header>
+                  {results.map((item, index) => (
+                    <List.Item
+                      key={index}
+                      title={item.title}
+                      left={(p) => <List.Icon {...p} icon={item.icon} />}
+                      onPress={() => handleSelectResult(item)}
+                    />
+                  ))}
+                </View>
+              </Portal>
+            )}
+          </View>
+        )}
+      </Appbar.Header>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerWrapper: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
   resultsOverlay: {
     position: "absolute",
     left: 0,
     right: 0,
     marginHorizontal: 16,
-    borderRadius: 8,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 8,
   },
 });
 
@@ -509,6 +523,7 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
+  const glassBorder = theme.dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
 
   const allLabels = {
     en: {
@@ -543,7 +558,31 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primary,
+        headerTransparent: true,
         header: (props) => <GlobalHeader {...props} />,
+        tabBarStyle: {
+          position: "absolute",
+          elevation: 0,
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+        },
+        tabBarBackground: () => (
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                borderTopWidth: 0.5,
+                borderTopColor: glassBorder,
+              },
+            ]}
+          >
+            <BlurView
+              tint={theme.dark ? "dark" : "light"}
+              intensity={50}
+              style={StyleSheet.absoluteFill}
+            />
+          </View>
+        ),
       }}
     >
       <Tabs.Screen

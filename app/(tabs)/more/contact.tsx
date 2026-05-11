@@ -1,5 +1,6 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
@@ -11,12 +12,16 @@ import {
   StyleSheet,
 } from "react-native";
 import { List, useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openInMaps } from "../../../utils/googleMapsService";
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo, highlight } = useLocalSearchParams();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -168,7 +173,10 @@ export default function ContactScreen() {
   return (
     <>
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: headerHeight }}
+      >
         <List.Section>
           <List.Subheader>{labels.infoLabel}</List.Subheader>
           {phone && (

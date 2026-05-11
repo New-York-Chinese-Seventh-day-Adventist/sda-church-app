@@ -1,12 +1,17 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import React, { useContext } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { List, useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CommunityScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
+  const insets = useSafeAreaInsets();
+
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   const allLabels = {
     en: {
@@ -199,7 +204,10 @@ export default function CommunityScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: headerHeight },
+      ]}
     >
       <List.Section>
         <List.Subheader style={styles.subheader}>
@@ -258,7 +266,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   contentContainer: {
-    paddingBottom: 40,
+    paddingBottom: 80,
   },
   subheader: {
     fontWeight: "bold",

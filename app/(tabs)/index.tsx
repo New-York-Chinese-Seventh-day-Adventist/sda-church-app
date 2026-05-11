@@ -1,15 +1,20 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import { router } from "expo-router";
 import React, { useContext } from "react";
 import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Text, useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openSabbathStream } from "../../utils/youtubeService";
 
 export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const aboutImageUrl = process.env.EXPO_PUBLIC_ABOUT_IMAGE_URL;
+
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   const allLabels = {
     en: {
@@ -50,7 +55,10 @@ export default function HomeScreen() {
 
   return (
     <>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: headerHeight }}
+      >
         <ImageBackground
           source={{ uri: aboutImageUrl }}
           style={styles.hero}
@@ -125,5 +133,5 @@ const styles = StyleSheet.create({
   hero: { padding: 24, alignItems: "center", justifyContent: "center" },
   welcomeText: { fontWeight: "bold", textAlign: "center", marginBottom: 8 },
   card: { margin: 16, padding: 8 },
-  actionContainer: { paddingHorizontal: 16, paddingBottom: 24 },
+  actionContainer: { paddingHorizontal: 16, paddingBottom: 80 },
 });
