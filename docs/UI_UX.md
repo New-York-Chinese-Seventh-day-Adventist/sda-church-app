@@ -33,7 +33,7 @@ To maintain a modern, native feel and satisfy **Tenet 5 (Radical Simplicity)**, 
 - **Glassmorphism:** Blur (Intensity 50) for bottom navigation and search overlays.
 - **Header Opacity:** The top header is completely opaque (using the base background color) to provide a solid anchor for the "Digital Sanctuary."
 - **Absolute Positioning & Offset:** Global navigation elements are positioned absolute. To prevent initial overlap, screens must apply a `paddingTop` equal to the total header height (Status Bar + 64px).
-- **Boundary Definition:** Use a 0.5px border (translucent gray: `rgba(255,255,255,0.1)` in dark mode or `rgba(0,0,0,0.1)` in light mode) on the edge of blurred and persistent navigation surfaces to provide crisp definition.
+- **Boundary Definition:** Do not use any boundary definition for the bottom tab navigation bar so there will be a smooth transition from blurred tab bar to unblurred content.
 - **Browser Fallback:** For browsers that do not support `backdrop-filter`, the high-opacity `rgba` background serves as a graceful fallback to ensure legibility.
 - **Future-Proofing:** It shifts your design from "Standard App" to a custom "Digital Sanctuary." That blurred effect mimics light passing through a window, which is a subtle but powerful spiritual metaphor for a church app.
 

@@ -523,7 +523,6 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
-  const glassBorder = theme.dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
 
   const allLabels = {
     en: {
@@ -567,15 +566,7 @@ export default function TabLayout() {
           borderTopWidth: 0,
         },
         tabBarBackground: () => (
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                borderTopWidth: 0.5,
-                borderTopColor: glassBorder,
-              },
-            ]}
-          >
+          <View style={StyleSheet.absoluteFill}>
             <BlurView
               tint={theme.dark ? "dark" : "light"}
               intensity={50}
