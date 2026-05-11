@@ -67,7 +67,7 @@ export default function HomeScreen() {
           <Text
             variant="titleMedium"
             style={{
-              color: theme.colors.primary,
+              color: theme.colors.onSurface,
               textAlign: "center",
               fontStyle: "italic",
             }}
@@ -83,8 +83,11 @@ export default function HomeScreen() {
               mode="contained"
               icon="youtube"
               onPress={openSabbathStream}
-              buttonColor="#FF0000" // YouTube Brand Red
-              textColor="#FFFFFF"
+              // YouTube Brand Red in light mode, monochrome in dark mode.
+              buttonColor={
+                theme.dark ? theme.colors.onSurfaceVariant : "#FF0000"
+              }
+              textColor={theme.colors.onPrimary}
               style={styles.button}
             >
               {labels.livestream}

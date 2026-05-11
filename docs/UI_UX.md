@@ -1,5 +1,33 @@
 # UI/UX Design: The "Four-Pillar" App Structure
 
+## Design Language: Monochrome & Simplicity
+
+To uphold **Tenet 5 (Radical Simplicity)** and **Tenet 7 (Destination, Not a Launcher)**, the application adopts a monochrome (grayscale-first) design palette.
+
+### Key Principles:
+
+1.  **Brand Neutrality:** Following YouTube's "Neutral Treatment" guidelines, third-party logos are rendered in monochrome variants. This removes "brand noise" and ensures the app feels like a cohesive sanctuary rather than a collection of disparate services.
+2.  **Visual Hierarchy (The 90/10 Rule):** 90% of the interface remains monochrome (White, Off-White, Grays) to maintain a peaceful environment. 10% of the interface utilizes a **Deep Cathedral Navy** accent for critical interactive elements (Active tabs, primary buttons, "pop" utility).
+3.  **Iconography:** Icons across all pillars (Bible, Hymnal, Library) utilize consistent stroke weights and monochrome styling. This provides a "premium" feel and ensures accessibility across both light and dark modes.
+4.  **Cohesive Sanctuary:** By standardizing external logos, we visually reinforce that the user remains within their "Digital Home," even when accessing external media. This reduces the psychological friction of switching between ecosystems.
+
+### The Accent: Deep Cathedral Navy
+
+This choice bridges the gap between a "Digital Sanctuary" and "Practical Utility." Navy functions as a "neutral plus"—it maintains authority and stability while providing the necessary contrast for accessibility, especially for elderly users.
+
+### Core Monochrome Palette:
+
+| Element                        | Light Mode Hex | Dark Mode Hex | Rationale                                                                             |
+| :----------------------------- | :------------- | :------------ | :------------------------------------------------------------------------------------ |
+| **Primary (Accent)**           | `#004B87`      | `#7FB5FF`     | "Deep Cathedral Navy" (Light) and a desaturated variant (Dark) for interactive "pop". |
+| **Surface (Cards/Containers)** | `#FFFFFF`      | `#1E1E1E`     | Soft surfaces to distinguish content from the background.                             |
+| **Background**                 | `#F8F9FA`      | `#121212`     | Aligned with YouTube's deep-dark aesthetic to minimize eye strain.                    |
+| **Text / Base Icons**          | `#1A1A1A`      | `#F5F5F5`     | High-contrast monochrome for core content.                                            |
+
+### Theme & Dark Mode:
+
+Monochrome designs transition to Dark Mode elegantly. By using dark surfaces with off-white text and monochrome icons, the interface remains consistent and spiritually focused, minimizing distractions.
+
 ## 1. Home (The "Pulse")
 
 **Purpose:** Immediate relevance.

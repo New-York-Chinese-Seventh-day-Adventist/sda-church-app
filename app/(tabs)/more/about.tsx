@@ -446,7 +446,14 @@ export default function AboutScreen() {
           </Paragraph>
           <View style={styles.pillarContainer}>
             {(labels as any).pillarItems.map((item: any, index: number) => (
-              <Card key={index} style={styles.pillarCard} mode="elevated">
+              <Card
+                key={index}
+                style={[
+                  styles.pillarCard,
+                  { borderWidth: 1, borderColor: theme.colors.outlineVariant },
+                ]}
+                mode="contained"
+              >
                 <View style={styles.pillarContent}>
                   <Avatar.Icon
                     size={40}
@@ -534,7 +541,14 @@ export default function AboutScreen() {
 
           <View style={styles.cardContainer}>
             {labels.beliefsItems.map((item, index) => (
-              <Card key={index} style={styles.card} mode="elevated">
+              <Card
+                key={index}
+                style={[
+                  styles.card,
+                  { borderWidth: 1, borderColor: theme.colors.outlineVariant },
+                ]}
+                mode="contained"
+              >
                 <Card.Title
                   title={item.title}
                   titleVariant="titleMedium"

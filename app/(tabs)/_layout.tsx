@@ -435,7 +435,10 @@ export const GlobalHeader = (props: any) => {
         />
       )}
       {isMoreSubPage ? (
-        <Appbar.Content title={title} />
+        <Appbar.Content
+          title={title}
+          titleStyle={{ color: theme.colors.primary, fontWeight: "bold" }}
+        />
       ) : (
         <View style={{ flex: 1 }}>
           <Searchbar
