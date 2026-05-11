@@ -5,20 +5,21 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-import { List } from "react-native-paper";
+import { List, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   const allLabels = {
-    en: { title: "Language" },
-    zh: { title: "語言" },
-    "zh-cn": { title: "语言" },
-    es: { title: "Idioma" },
+    en: { title: "Language", select: "Select Language" },
+    zh: { title: "語言", select: "選擇語言" },
+    "zh-cn": { title: "语言", select: "选择语言" },
+    es: { title: "Idioma", select: "Seleccionar idioma" },
   };
 
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
@@ -33,6 +34,11 @@ export default function LanguageScreen() {
         ]}
       >
         <List.Section>
+          <List.Subheader
+            style={[styles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.select}
+          </List.Subheader>
           <MenuCard
             title="English"
             icon="translate"
@@ -72,6 +78,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  subheader: {
+    fontWeight: "bold",
   },
   title: {
     fontWeight: "bold",

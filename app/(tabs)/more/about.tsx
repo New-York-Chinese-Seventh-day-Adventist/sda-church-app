@@ -4,14 +4,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
 import React, { useContext } from "react";
 import { Image, Linking, ScrollView, StyleSheet, View } from "react-native";
-import {
-  Button,
-  Card,
-  Paragraph,
-  Text,
-  Title,
-  useTheme,
-} from "react-native-paper";
+import { Button, Card, Paragraph, Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AboutScreen() {
@@ -431,24 +424,30 @@ export default function AboutScreen() {
             style={styles.image}
             accessibilityLabel="Church banner"
           />
-          <Title style={[styles.churchName, { color: theme.colors.primary }]}>
+          <Text
+            variant="titleLarge"
+            style={[styles.churchName, { color: theme.colors.onSurface }]}
+          >
             {churchName}
-          </Title>
+          </Text>
         </View>
 
         <View style={styles.section}>
-          <Title
+          <Text
+            variant="titleLarge"
             style={[
               styles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.aboutSDA}
-          </Title>
-          <Paragraph style={styles.description}>
+          </Text>
+          <Paragraph
+            style={[styles.description, { color: theme.colors.onSurface }]}
+          >
             {labels.sdaDescription}
           </Paragraph>
           <View style={styles.pillarContainer}>
@@ -469,7 +468,10 @@ export default function AboutScreen() {
                   />
                   <Text
                     variant="labelSmall"
-                    style={styles.pillarText}
+                    style={[
+                      styles.pillarText,
+                      { color: theme.colors.onSurface },
+                    ]}
                     numberOfLines={1}
                     adjustsFontSizeToFit
                   >
@@ -482,18 +484,21 @@ export default function AboutScreen() {
         </View>
 
         <View style={styles.section}>
-          <Title
+          <Text
+            variant="titleLarge"
             style={[
               styles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.history}
-          </Title>
-          <Text variant="bodyMedium">{labels.historySubtext}</Text>
+          </Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+            {labels.historySubtext}
+          </Text>
           <View style={styles.timelineContainer}>
             {(labels as any).milestoneItems.map((item: any, index: number) => (
               <View key={index} style={styles.timelineColumn}>
@@ -518,7 +523,13 @@ export default function AboutScreen() {
                     { backgroundColor: theme.colors.outlineVariant },
                   ]}
                 />
-                <Text variant="labelSmall" style={styles.milestoneEvent}>
+                <Text
+                  variant="labelSmall"
+                  style={[
+                    styles.milestoneEvent,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
                   {item.event}
                 </Text>
               </View>
@@ -527,18 +538,22 @@ export default function AboutScreen() {
         </View>
 
         <View style={styles.section}>
-          <Title
+          <Text
+            variant="titleLarge"
             style={[
               styles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.beliefs}
-          </Title>
-          <Text variant="bodyMedium" style={styles.subtext}>
+          </Text>
+          <Text
+            variant="bodyMedium"
+            style={[styles.subtext, { color: theme.colors.onSurface }]}
+          >
             {labels.beliefsSubtext}
           </Text>
 
@@ -558,24 +573,40 @@ export default function AboutScreen() {
                     size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
                     color={theme.colors.tertiary}
                   />
-                  <Text variant="titleMedium" style={styles.cardTitleText}>
+                  <Text
+                    variant="titleMedium"
+                    style={[
+                      styles.cardTitleText,
+                      { color: theme.colors.onSurface },
+                    ]}
+                  >
                     {item.title}
                   </Text>
                 </View>
                 <View style={styles.cardContent}>
-                  <Text variant="bodySmall">{item.description}</Text>
+                  <Text
+                    variant="bodySmall"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    {item.description}
+                  </Text>
                 </View>
               </Card>
             ))}
           </View>
 
-          <Text variant="bodyMedium" style={styles.note}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.note, { color: theme.colors.onSurfaceVariant }]}
+          >
             {labels.beliefsNote}
           </Text>
 
           <Button
             mode="contained"
             onPress={openBeliefs}
+            buttonColor={theme.colors.primary}
+            textColor={theme.colors.onPrimary}
             style={styles.button}
             icon="open-in-new"
           >
@@ -584,34 +615,45 @@ export default function AboutScreen() {
         </View>
 
         <View style={styles.section}>
-          <Title
+          <Text
+            variant="titleLarge"
             style={[
               styles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.organization}
-          </Title>
+          </Text>
           <Card style={styles.orgCard} mode="outlined">
             <Card.Content>
               <Text
                 variant="labelMedium"
-                style={{ color: theme.colors.primary }}
+                style={{ color: theme.colors.onSurfaceVariant }}
               >
                 {labels.localConference}
               </Text>
-              <Title style={styles.orgName}>{labels.localConfName}</Title>
-              <Text variant="bodySmall" style={styles.orgDesc}>
+              <Text
+                variant="titleLarge"
+                style={[styles.orgName, { color: theme.colors.onSurface }]}
+              >
+                {labels.localConfName}
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={[styles.orgDesc, { color: theme.colors.onSurface }]}
+              >
                 {labels.localConfDesc}
               </Text>
             </Card.Content>
             <Card.Actions>
               <Button
-                mode="contained-tonal"
-                compact
+                mode="contained"
+                icon="open-in-new"
+                buttonColor={theme.colors.primary}
+                textColor={theme.colors.onPrimary}
                 onPress={() => Linking.openURL("https://gnyc.org/")}
               >
                 Learn More
@@ -623,19 +665,29 @@ export default function AboutScreen() {
             <Card.Content>
               <Text
                 variant="labelMedium"
-                style={{ color: theme.colors.primary }}
+                style={{ color: theme.colors.onSurfaceVariant }}
               >
                 {labels.unionConference}
               </Text>
-              <Title style={styles.orgName}>{labels.unionConfName}</Title>
-              <Text variant="bodySmall" style={styles.orgDesc}>
+              <Text
+                variant="titleLarge"
+                style={[styles.orgName, { color: theme.colors.onSurface }]}
+              >
+                {labels.unionConfName}
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={[styles.orgDesc, { color: theme.colors.onSurface }]}
+              >
                 {labels.unionConfDesc}
               </Text>
             </Card.Content>
             <Card.Actions>
               <Button
-                mode="contained-tonal"
-                compact
+                mode="contained"
+                icon="open-in-new"
+                buttonColor={theme.colors.primary}
+                textColor={theme.colors.onPrimary}
                 onPress={() => Linking.openURL("https://atlantic-union.org/")}
               >
                 Learn More
@@ -711,7 +763,6 @@ const styles = StyleSheet.create({
   note: {
     marginVertical: 12,
     fontStyle: "italic",
-    opacity: 0.8,
   },
   pillarContainer: {
     flexDirection: "row",
@@ -771,6 +822,5 @@ const styles = StyleSheet.create({
   },
   orgDesc: {
     marginTop: 4,
-    opacity: 0.7,
   },
 });

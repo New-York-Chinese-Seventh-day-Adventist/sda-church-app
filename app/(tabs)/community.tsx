@@ -211,7 +211,7 @@ export default function CommunityScreen() {
     >
       <List.Section>
         <List.Subheader
-          style={[styles.subheader, { color: theme.colors.primary }]}
+          style={[styles.subheader, { color: theme.colors.onBackground }]}
         >
           {labels.elmhurstTitle}
         </List.Subheader>
@@ -229,7 +229,7 @@ export default function CommunityScreen() {
 
       <List.Section>
         <List.Subheader
-          style={[styles.subheader, { color: theme.colors.primary }]}
+          style={[styles.subheader, { color: theme.colors.onBackground }]}
         >
           {labels.brooklynTitle}
         </List.Subheader>
@@ -247,7 +247,7 @@ export default function CommunityScreen() {
 
       <List.Section>
         <List.Subheader
-          style={[styles.subheader, { color: theme.colors.primary }]}
+          style={[styles.subheader, { color: theme.colors.onBackground }]}
         >
           {labels.flushingFellowshipTitle}
         </List.Subheader>

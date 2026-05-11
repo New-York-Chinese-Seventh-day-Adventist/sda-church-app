@@ -4,7 +4,7 @@ import { DESIGN_TOKENS } from "@/constants/Layout";
 import { router } from "expo-router";
 import React, { useContext } from "react";
 import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, Text, useTheme } from "react-native-paper";
+import { Button, Card, List, Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openSabbathStream } from "../../utils/youtubeService";
 
@@ -24,6 +24,7 @@ export default function HomeScreen() {
       livestream: "Watch Livestream",
       about: "About Us",
       contact: "Connect with Us",
+      explore: "Explore",
     },
     zh: {
       header: "基督復臨安息日會",
@@ -32,6 +33,7 @@ export default function HomeScreen() {
       livestream: "觀看直播",
       about: "關於我們",
       contact: "聯繫我們",
+      explore: "探索",
     },
     "zh-cn": {
       header: "基督复临安息日会",
@@ -40,6 +42,7 @@ export default function HomeScreen() {
       livestream: "观看直播",
       about: "关于我们",
       contact: "联系我们",
+      explore: "探索",
     },
     es: {
       header: "Iglesia Adventista",
@@ -48,6 +51,7 @@ export default function HomeScreen() {
       livestream: "Ver Transmisión",
       about: "Sobre Nosotros",
       contact: "Conéctate con Nosotros",
+      explore: "Explorar",
     },
   };
 
@@ -70,7 +74,10 @@ export default function HomeScreen() {
               { backgroundColor: theme.colors.surface, opacity: 0.7 },
             ]}
           />
-          <Text variant="headlineMedium" style={styles.welcomeText}>
+          <Text
+            variant="headlineMedium"
+            style={[styles.welcomeText, { color: theme.colors.onSurface }]}
+          >
             {labels.welcome}
           </Text>
           <Text
@@ -101,7 +108,12 @@ export default function HomeScreen() {
           </Card.Content>
         </Card>
 
-        <View style={styles.actionContainer}>
+        <List.Section style={styles.actionContainer}>
+          <List.Subheader
+            style={[styles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.explore}
+          </List.Subheader>
           <MenuCard
             title={labels.about}
             icon="information"
@@ -121,16 +133,23 @@ export default function HomeScreen() {
               })
             }
           />
-        </View>
+        </List.Section>
       </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+  },
   hero: { padding: 24, alignItems: "center", justifyContent: "center" },
-  welcomeText: { fontWeight: "bold", textAlign: "center", marginBottom: 8 },
+  welcomeText: {
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 8,
+  },
   card: { margin: 16, padding: 8 },
   actionContainer: { paddingHorizontal: 16, paddingBottom: 80 },
+  subheader: { fontWeight: "bold" },
 });

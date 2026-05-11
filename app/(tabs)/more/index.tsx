@@ -119,7 +119,11 @@ export default function MoreScreen() {
         contentContainerStyle={{ paddingTop: headerHeight }}
       >
         <List.Section>
-          <List.Subheader>{labels.info}</List.Subheader>
+          <List.Subheader
+            style={[styles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.info}
+          </List.Subheader>
           <List.Item
             title={labels.about}
             left={(p) => (
@@ -155,7 +159,11 @@ export default function MoreScreen() {
         <Divider />
 
         <List.Section>
-          <List.Subheader>{labels.settings}</List.Subheader>
+          <List.Subheader
+            style={[styles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.settings}
+          </List.Subheader>
           <Animated.View style={getHighlightStyle("darkMode")}>
             <List.Item
               title={labels.darkMode}
@@ -204,6 +212,9 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  subheader: {
+    fontWeight: "bold",
   },
   footer: {
     marginTop: 20,

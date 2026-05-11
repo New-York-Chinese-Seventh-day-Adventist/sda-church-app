@@ -48,7 +48,7 @@ export const DarkTheme = {
 
 /**
  * REACT NATIVE PAPER THEMES
- * Logic mapping follows the color mapping in UI_UX.md.
+ * Logic mapping follows the color mapping in /docs/UI_UX.md.
  * Surface/Background relationships prioritize the 'Hierarchy of Light' (Tenet 5).
  */
 
@@ -60,7 +60,7 @@ export const customLightTheme = {
     ...MD3LightTheme.colors,
     // Primary: Sanctuary Blue #3EA6FF
     primary: "#3EA6FF", // Primary Interaction Color Accent
-    onPrimary: "#FFFFFF", // Inverted Text
+    onPrimary: "#F8F9FA", // Inverted Text (The Stencil)
     primaryContainer: "#E3F2FD", // Selection Container
     onPrimaryContainer: "#3EA6FF", // General Iconography
 

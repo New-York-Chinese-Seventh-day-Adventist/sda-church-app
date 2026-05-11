@@ -163,7 +163,7 @@ export default function ResourcesScreen() {
     >
       <List.Section>
         <List.Subheader
-          style={[styles.subheader, { color: theme.colors.primary }]}
+          style={[styles.subheader, { color: theme.colors.onBackground }]}
         >
           {labels.sermonsWorship}
         </List.Subheader>
@@ -186,7 +186,7 @@ export default function ResourcesScreen() {
 
       <List.Section>
         <List.Subheader
-          style={[styles.subheader, { color: theme.colors.primary }]}
+          style={[styles.subheader, { color: theme.colors.onBackground }]}
         >
           {labels.studyLiturgy}
         </List.Subheader>
