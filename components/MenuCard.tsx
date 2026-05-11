@@ -1,3 +1,4 @@
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -49,8 +50,8 @@ export const MenuCard: React.FC<MenuCardProps> = ({
     >
       <MaterialCommunityIcons
         name={icon}
-        size={32}
-        color={iconColor || theme.colors.onSurfaceVariant}
+        size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
+        color={iconColor || theme.colors.tertiary}
       />
       <View style={styles.cardContent}>
         <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
@@ -70,7 +71,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       {rightIcon && (
         <MaterialCommunityIcons
           name={rightIcon}
-          size={24}
+          size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
           color={theme.colors.onSurfaceVariant}
         />
       )}

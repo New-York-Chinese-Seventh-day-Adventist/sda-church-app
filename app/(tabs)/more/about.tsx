@@ -5,7 +5,6 @@ import { Stack } from "expo-router";
 import React, { useContext } from "react";
 import { Image, Linking, ScrollView, StyleSheet, View } from "react-native";
 import {
-  Avatar,
   Button,
   Card,
   Paragraph,
@@ -463,17 +462,10 @@ export default function AboutScreen() {
                 mode="contained"
               >
                 <View style={styles.pillarContent}>
-                  <Avatar.Icon
-                    size={40}
-                    icon={({ size, color }) => (
-                      <MaterialCommunityIcons
-                        name={item.icon}
-                        size={size}
-                        color={color}
-                      />
-                    )}
-                    backgroundColor={theme.colors.primary}
-                    color={theme.colors.onPrimary}
+                  <MaterialCommunityIcons
+                    name={item.icon as any}
+                    size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
+                    color={theme.colors.tertiary}
                   />
                   <Text
                     variant="labelSmall"
@@ -561,18 +553,11 @@ export default function AboutScreen() {
                   title={item.title}
                   titleVariant="titleMedium"
                   left={(props) => (
-                    <Avatar.Icon
+                    <MaterialCommunityIcons
                       {...props}
-                      icon={({ size, color }) => (
-                        <MaterialCommunityIcons
-                          name={item.icon as any}
-                          size={size}
-                          color={color}
-                        />
-                      )}
-                      size={40}
-                      backgroundColor={theme.colors.primary}
-                      color={theme.colors.onPrimary}
+                      name={item.icon as any}
+                      size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+                      color={theme.colors.tertiary}
                     />
                   )}
                 />

@@ -80,11 +80,11 @@ const { LightTheme: _LightTheme, DarkTheme: _DarkTheme } = adaptNavigationTheme(
 // Otherwise, React Navigation defaults to the Material 3 standard (purple).
 const LightTheme = {
   ..._LightTheme,
-  colors: { ..._LightTheme.colors, primary: "#3EA6FF", background: "#F8F9FA" },
+  colors: { ..._LightTheme.colors, primary: "#3056D3", background: "#F8F9FA" },
 };
 const DarkTheme = {
   ..._DarkTheme,
-  colors: { ..._DarkTheme.colors, primary: "#7FB5FF", background: "#121212" },
+  colors: { ..._DarkTheme.colors, primary: "#5E7BCB", background: "#121212" },
 };
 
 const customLightTheme = {
@@ -94,12 +94,24 @@ const customLightTheme = {
   colors: {
     ...MD3LightTheme.colors,
     ...LightTheme.colors,
-    primary: "#3EA6FF",
-    onPrimary: "#FFFFFF",
-    primaryContainer: "#E0E0E0",
-    onPrimaryContainer: "#1A1A1A",
-    background: "#F8F9FA",
-    surface: "#FFFFFF",
+    primary: "#3056D3", // Lapis Blue (Spec)
+    onPrimary: "#FFFFFF", // Inverted Text (Spec)
+    primaryContainer: "#E3F2FD", // Selection Container (Spec)
+    onPrimaryContainer: "#3056D3", // Lapis Blue (Spec)
+    secondaryContainer: "#F1F3F4", // Top Search Bar Background (Spec)
+    onSecondaryContainer: "#1A1A1A", // Core Content Text (Spec)
+    background: "#F8F9FA", // Background (Spec)
+    surface: "#FFFFFF", // Surface (Spec)
+    surfaceVariant: "#F1F3F4", // Surface Variant (Spec)
+    onSurface: "#1A1A1A", // Core Content Text (Spec)
+    onSurfaceVariant: "#606060", // Top Search Bar Icon/Text (Spec)
+    outline: "#CAC4D0", // Boundary (Outline) (Spec)
+    outlineVariant: "#E0E0E0", // Boundary (Subtle) (Spec)
+    tertiary: "#3EA6FF", // Sanctuary Blue (Spec)
+    onTertiary: "#FFFFFF", // Inverted Text (Spec)
+    onBackground: "#0F0F0F", // Bottom Tab Bar (Spec)
+    brandYoutube: "#FF0000", // YouTube Brand (Spec)
+    brandSpotify: "#1DB954", // Spotify Brand (Spec)
   },
   roundness: 3,
 };
@@ -110,12 +122,24 @@ const customDarkTheme = {
   colors: {
     ...MD3DarkTheme.colors,
     ...DarkTheme.colors,
-    primary: "#7FB5FF",
-    onPrimary: "#121212",
-    primaryContainer: "#333333",
-    onPrimaryContainer: "#F5F5F5",
-    background: "#121212",
-    surface: "#1E1E1E",
+    primary: "#5E7BCB", // Steel Blue (Spec)
+    onPrimary: "#121212", // Inverted Text (Spec)
+    primaryContainer: "#2C2C2C", // Selection Container (Spec)
+    onPrimaryContainer: "#5E7BCB", // Steel Blue (Spec)
+    secondaryContainer: "#1E1E1E", // Top Search Bar Background (Spec)
+    onSecondaryContainer: "#F5F5F5", // Core Content Text (Spec)
+    background: "#121212", // Background (Spec)
+    surface: "#1E1E1E", // Surface (Spec)
+    surfaceVariant: "#2C2C2C", // Surface Variant (Spec)
+    onSurface: "#F5F5F5", // Core Content Text (Spec)
+    onSurfaceVariant: "#AAAAAA", // Top Search Bar Icon/Text (Spec)
+    outline: "#938F99", // Boundary (Outline) (Spec)
+    outlineVariant: "#333333", // Boundary (Subtle) (Spec)
+    tertiary: "#FFFFFF", // Sanctuary Blue (Spec)
+    onTertiary: "#121212", // Inverted Text (Spec)
+    onBackground: "#FFFFFF", // Bottom Tab Bar (Spec)
+    brandYoutube: "#FFFFFF", // YouTube Brand (Spec)
+    brandSpotify: "#FFFFFF", // Spotify Brand (Spec)
   },
   roundness: 3,
 };

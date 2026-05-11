@@ -1,4 +1,5 @@
 import { LanguageContext } from "@/constants/Contexts";
+import { DESIGN_TOKENS } from "@/constants/Layout";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
 import { Tabs, router, useSegments } from "expo-router";
@@ -436,7 +437,7 @@ export const GlobalHeader = (props: any) => {
         {isMoreSubPage ? (
           <Appbar.Content
             title={title}
-            titleStyle={{ color: theme.colors.primary, fontWeight: "bold" }}
+            titleStyle={{ color: theme.colors.onSurface, fontWeight: "bold" }}
           />
         ) : (
           <View style={{ flex: 1 }}>
@@ -455,7 +456,7 @@ export const GlobalHeader = (props: any) => {
               }}
               onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
               style={{
-                backgroundColor: theme.dark ? "#1E1E1E" : "#F1F3F4",
+                backgroundColor: theme.colors.secondaryContainer,
                 elevation: 0,
                 borderRadius: 24,
                 height: 44,
@@ -467,8 +468,8 @@ export const GlobalHeader = (props: any) => {
                 paddingTop: 0,
                 fontSize: 16,
               }}
-              iconColor={theme.dark ? "#AAAAAA" : "#606060"}
-              placeholderTextColor={theme.dark ? "#AAAAAA" : "#606060"}
+              iconColor={theme.colors.onSurfaceVariant}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
             />
             {isSearching && searchQuery.length > 0 && results.length > 0 && (
               <Portal>
@@ -496,7 +497,7 @@ export const GlobalHeader = (props: any) => {
                         <List.Icon
                           {...p}
                           icon={item.icon}
-                          color={theme.dark ? "#FFFFFF" : theme.colors.primary}
+                          color={theme.colors.tertiary}
                         />
                       )}
                       onPress={() => handleSelectResult(item)}
@@ -546,7 +547,7 @@ function TabBarIcon(props: {
   return (
     <MaterialCommunityIcons
       name={iconName}
-      size={28}
+      size={DESIGN_TOKENS.ICON_SIZE_TAB}
       style={{ marginBottom: -3 }}
       color={props.color}
     />
@@ -589,8 +590,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.dark ? "#FFFFFF" : "#0F0F0F",
-        tabBarInactiveTintColor: theme.dark ? "#FFFFFF" : "#0F0F0F",
+        tabBarActiveTintColor: theme.colors.onBackground,
+        tabBarInactiveTintColor: theme.colors.onBackground,
         headerTransparent: true,
         header: (props) => <GlobalHeader {...props} />,
         tabBarStyle: {

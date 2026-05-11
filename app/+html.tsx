@@ -16,7 +16,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
         />
 
         {/* PWA Meta Tags */}
-        <meta name="theme-color" content="#0061A4" />
+        <meta name="theme-color" content="#F8F9FA" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="SDA Church" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -40,11 +40,11 @@ export default function Root({ children }: { children: React.ReactNode }) {
 
 const globalStyles = `
 body {
-  background-color: #fff;
+  background-color: #F8F9FA;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #000;
+    background-color: #121212;
   }
 }`;

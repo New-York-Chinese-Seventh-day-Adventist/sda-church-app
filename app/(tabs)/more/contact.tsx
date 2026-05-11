@@ -183,7 +183,7 @@ export default function ContactScreen() {
             <MenuCard
               title={phone}
               icon="phone"
-              iconColor={theme.colors.primary}
+              iconColor={theme.colors.tertiary}
               rightIcon="open-in-new"
               style={getHighlightStyle("phone")}
               onPress={async () => {
@@ -212,7 +212,7 @@ export default function ContactScreen() {
             <MenuCard
               title={email}
               icon="email"
-              iconColor={theme.colors.primary}
+              iconColor={theme.colors.tertiary}
               rightIcon="open-in-new"
               style={getHighlightStyle("email")}
               onPress={async () => {
@@ -243,7 +243,7 @@ export default function ContactScreen() {
               title={labels.locationNames[index]}
               description={loc.address}
               icon={loc.icon}
-              iconColor={theme.colors.primary}
+              iconColor={theme.colors.tertiary}
               rightIcon="open-in-new"
               style={getHighlightStyle("location")}
               onPress={() => openInMaps((loc as any).searchQuery)}

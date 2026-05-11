@@ -2,15 +2,26 @@
 
 This is a Progressive Web App (PWA) and not a native iOS or Android binary. Therefore, please be careful with the UI libraries you use.
 
-## Design Language: Monochrome & Simplicity
+## Design Language: Monochrome & Uplifting Simplicity
 
-To uphold **Tenet 5 (Radical Simplicity)** and **Tenet 7 (Destination, Not a Launcher)**, the application adopts a monochrome (grayscale-first) design palette.
+To uphold **Tenet 5 (Radical Simplicity)** and **Tenet 7 (Destination, Not a Launcher)**, the application adopts a monochrome (grayscale-first) design palette. When implementing this color scheme, it is important to map back to a variable-lookup with `customLightTheme` or `customDarkTheme` in `app/_layout.tsx` instead of hard-coding hex-values to ensure consistency and maintainability. If any hex values in this spec does not exist in that custom theme file, it must be populated.
 
 ### Color Accents: Lapis Blue (light) and Steel Blue (dark)
 
 Lapis Blue #3056D3 and Steel Blue #5E7BCB bridges the gap between a "Digital Sanctuary" and "Practical Utility." Lapis Blue functions as a "neutral plus"—it maintains authority and stability while providing the necessary contrast for accessibility, especially for elderly users.
 
 Finally, Sanctuary Blue #3EA6FF is slightly brighter for contrast with modern tech branding and is useful for special cases where doubly "popping positive" visuals are needed, such as iconography.
+
+### Key Principles & Exceptions:
+
+1.  **Brand Neutrality:** Following YouTube's "Neutral Treatment" guidelines, third-party logos are generally rendered in monochrome variants. By standardizing external logos, we visually reinforce that the user remains within their "Digital Home," even when accessing external media.
+    - **Exception:** YouTube and Spotify icons utilize their respective brand colors to aid immediate recognition and content surfacing, as mentioned below.
+2.  **Visual Hierarchy (The 90/10 Rule):** 90% of the interface remains monochrome to maintain a peaceful environment. 10% of the interface utilizes a **Lapis Blue** #3056D3 and Steel Blue #5E7BCB accent for most critical interactive elements (Primary buttons, "pop" utility) in light mode and dark mode. Sanctuary Blue #3EA6FF is reserved for extremely special cases, such as iconography.
+3.  **Iconography:** Icons across all pillars utilize consistent stroke weights and monochrome styling. This provides a "premium" feel and ensures accessibility across both light and dark modes.
+    - **Colors:** Generally use **Sanctuary Blue** #3EA6FF in Light Mode and **Pure White** #FFFFFF in Dark Mode for high visibility.
+    - **Exceptions:**
+      - **Top Search Bar:** See section below. Special case from [Material design](https://m3.material.io/components/app-bars/specs).
+      - **Bottom Tab Bar:** See section below.
 
 ### Bottom Tab Bar Icon Edge Case (YouTube Treatment)
 
@@ -30,16 +41,26 @@ To ensure the focus remains entirely on the content within the sanctuary, the bo
 | **Text**                         | #1A1A1A        | #F5F5F5       | High-contrast monochrome for core content.                          |
 | **Primary Interaction (Accent)** | #3056D3        | #5E7BCB       | Lapis Blue (Light) and a desaturated variant for Dark.              |
 
-### Key Principles & Edge Cases:
+### Extended Structural Palette
 
-1.  **Brand Neutrality:** Following YouTube's "Neutral Treatment" guidelines, third-party logos are generally rendered in monochrome variants. By standardizing external logos, we visually reinforce that the user remains within their "Digital Home," even when accessing external media.
-    - **Exception:** YouTube (`#FF0000`) and Spotify (`#1DB954`) icons utilize their respective brand colors in **Light Mode** to aid immediate recognition and content surfacing, while adhering to the dark mode monochrome palette.
-2.  **Visual Hierarchy (The 90/10 Rule):** 90% of the interface remains monochrome to maintain a peaceful environment. 10% of the interface utilizes a **Lapis Blue** #3056D3 and Steel Blue #5E7BCB accent for most critical interactive elements (Primary buttons, "pop" utility) in light mode and dark mode. Sanctuary Blue #3EA6FF is reserved for extremely special cases, such as iconography.
-3.  **Iconography:** Icons across all pillars utilize consistent stroke weights and monochrome styling. This provides a "premium" feel and ensures accessibility across both light and dark modes.
-    - **Colors:** Generally use **Sanctuary Blue** #3EA6FF in Light Mode and **Pure White** #FFFFFF in Dark Mode for high visibility.
-    - **Exceptions:**
-      - **Top Search Bar:** See section below. Special case from [Material design](https://m3.material.io/components/app-bars/specs).
-      - **Bottom Tab Bar:** See section below.
+These colors provide the necessary elevation and boundary logic for Material Design 3 components without introducing secondary color palettes.
+
+| Element                 | Light Mode Hex | Dark Mode Hex | Rationale                                                            |
+| :---------------------- | :------------- | :------------ | :------------------------------------------------------------------- |
+| **Selection Container** | #E3F2FD        | #2C2C2C       | Used for active/selected states and primary containers.              |
+| **Surface Variant**     | #F1F3F4        | #2C2C2C       | Secondary surface color for subtle UI separation (e.g. Search Bar).  |
+| **Boundary (Outline)**  | #CAC4D0        | #938F99       | Standard boundary color for components.                              |
+| **Boundary (Subtle)**   | #E0E0E0        | #333333       | Used for subtle dividers and non-critical borders.                   |
+| **Inverted Text**       | #FFFFFF        | #121212       | High-contrast text for use on brand accents (Lapis/Steel/Sanctuary). |
+
+### Special External Brand Palette
+
+These brand colors are used for third-party recognition in Light Mode and follow the "YouTube Treatment" (monochrome) in Dark Mode.
+
+| Element           | Light Mode Hex | Dark Mode Hex | Rationale                                                   |
+| :---------------- | :------------- | :------------ | :---------------------------------------------------------- |
+| **YouTube Brand** | #FF0000        | #FFFFFF       | Official YouTube red in light; Monochrome in dark (Spec).   |
+| **Spotify Brand** | #1DB954        | #FFFFFF       | Official Spotify green in light; Monochrome in dark (Spec). |
 
 ### Top Search Bar (M3 "Pill" Treatment)
 

@@ -179,7 +179,7 @@ export default function ResourcesScreen() {
           title={labels.youtube}
           description={labels.youtubeSub}
           icon="youtube"
-          iconColor={theme.dark ? "#FFFFFF" : "#FF0000"}
+          iconColor={(theme.colors as any).brandYoutube}
           onPress={openSabbathStream}
         />
 
@@ -187,7 +187,7 @@ export default function ResourcesScreen() {
           title={labels.spotify}
           description={labels.spotifySub}
           icon="spotify"
-          iconColor={theme.dark ? "#FFFFFF" : "#1DB954"}
+          iconColor={(theme.colors as any).brandSpotify}
           onPress={openSpotifyPodcast}
         />
       </List.Section>
@@ -202,7 +202,7 @@ export default function ResourcesScreen() {
           title={labels.bible}
           description={labels.bibleSub}
           icon="book-cross"
-          iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
+          iconColor={theme.colors.tertiary}
           onPress={() => setMode("bible")}
         />
 
@@ -210,7 +210,7 @@ export default function ResourcesScreen() {
           title={labels.hymnal}
           description={labels.hymnalSub}
           icon="music-note"
-          iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
+          iconColor={theme.colors.tertiary}
           onPress={() =>
             handleExternalLink("https://www.adventisthymnals.com/")
           }
@@ -220,7 +220,7 @@ export default function ResourcesScreen() {
           title={labels.library}
           description={labels.librarySub}
           icon="bookshelf"
-          iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
+          iconColor={theme.colors.tertiary}
         />
       </List.Section>
     </ScrollView>
@@ -243,8 +243,8 @@ export default function ResourcesScreen() {
         >
           <MaterialCommunityIcons
             name="arrow-left"
-            size={24}
-            color={theme.dark ? "#FFFFFF" : theme.colors.primary}
+            size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+            color={theme.colors.tertiary}
           />
         </TouchableOpacity>
         <View style={styles.selectorRow}>
@@ -337,8 +337,8 @@ export default function ResourcesScreen() {
               <TouchableOpacity onPress={() => setSelecting(null)}>
                 <MaterialCommunityIcons
                   name="close"
-                  size={24}
-                  color={theme.dark ? "#FFFFFF" : theme.colors.primary}
+                  size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+                  color={theme.colors.tertiary}
                 />
               </TouchableOpacity>
             </View>

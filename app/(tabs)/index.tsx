@@ -92,10 +92,7 @@ export default function HomeScreen() {
               mode="contained"
               icon="youtube"
               onPress={openSabbathStream}
-              // YouTube Brand Red in light mode, monochrome in dark mode.
-              buttonColor={
-                theme.dark ? theme.colors.onSurfaceVariant : "#FF0000"
-              }
+              buttonColor={(theme.colors as any).brandYoutube}
               textColor={theme.colors.onPrimary}
               style={styles.button}
             >
@@ -108,7 +105,7 @@ export default function HomeScreen() {
           <MenuCard
             title={labels.about}
             icon="information"
-            iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
+            iconColor={theme.colors.tertiary}
             onPress={() => router.push("/more/about" as any)}
             style={{ marginBottom: 12 }}
           />
@@ -116,7 +113,7 @@ export default function HomeScreen() {
           <MenuCard
             title={labels.contact}
             icon="map-marker"
-            iconColor={theme.dark ? "#FFFFFF" : theme.colors.primary}
+            iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
                 pathname: "/more/contact",

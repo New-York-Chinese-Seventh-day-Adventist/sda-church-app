@@ -277,7 +277,6 @@ const styles = StyleSheet.create({
   subheader: {
     fontWeight: "bold",
     fontSize: 16,
-    color: undefined, // Handled by theme in render
   },
   eventCard: {
     marginBottom: 8,

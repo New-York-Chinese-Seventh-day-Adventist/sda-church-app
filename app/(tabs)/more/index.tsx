@@ -122,20 +122,30 @@ export default function MoreScreen() {
           <List.Subheader>{labels.info}</List.Subheader>
           <List.Item
             title={labels.about}
-            left={(p) => <List.Icon {...p} icon="information" />}
+            left={(p) => (
+              <List.Icon
+                {...p}
+                icon="information"
+                color={theme.colors.tertiary}
+              />
+            )}
             right={(p) => <List.Icon {...p} icon="chevron-right" />}
             onPress={() => router.push("/more/about" as any)}
           />
           <List.Item
             title={labels.contact}
-            left={(p) => <List.Icon {...p} icon="email" />}
+            left={(p) => (
+              <List.Icon {...p} icon="email" color={theme.colors.tertiary} />
+            )}
             right={(p) => <List.Icon {...p} icon="chevron-right" />}
             onPress={() => router.push("/more/contact")}
           />
           <Animated.View style={getHighlightStyle("give")}>
             <List.Item
               title={labels.give}
-              left={(p) => <List.Icon {...p} icon="gift" />}
+              left={(p) => (
+                <List.Icon {...p} icon="gift" color={theme.colors.tertiary} />
+              )}
               right={(p) => <List.Icon {...p} icon="open-in-new" />}
               onPress={openOnlineGiving}
             />
@@ -149,7 +159,13 @@ export default function MoreScreen() {
           <Animated.View style={getHighlightStyle("darkMode")}>
             <List.Item
               title={labels.darkMode}
-              left={(p) => <List.Icon {...p} icon="theme-light-dark" />}
+              left={(p) => (
+                <List.Icon
+                  {...p}
+                  icon="theme-light-dark"
+                  color={theme.colors.tertiary}
+                />
+              )}
               right={() => (
                 <Switch value={isDark} onValueChange={toggleTheme} />
               )}
@@ -157,7 +173,13 @@ export default function MoreScreen() {
           </Animated.View>
           <List.Item
             title={labels.language}
-            left={(p) => <List.Icon {...p} icon="translate" />}
+            left={(p) => (
+              <List.Icon
+                {...p}
+                icon="translate"
+                color={theme.colors.tertiary}
+              />
+            )}
             right={(p) => <List.Icon {...p} icon="chevron-right" />}
             onPress={() => router.push("/more/language")}
           />
