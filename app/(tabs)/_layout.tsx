@@ -27,9 +27,9 @@ export const GlobalHeader = (props: any) => {
     setIsSearching(false);
   }, [segments.join("/")]);
 
-  const isSubPage =
-    (segments.includes("more") || segments.includes("resources")) &&
-    segments.length > 2;
+  // A sub-page is any screen pushed onto a stack (props.back exists)
+  // or a screen with a forced back-to destination.
+  const isSubPage = !!props.back || !!props.options?.backTo;
 
   const title = props.options?.title;
   const backTo = props.options?.backTo;
@@ -635,6 +635,7 @@ export default function TabLayout() {
         name="community"
         options={{
           title: labels.community,
+          headerShown: false, // Internal Stack handles header for consistency
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name="account-group"
@@ -654,6 +655,7 @@ export default function TabLayout() {
         name="resources"
         options={{
           title: labels.resources,
+          headerShown: false, // Internal Stack handles header for consistency
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name="bookmark-multiple"

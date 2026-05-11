@@ -1,10 +1,11 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { NavigationStyles } from "@/styles/NavigationStyles";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, ScrollView } from "react-native";
 import { List, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -27,15 +28,19 @@ export default function LanguageScreen() {
   return (
     <>
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
-      <View
-        style={[
-          styles.container,
-          { paddingTop: headerHeight + DESIGN_TOKENS.VIEW_PADDING },
+      <ScrollView
+        style={NavigationStyles.container}
+        contentContainerStyle={[
+          NavigationStyles.contentContainer,
+          { paddingTop: headerHeight },
         ]}
       >
         <List.Section>
           <List.Subheader
-            style={[styles.subheader, { color: theme.colors.onBackground }]}
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
           >
             {labels.select}
           </List.Subheader>
@@ -69,22 +74,7 @@ export default function LanguageScreen() {
 
         {/* Use a light status bar on iOS to account for the black space above the modal */}
         <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
-      </View>
+      </ScrollView>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  subheader: {
-    fontWeight: "bold",
-  },
-  title: {
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-});

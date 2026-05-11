@@ -2,11 +2,20 @@ import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext, ThemeContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
+import { openOnlineGiving } from "@/utils/externalLinks";
 import { router, Stack } from "expo-router";
 import React, { useContext } from "react";
-import { ScrollView, StyleSheet } from "react-native";
-import { List, Switch, useTheme } from "react-native-paper";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  List,
+  Switch,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import packageJson from "../../../package.json";
+import { UpdateContext } from "../../_layout";
 
 const allLabels = {
   en: {
@@ -71,6 +80,7 @@ export default function MoreScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
   const { isDark, toggleTheme } = useContext(ThemeContext);
+  const { onManualCheck, updateStatus } = useContext(UpdateContext);
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
@@ -100,7 +110,11 @@ export default function MoreScreen() {
             icon="theme-light-dark"
             iconColor={theme.colors.primary} // Use primary color for dark mode toggle
             rightElement={() => (
-              <Switch value={isDark} onValueChange={toggleTheme} />
+              <Switch
+                value={isDark}
+                onValueChange={toggleTheme}
+                color={theme.colors.primary}
+              />
             )}
             onPress={() => toggleTheme()}
           />
@@ -152,12 +166,41 @@ export default function MoreScreen() {
             description={labels.giveSub}
             icon="gift"
             iconColor={theme.colors.tertiary}
-            onPress={() => {}} // TODO: Implement giving page
+            rightIcon="open-in-new"
+            onPress={openOnlineGiving}
           />
         </List.Section>
+
+        <View style={styles.footer}>
+          <TouchableRipple
+            onPress={Platform.OS === "web" ? () => onManualCheck() : undefined}
+            disabled={updateStatus !== "idle"}
+            style={styles.versionRipple}
+          >
+            <Text variant="labelSmall" style={styles.versionText}>
+              Version {packageJson.version}
+            </Text>
+          </TouchableRipple>
+        </View>
       </ScrollView>
     </>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  footer: {
+    marginTop: 32,
+    marginBottom: 48,
+    alignItems: "center",
+  },
+  versionRipple: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  versionText: {
+    opacity: 0.5,
+    letterSpacing: 0.5,
+    textAlign: "center",
+  },
+});

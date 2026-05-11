@@ -1,6 +1,7 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
@@ -174,12 +175,18 @@ export default function ContactScreen() {
     <>
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingTop: headerHeight }}
+        style={NavigationStyles.container}
+        contentContainerStyle={[
+          NavigationStyles.contentContainer,
+          { paddingTop: headerHeight },
+        ]}
       >
         <List.Section>
           <List.Subheader
-            style={[styles.subheader, { color: theme.colors.onBackground }]}
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
           >
             {labels.infoLabel}
           </List.Subheader>
@@ -237,7 +244,10 @@ export default function ContactScreen() {
 
         <List.Section>
           <List.Subheader
-            style={[styles.subheader, { color: theme.colors.onBackground }]}
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
           >
             {labels.addressLabel}
           </List.Subheader>
@@ -259,12 +269,4 @@ export default function ContactScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  subheader: {
-    fontWeight: "bold",
-  },
-});
+const styles = StyleSheet.create({});
