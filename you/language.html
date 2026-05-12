@@ -9,6 +9,19 @@ html, body {
   background-color: var(--app-bg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
+/* Android Chrome 135+ Edge-to-Edge "Fast Path" */
+@media (display-mode: standalone) {
+  :root {
+    --safe-area-max-inset-bottom: env(safe-area-max-inset-bottom, 0px);
+  }
+
+  /* Targets the fixed tab bar container in Expo Router / React Navigation Web */
+  nav[role="tablist"], div[style*="position: fixed"][style*="bottom: 0"] {
+    padding-bottom: var(--safe-area-max-inset-bottom) !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) - var(--safe-area-max-inset-bottom)) !important;
+  }
+}
 }</style><style id="react-native-stylesheet">[stylesheet-group="0"]{}
 body{margin:0;}
 button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0;}
@@ -481,5 +494,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-imtty0{0%{opacity:0;}100%{opacity:1;}}
 @keyframes r-q67da2{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
 @keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><style id="expo-generated-fonts">@font-face{font-family:"AdventSans";src:url("/sda-church-app/assets/assets/fonts/AdventSans-Logo.dfad6c601e14e7b484cd4da2e81cc1e1.otf");font-display:auto}
-@font-face{font-family:"material-community";src:url("/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf");font-display:auto}</style><link rel="preload" href="/sda-church-app/assets/assets/fonts/AdventSans-Logo.dfad6c601e14e7b484cd4da2e81cc1e1.otf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf" as="font" crossorigin="" /><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script></head><body><div id="root"><div class="css-g5y9jx r-13awgt0"><!--$--><!--/$--></div></div><script src="/sda-church-app/_expo/static/js/web/entry-13164a2518f9ea471f07bedd996d21d9.js" defer></script>
+@font-face{font-family:"material-community";src:url("/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf");font-display:auto}</style><link rel="preload" href="/sda-church-app/assets/assets/fonts/AdventSans-Logo.dfad6c601e14e7b484cd4da2e81cc1e1.otf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf" as="font" crossorigin="" /><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script></head><body><div id="root"><div class="css-g5y9jx r-13awgt0"><!--$--><!--/$--></div></div><script src="/sda-church-app/_expo/static/js/web/entry-80b980cb746f8d94a0a2c51bb8059338.js" defer></script>
 </body></html>
