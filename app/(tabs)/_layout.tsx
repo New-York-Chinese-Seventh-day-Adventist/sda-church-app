@@ -30,8 +30,8 @@ export const GlobalHeader = (props: any) => {
 
   // A pillar root is the entry-point for one of our four main tabs (Tenet 5 & 7).
   // We use route segments to identify the root index files of the pillar folders.
-  const isPillarRoot =
-    segments.length <= 3 && segments[segments.length - 1] === "index";
+  // In Expo Router, the (tabs) group and the tab names form the first 1-2 segments.
+  const isPillarRoot = segments.length <= 2;
 
   const isSubPage = !isPillarRoot;
 
