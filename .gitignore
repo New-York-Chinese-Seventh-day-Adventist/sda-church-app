@@ -26,6 +26,7 @@
 !/.gitignore
 !/.aiexclude
 !/.env.example
+!/.vscode
 
 # 4. Explicitly ignore generated or sensitive noise
 # These are excluded even if they match whitelisted patterns.

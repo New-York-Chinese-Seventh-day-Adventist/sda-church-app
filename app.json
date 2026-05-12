@@ -2,7 +2,7 @@
   "expo": {
     "name": "sda-church-app",
     "slug": "sda-church-app",
-    "version": "0.11.0",
+    "version": "0.11.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon-1024x1024.png",
     "scheme": "sdachurchapp",
@@ -22,8 +22,8 @@
       "output": "static",
       "favicon": "./assets/images/icon-48x48.png",
       "display": "standalone",
-      "themeColor": "#0061A4",
-      "backgroundColor": "#ffffff",
+      "themeColor": "#F8F9FA",
+      "backgroundColor": "#F8F9FA",
       "description": "Seventh-day Adventist church community application.",
       "shortName": "SDA Church",
       "lang": "en"
@@ -38,7 +38,7 @@
         "foregroundImage": "./assets/images/icon-1024x1024.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": false,
+      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp"
     },

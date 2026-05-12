@@ -24,6 +24,7 @@ import {
   DevSettings,
   LogBox,
   Platform,
+  StatusBar,
   StyleSheet,
   useColorScheme,
 } from "react-native";
@@ -447,6 +448,22 @@ function RootLayoutNav({
   const { language } = useContext(LanguageContext);
   const insets = useSafeAreaInsets();
 
+  // Sync system bars and PWA theme-color meta tag
+  useEffect(() => {
+    if (Platform.OS === "web" && typeof document !== "undefined") {
+      const bodyBg = isDark
+        ? customDarkTheme.colors.background
+        : customLightTheme.colors.background;
+
+      // 1. Sync theme-color meta tag with Themes.ts for Android/Chrome/Safari status bar coloring
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", bodyBg);
+
+      // 2. Update body background to prevent "flashing" or white gutters during overscroll
+      document.body.style.backgroundColor = bodyBg;
+    }
+  }, [isDark]);
+
   const snackbarLabels = {
     en: {
       checking: "Checking for updates...",
@@ -485,6 +502,11 @@ function RootLayoutNav({
   return (
     <PaperProvider theme={(isDark ? customDarkTheme : customLightTheme) as any}>
       <ThemeProvider value={isDark ? DarkTheme : LightTheme}>
+        <StatusBar
+          barStyle={isDark ? "light-content" : "dark-content"}
+          backgroundColor="transparent"
+          translucent
+        />
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>

@@ -19,7 +19,10 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <meta name="theme-color" content="#F8F9FA" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="SDA Church" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <link rel="apple-touch-icon" href="icon-192x192.png" />
         <link rel="manifest" href="manifest.json" />
 
@@ -39,12 +42,16 @@ export default function Root({ children }: { children: React.ReactNode }) {
 }
 
 const globalStyles = `
-body {
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   background-color: #F8F9FA;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
+  html, body {
+    background-color: #0F0F0F;
   }
 }`;
