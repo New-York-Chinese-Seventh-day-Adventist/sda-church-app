@@ -18,6 +18,7 @@
   ],
   "start_url": "/sda-church-app/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "theme_color": "#F8F9FA",
   "background_color": "#FFFFFF",
   "orientation": "portrait",
