@@ -1,12 +1,15 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/Contexts";
+import {
+  openHymnal,
+  openSabbathStream,
+  openSpotifyPodcast,
+} from "@/constants/externalLinks";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
-import { openSpotifyPodcast } from "@/utils/spotifyService";
-import { openSabbathStream } from "@/utils/youtubeService";
 import { router, Stack } from "expo-router";
 import React, { useContext } from "react";
-import { Linking, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { List, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -81,12 +84,6 @@ export default function ResourcesScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
-  const handleExternalLink = (url: string) => {
-    Linking.openURL(url).catch((err) =>
-      console.error("Couldn't load page", err),
-    );
-  };
-
   return (
     <>
       <Stack.Screen options={{ title: labels.title }} />
@@ -97,32 +94,6 @@ export default function ResourcesScreen() {
           { paddingTop: headerHeight },
         ]}
       >
-        <List.Section>
-          <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
-          >
-            {labels.sermonsWorship}
-          </List.Subheader>
-          <MenuCard
-            title={labels.youtube}
-            description={labels.youtubeSub}
-            icon="youtube"
-            iconColor={(theme.colors as any).brandYoutube}
-            onPress={openSabbathStream}
-          />
-
-          <MenuCard
-            title={labels.spotify}
-            description={labels.spotifySub}
-            icon="spotify"
-            iconColor={(theme.colors as any).brandSpotify}
-            onPress={openSpotifyPodcast}
-          />
-        </List.Section>
-
         <List.Section>
           <List.Subheader
             style={[
@@ -145,9 +116,7 @@ export default function ResourcesScreen() {
             description={labels.hymnalSub}
             icon="music-note"
             iconColor={theme.colors.tertiary}
-            onPress={() =>
-              handleExternalLink("https://www.adventisthymnals.com/")
-            }
+            onPress={openHymnal}
           />
 
           <MenuCard
@@ -156,6 +125,34 @@ export default function ResourcesScreen() {
             icon="bookshelf"
             iconColor={theme.colors.tertiary}
             onPress={() => {}} // TODO: Implement library page
+          />
+        </List.Section>
+
+        <List.Section>
+          <List.Subheader
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
+          >
+            {labels.sermonsWorship}
+          </List.Subheader>
+          <MenuCard
+            title={labels.youtube}
+            description={labels.youtubeSub}
+            icon="youtube"
+            iconColor={(theme.colors as any).brandYoutube}
+            onPress={openSabbathStream}
+            rightIcon="open-in-new"
+          />
+
+          <MenuCard
+            title={labels.spotify}
+            description={labels.spotifySub}
+            icon="spotify"
+            iconColor={(theme.colors as any).brandSpotify}
+            onPress={openSpotifyPodcast}
+            rightIcon="open-in-new"
           />
         </List.Section>
       </ScrollView>

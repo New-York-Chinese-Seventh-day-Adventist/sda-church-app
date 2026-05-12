@@ -1,10 +1,17 @@
-import { LanguageContext } from "@/constants/Contexts";
+import {
+  CHURCH_BUILDING_IMAGE_URL,
+  CHURCH_NAME,
+  openAtlanticUnion,
+  openBeliefs,
+  openGNYC,
+} from "@/constants/ExternalLinks";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { DocumentStyles } from "@/styles/DocumentStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
 import React, { useContext } from "react";
-import { Image, Linking, ScrollView, StyleSheet, View } from "react-native";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Paragraph, Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -13,9 +20,6 @@ export default function AboutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
-
-  const churchName = process.env.EXPO_PUBLIC_CHURCH_NAME || "SDA Church";
-  const aboutImageUrl = process.env.EXPO_PUBLIC_ABOUT_IMAGE_URL;
 
   const allLabels = {
     en: {
@@ -408,10 +412,6 @@ export default function AboutScreen() {
 
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
-  const openBeliefs = () => {
-    Linking.openURL("https://adventist.org/beliefs#official-beliefs");
-  };
-
   return (
     <>
       <Stack.Screen options={{ title: labels.title }} />
@@ -421,7 +421,7 @@ export default function AboutScreen() {
       >
         <View style={styles.header}>
           <Image
-            source={{ uri: aboutImageUrl }}
+            source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
             style={styles.image}
             accessibilityLabel="Church banner"
           />
@@ -429,7 +429,7 @@ export default function AboutScreen() {
             variant="titleLarge"
             style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
           >
-            {churchName}
+            {CHURCH_NAME}
           </Text>
         </View>
 
@@ -661,7 +661,7 @@ export default function AboutScreen() {
                 icon="open-in-new"
                 buttonColor={theme.colors.primary}
                 textColor={theme.colors.onPrimary}
-                onPress={() => Linking.openURL("https://gnyc.org/")}
+                onPress={openGNYC}
               >
                 Learn More
               </Button>
@@ -695,7 +695,7 @@ export default function AboutScreen() {
                 icon="open-in-new"
                 buttonColor={theme.colors.primary}
                 textColor={theme.colors.onPrimary}
-                onPress={() => Linking.openURL("https://atlantic-union.org/")}
+                onPress={openAtlanticUnion}
               >
                 Learn More
               </Button>

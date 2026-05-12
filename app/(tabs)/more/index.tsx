@@ -1,8 +1,8 @@
 import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext, ThemeContext } from "@/constants/Contexts";
+import { openOnlineGiving } from "@/constants/externalLinks";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
-import { openOnlineGiving } from "@/utils/externalLinks";
 import { router, Stack } from "expo-router";
 import React, { useContext } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";

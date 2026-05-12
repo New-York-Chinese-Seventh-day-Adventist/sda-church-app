@@ -10,8 +10,8 @@
 !/constants/
 !/docs/
 !/public/
+!/services/
 !/styles/
-!/utils/
 
 # 3. Re-include files in the root directory
 !/*.json

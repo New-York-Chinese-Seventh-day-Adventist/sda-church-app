@@ -1,20 +1,19 @@
 import { MenuCard } from "@/components/MenuCard";
-import { LanguageContext } from "@/constants/Contexts";
+import {
+  CHURCH_EMAIL,
+  CHURCH_PHONE,
+  openEmail,
+  openInMaps,
+  openPhone,
+} from "@/constants/ExternalLinks";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  Animated,
-  Linking,
-  Platform,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
+import { Animated, ScrollView, StyleSheet } from "react-native";
 import { List, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { openInMaps } from "../../../utils/googleMapsService";
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);
@@ -50,8 +49,6 @@ export default function ContactScreen() {
         "New York Theological Education Center - Chinese Online School of Theology",
     },
   ];
-  const phone = process.env.EXPO_PUBLIC_CHURCH_PHONE;
-  const email = process.env.EXPO_PUBLIC_CHURCH_EMAIL;
 
   const allLabels = {
     en: {
@@ -190,56 +187,22 @@ export default function ContactScreen() {
           >
             {labels.infoLabel}
           </List.Subheader>
-          {phone && (
-            <MenuCard
-              title={phone}
-              icon="phone"
-              iconColor={theme.colors.tertiary}
-              rightIcon="open-in-new"
-              style={getHighlightStyle("phone")}
-              onPress={async () => {
-                const cleanedPhone = phone.replace(/[^\d+]/g, "");
-                // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
-                // Android only supports the standard tel: scheme.
-                const url =
-                  Platform.OS === "ios"
-                    ? `telprompt:${cleanedPhone}`
-                    : `tel:${cleanedPhone}`;
-                try {
-                  // Direct attempt is more reliable on Android 11+ as canOpenURL
-                  // requires specific manifest queries to return true.
-                  await Linking.openURL(url);
-                } catch (error) {
-                  console.warn("Phone call attempt failed:", error);
-                  Alert.alert(
-                    "Error",
-                    "Phone calls are not supported on this device or emulator.",
-                  );
-                }
-              }}
-            />
-          )}
-          {email && (
-            <MenuCard
-              title={email}
-              icon="email"
-              iconColor={theme.colors.tertiary}
-              rightIcon="open-in-new"
-              style={getHighlightStyle("email")}
-              onPress={async () => {
-                const url = `mailto:${email}`;
-                try {
-                  await Linking.openURL(url);
-                } catch (error) {
-                  console.warn("Email attempt failed:", error);
-                  Alert.alert(
-                    "Error",
-                    "Email is not configured on this device or emulator.",
-                  );
-                }
-              }}
-            />
-          )}
+          <MenuCard
+            title={CHURCH_PHONE}
+            icon="phone"
+            iconColor={theme.colors.tertiary}
+            rightIcon="open-in-new"
+            style={getHighlightStyle("phone")}
+            onPress={() => openPhone(CHURCH_PHONE)}
+          />
+          <MenuCard
+            title={CHURCH_EMAIL}
+            icon="email"
+            iconColor={theme.colors.tertiary}
+            rightIcon="open-in-new"
+            style={getHighlightStyle("email")}
+            onPress={() => openEmail(CHURCH_EMAIL)}
+          />
         </List.Section>
 
         <List.Section>

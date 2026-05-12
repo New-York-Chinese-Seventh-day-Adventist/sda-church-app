@@ -2,6 +2,7 @@ import {
   DarkTheme as NavDarkTheme,
   DefaultTheme as NavDefaultTheme,
 } from "@react-navigation/native";
+import { createContext } from "react";
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -86,6 +87,15 @@ export const customLightTheme = {
   },
   roundness: 3,
 };
+
+/**
+ * Context for managing the global theme state.
+ * Moving this here centralizes all theme-related logic (Tenet 5).
+ */
+export const ThemeContext = createContext({
+  isDark: false,
+  toggleTheme: (val?: any) => {},
+});
 
 export const customDarkTheme = {
   ...MD3DarkTheme,

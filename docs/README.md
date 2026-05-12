@@ -12,6 +12,8 @@
 npm install
 ```
 
+Make sure to fill out information specific to your church in [the Constants folder](/constants/).
+
 ## Web & PWA Deployment (Primary Workflow)
 
 This application is primarily distributed as a Progressive Web App (PWA) to ensure maximum accessibility, instant updates, and zero distribution fees.

@@ -3,9 +3,8 @@ import { LanguageContext } from "@/constants/Contexts";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import React, { useContext } from "react";
-import { Platform, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { List, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -17,10 +16,10 @@ export default function LanguageScreen() {
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   const allLabels = {
-    en: { title: "Language", select: "Select Language" },
-    zh: { title: "語言", select: "選擇語言" },
-    "zh-cn": { title: "语言", select: "选择语言" },
-    es: { title: "Idioma", select: "Seleccionar idioma" },
+    en: { title: "Language" },
+    zh: { title: "語言" },
+    "zh-cn": { title: "语言" },
+    es: { title: "Idioma" },
   };
 
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
@@ -36,14 +35,6 @@ export default function LanguageScreen() {
         ]}
       >
         <List.Section>
-          <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
-          >
-            {labels.select}
-          </List.Subheader>
           <MenuCard
             title="English"
             icon="translate"
@@ -71,9 +62,6 @@ export default function LanguageScreen() {
             rightIcon={language === "es" ? "radiobox-marked" : "radiobox-blank"}
           />
         </List.Section>
-
-        {/* Use a light status bar on iOS to account for the black space above the modal */}
-        <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
       </ScrollView>
     </>
   );
