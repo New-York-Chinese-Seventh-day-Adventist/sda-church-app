@@ -1,7 +1,11 @@
-import { LanguageContext } from "@/constants/Contexts";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import {
+  fetchBooks,
+  fetchChapter,
+  TRANSLATIONS,
+} from "@/services/BibleService";
 import { ReaderStyles } from "@/styles/ReaderStyles";
-import { fetchBooks, fetchChapter, TRANSLATIONS } from "@/utils/bibleService";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router, Stack } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";

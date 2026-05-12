@@ -1,6 +1,6 @@
+import { GlobalHeader } from "@/app/(tabs)/_layout";
 import { Stack } from "expo-router";
 import React from "react";
-import { GlobalHeader } from "../_layout";
 
 export default function CommunityStackLayout() {
   return (

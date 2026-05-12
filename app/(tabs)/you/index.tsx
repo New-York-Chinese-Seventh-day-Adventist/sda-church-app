@@ -1,7 +1,10 @@
+import { UpdateContext } from "@/app/_layout";
 import { MenuCard } from "@/components/MenuCard";
-import { LanguageContext, ThemeContext } from "@/constants/Contexts";
-import { openOnlineGiving } from "@/constants/externalLinks";
+import { openOnlineGiving } from "@/constants/ExternalLinks";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { ThemeContext } from "@/constants/Themes";
+import packageJson from "@/package.json";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router, Stack } from "expo-router";
 import React, { useContext } from "react";
@@ -14,12 +17,9 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import packageJson from "../../../package.json";
-import { UpdateContext } from "../../_layout";
 
 const allLabels = {
   en: {
-    title: "More",
     settings: "Settings",
     give: "Give",
     giveSub: "Support our ministry",
@@ -33,7 +33,6 @@ const allLabels = {
     contactSub: "Contact information and locations",
   },
   zh: {
-    title: "更多",
     settings: "設定",
     give: "奉獻",
     giveSub: "支持我們的聖工",
@@ -47,7 +46,6 @@ const allLabels = {
     contactSub: "聯繫方式和地點",
   },
   "zh-cn": {
-    title: "更多",
     settings: "设置",
     give: "奉献",
     giveSub: "支持我们的圣工",
@@ -61,7 +59,6 @@ const allLabels = {
     contactSub: "联系方式和地点",
   },
   es: {
-    title: "Más",
     settings: "Ajustes",
     give: "Dar",
     giveSub: "Apoya nuestro ministerio",
@@ -76,7 +73,7 @@ const allLabels = {
   },
 };
 
-export default function MoreScreen() {
+export default function YouScreen() {
   const theme = useTheme();
   const { language } = useContext(LanguageContext);
   const { isDark, toggleTheme } = useContext(ThemeContext);
@@ -87,7 +84,7 @@ export default function MoreScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: labels.title }} />
+      <Stack.Screen options={{ title: labels.settings }} />
       <ScrollView
         style={NavigationStyles.container}
         contentContainerStyle={[
@@ -123,7 +120,7 @@ export default function MoreScreen() {
             description={labels.languageSub}
             icon="translate"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/more/language" as any)}
+            onPress={() => router.push("/you/language" as any)}
           />
         </List.Section>
 
@@ -141,14 +138,14 @@ export default function MoreScreen() {
             description={labels.aboutSub}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/more/about" as any)}
+            onPress={() => router.push("/you/about" as any)}
           />
           <MenuCard
             title={labels.contact}
             description={labels.contactSub}
             icon="email"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/more/contact" as any)}
+            onPress={() => router.push("/you/contact" as any)}
           />
         </List.Section>
 

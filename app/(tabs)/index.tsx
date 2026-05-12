@@ -124,7 +124,7 @@ export default function HomeScreen() {
             title={labels.about}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/more/about")}
+            onPress={() => router.push("/you/about")}
             style={{ marginBottom: 12 }}
           />
 
@@ -134,7 +134,7 @@ export default function HomeScreen() {
             iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
-                pathname: "/more/contact",
+                pathname: "/you/contact",
                 params: { backTo: "/" },
               })
             }

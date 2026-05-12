@@ -1,8 +1,8 @@
 import {
   LanguageContext,
   SupportedLanguage,
-  ThemeContext,
-} from "@/constants/Contexts";
+} from "@/constants/LanguageContext";
+import { ThemeContext } from "@/constants/Themes";
 import React, { useContext } from "react";
 import { StyleSheet, View } from "react-native";
 import {

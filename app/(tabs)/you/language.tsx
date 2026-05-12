@@ -1,5 +1,5 @@
 import { MenuCard } from "@/components/MenuCard";
-import { LanguageContext } from "@/constants/Contexts";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { Stack, useLocalSearchParams } from "expo-router";

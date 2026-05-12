@@ -1,14 +1,13 @@
 import { InitialSetup } from "@/components/InitialSetup";
-import { useColorScheme } from "@/components/useColorScheme";
 import {
   DEFAULT_LANG,
   LanguageContext,
   SupportedLanguage,
-  ThemeContext,
-} from "@/constants/Contexts";
+} from "@/constants/LanguageContext";
 import {
   DarkTheme,
   LightTheme,
+  ThemeContext,
   customDarkTheme,
   customLightTheme,
 } from "@/constants/Themes";
@@ -26,6 +25,7 @@ import {
   LogBox,
   Platform,
   StyleSheet,
+  useColorScheme,
 } from "react-native";
 import { PaperProvider, Snackbar } from "react-native-paper";
 import "react-native-reanimated";
@@ -483,7 +483,7 @@ function RootLayoutNav({
   const topOffset = insets.top + 8;
 
   return (
-    <PaperProvider theme={isDark ? customDarkTheme : customLightTheme}>
+    <PaperProvider theme={(isDark ? customDarkTheme : customLightTheme) as any}>
       <ThemeProvider value={isDark ? DarkTheme : LightTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -494,9 +494,7 @@ function RootLayoutNav({
           visible={updateStatus !== "idle" || updateAvailable}
           onDismiss={onDismissStatus}
           duration={
-            updateStatus === "checking" || updateAvailable
-              ? Snackbar.DURATION_INDEFINITE
-              : 3000
+            updateStatus === "checking" || updateAvailable ? Infinity : 3000
           }
           wrapperStyle={[
             styles.snackbarWrapper,

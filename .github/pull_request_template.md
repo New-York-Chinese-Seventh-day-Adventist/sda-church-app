@@ -14,6 +14,8 @@ Target version should always be [latest stable XCode](https://developer.apple.co
 
 - [ ] Incremented `version` field in `package.json` for this release.
 
+- [ ] **Search Space Audit:** Updated search bar keywords in `constants/SearchTerms.ts` for new features/screens. Ensure the new feature is properly accounted for in the "search space" so it is discoverable (parity across all languages). Consider if a dedicated steering doc is needed for complex discovery.
+
 ## For PR reviewers
 
 When merging, please ensure the commit message has "resolves #XX" to let GitHub auto-close the issue.

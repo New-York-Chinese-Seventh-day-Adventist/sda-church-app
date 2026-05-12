@@ -1,5 +1,6 @@
-import { LanguageContext } from "@/constants/Contexts";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { ALL_SEARCH_LABELS, getSearchableItems } from "@/constants/SearchTerms";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
 import { Tabs, router, useSegments } from "expo-router";
@@ -27,350 +28,22 @@ export const GlobalHeader = (props: any) => {
     setIsSearching(false);
   }, [segments.join("/")]);
 
-  // A sub-page is any screen pushed onto a stack (props.back exists)
-  // or a screen with a forced back-to destination.
-  const isSubPage = !!props.back || !!props.options?.backTo;
+  // A pillar root is the entry-point for one of our four main tabs (Tenet 5 & 7).
+  // We use route segments to identify the root index files of the pillar folders.
+  const isPillarRoot =
+    segments.length <= 3 && segments[segments.length - 1] === "index";
+
+  const isSubPage = !isPillarRoot;
 
   const title = props.options?.title;
   const backTo = props.options?.backTo;
 
-  const allSearchLabels = {
-    en: {
-      searchPlaceholder: "Search app...",
-      home: {
-        title: "Home",
-        keywords: ["welcome", "start", "pulse", "livestream", "happening"],
-      },
-      community: {
-        title: "Community",
-        keywords: [
-          "events",
-          "schedule",
-          "sabbath",
-          "groups",
-          "volunteer",
-          "in-person",
-          "hub",
-          "service",
-          "roles",
-        ],
-      },
-      resources: {
-        title: "Resources",
-        keywords: [
-          "video",
-          "preach",
-          "message",
-          "bible",
-          "hymnal",
-          "spiritual",
-          "library",
-          "pdf",
-          "devotional",
-          "reader",
-        ],
-      },
-      about: { title: "About Us", keywords: ["history", "beliefs", "church"] },
-      connect: {
-        title: "Connect",
-        keywords: [
-          "contact",
-          "email",
-          "phone",
-          "location",
-          "call",
-          "map",
-          "directions",
-          "address",
-          "staff",
-        ],
-      },
-      give: {
-        title: "Give",
-        keywords: ["tithe", "offering", "donation", "tithing"],
-      },
-      language: {
-        title: "Language",
-        keywords: ["chinese", "spanish", "english", "translate", "settings"],
-      },
-      darkMode: {
-        title: "Dark Mode",
-        keywords: ["theme", "appearance", "night", "settings", "dark"],
-      },
-    },
-    zh: {
-      searchPlaceholder: "搜尋...",
-      home: {
-        title: "首頁",
-        keywords: ["歡迎", "開始", "home", "脈搏", "直播"],
-      },
-      community: {
-        title: "教會社群",
-        keywords: [
-          "活動",
-          "時間表",
-          "安息日",
-          "小組",
-          "義工",
-          "calendar",
-          "community",
-          "中心",
-          "服事",
-        ],
-      },
-      resources: {
-        title: "資源庫",
-        keywords: [
-          "視頻",
-          "證道",
-          "信息",
-          "聖經",
-          "詩歌",
-          "sermons",
-          "resources",
-          "圖書館",
-          "靈修",
-        ],
-      },
-      about: { title: "關於我們", keywords: ["歷史", "信仰", "教會", "about"] },
-      connect: {
-        title: "聯繫我們",
-        keywords: [
-          "聯絡",
-          "電子郵件",
-          "電話",
-          "地點",
-          "電郵",
-          "地圖",
-          "導航",
-          "地址",
-          "路線",
-          "connect",
-          "contact",
-          "email",
-          "phone",
-          "call",
-          "map",
-          "同工",
-        ],
-      },
-      give: {
-        title: "捐獻",
-        keywords: ["什一", "奉獻", "捐款", "give", "tithe", "tithing"],
-      },
-      language: {
-        title: "語言設定",
-        keywords: ["中文", "英文", "西班牙文", "翻譯", "language", "設定"],
-      },
-      darkMode: {
-        title: "深色模式",
-        keywords: ["theme", "dark mode", "主題", "外觀", "settings", "深色"],
-      },
-    },
-    "zh-cn": {
-      searchPlaceholder: "搜索...",
-      home: {
-        title: "首页",
-        keywords: ["欢迎", "开始", "home", "脉搏", "直播"],
-      },
-      community: {
-        title: "教会社区",
-        keywords: [
-          "活动",
-          "时间表",
-          "安息日",
-          "小组",
-          "义工",
-          "calendar",
-          "community",
-          "中心",
-          "服事",
-        ],
-      },
-      resources: {
-        title: "资源库",
-        keywords: [
-          "视频",
-          "证道",
-          "信息",
-          "圣经",
-          "诗歌",
-          "sermons",
-          "resources",
-          "图书馆",
-          "灵修",
-        ],
-      },
-      about: { title: "关于我们", keywords: ["历史", "信仰", "教会", "about"] },
-      connect: {
-        title: "联系我们",
-        keywords: [
-          "联络",
-          "电子邮件",
-          "电话",
-          "地点",
-          "电邮",
-          "地图",
-          "导航",
-          "地址",
-          "路线",
-          "connect",
-          "contact",
-          "email",
-          "phone",
-          "call",
-          "map",
-          "同工",
-        ],
-      },
-      give: {
-        title: "捐献",
-        keywords: ["什一", "奉献", "捐款", "give", "tithe", "tithing"],
-      },
-      language: {
-        title: "语言设置",
-        keywords: ["中文", "英文", "西班牙文", "翻译", "language", "设置"],
-      },
-      darkMode: {
-        title: "深色模式",
-        keywords: ["theme", "dark mode", "主题", "外观", "settings", "深色"],
-      },
-    },
-    es: {
-      searchPlaceholder: "Buscar...",
-      home: {
-        title: "Inicio",
-        keywords: ["bienvenido", "comenzar", "home", "pulso", "en vivo"],
-      },
-      community: {
-        title: "Comunidad",
-        keywords: [
-          "eventos",
-          "horario",
-          "sábado",
-          "grupos",
-          "voluntario",
-          "calendar",
-          "community",
-          "centro",
-          "servicio",
-        ],
-      },
-      resources: {
-        title: "Recursos",
-        keywords: [
-          "video",
-          "predicación",
-          "mensaje",
-          "biblia",
-          "himnario",
-          "sermons",
-          "resources",
-          "biblioteca",
-          "devocional",
-        ],
-      },
-      about: {
-        title: "Sobre Nosotros",
-        keywords: ["historia", "creencias", "iglesia", "about"],
-      },
-      connect: {
-        title: "Conéctate",
-        keywords: [
-          "contacto",
-          "correo",
-          "teléfono",
-          "ubicación",
-          "llamar",
-          "mapa",
-          "direcciones",
-          "dirección",
-          "connect",
-          "contact",
-          "email",
-          "phone",
-          "personal",
-        ],
-      },
-      give: {
-        title: "Dar",
-        keywords: ["diezmo", "ofrenda", "donación", "give", "tithe", "diezmos"],
-      },
-      language: {
-        title: "Idioma",
-        keywords: [
-          "chino",
-          "español",
-          "inglés",
-          "traducir",
-          "language",
-          "ajustes",
-        ],
-      },
-      darkMode: {
-        title: "Modo oscuro",
-        keywords: ["theme", "dark mode", "apariencia", "ajustes", "oscuro"],
-      },
-    },
-  };
-
   const searchLabels =
-    allSearchLabels[language as keyof typeof allSearchLabels] ||
-    allSearchLabels.en;
+    ALL_SEARCH_LABELS[language as keyof typeof ALL_SEARCH_LABELS] ||
+    ALL_SEARCH_LABELS.en;
 
   // Centralized list of everything searchable in the app
-  const searchableItems = [
-    {
-      ...searchLabels.home,
-      icon: "home",
-      route: "/",
-      isPage: true,
-    },
-    {
-      ...searchLabels.community,
-      icon: "account-group",
-      route: "/community",
-      isPage: true,
-    },
-    {
-      ...searchLabels.resources,
-      icon: "bookmark-multiple",
-      route: "/resources",
-      isPage: true,
-    },
-    {
-      ...searchLabels.give,
-      icon: "gift",
-      route: "/more",
-      isPage: false,
-      highlightKey: "give",
-    },
-    {
-      ...searchLabels.darkMode,
-      icon: "theme-light-dark",
-      route: "/more",
-      isPage: false,
-      highlightKey: "darkMode",
-    },
-    {
-      ...searchLabels.language,
-      icon: "translate",
-      route: "/more/language",
-      isPage: true,
-    },
-    {
-      ...searchLabels.about,
-      icon: "information",
-      route: "/more/about",
-      isPage: true,
-    },
-    {
-      ...searchLabels.connect,
-      icon: "email",
-      route: "/more/contact",
-      isPage: true,
-    },
-  ];
+  const searchableItems = getSearchableItems(language);
 
   const results = searchableItems.filter(
     (item) =>
@@ -385,11 +58,7 @@ export const GlobalHeader = (props: any) => {
     searchRef.current?.blur();
 
     const targetParams = {
-      highlight: item.isPage
-        ? item.title.toLowerCase().includes(q)
-          ? undefined
-          : q
-        : (item as any).highlightKey,
+      highlight: q,
     };
 
     // If already on a subpage, replace to avoid history loops.
@@ -429,10 +98,12 @@ export const GlobalHeader = (props: any) => {
             onPress={() => {
               if (backTo) {
                 router.navigate(backTo as any);
-              } else if (segments.includes("more")) {
-                router.navigate("/more" as any);
+              } else if (segments.includes("you")) {
+                router.navigate("/you" as any);
               } else if (segments.includes("resources")) {
                 router.navigate("/resources" as any);
+              } else if (segments.includes("community")) {
+                router.navigate("/community" as any);
               } else {
                 router.back();
               }
@@ -568,25 +239,25 @@ export default function TabLayout() {
       home: "Home",
       community: "Community",
       resources: "Resources",
-      more: "More",
+      you: "You",
     },
     zh: {
       home: "首頁",
       community: "教會社群",
       resources: "資源庫",
-      more: "更多",
+      you: "您",
     },
     "zh-cn": {
       home: "首页",
       community: "教会社区",
       resources: "资源库",
-      more: "更多",
+      you: "您",
     },
     es: {
       home: "Inicio",
       community: "Comunidad",
       resources: "Recursos",
-      more: "Más",
+      you: "Tú",
     },
   };
 
@@ -620,9 +291,13 @@ export default function TabLayout() {
         name="index"
         options={{
           title: labels.home,
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="home" color={color} focused={focused} />
-          ),
+          tabBarIcon: ({
+            color,
+            focused,
+          }: {
+            color: string;
+            focused: boolean;
+          }) => <TabBarIcon name="home" color={color} focused={focused} />,
         }}
         listeners={{
           tabPress: (e) => {
@@ -636,12 +311,14 @@ export default function TabLayout() {
         options={{
           title: labels.community,
           headerShown: false, // Internal Stack handles header for consistency
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name="account-group"
-              color={color as string}
-              focused={focused}
-            />
+          tabBarIcon: ({
+            color,
+            focused,
+          }: {
+            color: string;
+            focused: boolean;
+          }) => (
+            <TabBarIcon name="account-group" color={color} focused={focused} />
           ),
         }}
         listeners={{
@@ -656,10 +333,16 @@ export default function TabLayout() {
         options={{
           title: labels.resources,
           headerShown: false, // Internal Stack handles header for consistency
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({
+            color,
+            focused,
+          }: {
+            color: string;
+            focused: boolean;
+          }) => (
             <TabBarIcon
               name="bookmark-multiple"
-              color={color as string}
+              color={color}
               focused={focused}
             />
           ),
@@ -672,16 +355,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="more"
+        name="you"
         options={
           {
-            title: labels.more,
-            headerShown: false,
+            title: labels.you,
+            headerShown: false, // Internal Stack handles header for consistency
             unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
-            tabBarIcon: ({ color, focused }) => (
+            tabBarIcon: ({
+              color,
+              focused,
+            }: {
+              color: string;
+              focused: boolean;
+            }) => (
               <TabBarIcon
-                name="dots-horizontal-circle"
-                color={color as string}
+                name="account-circle"
+                color={color}
                 focused={focused}
               />
             ),
@@ -689,10 +378,10 @@ export default function TabLayout() {
         }
         listeners={{
           tabPress: (e) => {
-            // Ensure the More stack resets to its root whenever the tab is pressed.
+            // Ensure the You stack resets to its root whenever the tab is pressed.
             // This solves the "stuck" state after navigating to sub-pages from Home.
             e.preventDefault();
-            router.navigate("/more");
+            router.navigate("/you");
           },
         }}
       />

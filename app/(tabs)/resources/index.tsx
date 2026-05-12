@@ -1,10 +1,10 @@
 import { MenuCard } from "@/components/MenuCard";
-import { LanguageContext } from "@/constants/Contexts";
 import {
   openHymnal,
   openSabbathStream,
   openSpotifyPodcast,
-} from "@/constants/externalLinks";
+} from "@/constants/ExternalLinks";
+import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router, Stack } from "expo-router";
