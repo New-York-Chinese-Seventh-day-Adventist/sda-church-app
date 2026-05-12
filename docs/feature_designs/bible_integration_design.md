@@ -179,6 +179,10 @@ While the PWA supports service worker caching, explicit persistence in `IndexedD
 
 ### 4.3 Additional Language Support
 
-For the future, Indonesian, German, Japanese also have free public bibles. Can consider later.
+Indonesian, German, Japanese also have free public bibles. Can consider later.
 
 Notably, Tibetan (Moravian Version Yoseb Gergan, 1948) is also public domain. While UTF-8 encoding was historically challenging, the HelloAO API provides TBTI (Central Tibetan) via their source metadata, offering a Unicode-encoded path for these scripts.
+
+### 4.4 Select Reader Fonts & Highlighting & Personal Saved Verses
+
+Like the YouVersion Bible app, users should be able to customize select high-quality fonts and add colored highlighting. Favorite verses will be saved to personal storage.
