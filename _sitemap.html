@@ -1,10 +1,22 @@
-<!DOCTYPE html><html  lang="en"><head><title data-rh="true"></title><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="theme-color" content="#F8F9FA"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="SDA Church"/><meta name="apple-mobile-web-app-status-bar-style" content="default"/><link rel="apple-touch-icon" href="icon-192x192.png"/><link rel="manifest" href="manifest.json"/><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
-body {
+<!DOCTYPE html><html  lang="en"><head><title data-rh="true"></title><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="theme-color" content="transparent"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="SDA Church"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><link rel="apple-touch-icon" href="icon-192x192.png"/><link rel="manifest" href="manifest.json"/><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   background-color: #F8F9FA;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
+body {
+  /* Ensure content can extend behind status bar on mobile */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 @media (prefers-color-scheme: dark) {
-  body {
+  html, body {
     background-color: #121212;
   }
 }</style><style id="react-native-stylesheet">[stylesheet-group="0"]{}
@@ -478,5 +490,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-1pzkwqh{0%{transform:translateY(100%);}100%{transform:translateY(0%);}}
 @keyframes r-imtty0{0%{opacity:0;}100%{opacity:1;}}
 @keyframes r-q67da2{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
-@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script></head><body><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-517e55cb1842e5941e609fec4b4fa1eb.js" defer></script>
+@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script></head><body><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-db99e96bbb88ffdc0cde36fd84b9292c.js" defer></script>
 </body></html>
