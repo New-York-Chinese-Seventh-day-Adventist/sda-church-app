@@ -1,5 +1,5 @@
 # SDA Church App Git Configuration
-# Aligned with Tenet 5 (Radical Simplicity) via a Whitelist-first approach.
+# Aligned with Tenet 5 (Simplicity) via a Whitelist-first approach.
 # This mirrors the logic of .aiexclude to ensure absolute consistency.
 
 # 1. Ignore everything by default
