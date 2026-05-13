@@ -1,21 +1,28 @@
-import { LanguageContext } from "@/constants/Contexts";
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { MenuCard } from "@/components/MenuCard";
 import {
-  Alert,
-  Animated,
-  Linking,
-  Platform,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
-import { List, useTheme } from "react-native-paper";
-import { openInMaps } from "../../../utils/googleMapsService";
+  CHURCH_EMAIL,
+  CHURCH_PHONE,
+  openEmail,
+  openInMaps,
+  openPhone,
+} from "@/constants/ExternalLinks";
+import { LanguageContext } from "@/constants/LanguageContext";
+import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
+import { NavigationStyles } from "@/styles/NavigationStyles";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet } from "react-native";
+import { List } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ContactScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo, highlight } = useLocalSearchParams();
-  const theme = useTheme();
+  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -43,8 +50,6 @@ export default function ContactScreen() {
         "New York Theological Education Center - Chinese Online School of Theology",
     },
   ];
-  const phone = process.env.EXPO_PUBLIC_CHURCH_PHONE;
-  const email = process.env.EXPO_PUBLIC_CHURCH_EMAIL;
 
   const allLabels = {
     en: {
@@ -167,103 +172,65 @@ export default function ContactScreen() {
   return (
     <>
       <Stack.Screen options={{ title: labels.title, backTo } as any} />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={NavigationStyles.container}
+        contentContainerStyle={[
+          NavigationStyles.contentContainer,
+          { paddingTop: headerHeight },
+        ]}
+      >
         <List.Section>
-          <List.Subheader>{labels.infoLabel}</List.Subheader>
-          {phone && (
-            <Animated.View style={getHighlightStyle("phone")}>
-              <List.Item
-                title={phone}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon="phone"
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="open-in-new" />}
-                onPress={async () => {
-                  const cleanedPhone = phone.replace(/[^\d+]/g, "");
-                  // telprompt is iOS-only. It shows a confirmation dialog and returns to the app.
-                  // Android only supports the standard tel: scheme.
-                  const url =
-                    Platform.OS === "ios"
-                      ? `telprompt:${cleanedPhone}`
-                      : `tel:${cleanedPhone}`;
-                  try {
-                    // Direct attempt is more reliable on Android 11+ as canOpenURL
-                    // requires specific manifest queries to return true.
-                    await Linking.openURL(url);
-                  } catch (error) {
-                    console.warn("Phone call attempt failed:", error);
-                    Alert.alert(
-                      "Error",
-                      "Phone calls are not supported on this device or emulator.",
-                    );
-                  }
-                }}
-              />
-            </Animated.View>
-          )}
-          {email && (
-            <Animated.View style={getHighlightStyle("email")}>
-              <List.Item
-                title={email}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon="email"
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="open-in-new" />}
-                onPress={async () => {
-                  const url = `mailto:${email}`;
-                  try {
-                    await Linking.openURL(url);
-                  } catch (error) {
-                    console.warn("Email attempt failed:", error);
-                    Alert.alert(
-                      "Error",
-                      "Email is not configured on this device or emulator.",
-                    );
-                  }
-                }}
-              />
-            </Animated.View>
-          )}
+          <List.Subheader
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
+          >
+            {labels.infoLabel}
+          </List.Subheader>
+          <MenuCard
+            title={CHURCH_PHONE}
+            icon="phone"
+            iconColor={theme.colors.tertiary}
+            rightIcon="open-in-new"
+            style={getHighlightStyle("phone")}
+            onPress={() => openPhone(CHURCH_PHONE)}
+          />
+          <MenuCard
+            title={CHURCH_EMAIL}
+            icon="email"
+            iconColor={theme.colors.tertiary}
+            rightIcon="open-in-new"
+            style={getHighlightStyle("email")}
+            onPress={() => openEmail(CHURCH_EMAIL)}
+          />
         </List.Section>
 
         <List.Section>
-          <List.Subheader>{labels.addressLabel}</List.Subheader>
-          <Animated.View style={getHighlightStyle("location")}>
-            {locations.map((loc, index) => (
-              <List.Item
-                key={index}
-                title={labels.locationNames[index]}
-                description={loc.address}
-                titleNumberOfLines={2}
-                descriptionNumberOfLines={3}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon={loc.icon}
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="open-in-new" />}
-                onPress={() => openInMaps((loc as any).searchQuery)}
-              />
-            ))}
-          </Animated.View>
+          <List.Subheader
+            style={[
+              NavigationStyles.subheader,
+              { color: theme.colors.onBackground },
+            ]}
+          >
+            {labels.addressLabel}
+          </List.Subheader>
+          {locations.map((loc, index) => (
+            <MenuCard
+              key={index}
+              title={labels.locationNames[index]}
+              description={loc.address}
+              icon={loc.icon}
+              iconColor={theme.colors.tertiary}
+              rightIcon="open-in-new"
+              style={getHighlightStyle("location")}
+              onPress={() => openInMaps((loc as any).searchQuery)}
+            />
+          ))}
         </List.Section>
       </ScrollView>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+const styles = StyleSheet.create({});

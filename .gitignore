@@ -1,42 +1,39 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# SDA Church App Git Configuration
+# Aligned with Tenet 5 (Radical Simplicity) via a Whitelist-first approach.
+# This mirrors the logic of .aiexclude to ensure absolute consistency.
 
-# dependencies
+# 1. Ignore everything by default
+/*
+
+# 2. Re-include source and configuration directories
+!/.github/
+!/app/
+!/assets/
+!/components/
+!/constants/
+!/docs/
+!/public/
+!/services/
+!/styles/
+
+# 3. Re-include root configuration files
+!/*.json
+!/*.md
+!/*.js
+!/*.ts
+!/*.tsx
+!/*.html
+!/.gitignore
+!/.aiexclude
+!/.env.example
+!/.vscode
+
+# 4. Explicitly ignore generated or sensitive noise
+# These are excluded even if they match whitelisted patterns.
 node_modules/
-
-# Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
-
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*
-!.env.example
-
-# typescript
 *.tsbuildinfo
-
-# generated native folders
-/ios
-/android
+.env*

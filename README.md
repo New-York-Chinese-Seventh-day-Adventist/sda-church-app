@@ -10,263 +10,53 @@ on Safari (iOS) or Chrome (Android).
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Testing](#testing)
-- [Release & Versioning](#release--versioning)
-- [Branch Protection & Workflow](#branch-protection--workflow)
+- [Technical Setup & Testing](docs/README.md)
+- [UI/UX Design](docs/UI_UX.md)
+- [Feature Designs](docs/feature_designs/)
+- [Contributing Code](docs/CONTRIBUTING.md)
 
-## Getting Started
+# Project Tenets
 
-### Prerequisites
+_Guiding our design philosophy in decreasing order of priority._
 
-- Node.js (LTS)
-- npm
-- Java Development Kit (JDK) 17
-- For iOS: Xcode (macOS only) supporting iOS 15.0 - 26.3 (Deployment Target) as defined [by Xcode Releases](https://developer.apple.com/support/xcode/)
-- For Android: Android Studio, Android SDK 36 (latest), and `ANDROID_HOME` environment variable
+### 1. Sustainable & Accessible (PWA-First)
 
-```bash
-npm install
-```
+The app must be cost-effective, preferably free to maintain, and support both iOS and Android. We prioritize the **Progressive Web App (PWA)** workflow to ensure long-term viability, zero distribution fees, and instant updates without the gatekeeping or technical debt of traditional App Stores.
 
-### Web (PWA)
+> _"For which of you, wanting to build a tower, does not first sit down and calculate the cost to see if he has enough to complete it?"_ — **Luke 14:28**
 
-To start the app in a web browser:
+### 2. Regulatory & Legal Safety
 
-````bash
-npx expo start --web
-```
+We proactively mitigate privacy and legal risks (e.g., CCPA, GDPR), even if the tradeoff results in fewer functional features. Protecting the congregation is a non-negotiable constraint; our volunteers should not be exposed to complex data liabilities or external legal vulnerabilities.
 
-For PWA mobile testing, setup GitHub pages and run this to deploy.
+> _"Behold, I am sending you out like sheep among wolves. Therefore be as shrewd as snakes and as innocent as doves."_ — **Matthew 10:16**
 
-```bash
-npm run deploy
-```
+### 3. Informed Sanctuary (Privacy by Design)
 
-Once deployed, you may install app directly from browser `codesammich.github.io/sda-church-app/` on Safari (iOS) or Chrome (Android).
+We prioritize total anonymity, treating the digital experience as a secure refuge. While we use aggregate data to help leadership make Informed Decisions about community needs, we strictly reject the collection or storage of Personally Identifiable Information (PII). A church is a "third space" and a final refuge; our technology must be a shade from the heat, not a source of surveillance.
 
-Note, if you get a black screen, open the link in browser -> Network tab to see if any assets failed to load. Any failed asset loading (400s) will cause the entire app to fail to load.
+> _"For You have been a refuge for the poor, a stronghold for the needy in distress, a refuge from the storm, a shade from the heat."_ — **Isaiah 25:4**
 
-New dev builds can be pushed by updating package.json version number and deploying. Existing installations update automatically or can be manually refreshed by tapping More -> Version number.
+### 4. Community Over Complexity
 
-## Testing
+Every feature must serve the goal of promoting **in-person fellowship**. Digital tools—such as event sign-ups or notifications—are high-value only if they make it easier for a member to show up to a physical gathering. We facilitate connection without requiring or compromising Personally Identifiable Information (PII).
 
-### iOS
+> _"And let us consider how to spur one another on to love and good deeds. Let us not neglect meeting together, as some have made a habit, but let us encourage one another..."_ — **Hebrews 10:24-25**
 
-```bash
-npm run ios
-````
+### 5. Radical Simplicity in Design
 
-This command launches the iOS simulator, but may fail to build the app. That is fine, since we are installing PWA from Safari -> codesammich.github.io/sda-church-app/ -> Share -> Add to Home Screen to avoid App Store fees and complications.
+We use simple design philosophies to ensure elderly and non-technical stakeholders can navigate with ease. If a feature is too complex for a casual user to understand in seconds, it must be simplified or removed.
 
-### Android
+> _"...You have hidden these things from the wise and learned, and revealed them to little children."_ — **Matthew 11:25**
 
-To start the Metro bundler and launch the app:
+### 6. Spiritual Accessibility through Integration
 
-```bash
-# Default
-npm run android
+Centralization lowers barriers for daily devotion. By unifying the Bible, hymnal, and community updates into one frictionless interface, we support the spiritual growth of seekers and long-time members alike.
 
-# For Expo Go (recommended for most development):
-npx expo start --host lan
-# Then scan the QR code with the Expo Go app on your Android Emulator or device.
+> _"But his delight is in the law of the LORD, and on His law he meditates day and night."_ — **Psalm 1:2**
 
-# For a development build (if you need custom native modules):
-# export REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}') # This attempts to auto-configure the bundler IP
-npx expo run:android
+### 7. Destination, Not a "Launcher"
 
-# For WSL
-npx expo start --dev-client --tunnel
-```
+The app is a **Digital Home** that protects users from "doomscrolling" and external algorithms. While we leverage infrastructure like YouTube or Spotify, the user experience remains internal to maintain spiritual focus.
 
-This command:
-
-- Builds the Android app using Expo
-- Requires Android Studio or Android SDK set up
-- Launches the app on the Android Emulator or a connected device
-- Verify on Android SDK 36 or higher
-
-#### WSL Debugging
-
-> Error: Unable to load script. Make sure you're running Metro or that your bundle 'index.android.bundle'...
-
-If you are developing in WSL2, the Android Emulator on Windows may not connect automatically to the Metro server. After running `npm run android`, you may need to manually set the bundle location:
-
-Note: `adb reverse` is NOT the fix for emulator! As long as `adb devices` shows a connected `device`, you're okay.
-
-```bash
-$ adb devices
-List of devices attached
-emulator-5554   device
-```
-
-- In the Emulator: **Ctrl + M** -> **Change Bundle Location** -> Set to `172.23.202.254:8081` (or whatever your local WSL server is like).
-
-> › Installing /home/dev/dev/sda-church-app/android/app/build/outputs/apk/debug/app-debug.apk
-> › Opening sdachurchapp://expo-development-client/?url=http%3A%2F%2F172.23.202.254%3A8081 on Pixel_9a
-
-If it bundles, you're on the right track.
-
-> Android Bundled 1536ms node_modules/expo-router/entry.js (1759 modules)
-
-Then check `localhost:8081` on your WSL (VSCode) and Windows browser (localhost:8001 or 172.23.202.254:8081). If they both load the app, you're one step closer.
-
-```bash
-npm run android
-```
-
-If that still black screens, simply try this command with Ctrl+M **Change Bundle Location** to `localhost:8081`. Note you have to press `a` for Android.
-
-```bash
-npx expo start --dev-client --tunnel
-
-# or alternatively
-npm run wsl
-```
-
-### Debugging First-Time Launch
-
-The app tracks setup completion in `AsyncStorage`. To re-test the onboarding flow without wiping the emulator's system data (which preserves your "Change Bundle Location" IP):
-
-1. Ensure the app has bundled and isn't showing a black screen (check terminal for errors).
-2. Open the Developer Menu (**Ctrl + M** on Android Emulator).
-3. Select **Debug: Reset Onboarding**.
-4. Reload the app.
-
-This programmatically clears the `has-completed-setup` flag while keeping your development environment settings intact.
-
-## Release & Versioning
-
-This project uses **Semantic Versioning** (npm SemVer Guide). The `package.json` file serves as the single source of truth for the application version.
-
-### Release Process
-
-The versioning workflow is automated via GitHub Actions to ensure consistency across the mobile app, PWA, and repository tags.
-
-1. **Create a Release Branch** from `main`:
-
-   ```bash
-   git checkout main
-   git pull origin main
-   git checkout -b release/v0.8.2
-   ```
-
-   Check the latest tag to determine the next version.
-
-2. **Update the Version and Push**:
-   - Increment the `version` field in `package.json` manually (or use `npm version patch`).
-   - Push the changes: `git push -u origin release/v0.8.2`.
-   - The CI will validate the bump and automatically synchronize `app.json` and `sw.js` via automated commits.
-
-3. **Create a Pull Request**:
-   - Open a PR from your release branch → `main`.
-   - The CI will validate that the version in `package.json` is higher than the current version on `main`.
-   - Complete the testing checklist and wait for reviews.
-
-4. **Merge to Main**:
-   - Once approved and merged, the `Release - Tagging and Sync` workflow triggers.
-   - It creates a Git tag (e.g., `v0.8.2`) matching the `package.json` version and ensures all deployment files are perfectly in sync.
-
-## Branch Protection & Workflow
-
-```
-main (stable)
-  ↑
-  └─ release/0.2.0 (release candidate)
-       ↑
-       └─ feature/awesome-feature (work in progress)
-```
-
-### Branch Rules
-
-#### `main` Branch
-
-- **Protected branch** — Cannot push directly
-- **Requires PR** — All changes must come through a pull request
-- **Requires PR reviews** — Pull requests must be approved before merge
-- **Requires checks to pass** — CI/CD checks must pass
-- **Source**: Only from `release/**` branches
-- **Auto-tag on merge** — Automatically creates semantic version tags
-
-#### `release/*` Branches
-
-- **Source**: Created from `main` for each release
-- **Naming convention**: `release/*` (e.g., `release/0.8.2` or `release/v1-beta`)
-- **Purpose**: Prepare the release and validate the version bump
-- **PR validation**:
-  - Enforces that the version in `package.json` has been incremented compared to `main`.
-  - Automatically synchronizes `sw.js` and `app.json` version strings if they drift.
-
-#### Feature/Work Branches
-
-- **Naming convention**: `feature/`, `bugfix/`, `chore/`, `docs/`, etc.
-- **Source**: Branch from `release/*` or directly from `main`
-- **PR**: Create PR to target release branch or main
-- **Target**: Should merge back to the appropriate release branch
-
-### Pull Request Workflow
-
-1. **Create a branch** from `release/0.2.0` or `main`
-2. **Make your changes** and commit with clear messages
-3. **Push to origin** and create a PR
-4. **Fill PR template**:
-   - Complete testing checklist
-   - Add description of changes
-5. **Await checks**:
-   - Workflow validates version tag
-   - Version bump is verified against `main`
-   - Reviews are requested
-6. **Merge**: Once approved, merge the PR
-7. **If merging to main**: Automatic release tag is created
-
-### Automated Checks
-
-#### `Release - Commit Validation` (`.github/workflows/release-validation.yml`)
-
-- **Enforce Version Change**: Compares `package.json` against `main` to ensure a version bump occurred.
-- **Auto-Sync**: Synchronizes `package-lock.json`, `sw.js`, and `app.json`. Pushes a fix commit to the PR branch if files drift from the version in `package.json`.
-
-#### `Release - Tagging and Sync` (`.github/workflows/release-tagging.yml`)
-
-- **Final Validation**: Ensures the merged version is unique.
-- **Automated Tagging**: Creates a new Git tag (e.g., `v0.8.2`) matching the `package.json` version.
-
-### Example Workflow
-
-```bash
-# 1. Start from main
-git checkout main && git pull origin main
-
-# 2. Create release branch
-git checkout -b release/0.2.0
-
-# 3. Bump version manually in package.json or npm version major|minor|patch
-# https://docs.npmjs.com/about-semantic-versioning
-# npm version major   Changes that break backward compatibility
-# npm version minor   Backward compatible new features
-# npm version patch   Backward compatible bug fixes
-npm version minor
-
-# Ensures CI validation passes on first push
-git push -u origin release/0.2.0
-
-# 4. Create feature branch from release
-git checkout -b feature/new-calendar-view
-# ... make changes ...
-git commit -m "feat: add calendar view for sermon schedule"
-git push -u origin feature/new-calendar-view
-git checkout release/0.2.0 && git merge feature/new-calendar-view
-
-# 5. Push changes and create PR: release/0.2.0 → main
-git push origin release/0.2.0
-# Get approval and merge
-
-# 6. Automated: Tag v0.2.0 is created on merge commit
-# Done! Release is published.
-```
-
-**Note**: All releases, including patch updates (e.g., `v0.2.1`), follow this same workflow. Create a `release/0.2.1` branch for any hotfixes or patch releases.
-
----
-
-**Last Updated**: May 2026
+> _"Finally, brothers, whatever is true, whatever is honorable, whatever is right, whatever is pure, whatever is lovely, whatever is admirable—if anything is excellent or praiseworthy—think on these things."_ — **Philippians 4:8**

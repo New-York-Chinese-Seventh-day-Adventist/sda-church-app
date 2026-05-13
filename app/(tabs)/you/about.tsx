@@ -1,23 +1,26 @@
-import { LanguageContext } from "@/constants/Contexts";
+import {
+  CHURCH_BUILDING_IMAGE_URL,
+  CHURCH_NAME,
+  openAtlanticUnion,
+  openBeliefs,
+  openGNYC,
+} from "@/constants/ExternalLinks";
+import { LanguageContext } from "@/constants/LanguageContext";
+import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
+import { DocumentStyles } from "@/styles/DocumentStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
-import React, { useContext } from "react";
-import { Image, Linking, ScrollView, StyleSheet, View } from "react-native";
-import {
-  Avatar,
-  Button,
-  Card,
-  Paragraph,
-  Text,
-  Title,
-  useTheme,
-} from "react-native-paper";
+import { useContext } from "react";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Card, Paragraph, Text } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AboutScreen() {
   const { language } = useContext(LanguageContext);
-  const theme = useTheme();
-  const churchName = process.env.EXPO_PUBLIC_CHURCH_NAME || "SDA Church";
-  const aboutImageUrl = process.env.EXPO_PUBLIC_ABOUT_IMAGE_URL;
+  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   const allLabels = {
     en: {
@@ -26,7 +29,7 @@ export default function AboutScreen() {
       sdaDescription:
         "Seventh-day Adventists are a global Christian community that regards the Bible as the supreme authority in their lives. We adhere to the principle of Sola Scriptura (By Scripture Alone), which means that the Bible is the sole infallible source of authority for Christian faith and practice, and the standard by which all teachings and experiences are measured.",
       pillarItems: [
-        { title: "Bible-Centered", icon: "book-open-variant" },
+        { title: "Bible-Centered", icon: "book-cross" },
         { title: "Faith & Love", icon: "heart-flash" },
         { title: "Community", icon: "account-group" },
       ],
@@ -123,7 +126,7 @@ export default function AboutScreen() {
       sdaDescription:
         "基督復臨安息日會是一個全球性的基督徒團體, 將聖經視為生活的最高權威。我們堅持「唯獨聖經」(Sola Scriptura) 的原則, 這意味著聖經是基督徒信仰和實踐的唯一無誤權威來源, 也是衡量所有教導和經驗的標準。",
       pillarItems: [
-        { title: "以聖經為中心", icon: "book-open-variant" },
+        { title: "以聖經為中心", icon: "book-cross" },
         { title: "信仰與愛", icon: "heart-flash" },
         { title: "社群", icon: "account-group" },
       ],
@@ -219,7 +222,7 @@ export default function AboutScreen() {
       sdaDescription:
         "基督复临安息日会是一个全球性的基督徒团体, 将圣经视为生活的最高权威。我们坚持“唯独圣经”(Sola Scriptura) 的原则, 这意味着圣经是基督徒信仰和实践的唯一无误权威来源, 也是衡量所有教导和经验的标准。",
       pillarItems: [
-        { title: "以圣经为中心", icon: "book-open-variant" },
+        { title: "以圣经为中心", icon: "book-cross" },
         { title: "信仰与爱", icon: "heart-flash" },
         { title: "社区", icon: "account-group" },
       ],
@@ -315,7 +318,7 @@ export default function AboutScreen() {
       sdaDescription:
         "Los Adventistas del Séptimo Día son una comunidad cristiana global que considera la Biblia como la autoridad suprema en sus vidas. Nos adherimos al principio de Sola Scriptura (Solo por la Escritura), lo que significa que la Biblia es la única fuente infalible de autoridad para la fe y la práctica cristiana, y el estándar por el cual se miden todas las enseñanzas y experiencias.",
       pillarItems: [
-        { title: "Biblia", icon: "book-open-variant" },
+        { title: "Biblia", icon: "book-cross" },
         { title: "Fe y Amor", icon: "heart-flash" },
         { title: "Comunidad", icon: "account-group" },
       ],
@@ -410,59 +413,70 @@ export default function AboutScreen() {
 
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
-  const openBeliefs = () => {
-    Linking.openURL("https://adventist.org/beliefs#official-beliefs");
-  };
-
   return (
     <>
       <Stack.Screen options={{ title: labels.title }} />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={DocumentStyles.container}
+        contentContainerStyle={{ paddingTop: headerHeight }}
+      >
         <View style={styles.header}>
           <Image
-            source={{ uri: aboutImageUrl }}
+            source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
             style={styles.image}
             accessibilityLabel="Church banner"
           />
-          <Title style={[styles.churchName, { color: theme.colors.primary }]}>
-            {churchName}
-          </Title>
+          <Text
+            variant="titleLarge"
+            style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
+          >
+            {CHURCH_NAME}
+          </Text>
         </View>
 
-        <View style={styles.section}>
-          <Title
+        <View style={DocumentStyles.section}>
+          <Text
+            variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.aboutSDA}
-          </Title>
-          <Paragraph style={styles.description}>
+          </Text>
+          <Paragraph
+            style={[
+              DocumentStyles.description,
+              { color: theme.colors.onSurface },
+            ]}
+          >
             {labels.sdaDescription}
           </Paragraph>
           <View style={styles.pillarContainer}>
             {(labels as any).pillarItems.map((item: any, index: number) => (
-              <Card key={index} style={styles.pillarCard} mode="elevated">
+              <Card
+                key={index}
+                style={[
+                  styles.pillarCard,
+                  { borderWidth: 1, borderColor: theme.colors.outlineVariant },
+                ]}
+                mode="contained"
+              >
                 <View style={styles.pillarContent}>
-                  <Avatar.Icon
-                    size={40}
-                    icon={({ size, color }) => (
-                      <MaterialCommunityIcons
-                        name={item.icon}
-                        size={size}
-                        color={color}
-                      />
-                    )}
-                    backgroundColor={theme.colors.primary}
-                    color={theme.colors.onPrimary}
+                  <MaterialCommunityIcons
+                    name={item.icon as any}
+                    size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
+                    color={theme.colors.tertiary}
                   />
                   <Text
                     variant="labelSmall"
-                    style={styles.pillarText}
+                    style={[
+                      styles.pillarText,
+                      { color: theme.colors.onSurface },
+                    ]}
                     numberOfLines={1}
                     adjustsFontSizeToFit
                   >
@@ -474,30 +488,36 @@ export default function AboutScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Title
+        <View style={DocumentStyles.section}>
+          <Text
+            variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.history}
-          </Title>
-          <Text variant="bodyMedium">{labels.historySubtext}</Text>
+          </Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+            {labels.historySubtext}
+          </Text>
           <View style={styles.timelineContainer}>
             {(labels as any).milestoneItems.map((item: any, index: number) => (
               <View key={index} style={styles.timelineColumn}>
                 <View
                   style={[
                     styles.yearCircle,
-                    { backgroundColor: theme.colors.primary },
+                    { backgroundColor: theme.colors.tertiary },
                   ]}
                 >
                   <Text
-                    style={[styles.yearText, { color: theme.colors.onPrimary }]}
+                    style={[
+                      styles.yearText,
+                      { color: theme.colors.onTertiary },
+                    ]}
                   >
                     {item.year}
                   </Text>
@@ -508,7 +528,13 @@ export default function AboutScreen() {
                     { backgroundColor: theme.colors.outlineVariant },
                   ]}
                 />
-                <Text variant="labelSmall" style={styles.milestoneEvent}>
+                <Text
+                  variant="labelSmall"
+                  style={[
+                    styles.milestoneEvent,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
                   {item.event}
                 </Text>
               </View>
@@ -516,95 +542,127 @@ export default function AboutScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Title
+        <View style={DocumentStyles.section}>
+          <Text
+            variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.beliefs}
-          </Title>
-          <Text variant="bodyMedium" style={styles.subtext}>
+          </Text>
+          <Text
+            variant="bodyMedium"
+            style={[styles.subtext, { color: theme.colors.onSurface }]}
+          >
             {labels.beliefsSubtext}
           </Text>
 
           <View style={styles.cardContainer}>
             {labels.beliefsItems.map((item, index) => (
-              <Card key={index} style={styles.card} mode="elevated">
-                <Card.Title
-                  title={item.title}
-                  titleVariant="titleMedium"
-                  left={(props) => (
-                    <Avatar.Icon
-                      {...props}
-                      icon={({ size, color }) => (
-                        <MaterialCommunityIcons
-                          name={item.icon as any}
-                          size={size}
-                          color={color}
-                        />
-                      )}
-                      size={40}
-                      backgroundColor={theme.colors.primary}
-                      color={theme.colors.onPrimary}
-                    />
-                  )}
-                />
-                <Card.Content>
-                  <Text variant="bodySmall">{item.description}</Text>
-                </Card.Content>
+              <Card
+                key={index}
+                style={[
+                  DocumentStyles.card,
+                  { borderWidth: 1, borderColor: theme.colors.outlineVariant },
+                ]}
+                mode="contained"
+              >
+                <View style={styles.cardHeader}>
+                  <MaterialCommunityIcons
+                    name={item.icon as any}
+                    size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+                    color={theme.colors.tertiary}
+                  />
+                  <Text
+                    variant="titleMedium"
+                    style={[
+                      styles.cardTitleText,
+                      { color: theme.colors.onSurface },
+                    ]}
+                  >
+                    {item.title}
+                  </Text>
+                </View>
+                <View style={styles.cardContent}>
+                  <Text
+                    variant="bodySmall"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    {item.description}
+                  </Text>
+                </View>
               </Card>
             ))}
           </View>
 
-          <Text variant="bodyMedium" style={styles.note}>
+          <Text
+            variant="bodyMedium"
+            style={[
+              DocumentStyles.note,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
+          >
             {labels.beliefsNote}
           </Text>
 
           <Button
             mode="contained"
             onPress={openBeliefs}
-            style={styles.button}
+            buttonColor={theme.colors.primary}
+            textColor={theme.colors.onPrimary}
+            style={DocumentStyles.button}
             icon="open-in-new"
           >
             {labels.learnMore}
           </Button>
         </View>
 
-        <View style={styles.section}>
-          <Title
+        <View style={DocumentStyles.section}>
+          <Text
+            variant="titleLarge"
             style={[
-              styles.sectionTitle,
+              DocumentStyles.sectionTitle,
               {
-                color: theme.colors.primary,
+                color: theme.colors.onSurface,
                 borderBottomColor: theme.colors.outlineVariant,
               },
             ]}
           >
             {labels.organization}
-          </Title>
+          </Text>
           <Card style={styles.orgCard} mode="outlined">
             <Card.Content>
               <Text
                 variant="labelMedium"
-                style={{ color: theme.colors.primary }}
+                style={{ color: theme.colors.onSurfaceVariant }}
               >
                 {labels.localConference}
               </Text>
-              <Title style={styles.orgName}>{labels.localConfName}</Title>
-              <Text variant="bodySmall" style={styles.orgDesc}>
+              <Text
+                variant="titleLarge"
+                style={[styles.orgName, { color: theme.colors.onSurface }]}
+              >
+                {labels.localConfName}
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={[styles.orgDesc, { color: theme.colors.onSurface }]}
+              >
                 {labels.localConfDesc}
               </Text>
             </Card.Content>
             <Card.Actions>
               <Button
-                mode="contained-tonal"
-                compact
-                onPress={() => Linking.openURL("https://gnyc.org/")}
+                mode="contained"
+                icon="open-in-new"
+                buttonColor={theme.colors.primary}
+                textColor={theme.colors.onPrimary}
+                onPress={openGNYC}
               >
                 Learn More
               </Button>
@@ -615,20 +673,30 @@ export default function AboutScreen() {
             <Card.Content>
               <Text
                 variant="labelMedium"
-                style={{ color: theme.colors.primary }}
+                style={{ color: theme.colors.onSurfaceVariant }}
               >
                 {labels.unionConference}
               </Text>
-              <Title style={styles.orgName}>{labels.unionConfName}</Title>
-              <Text variant="bodySmall" style={styles.orgDesc}>
+              <Text
+                variant="titleLarge"
+                style={[styles.orgName, { color: theme.colors.onSurface }]}
+              >
+                {labels.unionConfName}
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={[styles.orgDesc, { color: theme.colors.onSurface }]}
+              >
                 {labels.unionConfDesc}
               </Text>
             </Card.Content>
             <Card.Actions>
               <Button
-                mode="contained-tonal"
-                compact
-                onPress={() => Linking.openURL("https://atlantic-union.org/")}
+                mode="contained"
+                icon="open-in-new"
+                buttonColor={theme.colors.primary}
+                textColor={theme.colors.onPrimary}
+                onPress={openAtlanticUnion}
               >
                 Learn More
               </Button>
@@ -643,9 +711,6 @@ export default function AboutScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   header: {
     marginBottom: 8,
   },
@@ -653,42 +718,26 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 200,
   },
-  churchName: {
-    padding: 16,
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 26,
-    color: undefined, // Will be set by theme in style array if needed, but we'll use inline
-  },
-  section: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    marginBottom: 12,
-    fontWeight: "bold",
-    borderBottomWidth: 2,
-    paddingBottom: 4,
-  },
-  description: {
-    lineHeight: 22,
-  },
   subtext: {
     marginBottom: 12,
   },
   cardContainer: {
     marginVertical: 8,
   },
-  card: {
-    marginBottom: 12,
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4,
   },
-  button: {
-    marginTop: 8,
+  cardTitleText: {
+    marginLeft: 12,
+    fontWeight: "bold",
   },
-  note: {
-    marginVertical: 12,
-    fontStyle: "italic",
-    opacity: 0.8,
+  cardContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   pillarContainer: {
     flexDirection: "row",
@@ -718,9 +767,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   yearCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE,
+    height: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE,
+    borderRadius: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE / 2,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -748,6 +797,5 @@ const styles = StyleSheet.create({
   },
   orgDesc: {
     marginTop: 4,
-    opacity: 0.7,
   },
 });

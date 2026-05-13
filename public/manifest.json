@@ -18,8 +18,7 @@
   ],
   "start_url": "/sda-church-app/",
   "display": "standalone",
-  "theme_color": "#0061A4",
-  "background_color": "#FFFFFF",
+  "display_override": ["standalone"],
   "orientation": "portrait",
   "scope": "/sda-church-app/"
 }

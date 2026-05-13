@@ -1,18 +1,22 @@
-import { LanguageContext } from "@/constants/Contexts";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Tabs, router, useSegments } from "expo-router";
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
-import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LanguageContext } from '@/constants/LanguageContext';
+import { DESIGN_TOKENS } from '@/constants/Layout';
+import { ALL_SEARCH_LABELS, getSearchableItems } from '@/constants/SearchTerms';
+import { useAppTheme } from '@/constants/Themes';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { BlurView } from 'expo-blur';
+import { Tabs, router, useSegments } from 'expo-router';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Appbar, List, Portal, Searchbar } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);
   const segments = useSegments();
-  const theme = useTheme();
+  const theme = useAppTheme();
 
   // Search state
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<any>(null);
   const headerRef = useRef<View>(null);
@@ -21,252 +25,25 @@ export const GlobalHeader = (props: any) => {
 
   // Clear search state whenever the navigation path changes (switching tabs or views)
   useEffect(() => {
-    setSearchQuery("");
+    setSearchQuery('');
     setIsSearching(false);
-  }, [segments.join("/")]);
+  }, [segments.join('/')]);
 
-  const isMoreSubPage = segments.includes("more") && segments.length > 2;
+  // A pillar root is the entry-point for one of our four main tabs (Tenet 5 & 7).
+  // We use route segments to identify the root index files of the pillar folders.
+  // In Expo Router, the (tabs) group and the tab names form the first 1-2 segments.
+  const isPillarRoot = segments.length <= 2;
+
+  const isSubPage = !isPillarRoot;
+
   const title = props.options?.title;
   const backTo = props.options?.backTo;
 
-  const allSearchLabels = {
-    en: {
-      searchPlaceholder: "Search app...",
-      home: { title: "Home", keywords: ["welcome", "start"] },
-      sermons: {
-        title: "Sermons",
-        keywords: ["video", "preach", "message", "spotify", "youtube"],
-      },
-      calendar: {
-        title: "Calendar",
-        keywords: ["events", "schedule", "sabbath"],
-      },
-      about: { title: "About Us", keywords: ["history", "beliefs", "church"] },
-      connect: {
-        title: "Connect",
-        keywords: [
-          "contact",
-          "email",
-          "phone",
-          "location",
-          "call",
-          "map",
-          "directions",
-          "directions",
-          "address",
-        ],
-      },
-      give: { title: "Give", keywords: ["tithe", "offering", "donation"] },
-      language: {
-        title: "Language",
-        keywords: ["chinese", "spanish", "english", "translate"],
-      },
-      darkMode: {
-        title: "Dark Mode",
-        keywords: ["theme", "appearance", "night", "settings"],
-      },
-    },
-    zh: {
-      searchPlaceholder: "搜尋...",
-      home: { title: "首頁", keywords: ["歡迎", "開始", "home"] },
-      sermons: {
-        title: "講道播客",
-        keywords: ["視頻", "證道", "信息", "spotify", "youtube", "sermons"],
-      },
-      calendar: {
-        title: "教會日曆",
-        keywords: ["活動", "時間表", "安息日", "calendar"],
-      },
-      about: { title: "關於我們", keywords: ["歷史", "信仰", "教會", "about"] },
-      connect: {
-        title: "聯繫我們",
-        keywords: [
-          "聯絡",
-          "電子郵件",
-          "電話",
-          "地點",
-          "電郵",
-          "地圖",
-          "導航",
-          "地址",
-          "路線",
-          "connect",
-          "contact",
-          "email",
-          "phone",
-          "call",
-          "map",
-        ],
-      },
-      give: {
-        title: "捐獻",
-        keywords: ["什一", "奉獻", "捐款", "give", "tithe"],
-      },
-      language: {
-        title: "語言設定",
-        keywords: ["中文", "英文", "西班牙文", "翻譯", "language"],
-      },
-      darkMode: {
-        title: "深色模式",
-        keywords: ["theme", "dark mode", "主題", "外觀", "settings"],
-      },
-    },
-    "zh-cn": {
-      searchPlaceholder: "搜索...",
-      home: { title: "首页", keywords: ["欢迎", "开始", "home"] },
-      sermons: {
-        title: "讲道播客",
-        keywords: ["视频", "证道", "信息", "spotify", "youtube", "sermons"],
-      },
-      calendar: {
-        title: "教会日历",
-        keywords: ["活动", "时间表", "安息日", "calendar"],
-      },
-      about: { title: "关于我们", keywords: ["历史", "信仰", "教会", "about"] },
-      connect: {
-        title: "联系我们",
-        keywords: [
-          "联络",
-          "电子邮件",
-          "电话",
-          "地点",
-          "电邮",
-          "地图",
-          "导航",
-          "地址",
-          "路线",
-          "connect",
-          "contact",
-          "email",
-          "phone",
-          "call",
-          "map",
-        ],
-      },
-      give: {
-        title: "捐献",
-        keywords: ["什一", "奉献", "捐款", "give", "tithe"],
-      },
-      language: {
-        title: "语言设置",
-        keywords: ["中文", "英文", "西班牙文", "翻译", "language"],
-      },
-      darkMode: {
-        title: "深色模式",
-        keywords: ["theme", "dark mode", "主题", "外观", "settings"],
-      },
-    },
-    es: {
-      searchPlaceholder: "Buscar...",
-      home: { title: "Inicio", keywords: ["bienvenido", "comenzar", "home"] },
-      sermons: {
-        title: "Sermones",
-        keywords: [
-          "video",
-          "predicación",
-          "mensaje",
-          "spotify",
-          "youtube",
-          "sermons",
-        ],
-      },
-      calendar: {
-        title: "Calendario",
-        keywords: ["eventos", "horario", "sábado", "calendar"],
-      },
-      about: {
-        title: "Sobre Nosotros",
-        keywords: ["historia", "creencias", "iglesia", "about"],
-      },
-      connect: {
-        title: "Conéctate",
-        keywords: [
-          "contacto",
-          "correo",
-          "teléfono",
-          "ubicación",
-          "llamar",
-          "mapa",
-          "direcciones",
-          "dirección",
-          "connect",
-          "contact",
-          "email",
-          "phone",
-        ],
-      },
-      give: {
-        title: "Dar",
-        keywords: ["diezmo", "ofrenda", "donación", "give", "tithe"],
-      },
-      language: {
-        title: "Idioma",
-        keywords: ["chino", "español", "inglés", "traducir", "language"],
-      },
-      darkMode: {
-        title: "Modo oscuro",
-        keywords: ["theme", "dark mode", "apariencia", "ajustes"],
-      },
-    },
-  };
-
   const searchLabels =
-    allSearchLabels[language as keyof typeof allSearchLabels] ||
-    allSearchLabels.en;
+    ALL_SEARCH_LABELS[language as keyof typeof ALL_SEARCH_LABELS] || ALL_SEARCH_LABELS.en;
 
   // Centralized list of everything searchable in the app
-  const searchableItems = [
-    {
-      ...searchLabels.home,
-      icon: "home",
-      route: "/",
-      isPage: true,
-    },
-    {
-      ...searchLabels.sermons,
-      icon: "book-open-variant",
-      route: "/sermons",
-      isPage: true,
-    },
-    {
-      ...searchLabels.calendar,
-      icon: "calendar",
-      route: "/calendar",
-      isPage: true,
-    },
-    {
-      ...searchLabels.about,
-      icon: "information",
-      route: "/more/about",
-      isPage: true,
-    },
-    {
-      ...searchLabels.connect,
-      icon: "email",
-      route: "/more/contact",
-      isPage: true,
-    },
-    {
-      ...searchLabels.give,
-      icon: "gift",
-      route: "/more",
-      isPage: false,
-      highlightKey: "give",
-    },
-    {
-      ...searchLabels.language,
-      icon: "translate",
-      route: "/more/language",
-      isPage: true,
-    },
-    {
-      ...searchLabels.darkMode,
-      icon: "theme-light-dark",
-      route: "/more",
-      isPage: false,
-      highlightKey: "darkMode",
-    },
-  ];
+  const searchableItems = getSearchableItems(language);
 
   const results = searchableItems.filter(
     (item) =>
@@ -276,21 +53,17 @@ export const GlobalHeader = (props: any) => {
 
   const handleSelectResult = (item: (typeof searchableItems)[0]) => {
     const q = searchQuery.toLowerCase();
-    setSearchQuery("");
+    setSearchQuery('');
     setIsSearching(false);
     searchRef.current?.blur();
 
     const targetParams = {
-      highlight: item.isPage
-        ? item.title.toLowerCase().includes(q)
-          ? undefined
-          : q
-        : (item as any).highlightKey,
+      highlight: q,
     };
 
     // If already on a subpage, replace to avoid history loops.
     // Otherwise, navigate normally into the stack.
-    const navFn = isMoreSubPage ? router.replace : router.navigate;
+    const navFn = isSubPage ? router.replace : router.navigate;
 
     navFn({
       pathname: item.route as any,
@@ -299,118 +72,191 @@ export const GlobalHeader = (props: any) => {
   };
 
   return (
-    <Appbar.Header
-      ref={headerRef}
-      elevated
-      onLayout={(e) => {
-        const { y, height } = e.nativeEvent.layout;
-        // iOS headers often report y=0 in onLayout despite the status bar offset.
-        // Android headers (especially with Edge-to-Edge) provide the offset in 'y' or height.
-        setHeaderHeight(
-          Platform.OS === "ios" ? height + insets.top : y + height,
-        );
-      }}
+    <View
+      style={[
+        styles.headerWrapper,
+        {
+          borderBottomWidth: 0.5,
+          borderBottomColor: theme.colors.glassBorder,
+          backgroundColor: theme.colors.background,
+          paddingTop: insets.top,
+        },
+      ]}
     >
-      {isMoreSubPage && (
-        <Appbar.BackAction
-          onPress={() => {
-            if (backTo) {
-              router.navigate(backTo as any);
-            } else if (isMoreSubPage) {
-              router.navigate("/more");
-            } else {
-              router.back();
-            }
-          }}
-        />
-      )}
-      {isMoreSubPage ? (
-        <Appbar.Content title={title} />
-      ) : (
-        <View style={{ flex: 1 }}>
-          <Searchbar
-            ref={searchRef}
-            placeholder={searchLabels.searchPlaceholder}
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            onFocus={() => setIsSearching(true)}
-            blurOnSubmit={false}
-            returnKeyType="search"
-            onSubmitEditing={() => {
-              if (results.length > 0) {
-                handleSelectResult(results[0]);
+      <Appbar.Header
+        ref={headerRef}
+        statusBarHeight={0}
+        style={{ backgroundColor: 'transparent', elevation: 0, height: 64 }}
+        onLayout={(e) => {
+          const { height } = e.nativeEvent.layout;
+          setHeaderHeight(height + insets.top);
+        }}
+      >
+        {isSubPage && (
+          <Appbar.BackAction
+            onPress={() => {
+              if (backTo) {
+                router.navigate(backTo as any);
+              } else if (segments.includes('you')) {
+                router.navigate('/you' as any);
+              } else if (segments.includes('resources')) {
+                router.navigate('/resources' as any);
+              } else if (segments.includes('community')) {
+                router.navigate('/community' as any);
+              } else {
+                router.back();
               }
             }}
-            onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
-            style={{ backgroundColor: "transparent", elevation: 0 }}
           />
-          {isSearching && searchQuery.length > 0 && results.length > 0 && (
-            <Portal>
-              <View
-                style={[
-                  styles.resultsOverlay,
-                  { backgroundColor: theme.colors.surface, top: headerHeight },
-                ]}
-              >
-                {results.map((item, index) => (
-                  <List.Item
-                    key={index}
-                    title={item.title}
-                    left={(p) => <List.Icon {...p} icon={item.icon} />}
-                    onPress={() => handleSelectResult(item)}
+        )}
+        {isSubPage ? (
+          <Appbar.Content
+            title={title}
+            titleStyle={{ color: theme.colors.onSurface, fontWeight: 'bold' }}
+          />
+        ) : (
+          <View style={{ flex: 1 }}>
+            <Searchbar
+              ref={searchRef}
+              placeholder={searchLabels.searchPlaceholder}
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              onFocus={() => setIsSearching(true)}
+              blurOnSubmit={false}
+              returnKeyType="search"
+              onSubmitEditing={() => {
+                if (results.length > 0) {
+                  handleSelectResult(results[0]);
+                }
+              }}
+              onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
+              style={{
+                backgroundColor: theme.colors.surface,
+                elevation: 0,
+                borderRadius: 24,
+                height: 44,
+                marginHorizontal: 12,
+              }}
+              inputStyle={{
+                minHeight: 0,
+                paddingBottom: 0,
+                paddingTop: 0,
+                fontSize: 16,
+              }}
+              iconColor={theme.colors.onSurfaceVariant}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+            />
+            {isSearching && searchQuery.length > 0 && results.length > 0 && (
+              <Portal>
+                <View
+                  style={[
+                    styles.resultsOverlay,
+                    {
+                      top: headerHeight,
+                      backgroundColor: 'transparent',
+                      borderWidth: 0.5,
+                      borderColor: theme.colors.glassBorder,
+                    },
+                  ]}
+                >
+                  <BlurView
+                    intensity={50}
+                    tint={theme.blurTint}
+                    style={StyleSheet.absoluteFill}
                   />
-                ))}
-              </View>
-            </Portal>
-          )}
-        </View>
-      )}
-    </Appbar.Header>
+                  {results.map((item, index) => (
+                    <List.Item
+                      key={index}
+                      title={item.title}
+                      left={(p) => (
+                        <List.Icon
+                          {...p}
+                          icon={item.icon}
+                          color={theme.colors.tertiary}
+                        />
+                      )}
+                      onPress={() => handleSelectResult(item)}
+                    />
+                  ))}
+                </View>
+              </Portal>
+            )}
+          </View>
+        )}
+      </Appbar.Header>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
   resultsOverlay: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     marginHorizontal: 16,
-    borderRadius: 8,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 8,
   },
 });
 
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  name: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   color: string;
+  focused: boolean;
 }) {
+  let iconName = props.name;
+
+  // Logic to switch between solid and outline variants
+  if (!props.focused) {
+    iconName = `${props.name}-outline` as any;
+  }
+
   return (
-    <MaterialCommunityIcons size={28} style={{ marginBottom: -3 }} {...props} />
+    <MaterialCommunityIcons
+      name={iconName}
+      size={DESIGN_TOKENS.ICON_SIZE_TAB}
+      style={{ marginBottom: -3 }}
+      color={props.color}
+    />
   );
 }
 
 export default function TabLayout() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const { language } = useContext(LanguageContext);
 
   const allLabels = {
     en: {
-      home: "Home",
-      calendar: "Calendar",
-      sermons: "Sermons",
-      more: "More",
+      home: 'Home',
+      community: 'Community',
+      resources: 'Resources',
+      you: 'You',
     },
-    zh: { home: "首頁", calendar: "日曆", sermons: "講道", more: "更多" },
-    "zh-cn": { home: "首页", calendar: "日历", sermons: "讲道", more: "更多" },
+    zh: {
+      home: '首頁',
+      community: '教會社群',
+      resources: '資源庫',
+      you: '您',
+    },
+    'zh-cn': {
+      home: '首页',
+      community: '教会社区',
+      resources: '资源库',
+      you: '您',
+    },
     es: {
-      home: "Inicio",
-      calendar: "Calendario",
-      sermons: "Sermones",
-      more: "Más",
+      home: 'Inicio',
+      community: 'Comunidad',
+      resources: 'Recursos',
+      you: 'Tú',
     },
   };
 
@@ -419,73 +265,92 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.primary,
+        tabBarActiveTintColor: theme.colors.onBackground,
+        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+        headerTransparent: true,
         header: (props) => <GlobalHeader {...props} />,
+        tabBarStyle: {
+          position: 'absolute',
+          elevation: 0,
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+        },
+        tabBarBackground: () => (
+          <View style={StyleSheet.absoluteFill}>
+            <BlurView
+              tint={theme.blurTint}
+              intensity={50}
+              style={StyleSheet.absoluteFill}
+            />
+          </View>
+        ),
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: labels.home,
-          tabBarIcon: ({ color }: { color: string }) => (
-            <TabBarIcon name="home" color={color} />
+          tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+            <TabBarIcon name="home" color={color} focused={focused} />
           ),
         }}
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.navigate("/");
+            router.navigate('/');
           },
         }}
       />
       <Tabs.Screen
-        name="sermons"
+        name="community"
         options={{
-          title: labels.sermons,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="book-open-variant" color={color as string} />
+          title: labels.community,
+          headerShown: false, // Internal Stack handles header for consistency
+          tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+            <TabBarIcon name="account-group" color={color} focused={focused} />
           ),
         }}
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.navigate("/sermons");
+            router.navigate('/community');
           },
         }}
       />
       <Tabs.Screen
-        name="calendar"
+        name="resources"
         options={{
-          title: labels.calendar,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="calendar" color={color as string} />
+          title: labels.resources,
+          headerShown: false, // Internal Stack handles header for consistency
+          tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+            <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
           ),
         }}
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.navigate("/calendar");
+            router.navigate('/resources');
           },
         }}
       />
       <Tabs.Screen
-        name="more"
+        name="you"
         options={
           {
-            title: labels.more,
-            headerShown: false,
+            title: labels.you,
+            headerShown: false, // Internal Stack handles header for consistency
             unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
-            tabBarIcon: ({ color }: { color: string }) => (
-              <TabBarIcon name="dots-horizontal" color={color} />
+            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+              <TabBarIcon name="account-circle" color={color} focused={focused} />
             ),
           } as any
         }
         listeners={{
           tabPress: (e) => {
-            // Ensure the More stack resets to its root whenever the tab is pressed.
+            // Ensure the You stack resets to its root whenever the tab is pressed.
             // This solves the "stuck" state after navigating to sub-pages from Home.
             e.preventDefault();
-            router.navigate("/more");
+            router.navigate('/you');
           },
         }}
       />
