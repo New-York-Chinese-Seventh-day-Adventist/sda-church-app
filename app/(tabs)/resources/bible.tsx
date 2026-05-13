@@ -1,5 +1,6 @@
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
 import {
   fetchBooks,
   fetchChapter,
@@ -8,7 +9,7 @@ import {
 import { ReaderStyles } from "@/styles/ReaderStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router, Stack } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -17,7 +18,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const bibleLabels = {
@@ -52,7 +52,7 @@ const bibleLabels = {
 };
 
 export default function BibleReaderScreen() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const { language } = useContext(LanguageContext);
   const labels =
     bibleLabels[language as keyof typeof bibleLabels] || bibleLabels.en;

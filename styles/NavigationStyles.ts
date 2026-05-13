@@ -15,5 +15,6 @@ export const NavigationStyles = StyleSheet.create({
   subheader: {
     fontWeight: "bold",
     fontSize: 16, // Preference: resources.tsx
+    lineHeight: 22,
   },
 });

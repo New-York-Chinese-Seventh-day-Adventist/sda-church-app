@@ -1,18 +1,19 @@
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { ALL_SEARCH_LABELS, getSearchableItems } from "@/constants/SearchTerms";
+import { useAppTheme } from "@/constants/Themes";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
 import { Tabs, router, useSegments } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Appbar, List, Portal, Searchbar, useTheme } from "react-native-paper";
+import { Appbar, List, Portal, Searchbar } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);
   const segments = useSegments();
-  const theme = useTheme();
+  const theme = useAppTheme();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,25 +72,24 @@ export const GlobalHeader = (props: any) => {
     });
   };
 
-  const glassBorder = theme.dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
-
   return (
     <View
       style={[
         styles.headerWrapper,
         {
           borderBottomWidth: 0.5,
-          borderBottomColor: glassBorder,
+          borderBottomColor: theme.colors.glassBorder,
           backgroundColor: theme.colors.background,
+          paddingTop: insets.top,
         },
       ]}
     >
       <Appbar.Header
         ref={headerRef}
-        style={{ backgroundColor: "transparent", elevation: 0 }}
+        statusBarHeight={0}
+        style={{ backgroundColor: "transparent", elevation: 0, height: 64 }}
         onLayout={(e) => {
-          const { y, height } = e.nativeEvent.layout;
-          // In a PWA, we use the combined height of the inset (status bar) and the Appbar
+          const { height } = e.nativeEvent.layout;
           setHeaderHeight(height + insets.top);
         }}
       >
@@ -132,7 +132,7 @@ export const GlobalHeader = (props: any) => {
               }}
               onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
               style={{
-                backgroundColor: theme.colors.surfaceVariant,
+                backgroundColor: theme.colors.surface,
                 elevation: 0,
                 borderRadius: 24,
                 height: 44,
@@ -156,13 +156,13 @@ export const GlobalHeader = (props: any) => {
                       top: headerHeight,
                       backgroundColor: "transparent",
                       borderWidth: 0.5,
-                      borderColor: glassBorder,
+                      borderColor: theme.colors.glassBorder,
                     },
                   ]}
                 >
                   <BlurView
                     intensity={50}
-                    tint={theme.dark ? "dark" : "light"}
+                    tint={theme.blurTint}
                     style={StyleSheet.absoluteFill}
                   />
                   {results.map((item, index) => (
@@ -231,7 +231,7 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const { language } = useContext(LanguageContext);
 
   const allLabels = {
@@ -267,7 +267,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.colors.onBackground,
-        tabBarInactiveTintColor: theme.colors.onBackground,
+        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
         headerTransparent: true,
         header: (props) => <GlobalHeader {...props} />,
         tabBarStyle: {
@@ -279,7 +279,7 @@ export default function TabLayout() {
         tabBarBackground: () => (
           <View style={StyleSheet.absoluteFill}>
             <BlurView
-              tint={theme.dark ? "dark" : "light"}
+              tint={theme.blurTint}
               intensity={50}
               style={StyleSheet.absoluteFill}
             />

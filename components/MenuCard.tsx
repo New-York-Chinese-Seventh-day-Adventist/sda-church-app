@@ -1,4 +1,5 @@
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -9,7 +10,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { useTheme } from "react-native-paper";
 
 const AnimatedTouchableOpacity =
   Animated.createAnimatedComponent(TouchableOpacity);
@@ -35,7 +35,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   rightElement,
   style,
 }) => {
-  const theme = useTheme();
+  const theme = useAppTheme();
   return (
     <AnimatedTouchableOpacity
       style={[

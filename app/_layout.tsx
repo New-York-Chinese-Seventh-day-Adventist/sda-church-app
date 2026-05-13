@@ -5,11 +5,12 @@ import {
   SupportedLanguage,
 } from "@/constants/LanguageContext";
 import {
-  DarkTheme,
-  LightTheme,
+  AppTheme,
+  getAppTheme,
+  THEME_DARK,
+  THEME_LIGHT,
+  THEME_STORAGE_KEY,
   ThemeContext,
-  customDarkTheme,
-  customLightTheme,
 } from "@/constants/Themes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeProvider } from "@react-navigation/native";
@@ -94,7 +95,9 @@ export const UpdateContext = createContext<{
 export default function RootLayout() {
   const [language, setLanguage] = useState<SupportedLanguage>(DEFAULT_LANG);
   const colorScheme = useColorScheme();
-  const [isDark, setIsDark] = useState(colorScheme === "dark");
+  const [theme, setTheme] = useState(() =>
+    getAppTheme(colorScheme === THEME_DARK),
+  );
   const [isReady, setIsReady] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -311,17 +314,20 @@ export default function RootLayout() {
       try {
         const [savedLang, savedTheme, setupDone] = await Promise.all([
           AsyncStorage.getItem("user-language"),
-          AsyncStorage.getItem("user-theme"),
+          AsyncStorage.getItem(THEME_STORAGE_KEY),
           AsyncStorage.getItem("has-completed-setup"),
         ]);
 
         // Always determine fallbacks first
         const systemLang = getSystemLanguage();
-        const systemThemeIsDark = colorScheme === "dark";
 
         // Use saved settings if they exist, otherwise fallback to system defaults
         setLanguage((savedLang as SupportedLanguage) || systemLang);
-        setIsDark(savedTheme ? savedTheme === "dark" : systemThemeIsDark);
+        setTheme(
+          getAppTheme(
+            savedTheme ? savedTheme === THEME_DARK : colorScheme === THEME_DARK,
+          ),
+        );
 
         if (setupDone !== "true") {
           setShowSetup(true);
@@ -353,12 +359,15 @@ export default function RootLayout() {
     if (typeof val === "boolean") {
       next = val;
     } else if (typeof val === "string") {
-      next = val === "dark";
+      next = val === THEME_DARK;
     } else {
-      next = !isDark;
+      next = !theme.dark;
     }
-    setIsDark(next);
-    await AsyncStorage.setItem("user-theme", next ? "dark" : "light");
+    setTheme(getAppTheme(next));
+    await AsyncStorage.setItem(
+      THEME_STORAGE_KEY,
+      next ? THEME_DARK : THEME_LIGHT,
+    );
   };
 
   const onCompleteSetup = async () => {
@@ -367,7 +376,10 @@ export default function RootLayout() {
     await Promise.all([
       AsyncStorage.setItem("has-completed-setup", "true"),
       AsyncStorage.setItem("user-language", language),
-      AsyncStorage.setItem("user-theme", isDark ? "dark" : "light"),
+      AsyncStorage.setItem(
+        THEME_STORAGE_KEY,
+        theme.dark ? THEME_DARK : THEME_LIGHT,
+      ),
     ]);
     setShowSetup(false);
   };
@@ -403,9 +415,7 @@ export default function RootLayout() {
       <LanguageContext.Provider
         value={{ language, setLanguage: handleSetLanguage }}
       >
-        <ThemeContext.Provider
-          value={{ isDark, toggleTheme: handleToggleTheme }}
-        >
+        <ThemeContext.Provider value={{ toggleTheme: handleToggleTheme }}>
           <UpdateContext.Provider
             value={{
               updateAvailable,
@@ -415,6 +425,7 @@ export default function RootLayout() {
             }}
           >
             <RootLayoutNav
+              theme={theme}
               showSetup={showSetup}
               onCompleteSetup={onCompleteSetup}
               updateAvailable={updateAvailable}
@@ -430,6 +441,7 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav({
+  theme,
   showSetup,
   onCompleteSetup,
   updateAvailable,
@@ -437,6 +449,7 @@ function RootLayoutNav({
   updateStatus,
   onDismissStatus,
 }: {
+  theme: AppTheme;
   showSetup: boolean;
   onCompleteSetup: () => void;
   updateAvailable: boolean;
@@ -444,25 +457,31 @@ function RootLayoutNav({
   updateStatus: "idle" | "checking" | "up-to-date";
   onDismissStatus: () => void;
 }) {
-  const { isDark } = useContext(ThemeContext);
   const { language } = useContext(LanguageContext);
   const insets = useSafeAreaInsets();
 
   // Sync system bars and PWA theme-color meta tag
   useEffect(() => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
-      const bodyBg = isDark
-        ? customDarkTheme.colors.background
-        : customLightTheme.colors.background;
+      const bodyBg = theme.colors.background;
 
-      // 1. Sync theme-color meta tag with Themes.ts for Android/Chrome/Safari status bar coloring
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", bodyBg);
+      // 1. Sync all theme-color meta tags (Primary driver for Android/iOS bar colors)
+      // Using querySelectorAll to update both light and dark preference tags
+      const metas = document.querySelectorAll('meta[name="theme-color"]');
+      metas.forEach((meta) => {
+        meta.setAttribute("content", bodyBg);
+        // Removing 'media' ensures the browser respects this color immediately,
+        // overriding the static system-preference tags in +html.tsx.
+        meta.removeAttribute("media");
+      });
 
-      // 2. Update body background to prevent "flashing" or white gutters during overscroll
+      // 2. Sync backgrounds to eliminate logic overlap and satisfy Android PWA requirements
+      document.documentElement.style.setProperty("--app-bg", bodyBg);
       document.body.style.backgroundColor = bodyBg;
+      // Syncing the documentElement background is the "secret sauce" for Android Chrome nav-bar tinting
+      document.documentElement.style.backgroundColor = bodyBg;
     }
-  }, [isDark]);
+  }, [theme]);
 
   const snackbarLabels = {
     en: {
@@ -500,11 +519,11 @@ function RootLayoutNav({
   const topOffset = insets.top + 8;
 
   return (
-    <PaperProvider theme={(isDark ? customDarkTheme : customLightTheme) as any}>
-      <ThemeProvider value={isDark ? DarkTheme : LightTheme}>
+    <PaperProvider theme={theme as any}>
+      <ThemeProvider value={theme as any}>
         <StatusBar
-          barStyle={isDark ? "light-content" : "dark-content"}
-          backgroundColor="transparent"
+          barStyle={theme.statusBarScheme}
+          backgroundColor={Platform.OS === "web" ? undefined : "transparent"}
           translucent
         />
         <Stack>

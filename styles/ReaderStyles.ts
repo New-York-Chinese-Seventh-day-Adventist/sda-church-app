@@ -25,7 +25,7 @@ export const ReaderStyles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 6,
   },
-  selectorText: { fontWeight: "700", fontSize: 13 },
+  selectorText: { fontWeight: "700", fontSize: 13, lineHeight: 18 },
   bibleScroll: { flex: 1 },
   bibleContent: { padding: 20, paddingBottom: 80 },
   verseText: {
@@ -38,6 +38,7 @@ export const ReaderStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     opacity: 0.5,
+    lineHeight: 16,
   },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
@@ -53,10 +54,11 @@ export const ReaderStyles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 0.5,
   },
-  modalTitle: { fontSize: 20, fontWeight: "800" },
+  modalTitle: { fontSize: 20, fontWeight: "800", lineHeight: 28 },
+  title: { fontSize: 20, fontWeight: "800", lineHeight: 28 }, // Alias to prevent 'undefined' errors
   modalItem: {
     padding: 18,
     borderBottomWidth: 0.5,
   },
-  modalItemText: { fontSize: 16 },
+  modalItemText: { fontSize: 16, lineHeight: 22 },
 });

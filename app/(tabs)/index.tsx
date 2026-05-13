@@ -5,16 +5,17 @@ import {
 } from "@/constants/ExternalLinks";
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router } from "expo-router";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, List, Text, useTheme } from "react-native-paper";
+import { Button, Card, List, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
-  const theme = useTheme();
+  const theme = useAppTheme();
   const insets = useSafeAreaInsets();
 
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;

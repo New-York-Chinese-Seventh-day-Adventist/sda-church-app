@@ -3,19 +3,13 @@ import { MenuCard } from "@/components/MenuCard";
 import { openOnlineGiving } from "@/constants/ExternalLinks";
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
-import { ThemeContext } from "@/constants/Themes";
+import { ThemeContext, useAppTheme } from "@/constants/Themes";
 import packageJson from "@/package.json";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router, Stack } from "expo-router";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
-import {
-  List,
-  Switch,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
+import { List, Switch, Text, TouchableRipple } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const allLabels = {
@@ -74,9 +68,9 @@ const allLabels = {
 };
 
 export default function YouScreen() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const { language } = useContext(LanguageContext);
-  const { isDark, toggleTheme } = useContext(ThemeContext);
+  const { toggleTheme } = useContext(ThemeContext);
   const { onManualCheck, updateStatus } = useContext(UpdateContext);
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
@@ -108,7 +102,7 @@ export default function YouScreen() {
             iconColor={theme.colors.primary} // Use primary color for dark mode toggle
             rightElement={() => (
               <Switch
-                value={isDark}
+                value={theme.dark}
                 onValueChange={toggleTheme}
                 color={theme.colors.primary}
               />
@@ -174,7 +168,13 @@ export default function YouScreen() {
             disabled={updateStatus !== "idle"}
             style={styles.versionRipple}
           >
-            <Text variant="labelSmall" style={styles.versionText}>
+            <Text
+              variant="labelSmall"
+              style={[
+                styles.versionText,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
               Version {packageJson.version}
             </Text>
           </TouchableRipple>
@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   versionText: {
-    opacity: 0.5,
     letterSpacing: 0.5,
     textAlign: "center",
   },

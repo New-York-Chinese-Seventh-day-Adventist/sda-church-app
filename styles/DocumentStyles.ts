@@ -14,6 +14,7 @@ export const DocumentStyles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "bold",
     fontSize: 26,
+    lineHeight: 34,
   },
   section: {
     paddingHorizontal: 16,
@@ -26,6 +27,7 @@ export const DocumentStyles = StyleSheet.create({
     borderBottomWidth: 2,
     paddingBottom: 4,
     fontSize: 20,
+    lineHeight: 28,
   },
   description: {
     lineHeight: 22,
@@ -35,6 +37,7 @@ export const DocumentStyles = StyleSheet.create({
     marginVertical: 12,
     fontStyle: "italic",
     opacity: 0.8,
+    lineHeight: 20,
   },
   card: {
     marginBottom: 12,

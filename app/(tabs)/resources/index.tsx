@@ -6,11 +6,12 @@ import {
 } from "@/constants/ExternalLinks";
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
 import { NavigationStyles } from "@/styles/NavigationStyles";
 import { router, Stack } from "expo-router";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { ScrollView } from "react-native";
-import { List, useTheme } from "react-native-paper";
+import { List } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const allLabels = {
@@ -77,7 +78,7 @@ const allLabels = {
 };
 
 export default function ResourcesScreen() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const { language } = useContext(LanguageContext);
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 

@@ -1,9 +1,9 @@
+import { useAppTheme } from "@/constants/Themes";
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { useTheme } from "react-native-paper";
 
 export default function NotFoundScreen() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   return (
     <>
       <Stack.Screen options={{ title: "Oops!" }} />

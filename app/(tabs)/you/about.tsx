@@ -7,17 +7,18 @@ import {
 } from "@/constants/ExternalLinks";
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { useAppTheme } from "@/constants/Themes";
 import { DocumentStyles } from "@/styles/DocumentStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, Paragraph, Text, useTheme } from "react-native-paper";
+import { Button, Card, Paragraph, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AboutScreen() {
   const { language } = useContext(LanguageContext);
-  const theme = useTheme();
+  const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 

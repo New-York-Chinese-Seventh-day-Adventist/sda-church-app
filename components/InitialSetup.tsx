@@ -2,8 +2,8 @@ import {
   LanguageContext,
   SupportedLanguage,
 } from "@/constants/LanguageContext";
-import { ThemeContext } from "@/constants/Themes";
-import React, { useContext } from "react";
+import { ThemeContext, useAppTheme } from "@/constants/Themes";
+import { useContext } from "react";
 import { StyleSheet, View } from "react-native";
 import {
   Button,
@@ -11,7 +11,6 @@ import {
   Portal,
   SegmentedButtons,
   Text,
-  useTheme,
 } from "react-native-paper";
 
 interface InitialSetupProps {
@@ -20,8 +19,8 @@ interface InitialSetupProps {
 
 export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
   const { language, setLanguage } = useContext(LanguageContext);
-  const { isDark, toggleTheme } = useContext(ThemeContext);
-  const theme = useTheme();
+  const { toggleTheme } = useContext(ThemeContext);
+  const theme = useAppTheme();
 
   const allLabels = {
     en: {
@@ -102,7 +101,7 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
             {labels.theme}
           </Text>
           <SegmentedButtons
-            value={isDark ? "dark" : "light"}
+            value={theme.dark ? "dark" : "light"}
             onValueChange={toggleTheme}
             buttons={[
               { value: "light", label: labels.light, icon: "weather-sunny" },
