@@ -1,17 +1,14 @@
-import { MenuCard } from "@/components/MenuCard";
-import {
-  CHURCH_BUILDING_IMAGE_URL,
-  openSabbathStream,
-} from "@/constants/ExternalLinks";
-import { LanguageContext } from "@/constants/LanguageContext";
-import { DESIGN_TOKENS } from "@/constants/Layout";
-import { useAppTheme } from "@/constants/Themes";
-import { NavigationStyles } from "@/styles/NavigationStyles";
-import { router } from "expo-router";
-import { useContext } from "react";
-import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, List, Text } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MenuCard } from '@/components/MenuCard';
+import { CHURCH_BUILDING_IMAGE_URL, openSabbathStream } from '@/constants/ExternalLinks';
+import { LanguageContext } from '@/constants/LanguageContext';
+import { DESIGN_TOKENS } from '@/constants/Layout';
+import { useAppTheme } from '@/constants/Themes';
+import { NavigationStyles } from '@/styles/NavigationStyles';
+import { router } from 'expo-router';
+import { useContext } from 'react';
+import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
+import { List, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
@@ -22,40 +19,40 @@ export default function HomeScreen() {
 
   const allLabels = {
     en: {
-      header: "SDA Church",
-      welcome: "Welcome to our Church",
-      subtitle: "The Lord is my shepherd; I lack nothing.\nPsalm 23:1",
-      livestream: "Watch Livestream",
-      about: "About Us",
-      contact: "Connect with Us",
-      explore: "Explore",
+      header: 'SDA Church',
+      welcome: 'Welcome to our Church',
+      subtitle: 'The Lord is my shepherd; I lack nothing.\nPsalm 23:1',
+      livestream: 'Watch Livestream',
+      about: 'About Us',
+      contact: 'Connect with Us',
+      explore: 'Explore',
     },
     zh: {
-      header: "基督復臨安息日會",
-      welcome: "歡迎來到我們的教會",
-      subtitle: "耶和華是我的牧者，我必不致缺乏。\n詩篇 23:1",
-      livestream: "觀看直播",
-      about: "關於我們",
-      contact: "聯繫我們",
-      explore: "探索",
+      header: '基督復臨安息日會',
+      welcome: '歡迎來到我們的教會',
+      subtitle: '耶和華是我的牧者，我必不致缺乏。\n詩篇 23:1',
+      livestream: '觀看直播',
+      about: '關於我們',
+      contact: '聯繫我們',
+      explore: '探索',
     },
-    "zh-cn": {
-      header: "基督复临安息日会",
-      welcome: "欢迎来到我们的教会",
-      subtitle: "耶和华是我的牧者，我必不致缺乏。\n诗篇 23:1",
-      livestream: "观看直播",
-      about: "关于我们",
-      contact: "联系我们",
-      explore: "探索",
+    'zh-cn': {
+      header: '基督复临安息日会',
+      welcome: '欢迎来到我们的教会',
+      subtitle: '耶和华是我的牧者，我必不致缺乏。\n诗篇 23:1',
+      livestream: '观看直播',
+      about: '关于我们',
+      contact: '联系我们',
+      explore: '探索',
     },
     es: {
-      header: "Iglesia Adventista",
-      welcome: "Bienvenido a nuestra iglesia",
-      subtitle: "Jehová es mi pastor; nada me faltará.\nSalmo 23:1",
-      livestream: "Ver Transmisión",
-      about: "Sobre Nosotros",
-      contact: "Conéctate con Nosotros",
-      explore: "Explorar",
+      header: 'Iglesia Adventista',
+      welcome: 'Bienvenido a nuestra iglesia',
+      subtitle: 'Jehová es mi pastor; nada me faltará.\nSalmo 23:1',
+      livestream: 'Ver Transmisión',
+      about: 'Sobre Nosotros',
+      contact: 'Conéctate con Nosotros',
+      explore: 'Explorar',
     },
   };
 
@@ -88,36 +85,25 @@ export default function HomeScreen() {
             variant="titleMedium"
             style={{
               color: theme.colors.onSurface,
-              textAlign: "center",
-              fontStyle: "italic",
+              textAlign: 'center',
+              fontStyle: 'italic',
             }}
           >
             {labels.subtitle}
           </Text>
         </ImageBackground>
 
-        <Card style={styles.card} onPress={openSabbathStream}>
-          <Card.Cover source={require("../../assets/images/youtube_art.png")} />
-          <Card.Content style={{ marginTop: 16, alignItems: "center" }}>
-            <Button
-              mode="contained"
-              icon="youtube"
-              onPress={openSabbathStream}
-              buttonColor={(theme.colors as any).brandYoutube}
-              textColor={theme.colors.onPrimary}
-              style={styles.button}
-            >
-              {labels.livestream}
-            </Button>
-          </Card.Content>
-        </Card>
-
         <List.Section style={NavigationStyles.contentContainer}>
+          <MenuCard
+            title={labels.livestream}
+            icon="youtube"
+            iconColor={(theme.colors as any).brandYoutube}
+            onPress={openSabbathStream}
+            style={{ marginBottom: 12 }}
+          />
+
           <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
           >
             {labels.explore}
           </List.Subheader>
@@ -125,7 +111,7 @@ export default function HomeScreen() {
             title={labels.about}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/you/about")}
+            onPress={() => router.push('/you/about')}
             style={{ marginBottom: 12 }}
           />
 
@@ -135,8 +121,8 @@ export default function HomeScreen() {
             iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
-                pathname: "/you/contact",
-                params: { backTo: "/" },
+                pathname: '/you/contact',
+                params: { backTo: '/' },
               })
             }
           />
@@ -147,11 +133,10 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { padding: 24, alignItems: "center", justifyContent: "center" },
+  hero: { padding: 24, alignItems: 'center', justifyContent: 'center' },
   welcomeText: {
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 8,
   },
-  card: { margin: 16, padding: 8 },
 });

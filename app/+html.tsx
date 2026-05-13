@@ -1,5 +1,5 @@
-import { customDarkTheme, customLightTheme } from "@/constants/Themes";
-import { ScrollViewStyleReset } from "expo-router/html";
+import { customDarkTheme, customLightTheme } from '@/constants/Themes';
+import { ScrollViewStyleReset } from 'expo-router/html';
 
 // This file is web-only and used to configure the root HTML for every
 // web page during static rendering.
@@ -11,12 +11,12 @@ export default function Root({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+
+        {/* PWA Meta Tags */}
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
-
-        {/* PWA Meta Tags */}
         <meta
           name="theme-color"
           content={customLightTheme.colors.background}
@@ -28,7 +28,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
           media="(prefers-color-scheme: dark)"
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-title" content="SDA Church" />
+        <meta name="apple-mobile-web-app-title" content="Church" />
         <link rel="apple-touch-icon" href="icon-192x192.png" />
         <link rel="manifest" href="manifest.json" />
 
@@ -42,7 +42,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
         {/* Add any additional <head> elements that you want globally available on web... */}
       </head>
-      <body style={{ backgroundColor: "transparent" }}>{children}</body>
+      <body style={{ backgroundColor: 'transparent' }}>{children}</body>
     </html>
   );
 }
@@ -69,24 +69,5 @@ body {
   min-height: 100%;
   background-color: var(--app-bg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-/* Android Chrome 135+ Edge-to-Edge Logic */
-@media (display-mode: standalone) {
-  :root {
-    --safe-area-max-inset-bottom: env(safe-area-max-inset-bottom, 0px);
-  }
-
-  body {
-    /* Helps ensure the background fills the 'chin' on mobile */
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-
-  /* Targets the fixed tab bar container */
-  nav[role="tablist"], div[style*="position: fixed"][style*="bottom: 0"] {
-    padding-bottom: var(--safe-area-max-inset-bottom) !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) - var(--safe-area-max-inset-bottom)) !important;
-  }
 }
 `;

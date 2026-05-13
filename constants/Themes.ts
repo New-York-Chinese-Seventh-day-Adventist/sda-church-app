@@ -1,6 +1,6 @@
-import { createContext } from "react";
-import { StatusBarStyle } from "react-native";
-import { MD3DarkTheme, MD3LightTheme, useTheme } from "react-native-paper";
+import { createContext } from 'react';
+import { StatusBarStyle } from 'react-native';
+import { MD3DarkTheme, MD3LightTheme, useTheme } from 'react-native-paper';
 
 /**
  * Material Design 3 Theme definitions for both React Native Paper and React Navigation.
@@ -10,9 +10,9 @@ import { MD3DarkTheme, MD3LightTheme, useTheme } from "react-native-paper";
  * Ref: https://callstack.github.io/react-native-paper/docs/guides/theming
  */
 
-export const THEME_STORAGE_KEY = "user-theme";
-export const THEME_DARK = "dark";
-export const THEME_LIGHT = "light";
+export const THEME_STORAGE_KEY = 'user-theme';
+export const THEME_DARK = 'dark';
+export const THEME_LIGHT = 'light';
 
 export const customLightTheme = {
   ...MD3LightTheme,
@@ -23,60 +23,61 @@ export const customLightTheme = {
   colors: {
     ...MD3LightTheme.colors,
     // Primary: Sanctuary Blue
-    primary: "#3EA6FF", // Primary Interaction Color Accent
-    onPrimary: "#F8F9FA", // Inverted Text (The Stencil)
-    primaryContainer: "#E3F2FD", // Selection Container
-    onPrimaryContainer: "#3EA6FF", // General Iconography
+    primary: '#3EA6FF', // Primary Interaction Color Accent
+    onPrimary: '#F8F9FA', // Inverted Text (The Stencil)
+    primaryContainer: '#E3F2FD', // Selection Container
+    onPrimaryContainer: '#3EA6FF', // General Iconography
 
     // Secondary: Utility UI (Chips, Muted Actions)
-    secondary: "#606060",
-    onSecondary: "#FFFFFF",
-    secondaryContainer: "#F1F3F4",
-    onSecondaryContainer: "#1A1A1A",
+    secondary: '#606060',
+    onSecondary: '#FFFFFF',
+    secondaryContainer: '#F1F3F4',
+    onSecondaryContainer: '#1A1A1A',
 
     // Tertiary: Identical to Primary in Light Mode for uniform UI color
-    tertiary: "#3EA6FF",
-    onTertiary: "#FFFFFF",
-    tertiaryContainer: "#E3F2FD",
-    onTertiaryContainer: "#3EA6FF",
+    tertiary: '#3EA6FF',
+    onTertiary: '#FFFFFF',
+    tertiaryContainer: '#E3F2FD',
+    onTertiaryContainer: '#3EA6FF',
 
     // Backgrounds & Surfaces
-    background: "#F8F9FA", // The Canvas
-    onBackground: "#1A1A1A", // The Ink: High-contrast text on Canvas
-    surface: "#FFFFFF", // The Object: Cards/Containers
-    onSurface: "#1A1A1A", // The Ink: High-contrast text on Surfaces
+    background: '#F8F9FA', // The Canvas
+    onBackground: '#1A1A1A', // The Ink: High-contrast text on Canvas
+    surface: '#FFFFFF', // The Object: Cards/Containers
+    onSurface: '#1A1A1A', // The Ink: High-contrast text on Surfaces
 
     // UI Variants & Boundaries
-    surfaceVariant: "#F1F3F4", // Secondary UI / Top Search Bar BG
-    onSurfaceVariant: "#606060", // Muted Intent: Top Search Bar Icon/Text
-    outline: "#CAC4D0", // Boundary (Outline)
-    outlineVariant: "#E0E0E0", // Boundary (Subtle) / Divider
+    surfaceVariant: '#F1F3F4', // Secondary UI / Top Search Bar BG
+    onSurfaceVariant: '#606060', // Muted Intent: Top Search Bar Icon/Text
+    outline: '#CAC4D0', // Boundary (Outline)
+    outlineVariant: '#E0E0E0', // Boundary (Subtle) / Divider
 
     // Navigation Compatibility Layer
-    card: "#FFFFFF", // The Object
-    text: "#1A1A1A", // The Ink
-    border: "#E0E0E0", // The Divider
-    notification: "#3EA6FF", // Sanctuary Blue
+    card: '#FFFFFF', // The Object
+    text: '#1A1A1A', // The Ink
+    border: '#E0E0E0', // The Divider
+    notification: '#3EA6FF', // Sanctuary Blue
 
     // Branding (Special External Brand Colors)
-    brandYoutube: "#FF0000",
-    brandSpotify: "#1DB954",
+    brandYoutube: '#FF0000',
+    brandSpotify: '#1DB954',
 
     // Neutralizing Elevation (Hierarchy of Light - Light Mode)
+    // This was not derived from the UI_UX.md spec, only recommended by Gemini
     elevation: {
-      level0: "transparent",
-      level1: "#FFFFFF", // Pure White (Standard Surface)
-      level2: "#F1F3F4", // Surface Variant (Subtle Lift)
-      level3: "#E0E0E0", // Boundary Subtle (Noticeable Lift)
-      level4: "#D1D1D1",
-      level5: "#C0C0C0",
+      level0: 'transparent',
+      level1: '#FFFFFF', // Pure White (Standard Surface)
+      level2: '#F1F3F4', // Surface Variant (Subtle Lift)
+      level3: '#E0E0E0', // Boundary Subtle (Noticeable Lift)
+      level4: '#D1D1D1',
+      level5: '#C0C0C0',
     },
 
     // Subtle Blur Effect for Glassmorphism Border
-    glassBorder: "rgba(0,0,0,0.1)",
+    glassBorder: 'rgba(0,0,0,0.1)',
   },
-  blurTint: "light" as "light" | "dark",
-  statusBarScheme: "dark-content" as StatusBarStyle,
+  blurTint: 'light' as 'light' | 'dark',
+  statusBarScheme: 'dark-content' as StatusBarStyle,
   roundness: 3,
 };
 
@@ -91,60 +92,61 @@ export const customDarkTheme: AppTheme = {
   colors: {
     ...MD3DarkTheme.colors,
     // Primary: Active Focus
-    primary: "#FFFFFF", // Primary Interaction Color Accent
-    onPrimary: "#0F0F0F", // The Stencil / Inverted Text
-    primaryContainer: "#2C2C2C", // Selection Container
-    onPrimaryContainer: "#FFFFFF", // General Iconography
+    primary: '#FFFFFF', // Primary Interaction Color Accent
+    onPrimary: '#0F0F0F', // The Stencil / Inverted Text
+    primaryContainer: '#2C2C2C', // Selection Container
+    onPrimaryContainer: '#FFFFFF', // General Iconography
 
     // Secondary: Utility UI (Chips, Muted Actions)
-    secondary: "#AAAAAA",
-    onSecondary: "#0F0F0F",
-    secondaryContainer: "#2C2C2C",
-    onSecondaryContainer: "#F5F5F5",
+    secondary: '#AAAAAA',
+    onSecondary: '#0F0F0F',
+    secondaryContainer: '#2C2C2C',
+    onSecondaryContainer: '#F5F5F5',
 
     // Tertiary: Matches Primary (Active Focus) in Dark Mode
-    tertiary: "#FFFFFF",
-    onTertiary: "#0F0F0F", // Matches Background/Stencil
-    tertiaryContainer: "#2C2C2C",
-    onTertiaryContainer: "#FFFFFF",
+    tertiary: '#FFFFFF',
+    onTertiary: '#0F0F0F', // Matches Background/Stencil
+    tertiaryContainer: '#2C2C2C',
+    onTertiaryContainer: '#FFFFFF',
 
     // Backgrounds & Surfaces
-    background: "#0F0F0F", // The Canvas
-    onBackground: "#F5F5F5", // The Ink: Soft White to mitigate Irradiation Illusion
-    surface: "#1E1E1E", // The Object: Cards/Containers
-    onSurface: "#F5F5F5", // The Ink: Soft White to prevent Halation
+    background: '#0F0F0F', // The Canvas
+    onBackground: '#F5F5F5', // The Ink: Soft White to mitigate Irradiation Illusion
+    surface: '#1E1E1E', // The Object: Cards/Containers
+    onSurface: '#F5F5F5', // The Ink: Soft White to prevent Halation
 
     // UI Variants & Boundaries
-    surfaceVariant: "#2C2C2C", // Secondary UI
-    onSurfaceVariant: "#AAAAAA", // Muted Intent: Top Search Bar Icon/Text
-    outline: "#938F99", // Boundary (Outline)
-    outlineVariant: "#3F3F3F", // Boundary (Subtle) / Divider
+    surfaceVariant: '#2C2C2C', // Secondary UI
+    onSurfaceVariant: '#AAAAAA', // Muted Intent: Top Search Bar Icon/Text
+    outline: '#938F99', // Boundary (Outline)
+    outlineVariant: '#3F3F3F', // Boundary (Subtle) / Divider
 
     // Navigation Compatibility Layer
-    card: "#1E1E1E", // The Object
-    text: "#F5F5F5", // The Ink
-    border: "#3F3F3F", // The Divider
-    notification: "#FFFFFF", // Pure White
+    card: '#1E1E1E', // The Object
+    text: '#F5F5F5', // The Ink
+    border: '#3F3F3F', // The Divider
+    notification: '#FFFFFF', // Pure White
 
     // Branding (Standardized Monochrome in Dark Mode)
-    brandYoutube: "#FFFFFF",
-    brandSpotify: "#FFFFFF",
+    brandYoutube: '#FFFFFF',
+    brandSpotify: '#FFFFFF',
 
     // Neutralizing Elevation (Hierarchy of Light)
+    // This was not derived from the UI_UX.md spec, only recommended by Gemini
     elevation: {
-      level0: "transparent",
-      level1: "#1E1E1E",
-      level2: "#242424",
-      level3: "#2C2C2C",
-      level4: "#333333",
-      level5: "#383838",
+      level0: 'transparent',
+      level1: '#1E1E1E',
+      level2: '#242424',
+      level3: '#2C2C2C',
+      level4: '#333333',
+      level5: '#383838',
     },
 
     // Subtle Blur Effect for Glassmorphism Border
-    glassBorder: "rgba(255, 255, 255, 0.1)",
+    glassBorder: 'rgba(255, 255, 255, 0.1)',
   },
-  blurTint: "dark" as "light" | "dark",
-  statusBarScheme: "light-content" as StatusBarStyle,
+  blurTint: 'dark' as 'light' | 'dark',
+  statusBarScheme: 'light-content' as StatusBarStyle,
   roundness: 3,
 };
 
@@ -159,7 +161,6 @@ export const ThemeContext = createContext({
 /**
  * Centralized helper to retrieve the correct theme object based on state.
  */
-export const getAppTheme = (isDark: boolean): AppTheme =>
-  isDark ? customDarkTheme : customLightTheme;
+export const getAppTheme = (isDark: boolean): AppTheme => (isDark ? customDarkTheme : customLightTheme);
 
 export const useAppTheme = () => useTheme<AppTheme>();

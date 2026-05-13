@@ -11,7 +11,7 @@
     "editor.wordWrap": "on",
     "editor.unicodeHighlight.ambiguousCharacters": false
   },
-  "prettier.printWidth": 120,
+  "prettier.printWidth": 90,
   "prettier.proseWrap": "always",
   "prettier.singleQuote": true
 }
