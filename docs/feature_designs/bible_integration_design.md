@@ -2,19 +2,34 @@
 
 ## 1. Objective
 
-Provide a seamless, multi-language Bible reading experience (English, Chinese Traditional, Chinese Simplified, Spanish) within the PWA. The goal is to provide a fast, offline-capable interface that respects API rate limits and protects developer credentials.
+Provide a seamless, multi-language Bible reading experience (English, Chinese Traditional,
+Chinese Simplified, Spanish) within the PWA. The goal is to provide a fast,
+offline-capable interface that respects API rate limits and protects developer
+credentials.
 
 ## 2. Technical Architecture
 
 ### 2.1 Data Source: API from Bible.helloao.org
 
-Instead of proprietary embeds, the app consumes raw JSON from the Bible.helloao.org API. This architecture is chosen specifically to uphold our project tenets.
+Instead of proprietary embeds, the app consumes raw JSON from the Bible.helloao.org API.
+This architecture is chosen specifically to uphold our project tenets.
 
-- **No Auth:** Open access to public domain and Creative Commons translations (BSB, WEB, KJV, CUV) requires no API keys. This aligns with **Tenet 4 (Anonymous Utility)** as we avoid the need for user-tracked tokens or developer credentials.
-- **Format:** Returns flat JSON arrays of verses, allowing for native rendering in React Native components.
-- **CORS:** The API is open-access, supporting direct requests from the PWA without proxy overhead.
-- **Performance Optimization:** To prevent main-thread blocking on lower-end devices during large JSON parsing (which can exceed 5-7MB for full translations), the application utilizes a "Lazy-Load by Book/Chapter" strategy. Data parsing is handled asynchronously to maintain 60fps UI responsiveness.
-- **Rate Limiting:** The service does not enforce restrictive per-user rate limits and utilizes a global CDN for high availability. As it focuses on public domain and open-licensed translations, there are no commercial usage tiers. The underlying infrastructure (AWS S3/CloudFront) provides high scalability and cost-efficiency to align with **Tenet 1 (Sustainable & Accessible)**.
+- **No Auth:** Open access to public domain and Creative Commons translations (BSB, WEB,
+  KJV, CUV) requires no API keys. This aligns with Tenet 1, 2, and 3 as we avoid the need
+  for user-tracked tokens or developer credentials.
+- **Format:** Returns flat JSON arrays of verses, allowing for native rendering in React
+  Native components.
+- **CORS:** The API is open-access, supporting direct requests from the PWA without proxy
+  overhead.
+- **Performance Optimization:** To prevent main-thread blocking on lower-end devices
+  during large JSON parsing (which can exceed 5-7MB for full translations), the
+  application utilizes a "Lazy-Load by Book/Chapter" strategy. Data parsing is handled
+  asynchronously to maintain 60fps UI responsiveness.
+- **Rate Limiting:** The service does not enforce restrictive per-user rate limits and
+  utilizes a global CDN for high availability. As it focuses on public domain and
+  open-licensed translations, there are no commercial usage tiers. The underlying
+  infrastructure (AWS S3/CloudFront) provides high scalability and cost-efficiency to
+  align with **Tenet 1 (Sustainable)**.
 
 https://bible.helloao.org/docs/reference/#available-translations
 
@@ -22,62 +37,101 @@ https://bible.helloao.org/docs/reference/#available-translations
 
 1. **Legal Sustainability (Non-Profit Governance) - Tenet 2**
 
-AO Lab is a 501(c)(3) non-profit organization dedicated to open-access Bible data. Unlike commercial startups, its governance model is mission-driven rather than profit-driven. Choosing CC0 translations like the BSB mitigates the liabilities mentioned in **Tenet 2 (Regulatory & Legal Safety)**.
+AO Lab is a 501(c)(3) non-profit organization dedicated to open-access Bible data. Unlike
+commercial startups, its governance model is mission-driven rather than profit-driven.
+Choosing CC0 translations like the BSB mitigates the liabilities mentioned in **Tenet 2
+(Liability-Free)**.
 
-Furthermore, the Berean Standard Bible (BSB) is released under Creative Commons Zero (CC0). This ensures that the legal right to host and distribute the text is irrevocable, independent of any single provider's existence.
+Furthermore, the Berean Standard Bible (BSB) is released under Creative Commons Zero
+(CC0). This ensures that the legal right to host and distribute the text is irrevocable,
+independent of any single provider's existence.
 
 2. **Technical Resilience (Open Architecture) - Tenet 1**
 
-Unlike "black box" proprietary APIs, the HelloAO API is essentially a wrapper around static assets.
+Unlike "black box" proprietary APIs, the HelloAO API is essentially a wrapper around
+static assets.
 
-- **Static Assets:** The data architecture avoids complex database maintenance, relying instead on static JSON files.
-- **Infrastructure Portability:** The entire API engine and transformation scripts are open-source. In a scenario where the primary service becomes unavailable, the repository fork allows for rapid redeployment to a self-hosted environment (e.g., GitHub Pages or AWS).
+- **Static Assets:** The data architecture avoids complex database maintenance, relying
+  instead on static JSON files.
+- **Infrastructure Portability:** The entire API engine and transformation scripts are
+  open-source. In a scenario where the primary service becomes unavailable, the repository
+  fork allows for rapid redeployment to a self-hosted environment (e.g., GitHub Pages or
+  AWS).
 
-This portability is essential for **Tenet 1 (Sustainable & Accessible)**, ensuring the app remains free and maintainable regardless of external corporate changes.
+This portability is essential for **Tenet 1 (Sustainable)**, ensuring the app remains free
+and maintainable regardless of external corporate changes.
 
 ### 2.3 Contingency & Sustainability
 
-To ensure the longevity of the application and mitigate risks if the 501c3 (HelloAO Lab) shuts down:
+To ensure the longevity of the application and mitigate risks if the 501c3 (HelloAO Lab)
+shuts down:
 
-- **Source Fork:** The core API engine and data scripts have been forked to CodeSammich/bible-api from the original repository.
-- **Contingency Plan:** If the primary API becomes unavailable, the project can be redeployed as a collection of static JSON files via GitHub Pages or a self-hosted instance.
+- **Source Fork:** The core API engine and data scripts have been forked to
+  CodeSammich/bible-api from the original repository.
+- **Contingency Plan:** If the primary API becomes unavailable, the project can be
+  redeployed as a collection of static JSON files via GitHub Pages or a self-hosted
+  instance.
 
 ### 2.4 Alternatives
 
 #### 2.4.1 Why YouVersion is not Preferred
 
-While YouVersion (Digital Bible Library) offers an extensive catalog, it was excluded for this specific native-first architecture due to:
+While YouVersion (Digital Bible Library) offers an extensive catalog, it was excluded for
+this specific native-first architecture due to:
 
-1.  **The WebView Trap:** YouVersion's API is primarily designed for WebViews/Iframes. This creates a "latency tax" where the UI flickers during chapter transitions.
-2.  **Branding Constraints:** It is nearly impossible to inject custom CSS into an iframe to match our theme. Maintaining internal rendering supports **Tenet 7 (Destination, Not a 'Launcher')**.
-3.  **Offline Blockers:** Browser security (SOP) prevents the app from reading text inside a cross-origin iframe. This makes it impossible to cache YouVersion content into `IndexedDB` for offline church use.
-4.  **UI Overhead:** Rerendering a WebView is heavier than rendering text strings, which violates **Tenet 5 (Radical Simplicity)** regarding smooth performance on older hardware.
+1.  **The WebView Trap:** YouVersion's API is primarily designed for WebViews/Iframes.
+    This creates a "latency tax" where the UI flickers during chapter transitions.
+2.  **Branding Constraints:** It is nearly impossible to inject custom CSS into an iframe
+    to match our theme. Maintaining internal rendering supports **Tenet 7 (Focused)**.
+3.  **Offline Blockers:** Browser security (SOP) prevents the app from reading text inside
+    a cross-origin iframe. This makes it impossible to cache YouVersion content into
+    `IndexedDB` for offline church use.
+4.  **UI Overhead:** Rerendering a WebView is heavier than rendering text strings, which
+    violates **Tenet 5 (Simplicity)** regarding smooth performance on older hardware.
 
 #### 2.4.2 api.bible (American Bible Society)
 
-While api.bible offers a wide range of translations, it was excluded due to the following technical and operational constraints:
+While api.bible offers a wide range of translations, it was excluded due to the following
+technical and operational constraints:
 
-1. **Request Quotas:** The free tier is limited to 5,000 API calls per month. This dependency on a tiered pricing model violates the "Free to maintain" goal of **Tenet 1**.
-2. **Translation Limits:** Access is restricted to a maximum of three copyright-protected translations.
-3. **Provisioning Requirements:** Access requires manual developer registration and approval, which introduces friction for open-source contributors.
+1. **Request Quotas:** The free tier is limited to 5,000 API calls per month. This
+   dependency on a tiered pricing model violates the "Free to maintain" goal of **Tenet
+   1**.
+2. **Translation Limits:** Access is restricted to a maximum of three copyright-protected
+   translations.
+3. **Provisioning Requirements:** Access requires manual developer registration and
+   approval, which introduces friction for open-source contributors.
 
 #### 2.4.3 bible-api.com
 
-bible-api.com was considered for its simplicity but rejected for several technical reasons:
+bible-api.com was considered for its simplicity but rejected for several technical
+reasons:
 
-1. **Restricted Catalog:** The service primarily offers English Public Domain translations, lacking the multi-language depth (e.g., CUV, RVR) required for the community.
-2. **Rate Limiting:** Aggressive throttling (15 requests every 30 seconds) significantly impacts performance during initial data synchronization or rapid navigation.
-3. **Availability Guarantees:** Lacks formal uptime commitments or service level agreements (SLAs) necessary for a reliable production environment.
+1. **Restricted Catalog:** The service primarily offers English Public Domain
+   translations, lacking the multi-language depth (e.g., CUV, RVR) required for the
+   community.
+2. **Rate Limiting:** Aggressive throttling (15 requests every 30 seconds) significantly
+   impacts performance during initial data synchronization or rapid navigation.
+3. **Availability Guarantees:** Lacks formal uptime commitments or service level
+   agreements (SLAs) necessary for a reliable production environment.
 
 ---
 
 ## 3. Bible Translation Requirements
 
-While the NIV is a global standard, it introduces several "Enterprise" hurdles that conflict with our tenets:
+While the NIV is a global standard, it introduces several "Enterprise" hurdles that
+conflict with our tenets:
 
-1. **Legal Risk:** Biblica owns the copyright. Usage requires strict adherence to licensing. This creates the "data liabilities" and "legal vulnerabilities" we seek to avoid in **Tenet 2**.
-2. **API Barriers:** Accessing restricted translations via providers like [api.bible](https://api.bible/sign-up) requires developer registration, manual approval for API keys, and is subject to strict **rate limits** that can cause "jank" or failures during peak usage times.
-3. **Caching Restrictions:** Most commercial licenses forbid local storage/caching of the full text. This would break our goal of providing a "Frictionless interface" for spiritual growth (**Tenet 6**) during offline scenarios.
+1. **Legal Risk:** Biblica owns the copyright. Usage requires strict adherence to
+   licensing. This creates the "data liabilities" and "legal vulnerabilities" we seek to
+   avoid in **Tenet 2**.
+2. **API Barriers:** Accessing restricted translations via providers like
+   [api.bible](https://api.bible/sign-up) requires developer registration, manual approval
+   for API keys, and is subject to strict **rate limits** that can cause "jank" or
+   failures during peak usage times.
+3. **Caching Restrictions:** Most commercial licenses forbid local storage/caching of the
+   full text. This would break our goal of providing a "Frictionless interface" for
+   spiritual growth (**Tenet 6**) during offline scenarios.
 
 Preference criteria for primary English Bible:
 
@@ -85,7 +139,8 @@ Preference criteria for primary English Bible:
 2. Culturally common (The LORD > Yahweh)
 3. No archaic language (you > thee/thou)
 4. Public domain to avoid copyright or scaling issues with Biblica (NIV)
-5. **Internal Focus:** Native rendering ensures the user stays within our "Digital Home" (**Tenet 7**).
+5. **Internal Focus:** Native rendering ensures the user stays within our "Digital Home"
+   (**Tenet 7**).
 
 See full comparison below:
 
@@ -154,14 +209,15 @@ _Focus: Sentence structure and "natural" flow._
 | **Modern English?**   | **YES**        | YES       | YES         | YES                | NO           |
 | **Legal Risk?**       | **ZERO (CC0)** | **ZERO**  | **ZERO**    | LOW (Needs Credit) | ZERO (in US) |
 
-KJV will be maintained for reference purposes, while modern translations like BSB will serve as the default.
+KJV will be maintained for reference purposes, while modern translations like BSB will
+serve as the default.
 
 **Supported Translations:**
 
 1. BSB - Modern Public Domain English
 2. KJV - English Traditional
 3. CUV (Traditional) - 1919 edition (Public Domain).
-4. CUVS (Simplified) - Public Domain.
+4. CUVS (Simplicity) - Public Domain.
 5. RVR1909 (Spanish Traditional) - Public Domain.
 6. SSE (Spanish Modern) - Public Domain.
 
@@ -169,20 +225,28 @@ KJV will be maintained for reference purposes, while modern translations like BS
 
 ### 4.1 Caching and Offline Access
 
-While the PWA supports service worker caching, explicit persistence in `IndexedDB` is planned. `IndexedDB` is preferred over `AsyncStorage` due to the large payload size of full Bible chapters and better performance with structured data queries.
+While the PWA supports service worker caching, explicit persistence in `IndexedDB` is
+planned. `IndexedDB` is preferred over `AsyncStorage` due to the large payload size of
+full Bible chapters and better performance with structured data queries.
 
 ### 4.2 Bible Sharing Feature
 
 - **Mechanism:** Standard Web Share API.
-- **Implementation:** A "Share" button on every verse or chapter header. The routing logic utilizes "Smart Parsing" to handle case-insensitivity and common short-codes (e.g., `Jn 1:1` vs `John 1:1`) to ensure deep-link reliability.
-- **Payload:** Generates a deep link back to the PWA (e.g., `church-app.io/bible?v=john.1.1&t=cuvs`) or a plain-text snippet for WhatsApp.
+- **Implementation:** A "Share" button on every verse or chapter header. The routing logic
+  utilizes "Smart Parsing" to handle case-insensitivity and common short-codes (e.g.,
+  `Jn 1:1` vs `John 1:1`) to ensure deep-link reliability.
+- **Payload:** Generates a deep link back to the PWA (e.g.,
+  `church-app.io/bible?v=john.1.1&t=cuvs`) or a plain-text snippet for WhatsApp.
 
 ### 4.3 Additional Language Support
 
 Indonesian, German, Japanese also have free public bibles. Can consider later.
 
-Notably, Tibetan (Moravian Version Yoseb Gergan, 1948) is also public domain. While UTF-8 encoding was historically challenging, the HelloAO API provides TBTI (Central Tibetan) via their source metadata, offering a Unicode-encoded path for these scripts.
+Notably, Tibetan (Moravian Version Yoseb Gergan, 1948) is also public domain. While UTF-8
+encoding was historically challenging, the HelloAO API provides TBTI (Central Tibetan) via
+their source metadata, offering a Unicode-encoded path for these scripts.
 
 ### 4.4 Select Reader Fonts & Highlighting & Personal Saved Verses
 
-Like the YouVersion Bible app, users should be able to customize select high-quality fonts and add colored highlighting. Favorite verses will be saved to personal storage.
+Like the YouVersion Bible app, users should be able to customize select high-quality fonts
+and add colored highlighting. Favorite verses will be saved to personal storage.
