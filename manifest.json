@@ -18,7 +18,7 @@
   ],
   "start_url": "/sda-church-app/",
   "display": "standalone",
-  "display_override": ["standalone", "window-controls-overlay"],
+  "display_override": ["standalone"],
   "orientation": "portrait",
   "scope": "/sda-church-app/"
 }
