@@ -3,7 +3,7 @@ const path = require('path');
 
 // Get arguments passed to this script (e.g., '--increment')
 const args = process.argv.slice(2);
-const incrementFlag = args.includes('--increment') ? '--increment' : '';
+const incrementFlag = args.includes('increment') ? '--increment' : '';
 
 // Command to run sync-version.js, passing the increment flag if present
 const syncVersionCommand =
