@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,6 +11,7 @@ import {
 import { Divider, List, Modal, Portal, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
@@ -19,10 +20,18 @@ import { NavigationStyles } from '@/styles/NavigationStyles';
 export default function BibleReaderScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { language } = useContext(LanguageContext);
+  const scrollRef = useRef<ScrollView>(null);
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   // Selection state
-  const [translation, setTranslation] = useState(BibleService.SUPPORTED_TRANSLATIONS[0]);
+  const [supportedTranslation, setSupportedTranslation] = useState(() => {
+    const defaultId = BibleService.DEFAULT_TRANSLATION_MAP[language] || 'BSB';
+    return (
+      BibleService.SUPPORTED_TRANSLATIONS.find((t) => t.id === defaultId) ||
+      BibleService.SUPPORTED_TRANSLATIONS[0]
+    );
+  });
   const [book, setBook] = useState<BibleService.TranslationBook | null>(null);
   const [chapterNum, setChapterNum] = useState(1);
 
@@ -42,14 +51,29 @@ export default function BibleReaderScreen() {
   useEffect(() => {
     const loadBooksAndSetBook = async () => {
       try {
-        const fetchedBooks = await BibleService.fetchBooks(translation.id);
+        const fetchedBooks = await BibleService.fetchBooks(supportedTranslation.id);
         setBooks(fetchedBooks);
 
         // Determine the next book based on previous selection or default to Genesis
         setBook((prevBook) => {
-          const matchingBook = fetchedBooks.find((b) => b.id === prevBook?.id);
+          const matchingBook = fetchedBooks.find(
+            (b: BibleService.TranslationBook) => b.id === prevBook?.id,
+          );
+
+          if (matchingBook) {
+            // If the book exists in the new translation, try to preserve the chapter.
+            // We clamp it to 1 if the current number exceeds the new book's chapter count.
+            setChapterNum((prev) => (prev > matchingBook.numberOfChapters ? 1 : prev));
+            return matchingBook;
+          }
+
+          // If the book doesn't exist in the new translation, fallback to Genesis or the first book.
+          // Since this is effectively a "new" book selection, we reset chapter to 1.
+          setChapterNum(1);
           return (
-            matchingBook || fetchedBooks.find((b) => b.id === 'GEN') || fetchedBooks[0]
+            fetchedBooks.find((b: BibleService.TranslationBook) => b.id === 'GEN') ||
+            fetchedBooks[0] ||
+            null
           );
         });
       } catch (e) {
@@ -57,16 +81,23 @@ export default function BibleReaderScreen() {
       }
     };
     loadBooksAndSetBook();
-  }, [book, translation]);
+  }, [supportedTranslation.id]);
 
   // Load chapter content
   useEffect(() => {
-    if (book) {
+    // Only fetch if we have a book and that book belongs to the current translation's book list
+    // This prevents "stale" fetches when switching translations where the book IDs might differ.
+    const isBookValidForTranslation = books.some(
+      (b: BibleService.TranslationBook) => b.id === book?.id,
+    );
+
+    if (book && isBookValidForTranslation) {
       const loadChapter = async () => {
         setLoading(true);
+        setChapterData(null); // Clear old content immediately
         try {
           const data = await BibleService.fetchChapter(
-            translation.id,
+            supportedTranslation.id,
             book.id,
             chapterNum,
           );
@@ -79,7 +110,14 @@ export default function BibleReaderScreen() {
       };
       loadChapter();
     }
-  }, [translation, book?.id, chapterNum]);
+  }, [supportedTranslation.id, book?.id, chapterNum, books]);
+
+  // Scroll to top when chapter content changes
+  useEffect(() => {
+    if (chapterData) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [chapterData]);
 
   const renderContent = (content: BibleService.ChapterContent, index: number) => {
     switch (content.type) {
@@ -150,7 +188,7 @@ export default function BibleReaderScreen() {
             numberOfLines={1}
             style={[styles.selectorText, { color: theme.colors.onSurface }]}
           >
-            {translation.id}
+            {supportedTranslation.name}
           </Text>
         </TouchableOpacity>
         <Divider style={styles.verticalDivider} />
@@ -177,6 +215,7 @@ export default function BibleReaderScreen() {
       </View>
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingTop: headerHeight + 60, paddingBottom: insets.bottom + 40 },
@@ -229,13 +268,19 @@ export default function BibleReaderScreen() {
                     typeof item === 'object' && 'lang' in item ? item.lang : undefined
                   }
                   onPress={() => {
-                    if (modalType === 'translation') setTranslation(item as any);
-                    if (modalType === 'book') setBook(item as any);
-                    if (modalType === 'chapter') setChapterNum(item as any);
+                    if (modalType === 'translation') {
+                      setSupportedTranslation(item as any);
+                    } else if (modalType === 'book') {
+                      setBook(item as any);
+                      setChapterNum(1);
+                    } else if (modalType === 'chapter') {
+                      setChapterNum(item as any);
+                    }
                     closeModal();
                   }}
                   titleStyle={
-                    (modalType === 'translation' && item.id === translation.id) ||
+                    (modalType === 'translation' &&
+                      item.id === supportedTranslation.id) ||
                     (modalType === 'book' && item.id === book?.id) ||
                     (modalType === 'chapter' && item === chapterNum)
                       ? { color: theme.colors.primary, fontWeight: 'bold' }

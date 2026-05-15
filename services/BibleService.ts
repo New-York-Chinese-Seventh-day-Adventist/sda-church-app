@@ -2,20 +2,34 @@
  * Service for interacting with the Bible.helloao.org API.
  * Follows the design specs for multi-language, native-first rendering.
  *
- * Documentation: docs/feature_designs/bible_integration_design.md
+ * Note: The `SupportedLanguage` type is imported from the global LanguageContext
+ * to ensure consistency in language code mapping.
+ *
+ * Architectural Design: ../docs/feature_designs/bible_integration_design.md
  * API Reference: https://bible.helloao.org/docs/reference/
  */
 
 export const API_BASE = 'https://bible.helloao.org/api';
 
+import { SupportedLanguage } from '@/constants/LanguageContext';
+
 export const SUPPORTED_TRANSLATIONS = [
-  { id: 'BSB', name: 'Berean Standard Bible', lang: 'English' },
-  { id: 'KJV', name: 'King James Version', lang: 'English' },
-  { id: 'CUV', name: '和合本 (繁體)', lang: 'Chinese Traditional' },
-  { id: 'CUVS', name: '和合本 (简体)', lang: 'Chinese Simplified' },
-  { id: 'RVR09', name: 'Reina Valera 1909', lang: 'Spanish' },
-  { id: 'SSE', name: 'Spanish Modern (SSE)', lang: 'Spanish' },
+  { id: 'BSB', name: 'BSB', lang: 'English' },
+  { id: 'eng_kjv', name: 'KJV', lang: 'English' },
+  { id: 'cmn_cuv', name: '和合本 (繁體)', lang: 'Chinese' },
+  { id: 'cmn_cu1', name: '和合本 (简体)', lang: 'Chinese' },
+  { id: 'spa_r09', name: 'RVR09', lang: 'Spanish' },
 ];
+
+/**
+ * Maps application language codes to their default Bible translation IDs.
+ */
+export const DEFAULT_TRANSLATION_MAP: Record<SupportedLanguage, string> = {
+  en: 'BSB',
+  zh: 'cmn_cuv',
+  'zh-cn': 'cmn_cu1',
+  es: 'spa_r09',
+};
 
 export interface Translation {
   id: string;
@@ -138,6 +152,9 @@ export interface DatasetVerse {
 export async function fetchAvailableTranslations() {
   try {
     const res = await fetch(`${API_BASE}/available_translations.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch translations: ${res.status}`);
+    }
     const data = await res.json();
     return data.translations;
   } catch (e) {
@@ -156,6 +173,9 @@ export async function fetchAvailableTranslations() {
 export async function fetchBooks(translation: string) {
   try {
     const res = await fetch(`${API_BASE}/${translation}/books.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch books for ${translation}: ${res.status}`);
+    }
     const data = await res.json();
     return data.books;
   } catch (e) {
@@ -180,6 +200,9 @@ export async function fetchChapter(
 ): Promise<TranslationBookChapter> {
   try {
     const res = await fetch(`${API_BASE}/${translation}/${book}/${chapter}.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch chapter: ${res.status}`);
+    }
     return await res.json();
   } catch (e) {
     console.error(`Failed to load chapter ${book} ${chapter}`, e);
@@ -196,6 +219,20 @@ export async function fetchChapter(
  */
 export async function fetchCompleteTranslation(translation: string) {
   try {
+    // TODO: Implement "Download Feature" logic.
+    // 1. Fetch this large JSON.
+    // 2. Normalize and split into individual chapters.
+    // 3. Store in local storage for full offline availability.
+
+    // TODO: Implement offline fallback logic.
+    // 1. Check local storage (IndexedDB/LocalForage) for cached chapter data.
+    // 2. If found, return cached data immediately to fulfill "Frictionless Access".
+
+    // TODO: Implement fallback even in weak wifi situations where network is up but times out
+    // This is notable for situations like underground subway or parking where TCP ACK is received
+    // but data transfer is very slow. We can set a reasonable timeout (e.g., 5 seconds) and fallback
+    // to cached data if the fetch doesn't complete in time.
+
     const res = await fetch(`${API_BASE}/${translation}/complete.json`);
     return await res.json();
   } catch (e) {
