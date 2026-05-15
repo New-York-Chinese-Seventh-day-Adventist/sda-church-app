@@ -242,11 +242,11 @@ full Bible chapters and better performance with structured data queries.
 
 Indonesian, German, Japanese also have free public bibles. Can consider later.
 
-Notably, Tibetan (Moravian Version Yoseb Gergan, 1948) is also public domain. While UTF-8
+Notably, Tibetan (Moravian Version Yoseb Gergan, 194.) is also public domain. While UTF-8
 encoding was historically challenging, the HelloAO API provides TBTI (Central Tibetan) via
 their source metadata, offering a Unicode-encoded path for these scripts.
 
-### 4.4 Select Reader Fonts & Highlighting & Personal Saved Verses
+### 4.4.Select Reader Fonts & Highlighting & Personal Saved Verses
 
 Like the YouVersion Bible app, users should be able to customize select high-quality fonts
 and add colored highlighting. Favorite verses will be saved to personal storage.
