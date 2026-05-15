@@ -7,7 +7,6 @@ let pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 let version = pkg.version;
 
 // Check for optional increment flag (e.g. node sync-version.js --increment)
-console.log(process.argv);
 if (process.argv.includes('--increment')) {
   const parts = version.split('.');
   console.log(parts);
