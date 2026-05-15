@@ -34,7 +34,7 @@ if (fs.existsSync(appJsonPath)) {
   // For Android/iOS specifically if you want to sync build numbers too:
   // appJson.expo.android.versionCode = parseInt(version.replace(/\./g, ''));
   fs.writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2) + '\n');
-  console.log('Successfully updated app.json');
+  console.log('Successfully synced package.json version to app.json');
 }
 
 // 3. Update sw.js (Service Worker)
@@ -44,5 +44,5 @@ if (fs.existsSync(swPath)) {
   // Regex targets the VERSION constant
   swContent = swContent.replace(/const VERSION = ".*";/, `const VERSION = "${version}";`);
   fs.writeFileSync(swPath, swContent);
-  console.log('Successfully updated sw.js');
+  console.log('Successfully synced package.json version to sw.js');
 }
