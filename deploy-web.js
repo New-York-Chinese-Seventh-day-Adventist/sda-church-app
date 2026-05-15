@@ -5,7 +5,7 @@ const path = require('path');
 console.log(process.argv);
 const args = process.argv.slice(2);
 console.log(args);
-const incrementFlag = args.includes('increment') ? '--increment' : '';
+const incrementFlag = args.includes('--increment') ? '--increment' : '';
 
 // Command to run sync-version.js, passing the increment flag if present
 const syncVersionCommand =
