@@ -7,7 +7,7 @@ const incrementFlag = args.includes('--increment') ? '--increment' : '';
 
 // Command to run sync-version.js, passing the increment flag if present
 const syncVersionCommand =
-  `node ${path.join(__dirname, 'sync-version.js')} ${incrementFlag}`.trim();
+  `node "${path.resolve(__dirname, 'sync-version.js')}" ${incrementFlag}`.trim();
 
 // Full deployment command sequence
 const fullDeploymentCommand = `

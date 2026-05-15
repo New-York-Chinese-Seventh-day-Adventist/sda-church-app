@@ -3,17 +3,23 @@ const path = require('path');
 
 // 1. Read the source of truth
 const pkgPath = path.join(__dirname, '../package.json');
-const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+let pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 let version = pkg.version;
 
 // Check for optional increment flag (e.g. node sync-version.js --increment)
 if (process.argv.includes('--increment')) {
   const parts = version.split('.');
+  console.log(parts);
   if (parts.length === 3) {
     parts[2] = parseInt(parts[2], 10) + 1;
     version = parts.join('.');
     pkg.version = version;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+
+    // Reread the package.json to ensure the updated version is used for the rest of the sync
+    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    version = pkg.version;
+
     console.log(`Incremented version to ${version} in package.json`);
   }
 }
