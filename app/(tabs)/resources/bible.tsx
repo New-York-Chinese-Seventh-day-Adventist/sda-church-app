@@ -284,7 +284,11 @@ export default function BibleReaderScreen() {
                   : labels.chapter}
             </Text>
             <Divider />
-            <FlatList
+            <FlatList<
+              | (typeof BibleService.SUPPORTED_TRANSLATIONS)[number]
+              | BibleService.TranslationBook
+              | number
+            >
               data={
                 modalType === 'translation'
                   ? BibleService.SUPPORTED_TRANSLATIONS
@@ -318,8 +322,11 @@ export default function BibleReaderScreen() {
                   }}
                   titleStyle={
                     (modalType === 'translation' &&
+                      typeof item === 'object' &&
                       item.id === supportedTranslation.id) ||
-                    (modalType === 'book' && item.id === book?.id) ||
+                    (modalType === 'book' &&
+                      typeof item === 'object' &&
+                      item.id === book?.id) ||
                     (modalType === 'chapter' && item === chapterNum)
                       ? { color: theme.colors.primary, fontWeight: 'bold' }
                       : { color: theme.colors.onSurface }
