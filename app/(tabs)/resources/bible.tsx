@@ -17,10 +17,42 @@ import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
 
+const uiLabels = {
+  en: {
+    translation: 'Translation',
+    book: 'Book',
+    chapter: 'Chapter',
+    chapterItem: 'Chapter {n}',
+    bible: 'Bible',
+  },
+  zh: {
+    translation: '譯本',
+    book: '書卷',
+    chapter: '章節',
+    chapterItem: '第 {n} 章',
+    bible: '聖經',
+  },
+  'zh-cn': {
+    translation: '译本',
+    book: '书卷',
+    chapter: '章节',
+    chapterItem: '第 {n} 章',
+    bible: '圣经',
+  },
+  es: {
+    translation: 'Traducción',
+    book: 'Libro',
+    chapter: 'Capítulo',
+    chapterItem: 'Capítulo {n}',
+    bible: 'Biblia',
+  },
+};
+
 export default function BibleReaderScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
+  const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
@@ -167,7 +199,9 @@ export default function BibleReaderScreen() {
 
   return (
     <View style={NavigationStyles.container}>
-      <Stack.Screen options={{ title: book ? `${book.name} ${chapterNum}` : 'Bible' }} />
+      <Stack.Screen
+        options={{ title: book ? `${book.name} ${chapterNum}` : labels.bible }}
+      />
 
       {/* Selector Bar */}
       <View
@@ -244,10 +278,10 @@ export default function BibleReaderScreen() {
               style={[styles.modalTitle, { color: theme.colors.onSurface }]}
             >
               {modalType === 'translation'
-                ? 'Translation'
+                ? labels.translation
                 : modalType === 'book'
-                  ? 'Book'
-                  : 'Chapter'}
+                  ? labels.book
+                  : labels.chapter}
             </Text>
             <Divider />
             <FlatList
@@ -263,7 +297,11 @@ export default function BibleReaderScreen() {
               }
               renderItem={({ item }) => (
                 <List.Item
-                  title={typeof item === 'object' ? item.name : `Chapter ${item}`}
+                  title={
+                    typeof item === 'object'
+                      ? item.name
+                      : labels.chapterItem.replace('{n}', item.toString())
+                  }
                   description={
                     typeof item === 'object' && 'lang' in item ? item.lang : undefined
                   }
