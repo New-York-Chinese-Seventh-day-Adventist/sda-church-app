@@ -2,7 +2,9 @@ const child_process = require('child_process');
 const path = require('path');
 
 // Get arguments passed to this script (e.g., '--increment')
+console.log(process.argv);
 const args = process.argv.slice(2);
+console.log(args);
 const incrementFlag = args.includes('increment') ? '--increment' : '';
 
 // Command to run sync-version.js, passing the increment flag if present
