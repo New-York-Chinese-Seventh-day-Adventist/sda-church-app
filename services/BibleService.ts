@@ -8,7 +8,7 @@
 
 export const API_BASE = 'https://bible.helloao.org/api';
 
-export const TRANSLATIONS = [
+export const SUPPORTED_TRANSLATIONS = [
   { id: 'BSB', name: 'Berean Standard Bible', lang: 'English' },
   { id: 'KJV', name: 'King James Version', lang: 'English' },
   { id: 'CUV', name: '和合本 (繁體)', lang: 'Chinese Traditional' },
@@ -131,11 +131,11 @@ export interface DatasetVerse {
 }
 
 /**
- * Lists all available translations.
+ * Fetches all available translations.
  *
  * @returns {Promise<Translation[]>} A list of available Bible translations.
  */
-export async function listAvailableTranslations() {
+export async function fetchAvailableTranslations() {
   try {
     const res = await fetch(`${API_BASE}/available_translations.json`);
     const data = await res.json();
@@ -147,13 +147,13 @@ export async function listAvailableTranslations() {
 }
 
 /**
- * Lists the books available for a specific translation.
+ * Fetches the list of books available for a specific translation.
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
- * @example listBooks('BSB')
+ * @example fetchBooks('BSB')
  * @returns {Promise<TranslationBook[]>}
  */
-export async function listBooks(translation: string) {
+export async function fetchBooks(translation: string) {
   try {
     const res = await fetch(`${API_BASE}/${translation}/books.json`);
     const data = await res.json();
@@ -165,15 +165,15 @@ export async function listBooks(translation: string) {
 }
 
 /**
- * Gets the verses for a specific chapter in a specific translation and book.
+ * Fetches the verses for a specific chapter in a specific translation and book.
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
  * @param {string} book - The ID of the book. Standard: USFM 3-letter ID (e.g., 'GEN').
  * @param {number} chapter - The numerical chapter. Standard: 1-based integer.
- * @example getChapter('BSB', 'GEN', 1)
+ * @example fetchChapter('BSB', 'GEN', 1)
  * @returns {Promise<TranslationBookChapter>}
  */
-export async function getChapter(
+export async function fetchChapter(
   translation: string,
   book: string,
   chapter: number,
@@ -188,13 +188,13 @@ export async function getChapter(
 }
 
 /**
- * Gets the entire translation (Large Payload).
+ * Fetches the entire translation (Large Payload).
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
- * @example getCompleteTranslation('BSB')
+ * @example fetchCompleteTranslation('BSB')
  * @returns {Promise<TranslationComplete>}
  */
-export async function getCompleteTranslation(translation: string) {
+export async function fetchCompleteTranslation(translation: string) {
   try {
     const res = await fetch(`${API_BASE}/${translation}/complete.json`);
     return await res.json();
@@ -220,12 +220,12 @@ export async function fetchAvailableCommentaries() {
 }
 
 /**
- * Lists the books available for a specific commentary.
+ * Fetches the list of books available for a specific commentary.
  *
  * @param {string} commentary - The ID of the commentary. Standard: kebab-case.
- * @example listCommentaryBooks('adam-clarke')
+ * @example fetchCommentaryBooks('adam-clarke')
  */
-export async function listCommentaryBooks(commentary: string) {
+export async function fetchCommentaryBooks(commentary: string) {
   try {
     const res = await fetch(`${API_BASE}/c/${commentary}/books.json`);
     const data = await res.json();
@@ -237,14 +237,14 @@ export async function listCommentaryBooks(commentary: string) {
 }
 
 /**
- * Gets the content of a single chapter for a given book and commentary.
+ * Fetches the content of a single chapter for a given book and commentary.
  *
  * @param {string} commentary - The ID of the commentary.
  * @param {string} book - The USFM book ID.
  * @param {number} chapter - The 1-based chapter number.
- * @example getCommentaryChapter('adam-clarke', 'GEN', 1)
+ * @example fetchCommentaryChapter('adam-clarke', 'GEN', 1)
  */
-export async function getCommentaryChapter(
+export async function fetchCommentaryChapter(
   commentary: string,
   book: string,
   chapter: number,
@@ -263,12 +263,12 @@ export async function getCommentaryChapter(
 }
 
 /**
- * Lists the profiles (overviews of people/groups) for a given commentary.
+ * Gets the list of profiles (overviews of people/groups) for a given commentary.
  *
  * @param {string} commentary - The ID of the commentary (e.g., 'tyndale').
- * @example listCommentaryProfiles('tyndale')
+ * @example fetchCommentaryProfiles('tyndale')
  */
-export async function listCommentaryProfiles(commentary: string) {
+export async function fetchCommentaryProfiles(commentary: string) {
   try {
     const res = await fetch(`${API_BASE}/c/${commentary}/profiles.json`);
     const data = await res.json();
@@ -284,9 +284,9 @@ export async function listCommentaryProfiles(commentary: string) {
  *
  * @param {string} commentary - The ID of the commentary.
  * @param {string} profile - The ID of the profile. Standard: lowercase name/id.
- * @example getCommentaryProfile('tyndale', 'aaron')
+ * @example fetchCommentaryProfileContent('tyndale', 'aaron')
  */
-export async function getCommentaryProfile(commentary: string, profile: string) {
+export async function fetchCommentaryProfileContent(commentary: string, profile: string) {
   try {
     const res = await fetch(`${API_BASE}/c/${commentary}/profiles/${profile}.json`);
     return await res.json();
@@ -300,8 +300,8 @@ export async function getCommentaryProfile(commentary: string, profile: string) 
  * DATASET APIS (e.g., Cross-References)
  */
 
-/** Lists all available Bible datasets. */
-export async function listAvailableDatasets() {
+/** Fetches all available Bible datasets. */
+export async function fetchAvailableDatasets() {
   try {
     const res = await fetch(`${API_BASE}/available_datasets.json`);
     const data = await res.json();
@@ -313,11 +313,11 @@ export async function listAvailableDatasets() {
 }
 
 /**
- * Lists the books available for a given dataset.
+ * Gets the list of books available for a given dataset.
  *
  * @param {string} dataset - The ID of the dataset (e.g., 'open-cross-ref').
  */
-export async function listDatasetBooks(dataset: string) {
+export async function fetchDatasetBooks(dataset: string) {
   try {
     const res = await fetch(`${API_BASE}/d/${dataset}/books.json`);
     const data = await res.json();
@@ -329,15 +329,19 @@ export async function listDatasetBooks(dataset: string) {
 }
 
 /**
- * Gets a specific chapter from a dataset (e.g., open-cross-ref).
+ * Fetches a specific chapter from a dataset (e.g., open-cross-ref).
  *
  * @param {string} dataset - The ID of the dataset.
  * @param {string} book - The USFM book ID.
  * @param {number} chapter - The 1-based chapter number.
- * @example getDatasetChapter('open-cross-ref', 'GEN', 1)
+ * @example fetchDatasetChapter('open-cross-ref', 'GEN', 1)
  * @returns {Promise<DatasetChapterData>}
  */
-export async function getDatasetChapter(dataset: string, book: string, chapter: number) {
+export async function fetchDatasetChapter(
+  dataset: string,
+  book: string,
+  chapter: number,
+) {
   try {
     const res = await fetch(`${API_BASE}/d/${dataset}/${book}/${chapter}.json`);
     const data = await res.json();
