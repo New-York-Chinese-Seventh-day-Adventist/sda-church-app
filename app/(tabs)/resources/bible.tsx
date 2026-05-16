@@ -25,8 +25,7 @@ const uiLabels = {
     chapterItem: 'Chapter {n}',
     bible: 'Bible',
     footnote: 'Footnote',
-    hebrewSubtitle: 'Hebrew Subtitle',
-    greekSubtitle: 'Greek (Original)',
+    hebrewSubtitle: 'Hebrew (Original)',
   },
   zh: {
     translation: '譯本',
@@ -35,8 +34,7 @@ const uiLabels = {
     chapterItem: '第 {n} 章',
     bible: '聖經',
     footnote: '腳注',
-    hebrewSubtitle: '希伯來語小標題',
-    greekSubtitle: '希臘語 (原文)',
+    hebrewSubtitle: '希伯來語 (原文)',
   },
   'zh-cn': {
     translation: '译本',
@@ -45,8 +43,7 @@ const uiLabels = {
     chapterItem: '第 {n} 章',
     bible: '圣经',
     footnote: '脚注',
-    hebrewSubtitle: '希伯来语小标题',
-    greekSubtitle: '希腊语 (原文)',
+    hebrewSubtitle: '希伯来语 (原文)',
   },
   es: {
     translation: 'Traducción',
@@ -55,44 +52,9 @@ const uiLabels = {
     chapterItem: 'Capítulo {n}',
     bible: 'Biblia',
     footnote: 'Footnote',
-    hebrewSubtitle: 'Hebrew Subtitle',
-    greekSubtitle: 'Griego (Original)',
+    hebrewSubtitle: 'Hebreo (Original)',
   },
 };
-
-/**
- * List of New Testament book IDs to help distinguish between
- * Hebrew and Greek original language contexts.
- */
-const NT_BOOKS = [
-  'MAT',
-  'MRK',
-  'LUK',
-  'JHN',
-  'ACT',
-  'ROM',
-  '1CO',
-  '2CO',
-  'GAL',
-  'EPH',
-  'PHP',
-  'COL',
-  '1TH',
-  '2TH',
-  '1TI',
-  '2TI',
-  'TIT',
-  'PHM',
-  'HEB',
-  'JAS',
-  '1PE',
-  '2PE',
-  '1JO',
-  '2JO',
-  '3JO',
-  'JUD',
-  'REV',
-];
 
 export default function BibleReaderScreen() {
   const theme = useAppTheme();
@@ -336,7 +298,7 @@ export default function BibleReaderScreen() {
           </Text>
         );
 
-        return hasFootnotes || hasSubtitle ? (
+        return hasFootnotes ? (
           <TouchableOpacity
             key={index}
             onPress={() => openVerseDetails(content.number)}
@@ -460,9 +422,7 @@ export default function BibleReaderScreen() {
                             variant="labelSmall"
                             style={{ color: theme.colors.tertiary, marginBottom: 4 }}
                           >
-                            {book?.id && NT_BOOKS.includes(book.id)
-                              ? (labels as any).greekSubtitle
-                              : labels.hebrewSubtitle}
+                            {labels.hebrewSubtitle}
                           </Text>
                           <Text style={[styles.detailText, { fontStyle: 'italic' }]}>
                             {content.content
