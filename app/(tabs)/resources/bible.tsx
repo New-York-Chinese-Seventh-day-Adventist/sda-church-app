@@ -97,7 +97,7 @@ export default function BibleReaderScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
-  const { menuAnim, setMenuVisible } = useContext(UIStateContext);
+  const { menuAnim, menuVisible, setMenuVisible } = useContext(UIStateContext);
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
@@ -361,9 +361,78 @@ export default function BibleReaderScreen() {
    * Renders individual content items (text, formatted text, footnotes, etc.)
    * Handles poetic indentation and Words of Jesus styling.
    */
-  const renderItemContent = (item: any, i: number, contentArray: any[]) => {
+  const renderItemContent = (
+    item: any,
+    i: number,
+    contentArray: any[],
+    allowUnderline = true,
+  ) => {
     const textValue = typeof item === 'string' ? item : item.text || '';
     const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
+    const startsWithNewLine = textValue.startsWith('\n');
+    const prevItem = i > 0 ? contentArray[i - 1] : null;
+    const prevIsLineBreak = !!(
+      prevItem &&
+      typeof prevItem === 'object' &&
+      'lineBreak' in prevItem
+    );
+    const followsFootnote = !!(
+      prevItem &&
+      typeof prevItem === 'object' &&
+      'noteId' in prevItem
+    );
+
+    // 1. Calculate Poetic Continuity
+    // We scan backwards to skip over metadata (like footnotes) to see if this segment
+    // is a continuation of a previously split line.
+    let isLineContinuation = false;
+    let foundPreviousContent = false;
+
+    if (isPoetic && i > 0 && !prevIsLineBreak) {
+      let skippedInterruption = false;
+      for (let k = i - 1; k >= 0; k--) {
+        const prev = contentArray[k];
+        const isMetadata = typeof prev === 'object' && prev !== null && 'noteId' in prev;
+        const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
+
+        if (isMetadata || isWhitespace) {
+          skippedInterruption = true;
+          continue;
+        }
+
+        foundPreviousContent = true;
+        const prevIsPoetic = typeof prev === 'object' && prev !== null && 'poem' in prev;
+        const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
+        const prevIsSelah = BibleService.isSelahMarker(supportedTranslation.id, prevText);
+
+        // Only "heal" the line if we are on the exact same poetic level and the
+        // raw text doesn't explicitly start with a newline.
+        if (
+          prevIsPoetic &&
+          !prevIsSelah &&
+          (prev as any).poem === item.poem &&
+          skippedInterruption &&
+          !startsWithNewLine
+        ) {
+          isLineContinuation = true;
+        }
+        break;
+      }
+      if (!foundPreviousContent) isLineContinuation = true;
+    }
+
+    // If we follow a footnote and don't start with whitespace or punctuation,
+    // inject a space to prevent "welded" words like "allywith".
+    // We only inject if we AREN'T about to start a new poetic line (which adds a newline).
+    let contentText = textValue;
+    if (
+      followsFootnote &&
+      !(isPoetic && !isLineContinuation && i > 0) &&
+      contentText.length > 0 &&
+      !/^[\s\n.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]/.test(contentText)
+    ) {
+      contentText = ' ' + contentText;
+    }
 
     // Version-specific detection for liturgical/poetic markers.
     // This ensures we don't match modern academic terms in historical translations.
@@ -371,14 +440,16 @@ export default function BibleReaderScreen() {
 
     // Peek ahead for footnote markers to apply underlining to the current word
     let isFootnoted = false;
-    for (let j = i + 1; j < contentArray.length; j++) {
-      const next = contentArray[j];
-      if (typeof next === 'object' && 'noteId' in next) {
-        isFootnoted = true;
-        break;
+    if (allowUnderline) {
+      for (let j = i + 1; j < contentArray.length; j++) {
+        const next = contentArray[j];
+        if (typeof next === 'object' && 'noteId' in next) {
+          isFootnoted = true;
+          break;
+        }
+        if (typeof next === 'string' && next.trim().length > 0) break;
+        if (typeof next === 'object' && ('text' in next || 'heading' in next)) break;
       }
-      if (typeof next === 'string' && next.trim().length > 0) break;
-      if (typeof next === 'object' && ('text' in next || 'heading' in next)) break;
     }
 
     const renderText = (text: string, style?: any) => {
@@ -404,19 +475,23 @@ export default function BibleReaderScreen() {
         );
       }
 
-      // 2. Regular Text Processing
-      // Isolate leading whitespace/newlines and trailing punctuation/space.
-      // This ensures the underline (View wrapper) only surrounds the core word.
+      // 2. Regular Text Normalization
+      // Extract leading whitespace/newlines, core word, trailing punctuation, and trailing space.
+      // This precision prevents punctuation from jumping to new lines or being underlined.
       const leadingMatch = text.match(/^[\s\n]*/);
       const leading = leadingMatch ? leadingMatch[0] : '';
       const rest = text.substring(leading.length);
 
-      // Capture trailing punctuation (including full-width Chinese) and whitespace.
+      // Capture trailing punctuation (including full-width Chinese) separately from trailing space.
       const trailingMatch = rest.match(
-        /([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*\s*)$/,
+        /([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*)(\s*)$/,
       );
-      const trailing = trailingMatch ? trailingMatch[0] : '';
-      const core = rest.substring(0, rest.length - trailing.length);
+      const trailingPunct = trailingMatch ? trailingMatch[1] : '';
+      const trailingSpace = trailingMatch ? trailingMatch[2] : '';
+      const core = rest.substring(
+        0,
+        rest.length - (trailingPunct.length + trailingSpace.length),
+      );
 
       if (!isFootnoted || !core) {
         return (
@@ -429,79 +504,46 @@ export default function BibleReaderScreen() {
       return (
         <Text key={i} style={style}>
           {leading}
-          <View
-            style={{
-              borderBottomWidth: 1.5,
-              borderBottomColor: theme.colors.primary,
-              marginBottom: -2,
-              display: 'inline-flex' as any,
-            }}
-          >
-            <Text style={style}>{core}</Text>
+          {/* 
+              We wrap the word and its punctuation in an inline-flex row.
+              This prevents the "Punctuation Jump" by ensuring they are 
+              treated as a single atomic unit during text wrapping.
+          */}
+          <View style={{ display: 'inline-flex' as any, flexDirection: 'row' }}>
+            <View
+              style={{
+                borderBottomWidth: 1.5,
+                borderBottomColor: theme.colors.primary,
+                marginBottom: -2,
+              }}
+            >
+              <Text style={style}>{core}</Text>
+            </View>
+            <Text style={style}>{trailingPunct}</Text>
           </View>
-          {trailing}
+          {trailingSpace}
         </Text>
       );
     };
 
     if (typeof item === 'string') {
-      return renderText(item);
+      return renderText(contentText);
     }
 
     // Formatted Text (Poetry, Words of Jesus)
     if ('text' in item) {
-      const prevItem = i > 0 ? contentArray[i - 1] : null;
-      const prevIsLineBreak = !!(
-        prevItem &&
-        typeof prevItem === 'object' &&
-        'lineBreak' in prevItem
-      );
-
-      // Determine if this is a continuation of a poetic line (e.g. split by a footnote).
-      // We only skip the newline/indent if we find a previous poetic segment AND
-      // we had to skip over metadata or whitespace to get there.
-      // If segments are adjacent, they are treated as separate poetic lines.
-      let isLineContinuation = false;
-      if (isPoetic && i > 0) {
-        let skippedInterruption = false;
-        for (let k = i - 1; k >= 0; k--) {
-          const prev = contentArray[k];
-
-          const isMetadata =
-            typeof prev === 'object' && prev !== null && 'noteId' in prev;
-          const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
-
-          if (isMetadata || isWhitespace) {
-            skippedInterruption = true;
-            continue;
-          }
-
-          const prevIsPoetic =
-            typeof prev === 'object' && prev !== null && 'poem' in prev;
-          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
-          const prevIsSelah = BibleService.isSelahMarker(
-            supportedTranslation.id,
-            prevText,
-          );
-
-          if (prevIsPoetic && !prevIsSelah && skippedInterruption) {
-            isLineContinuation = true;
-          }
-          break;
-        }
-      }
-
       const indent =
-        isPoetic && item.poem > 1 && !isSelah ? '\u00A0'.repeat((item.poem - 1) * 3) : '';
+        isPoetic && item.poem && item.poem > 1 && !isSelah
+          ? '\u00A0'.repeat((item.poem - 1) * 3)
+          : '';
 
-      // We only add an automatic newline if it's a new poetic line and there wasn't
-      // an explicit 'lineBreak' object right before it.
       const prefix =
         (isPoetic && !isLineContinuation && !isSelah && i > 0 && !prevIsLineBreak
           ? '\n'
           : '') + (!isLineContinuation ? indent : '');
+
       return renderText(
-        prefix + item.text,
+        prefix + contentText,
         item.wordsOfJesus ? { color: theme.colors.error } : undefined,
       );
     }
@@ -542,11 +584,29 @@ export default function BibleReaderScreen() {
    * This prevents opening empty modals.
    */
   const getVerseExtras = (verseNum: number) => {
-    const hasFootnotes = chapterData?.chapter.footnotes.some(
-      (f) => f.reference?.verse === verseNum,
-    );
-    const hasSubtitle = !!getAssociatedSubtitle(verseNum);
-    return { hasFootnotes, hasSubtitle };
+    if (!chapterData) return { hasFootnotes: false, hasSubtitle: false };
+
+    const isPsalmVerseOne = book?.id === 'PSA' && verseNum === 1;
+    const subtitle = getAssociatedSubtitle(verseNum);
+    const subtitleText = subtitle
+      ? subtitle.content
+          .map((item) => (typeof item === 'string' ? item : (item as any).text || ''))
+          .join('')
+          .trim()
+      : '';
+
+    const uniqueFootnotes = chapterData.chapter.footnotes.filter((f) => {
+      if (f.reference?.verse !== verseNum) return false;
+      // Filter out footnotes that simply repeat the Hebrew Subtitle / Superscription
+      if (subtitleText && f.text.trim() === subtitleText) return false;
+      return true;
+    });
+
+    // Hardcode exception: Psalm Verse 1 subtitles are already rendered as structural elements.
+    return {
+      hasFootnotes: uniqueFootnotes.length > 0,
+      hasSubtitle: !!subtitle && !isPsalmVerseOne,
+    };
   };
 
   /**
@@ -582,7 +642,7 @@ export default function BibleReaderScreen() {
             ]}
           >
             {content.content.map((item, i) =>
-              renderItemContent(item, i, content.content),
+              renderItemContent(item, i, content.content, false),
             )}
           </Text>
         );
@@ -620,7 +680,7 @@ export default function BibleReaderScreen() {
                 </Text>
               )}
               {inlineBuffer.map((entry) =>
-                renderItemContent(entry.item, entry.index, content.content),
+                renderItemContent(entry.item, entry.index, content.content, hasFootnotes),
               )}
             </Text>,
           );
@@ -711,6 +771,7 @@ export default function BibleReaderScreen() {
       {chapterData?.thisChapterAudioLinks &&
         Object.keys(chapterData.thisChapterAudioLinks).length > 0 && (
           <Animated.View
+            pointerEvents={menuVisible ? 'auto' : 'none'}
             style={[
               ReaderStyles.floatingAudioButton,
               {
@@ -719,10 +780,11 @@ export default function BibleReaderScreen() {
                   {
                     translateY: menuAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [100, 0],
+                      outputRange: [200, 0],
                     }),
                   },
                 ],
+                zIndex: 1,
                 bottom: animatedDockHeight.interpolate({
                   inputRange: [
                     DOCK_HEIGHT + insets.bottom,
@@ -756,6 +818,8 @@ export default function BibleReaderScreen() {
             bottom: 0,
             height: animatedDockHeight,
             transform: [{ translateY: dockTranslateY }],
+            elevation: 5, // Higher than the audio button's 4 to prioritize nav touches
+            zIndex: 10,
           },
         ]}
       >
@@ -876,51 +940,64 @@ export default function BibleReaderScreen() {
                 <Divider />
                 <ScrollView style={ReaderStyles.modalScroll}>
                   {/* 
-                      Hebrew Subtitles: These often contain original language 
-                      comparisons (e.g., Psalm superscriptions). In the API, 
-                      they usually appear immediately BEFORE the verse they describe.
+                      Aggregated Verse Content:
+                      We calculate the subtitle text first to identify and filter
+                      redundant footnotes that repeat the same information.
                   */}
                   {(() => {
                     const subtitle = getAssociatedSubtitle(selectedVerseNum || 0);
-                    if (!subtitle) return null;
+                    const subtitleText = subtitle
+                      ? subtitle.content
+                          .map((item) =>
+                            typeof item === 'string' ? item : (item as any).text || '',
+                          )
+                          .join('')
+                          .trim()
+                      : '';
+
+                    // Hardcode exception: Subtitles for Psalms Verse 1 are already visible in-line.
+                    const isPsalmVerseOne = book?.id === 'PSA' && selectedVerseNum === 1;
+
                     return (
-                      <View style={ReaderStyles.detailSection}>
-                        <Text
-                          variant="labelSmall"
-                          style={{ color: theme.colors.tertiary, marginBottom: 4 }}
-                        >
-                          {labels.hebrewSubtitle}
-                        </Text>
-                        <Text style={[ReaderStyles.detailText, { fontStyle: 'italic' }]}>
-                          {subtitle.content
-                            .map((item) => {
-                              if (typeof item === 'string') return item;
-                              if ('text' in item) return item.text;
-                              return '';
-                            })
-                            .join('')}
-                        </Text>
-                      </View>
+                      <>
+                        {subtitle && !isPsalmVerseOne && (
+                          <View style={ReaderStyles.detailSection}>
+                            <Text
+                              variant="labelSmall"
+                              style={{ color: theme.colors.tertiary, marginBottom: 4 }}
+                            >
+                              {labels.hebrewSubtitle}
+                            </Text>
+                            <Text
+                              style={[ReaderStyles.detailText, { fontStyle: 'italic' }]}
+                            >
+                              {subtitleText}
+                            </Text>
+                          </View>
+                        )}
+
+                        {chapterData?.chapter.footnotes
+                          .filter((f) => {
+                            if (f.reference?.verse !== selectedVerseNum) return false;
+                            // Filter duplicates
+                            if (subtitleText && f.text.trim() === subtitleText)
+                              return false;
+                            return true;
+                          })
+                          .map((f, i) => (
+                            <View key={`fn-${i}`} style={ReaderStyles.detailSection}>
+                              <Text
+                                variant="labelSmall"
+                                style={{ color: theme.colors.primary, marginBottom: 4 }}
+                              >
+                                {labels.footnote} ({f.caller})
+                              </Text>
+                              <Text style={ReaderStyles.detailText}>{f.text}</Text>
+                            </View>
+                          ))}
+                      </>
                     );
                   })()}
-
-                  {/* 
-                      Footnotes: Filter the chapter's master footnote list 
-                      to show only those referencing the selected verse.
-                  */}
-                  {chapterData?.chapter.footnotes
-                    .filter((f) => f.reference?.verse === selectedVerseNum)
-                    .map((f, i) => (
-                      <View key={`fn-${i}`} style={ReaderStyles.detailSection}>
-                        <Text
-                          variant="labelSmall"
-                          style={{ color: theme.colors.primary, marginBottom: 4 }}
-                        >
-                          {labels.footnote} ({f.caller})
-                        </Text>
-                        <Text style={ReaderStyles.detailText}>{f.text}</Text>
-                      </View>
-                    ))}
                 </ScrollView>
               </>
             ) : (
