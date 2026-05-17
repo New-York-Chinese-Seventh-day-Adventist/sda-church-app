@@ -266,7 +266,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.colors.onBackground,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+        tabBarInactiveTintColor: theme.dark ? '#8E8E93' : '#555555', // Increased contrast for slate-gray inactive state
         headerTransparent: true,
         header: (props) => <GlobalHeader {...props} />,
         tabBarStyle: {

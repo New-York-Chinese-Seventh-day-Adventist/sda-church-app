@@ -38,6 +38,7 @@ export interface Translation {
   language: string;
   languageName?: string;
   textDirection: 'ltr' | 'rtl';
+  attribution?: string;
 }
 
 export interface TranslationBook {
@@ -119,13 +120,25 @@ export interface ChapterData {
   footnotes: ChapterFootnote[];
 }
 
+/**
+ * The audio links for a book chapter.
+ * Maps reader names to their respective audio file URLs.
+ */
+export interface TranslationBookChapterAudioLinks {
+  [reader: string]: string;
+}
+
 export interface TranslationBookChapter {
   translation: Translation;
   book: TranslationBook;
+  thisChapterLink: string;
+  thisChapterAudioLinks: TranslationBookChapterAudioLinks;
+  nextChapterApiLink: string | null;
+  nextChapterAudioLinks: TranslationBookChapterAudioLinks | null;
+  previousChapterApiLink: string | null;
+  previousChapterAudioLinks: TranslationBookChapterAudioLinks | null;
   numberOfVerses: number;
   chapter: ChapterData;
-  nextChapterApiLink: string | null;
-  previousChapterApiLink: string | null;
 }
 
 /**

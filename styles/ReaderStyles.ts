@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 /**
  * Shared styles for the Bible Reader and other immersive reading components.
@@ -42,7 +42,7 @@ export const ReaderStyles = StyleSheet.create({
     fontSize: 19,
     lineHeight: 30,
     marginBottom: 14,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontFamily: 'Georgia, "Times New Roman", serif',
   },
   verseNumber: {
     fontSize: 12,

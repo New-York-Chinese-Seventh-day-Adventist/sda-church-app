@@ -1,3 +1,6 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Audio } from 'expo-av';
+import { BlurView } from 'expo-blur';
 import { Stack } from 'expo-router';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -8,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Divider, List, Modal, Portal, Text } from 'react-native-paper';
+import { Divider, IconButton, List, Modal, Portal, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LanguageContext } from '@/constants/LanguageContext';
@@ -26,6 +29,8 @@ const uiLabels = {
     bible: 'Bible',
     footnote: 'Footnote',
     hebrewSubtitle: 'Hebrew (Original)',
+    prevChapter: 'Prev',
+    nextChapter: 'Next',
   },
   zh: {
     translation: '譯本',
@@ -35,6 +40,8 @@ const uiLabels = {
     bible: '聖經',
     footnote: '腳注',
     hebrewSubtitle: '希伯來語 (原文)',
+    prevChapter: '上一章',
+    nextChapter: '下一章',
   },
   'zh-cn': {
     translation: '译本',
@@ -44,6 +51,8 @@ const uiLabels = {
     bible: '圣经',
     footnote: '脚注',
     hebrewSubtitle: '希伯来语 (原文)',
+    prevChapter: '上一章',
+    nextChapter: '下一章',
   },
   es: {
     translation: 'Traducción',
@@ -53,6 +62,8 @@ const uiLabels = {
     bible: 'Biblia',
     footnote: 'Footnote',
     hebrewSubtitle: 'Hebreo (Original)',
+    prevChapter: 'Anterior',
+    nextChapter: 'Siguiente',
   },
 };
 
@@ -80,6 +91,78 @@ export default function BibleReaderScreen() {
   const [chapterData, setChapterData] =
     useState<BibleService.TranslationBookChapter | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Determine navigation boundaries
+  const currentBookIdx = books.findIndex((b) => b.id === book?.id);
+  const isFirstChapter = chapterNum === 1 && currentBookIdx === 0;
+  const isLastChapter = !!(
+    book &&
+    chapterNum === book.numberOfChapters &&
+    currentBookIdx === books.length - 1 &&
+    currentBookIdx !== -1
+  );
+
+  // Audio playback state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+
+  /**
+   * Handles automatic audio transition when a track finishes.
+   */
+  const onPlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded && status.didJustFinish) {
+      setIsPlaying(false);
+      if (!isLastChapter) {
+        // Signal that the next chapter should start playing automatically
+        setShouldAutoPlay(true);
+        navigateToChapter('next');
+      }
+    }
+  };
+
+  const toggleAudio = async () => {
+    const audioLinks = chapterData?.thisChapterAudioLinks;
+    if (!audioLinks || Object.keys(audioLinks).length === 0) return;
+
+    // Get the first available reader's audio URL
+    const audioUrl = Object.values(audioLinks)[0];
+
+    try {
+      if (isPlaying) {
+        await soundRef.current?.pauseAsync();
+        setIsPlaying(false);
+      } else {
+        if (!soundRef.current) {
+          const { sound } = await Audio.Sound.createAsync(
+            { uri: audioUrl as string },
+            { shouldPlay: true },
+          );
+          soundRef.current = sound;
+          sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+        } else {
+          await soundRef.current.playAsync();
+        }
+        setIsPlaying(true);
+      }
+    } catch (e) {
+      console.error('Audio playback error:', e);
+    }
+  };
+
+  // Effect to handle auto-playing when advancing chapters via audio or gesture
+  useEffect(() => {
+    const autoPlayNext = async () => {
+      if (shouldAutoPlay && chapterData?.thisChapterAudioLinks) {
+        setShouldAutoPlay(false);
+        // Small delay to ensure the UI has transitioned before audio starts
+        setTimeout(() => toggleAudio(), 500);
+      }
+    };
+    if (chapterData && !loading) {
+      autoPlayNext();
+    }
+  }, [chapterData, loading]);
 
   // Modal states
   const [modalType, setModalType] = useState<
@@ -163,11 +246,47 @@ export default function BibleReaderScreen() {
     }
   }, [supportedTranslation.id, book?.id, chapterNum, books]);
 
+  /**
+   * Navigates to the next or previous chapter.
+   * Automatically handles transitioning between books (e.g., Matt 28 -> Mark 1).
+   */
+  const navigateToChapter = (direction: 'prev' | 'next') => {
+    if (!book || books.length === 0) return;
+    const currentBookIdx = books.findIndex((b) => b.id === book.id);
+
+    if (direction === 'prev') {
+      if (chapterNum > 1) {
+        setChapterNum((prev) => prev - 1);
+      } else if (currentBookIdx > 0) {
+        const prevBook = books[currentBookIdx - 1];
+        setBook(prevBook);
+        setChapterNum(prevBook.numberOfChapters);
+      }
+    } else {
+      if (chapterNum < book.numberOfChapters) {
+        setChapterNum((prev) => prev + 1);
+      } else if (currentBookIdx < books.length - 1) {
+        const nextBook = books[currentBookIdx + 1];
+        setBook(nextBook);
+        setChapterNum(1);
+      }
+    }
+  };
+
   // Scroll to top when chapter content changes
   useEffect(() => {
     if (chapterData) {
       scrollRef.current?.scrollTo({ y: 0, animated: false });
     }
+
+    // Stop and unload audio when the chapter changes or the component unmounts
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+        soundRef.current = null;
+        setIsPlaying(false);
+      }
+    };
   }, [chapterData]);
 
   /**
@@ -305,7 +424,7 @@ export default function BibleReaderScreen() {
           </Text>
         );
 
-        return hasFootnotes ? (
+        return hasFootnotes || hasSubtitle ? (
           <TouchableOpacity
             key={index}
             onPress={() => openVerseDetails(content.number)}
@@ -330,65 +449,137 @@ export default function BibleReaderScreen() {
       <Stack.Screen
         options={{ title: book ? `${book.name} ${chapterNum}` : labels.bible }}
       />
-
-      {/* Selector Bar */}
-      <View
-        style={[
-          styles.selectorBar,
-          {
-            top: headerHeight,
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity
-          style={styles.selectorButton}
-          onPress={() => setModalType('translation')}
-        >
-          <Text
-            numberOfLines={1}
-            style={[styles.selectorText, { color: theme.colors.onSurface }]}
-          >
-            {supportedTranslation.name}
-          </Text>
-        </TouchableOpacity>
-        <Divider style={styles.verticalDivider} />
-        <TouchableOpacity
-          style={styles.selectorButton}
-          onPress={() => setModalType('book')}
-        >
-          <Text
-            numberOfLines={1}
-            style={[styles.selectorText, { color: theme.colors.onSurface }]}
-          >
-            {book?.name || '...'}
-          </Text>
-        </TouchableOpacity>
-        <Divider style={styles.verticalDivider} />
-        <TouchableOpacity
-          style={styles.selectorButton}
-          onPress={() => setModalType('chapter')}
-        >
-          <Text style={[styles.selectorText, { color: theme.colors.onSurface }]}>
-            {chapterNum}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView
         ref={scrollRef}
+        bounces={true}
+        alwaysBounceVertical={true}
+        scrollEventThrottle={16}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: headerHeight + 60, paddingBottom: insets.bottom + 40 },
+          { paddingTop: headerHeight + 20, paddingBottom: insets.bottom + 140 },
         ]}
       >
         {loading ? (
           <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
         ) : (
-          chapterData?.chapter.content.map((c, i) => renderContent(c, i))
+          <>
+            {chapterData?.chapter.content.map((c, i) => renderContent(c, i))}
+            {chapterData?.translation.attribution && !loading && (
+              <Text
+                variant="labelSmall"
+                style={{
+                  textAlign: 'center',
+                  marginTop: 40,
+                  marginBottom: 20,
+                  opacity: 0.5,
+                }}
+              >
+                {chapterData.translation.attribution}
+              </Text>
+            )}
+          </>
         )}
       </ScrollView>
+
+      {/* Control Dock: Sticky Bottom Navigation & Action Bar */}
+      <View style={[styles.controlDock, { bottom: insets.bottom + 80 }]}>
+        <BlurView intensity={80} tint={theme.blurTint} style={StyleSheet.absoluteFill} />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: theme.colors.surface,
+              opacity: theme.dark ? 0.8 : 0.6,
+            },
+          ]}
+        />
+        <View style={styles.dockInner}>
+          <View style={styles.navSlot}>
+            {!isFirstChapter && (
+              <IconButton
+                icon="chevron-left"
+                size={22}
+                onPress={() => navigateToChapter('prev')}
+                style={styles.navIcon}
+              />
+            )}
+          </View>
+
+          <View style={styles.pillsContainer}>
+            <TouchableOpacity
+              style={[styles.pill, { backgroundColor: theme.colors.surfaceVariant }]}
+              onPress={() => setModalType('translation')}
+            >
+              <Text numberOfLines={1} style={styles.pillText}>
+                {supportedTranslation.name}
+              </Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={14}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.pill, { backgroundColor: theme.colors.surfaceVariant }]}
+              onPress={() => setModalType('book')}
+            >
+              <Text numberOfLines={1} style={styles.pillText}>
+                {book?.name || '...'}
+              </Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={14}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.pill, { backgroundColor: theme.colors.surfaceVariant }]}
+              onPress={() => setModalType('chapter')}
+            >
+              <Text style={styles.pillText}>{chapterNum}</Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={14}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.navSlot}>
+            {!isLastChapter && (
+              <IconButton
+                icon="chevron-right"
+                size={22}
+                onPress={() => navigateToChapter('next')}
+                style={styles.navIcon}
+              />
+            )}
+          </View>
+
+          {chapterData?.thisChapterAudioLinks &&
+            Object.keys(chapterData.thisChapterAudioLinks).length > 0 && (
+              <>
+                <View
+                  style={[
+                    styles.dockDivider,
+                    { backgroundColor: theme.colors.outlineVariant },
+                  ]}
+                />
+                <IconButton
+                  icon={isPlaying ? 'pause' : 'play'}
+                  mode="contained"
+                  containerColor={theme.colors.tertiary}
+                  iconColor={theme.dark ? '#0F0F0F' : '#FFFFFF'}
+                  size={24}
+                  onPress={toggleAudio}
+                  style={styles.navIcon}
+                />
+              </>
+            )}
+        </View>
+      </View>
 
       {/* Selection Modals */}
       <Portal>
@@ -416,33 +607,29 @@ export default function BibleReaderScreen() {
                       comparisons (e.g., Psalm superscriptions). In the API, 
                       they usually appear immediately BEFORE the verse they describe.
                   */}
-                  {chapterData?.chapter.content.map((content, idx) => {
-                    const nextItem = chapterData.chapter.content[idx + 1];
-                    if (
-                      content.type === 'hebrew_subtitle' &&
-                      nextItem?.type === 'verse' &&
-                      nextItem.number === selectedVerseNum
-                    ) {
-                      return (
-                        <View key={`sub-${idx}`} style={styles.detailSection}>
-                          <Text
-                            variant="labelSmall"
-                            style={{ color: theme.colors.tertiary, marginBottom: 4 }}
-                          >
-                            {labels.hebrewSubtitle}
-                          </Text>
-                          <Text style={[styles.detailText, { fontStyle: 'italic' }]}>
-                            {content.content
-                              .map((item) =>
-                                typeof item === 'string' ? item : (item as any).text,
-                              )
-                              .join('')}
-                          </Text>
-                        </View>
-                      );
-                    }
-                    return null;
-                  })}
+                  {(() => {
+                    const subtitle = getAssociatedSubtitle(selectedVerseNum || 0);
+                    if (!subtitle) return null;
+                    return (
+                      <View style={styles.detailSection}>
+                        <Text
+                          variant="labelSmall"
+                          style={{ color: theme.colors.tertiary, marginBottom: 4 }}
+                        >
+                          {labels.hebrewSubtitle}
+                        </Text>
+                        <Text style={[styles.detailText, { fontStyle: 'italic' }]}>
+                          {subtitle.content
+                            .map((item) => {
+                              if (typeof item === 'string') return item;
+                              if ('text' in item) return item.text;
+                              return '';
+                            })
+                            .join('')}
+                        </Text>
+                      </View>
+                    );
+                  })()}
 
                   {/* 
                       Footnotes: Filter the chapter's master footnote list 
@@ -539,31 +726,59 @@ export default function BibleReaderScreen() {
 }
 
 const styles = StyleSheet.create({
-  selectorBar: {
+  controlDock: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    left: 12,
+    right: 12,
+    height: 60,
+    zIndex: 1000,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    borderRadius: 30,
+    overflow: 'hidden',
   },
-  selectorButton: {
+  dockInner: {
     flex: 1,
-    height: '100%',
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 4,
   },
-  selectorText: {
-    fontSize: 14,
+  pillsContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+    gap: 2,
+    height: 32,
+  },
+  navSlot: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIcon: {
+    margin: 0,
+  },
+  pillText: {
+    fontSize: 13,
     fontWeight: '600',
   },
-  verticalDivider: {
+  dockDivider: {
     width: 1,
-    height: '60%',
+    height: 24,
+    marginHorizontal: 4,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -572,10 +787,10 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   heading: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: 32,
+    marginBottom: 8,
   },
   verseContainer: {
     fontSize: 18,
@@ -600,8 +815,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     position: 'relative',
-    top: -4,
-    lineHeight: 14,
+    top: -6,
+    paddingHorizontal: 2,
   },
   lineBreak: {
     height: 16,
