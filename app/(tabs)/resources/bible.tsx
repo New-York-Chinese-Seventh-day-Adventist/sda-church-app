@@ -23,11 +23,10 @@ import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
 
 // Generalizing dimensions to ensure responsiveness across iPhone/Tablet
-const DOCK_HEIGHT = 54;
-const DOCK_BOTTOM_MARGIN = 48;
+const DOCK_HEIGHT = 50;
+// This margin should match the approximate height of the bottom tab bar to ensure they sit flush.
+const DOCK_BOTTOM_MARGIN = 49;
 const FOOTER_PADDDING_OFFSET = 120;
-const RETREAT_DISTANCE_BUFFER = 50; // Extra buffer to ensure clear exit
-
 const uiLabels = {
   en: {
     translation: 'Translation',
@@ -104,10 +103,10 @@ export default function BibleReaderScreen() {
     outputRange: [DOCK_BOTTOM_MARGIN + insets.bottom, 0],
   });
 
-  // Expand the height slightly when not retracted.
+  // Taller when active (UI visible). When retracted, it covers the bottom safe area.
   const animatedDockHeight = menuAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [DOCK_HEIGHT, DOCK_HEIGHT + 10],
+    outputRange: [DOCK_HEIGHT + insets.bottom, DOCK_HEIGHT + 25],
   });
 
   // Data state
@@ -777,15 +776,9 @@ export default function BibleReaderScreen() {
 const styles = StyleSheet.create({
   controlDock: {
     position: 'absolute',
-    left: 12,
-    right: 12,
+    left: 0,
+    right: 0,
     zIndex: 1000,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    borderRadius: 30,
     overflow: 'hidden',
   },
   dockInner: {
