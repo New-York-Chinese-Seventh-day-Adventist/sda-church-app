@@ -25,7 +25,7 @@ const allLabels = {
     youtubeSub: 'Watch our latest worship services',
     spotify: 'Audio Archive',
     spotifySub: 'Listen to our sermons and Bible study classes',
-    hymnal: 'Hymnal',
+    hymnal: 'English Hymnal',
     hymnalSub: 'Lyrics and music for worship',
     library: 'Library',
     librarySub: 'Devotionals, PDFs and guides',
@@ -40,7 +40,7 @@ const allLabels = {
     youtubeSub: '觀看最新的崇拜服務',
     spotify: '音頻檔案',
     spotifySub: '收聽我們的證道與研經課程',
-    hymnal: '詩歌本',
+    hymnal: '英文詩歌本',
     hymnalSub: '敬拜用的歌詞與音樂',
     library: '圖書館',
     librarySub: '靈修資料、PDF 與指南',
@@ -55,7 +55,7 @@ const allLabels = {
     youtubeSub: '观看最新的崇拜服务',
     spotify: '音频存档',
     spotifySub: '收听我们的证道与研经课程',
-    hymnal: '诗歌本',
+    hymnal: '英文诗歌本',
     hymnalSub: '敬拜用的歌词与音乐',
     library: '图书馆',
     librarySub: '灵修资料、PDF 与指南',
@@ -70,7 +70,7 @@ const allLabels = {
     youtubeSub: 'Mira nuestros últimos servicios de adoración',
     spotify: 'Archivo de Audio',
     spotifySub: 'Escucha nuestros sermones y clases de estudio bíblico',
-    hymnal: 'Himnario',
+    hymnal: 'Himnario en Inglés',
     hymnalSub: 'Letras y música para la adoración',
     library: 'Biblioteca',
     librarySub: 'Devocionales, PDFs y guías',
@@ -114,7 +114,7 @@ export default function ResourcesScreen() {
             description={labels.hymnalSub}
             icon="music-note"
             iconColor={theme.colors.tertiary}
-            onPress={openHymnal}
+            onPress={() => openHymnal(1)}
           />
 
           <MenuCard
