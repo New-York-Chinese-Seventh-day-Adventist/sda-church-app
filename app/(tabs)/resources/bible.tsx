@@ -1,7 +1,6 @@
 import { UIStateContext } from '@/app/(tabs)/_layout';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Audio } from 'expo-av';
-import { BlurView } from 'expo-blur';
 import { Stack } from 'expo-router';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -22,8 +21,6 @@ import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
 import { ReaderStyles } from '@/styles/ReaderStyles';
-
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 // Generalizing dimensions to ensure responsiveness across iPhone/Tablet
 const DOCK_HEIGHT = 60;
@@ -840,18 +837,11 @@ export default function BibleReaderScreen() {
           },
         ]}
       >
-        <AnimatedBlurView
-          intensity={80}
-          tint={theme.blurTint}
-          style={StyleSheet.absoluteFill}
-        />
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
             {
-              backgroundColor: theme.dark
-                ? 'rgba(15, 15, 15, 0.75)'
-                : 'rgba(255, 255, 255, 0.85)',
+              backgroundColor: theme.colors.background,
             },
           ]}
         />

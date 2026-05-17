@@ -4,7 +4,6 @@ import { ALL_SEARCH_LABELS, getSearchableItems } from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
-import { BlurView } from 'expo-blur';
 import { Tabs, router, useSegments } from 'expo-router';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
@@ -174,17 +173,12 @@ export const GlobalHeader = (props: any) => {
                     styles.resultsOverlay,
                     {
                       top: headerHeight,
-                      backgroundColor: 'transparent',
+                      backgroundColor: theme.colors.background,
                       borderWidth: 0.5,
                       borderColor: theme.colors.glassBorder,
                     },
                   ]}
                 >
-                  <BlurView
-                    intensity={50}
-                    tint={theme.blurTint}
-                    style={StyleSheet.absoluteFill}
-                  />
                   {results.map((item, index) => (
                     <List.Item
                       key={index}
@@ -331,23 +325,12 @@ export default function TabLayout() {
             borderTopWidth: 0,
           },
           tabBarBackground: () => (
-            <View style={StyleSheet.absoluteFill}>
-              <BlurView
-                tint={theme.blurTint}
-                intensity={80}
-                style={StyleSheet.absoluteFill}
-              />
-              <View
-                style={[
-                  StyleSheet.absoluteFill,
-                  {
-                    backgroundColor: theme.dark
-                      ? 'rgba(15, 15, 15, 0.75)'
-                      : 'rgba(255, 255, 255, 0.85)',
-                  },
-                ]}
-              />
-            </View>
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                { backgroundColor: theme.colors.background },
+              ]}
+            />
           ),
         }}
       >

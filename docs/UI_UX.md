@@ -51,9 +51,9 @@ contrast (#FFFFFF and #0F0F0F) exclusively for **Active Focus** states (like bot
 icons and primary buttons) to create a "spotlight" effect that guides the user’s eye
 without the need for loud brand colors.
 
-Monochrome designs transition to Dark Mode elegantly. By using dark surfaces with
-off-white text and monochrome icons, the interface remains consistent and spiritually
-focused, minimizing retinal distractions.
+Monochrome designs ransition to Dark Mode elegantly. By using dark surfaces with off-white
+text and monochrome icons, the interface remains consistent and spiritually focused,
+minimizing retinal distractions.
 
 <!-- prettier-ignore -->
 | Element | Light Mode Hex | Dark Mode Hex | Rationale |
@@ -95,17 +95,17 @@ These brand colors are used for third-party recognition in Light Mode and follow
     monochrome styling. This provides a "premium" feel and ensures accessibility across
     both light and dark modes.
 
-#### Elevation & Translucency (The "Glass" Rule)
+#### Elevation & Modern
 
-To maintain a modern, native feel and satisfy **Tenet 5 (Simplicity)**, the app utilizes
-translucent surfaces for persistent navigation and search elements.
+To maintain a modern, native feel and satisfy **Tenet 5 (Simplicity)**, the app focuses on
+simple, blended colors.
 
 - **Edge-to-Edge Immersive UI:** The app must blend seamlessly into the device's physical
   boundaries, extending the UI to the very edge of the screen at both the top (status bar)
   and bottom (home indicator/navigation bar).
   - **Immersive Canvas:** Eliminate "letterboxing" or hard-coded safe area gutters. The
-    background content or translucent navigation bars should bleed into the system safe
-    areas (using `viewport-fit=cover` for PWA).
+    background content or navigation bars should bleed into the system safe areas (using
+    `viewport-fit=cover` for PWA).
   - **Hardware-Software Synergy:** Like the YouTube app, this design choice removes the
     visual separation between the app and the device hardware, reinforcing the "Digital
     Sanctuary" metaphor by making the interface feel like an integrated environment rather
@@ -117,8 +117,6 @@ translucent surfaces for persistent navigation and search elements.
   height (Status Bar + 64px).
 - **Boundary Definition:** Do not use any boundary definition for the bottom tab
   navigation bar
-- **Browser Fallback:** For browsers that do not support `backdrop-filter`, the
-  high-opacity `rgba` background serves as a graceful fallback to ensure legibility.
 - **Future-Proofing:** It shifts your design from "Standard App" to a custom "Digital
   Sanctuary."
 
