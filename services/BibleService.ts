@@ -14,11 +14,11 @@ export const API_BASE = 'https://bible.helloao.org/api';
 import { SupportedLanguage } from '@/constants/LanguageContext';
 
 export const SUPPORTED_TRANSLATIONS = [
-  { id: 'BSB', name: 'BSB', lang: 'English' },
-  { id: 'eng_kjv', name: 'KJV', lang: 'English' },
-  { id: 'cmn_cuv', name: '和合本 (繁體)', lang: 'Chinese' },
-  { id: 'cmn_cu1', name: '和合本 (简体)', lang: 'Chinese' },
-  { id: 'spa_r09', name: 'RVR09', lang: 'Spanish' },
+  { id: 'BSB', name: 'BSB', lang: 'en' },
+  { id: 'eng_kjv', name: 'KJV', lang: 'en' },
+  { id: 'cmn_cuv', name: '和合本', lang: 'zh' },
+  { id: 'cmn_cu1', name: '和合本', lang: 'zh-cn' },
+  { id: 'spa_r09', name: 'RVR09', lang: 'es' },
 ];
 
 /**

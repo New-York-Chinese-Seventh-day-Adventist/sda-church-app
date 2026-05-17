@@ -41,6 +41,10 @@ const uiLabels = {
     hebrewSubtitle: 'Hebrew (Original)',
     prevChapter: 'Prev',
     nextChapter: 'Next',
+    en: 'English',
+    zh: 'Chinese (Traditional)',
+    'zh-cn': 'Chinese (Simplified)',
+    es: 'Spanish',
   },
   zh: {
     translation: '譯本',
@@ -52,6 +56,10 @@ const uiLabels = {
     hebrewSubtitle: '希伯來語 (原文)',
     prevChapter: '上一章',
     nextChapter: '下一章',
+    en: '英文',
+    zh: '繁體中文',
+    'zh-cn': '簡體中文',
+    es: '西班牙文',
   },
   'zh-cn': {
     translation: '译本',
@@ -63,6 +71,10 @@ const uiLabels = {
     hebrewSubtitle: '希伯来语 (原文)',
     prevChapter: '上一章',
     nextChapter: '下一章',
+    en: '英文',
+    zh: '繁体中文',
+    'zh-cn': '简体中文',
+    es: '西班牙文',
   },
   es: {
     translation: 'Traducción',
@@ -74,6 +86,10 @@ const uiLabels = {
     hebrewSubtitle: 'Hebreo (Original)',
     prevChapter: 'Anterior',
     nextChapter: 'Siguiente',
+    en: 'Inglés',
+    zh: 'Chino (Tradicional)',
+    'zh-cn': 'Chino (Simplificado)',
+    es: 'Español',
   },
 };
 
@@ -800,7 +816,9 @@ export default function BibleReaderScreen() {
                           : labels.chapterItem.replace('{n}', item.toString())
                       }
                       description={
-                        typeof item === 'object' && 'lang' in item ? item.lang : undefined
+                        typeof item === 'object' && 'lang' in item
+                          ? (labels as any)[item.lang]
+                          : undefined
                       }
                       onPress={() => {
                         if (lastActiveType === 'translation') {
