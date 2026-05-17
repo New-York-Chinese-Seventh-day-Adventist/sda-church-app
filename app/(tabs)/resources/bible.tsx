@@ -382,40 +382,64 @@ export default function BibleReaderScreen() {
     }
 
     const renderText = (text: string, style?: any) => {
-      // If it's a Selah/liturgical marker, we trim it completely as it's
-      // rendered as a separate block-level element via the segmenting logic.
-      const displayContent = isSelah ? text.trim() : text;
+      // 1. Handle Liturgical Markers (Selah/Higgaion)
+      if (isSelah) {
+        return (
+          <Text
+            key={i}
+            style={[
+              style,
+              {
+                textAlign: 'right',
+                width: '100%',
+                fontStyle: 'italic',
+                opacity: 0.7,
+                marginTop: 4,
+                marginBottom: 2,
+              },
+            ]}
+          >
+            {text.trim()}
+          </Text>
+        );
+      }
 
-      const trimmed = isSelah ? displayContent : displayContent.trimEnd();
-      const trailing = isSelah ? '' : displayContent.substring(trimmed.length);
+      // 2. Regular Text Processing
+      // Isolate leading whitespace/newlines and trailing punctuation/space.
+      // This ensures the underline (View wrapper) only surrounds the core word.
+      const leadingMatch = text.match(/^[\s\n]*/);
+      const leading = leadingMatch ? leadingMatch[0] : '';
+      const rest = text.substring(leading.length);
+
+      // Capture trailing punctuation (including full-width Chinese) and whitespace.
+      const trailingMatch = rest.match(
+        /([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*\s*)$/,
+      );
+      const trailing = trailingMatch ? trailingMatch[0] : '';
+      const core = rest.substring(0, rest.length - trailing.length);
+
+      if (!isFootnoted || !core) {
+        return (
+          <Text key={i} style={style}>
+            {text}
+          </Text>
+        );
+      }
 
       return (
-        <Text
-          key={i}
-          style={[
-            style,
-            isSelah && {
-              textAlign: 'right',
-              width: '100%',
-              fontStyle: 'italic',
-              opacity: 0.7,
-              marginTop: 4,
-            },
-          ]}
-        >
-          {trimmed ? (
-            <View
-              style={{
-                borderBottomWidth: isFootnoted ? 1.5 : 0,
-                borderBottomColor: isFootnoted ? theme.colors.primary : 'transparent',
-                marginBottom: isFootnoted ? -2 : 0,
-                display: 'inline-flex' as any,
-              }}
-            >
-              <Text style={style}>{trimmed}</Text>
-            </View>
-          ) : null}
-          {trailing ? <Text style={style}>{trailing}</Text> : null}
+        <Text key={i} style={style}>
+          {leading}
+          <View
+            style={{
+              borderBottomWidth: 1.5,
+              borderBottomColor: theme.colors.primary,
+              marginBottom: -2,
+              display: 'inline-flex' as any,
+            }}
+          >
+            <Text style={style}>{core}</Text>
+          </View>
+          {trailing}
         </Text>
       );
     };
@@ -426,29 +450,41 @@ export default function BibleReaderScreen() {
 
     // Formatted Text (Poetry, Words of Jesus)
     if ('text' in item) {
-      /**
-       * Determine if this is a continuation of a poetic line.
-       * We scan backwards to skip over metadata (like footnotes) to see if the
-       * previous meaningful segment was also poetic. This prevents mid-sentence
-       * line breaks and duplicate indentation in verses broken up by footnotes
-       * (common in Chinese CUV and Spanish RVR).
-       */
+      const prevItem = i > 0 ? contentArray[i - 1] : null;
+      const prevIsLineBreak = !!(
+        prevItem &&
+        typeof prevItem === 'object' &&
+        'lineBreak' in prevItem
+      );
+
+      // Determine if this is a continuation of a poetic line (e.g. split by a footnote).
+      // We only skip the newline/indent if we find a previous poetic segment AND
+      // we had to skip over metadata or whitespace to get there.
+      // If segments are adjacent, they are treated as separate poetic lines.
       let isLineContinuation = false;
-      if (isPoetic) {
+      if (isPoetic && i > 0) {
+        let skippedInterruption = false;
         for (let k = i - 1; k >= 0; k--) {
           const prev = contentArray[k];
-          // Skip footnote references and metadata when checking for line continuity
-          if (typeof prev === 'object' && prev !== null && 'noteId' in prev) continue;
 
-          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
+          const isMetadata =
+            typeof prev === 'object' && prev !== null && 'noteId' in prev;
+          const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
+
+          if (isMetadata || isWhitespace) {
+            skippedInterruption = true;
+            continue;
+          }
+
           const prevIsPoetic =
             typeof prev === 'object' && prev !== null && 'poem' in prev;
+          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
           const prevIsSelah = BibleService.isSelahMarker(
             supportedTranslation.id,
             prevText,
           );
 
-          if (prevIsPoetic && !prevIsSelah) {
+          if (prevIsPoetic && !prevIsSelah && skippedInterruption) {
             isLineContinuation = true;
           }
           break;
@@ -458,13 +494,21 @@ export default function BibleReaderScreen() {
       const indent =
         isPoetic && item.poem > 1 && !isSelah ? '\u00A0'.repeat((item.poem - 1) * 3) : '';
 
+      // We only add an automatic newline if it's a new poetic line and there wasn't
+      // an explicit 'lineBreak' object right before it.
       const prefix =
-        (isPoetic && !isLineContinuation && !isSelah && i > 0 ? '\n' : '') +
-        (!isLineContinuation ? indent : '');
+        (isPoetic && !isLineContinuation && !isSelah && i > 0 && !prevIsLineBreak
+          ? '\n'
+          : '') + (!isLineContinuation ? indent : '');
       return renderText(
         prefix + item.text,
         item.wordsOfJesus ? { color: theme.colors.error } : undefined,
       );
+    }
+
+    // Inline Line Breaks (explicitly provided in the data)
+    if (typeof item === 'object' && item !== null && 'lineBreak' in item) {
+      return <Text key={i}>{'\n'}</Text>;
     }
 
     // Footnote Markers: Now that we have underlines, we skip rendering the literal

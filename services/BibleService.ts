@@ -49,15 +49,15 @@ export const DEFAULT_TRANSLATION_MAP: Record<SupportedLanguage, string> = {
  * - cmn_cuv/cu1: Strictly matches the traditional/simplified transliteration of "Selah".
  */
 export const SELAH_PATTERNS: Record<string, RegExp> = {
-  BSB: /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+  BSB: /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
   eng_kjv:
-    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
   spa_r09:
-    /^\s*[\uff08(]?\s*(Higaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+    /^\s*[\uff08(]?\s*(Higaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
   cmn_cuv: /^\s*[\uff08(]?\s*(細拉)\s*[\uff09)]?[.,;!?]?\s*$/,
   cmn_cu1: /^\s*[\uff08(]?\s*(细拉)\s*[\uff09)]?[.,;!?]?\s*$/,
   default:
-    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
 };
 
 export interface Translation {
