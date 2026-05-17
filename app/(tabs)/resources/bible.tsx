@@ -1,4 +1,4 @@
-import { UIStateContext } from '@/app/(tabs)/_layout';
+import { UIStateContext } from '@/components/GlobalHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Audio } from 'expo-av';
 import { Stack } from 'expo-router';

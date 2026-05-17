@@ -1,4 +1,4 @@
-import { GlobalHeader } from '@/app/(tabs)/_layout';
+import { GlobalHeader } from '@/components/GlobalHeader';
 import { Stack } from 'expo-router';
 
 export default function ResourcesStackLayout() {
