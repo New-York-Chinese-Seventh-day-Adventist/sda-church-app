@@ -504,23 +504,22 @@ export default function BibleReaderScreen() {
       return (
         <Text key={i} style={style}>
           {leading}
-          {/* 
-              We wrap the word and its punctuation in an inline-flex row.
-              This prevents the "Punctuation Jump" by ensuring they are 
-              treated as a single atomic unit during text wrapping.
+          {/*
+              To support natural text wrapping at viewport boundaries, we avoid
+              using View wrappers (which are atomic blocks). Instead, we use
+              nested Text nodes with textDecorationLine, which allows the
+              layout engine to wrap the underlined word across lines if needed
+              while keeping punctuation anchored.
           */}
-          <View style={{ display: 'inline-flex' as any, flexDirection: 'row' }}>
-            <View
-              style={{
-                borderBottomWidth: 1.5,
-                borderBottomColor: theme.colors.primary,
-                marginBottom: -2,
-              }}
-            >
-              <Text style={style}>{core}</Text>
-            </View>
-            <Text style={style}>{trailingPunct}</Text>
-          </View>
+          <Text
+            style={{
+              textDecorationLine: 'underline',
+              textDecorationColor: theme.colors.primary,
+            }}
+          >
+            {core}
+          </Text>
+          <Text style={style}>{trailingPunct}</Text>
           {trailingSpace}
         </Text>
       );
