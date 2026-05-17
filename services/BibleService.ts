@@ -241,6 +241,35 @@ export function isSelahMarker(translationId: string, text: string): boolean {
 }
 
 /**
+ * Checks if a string starts with whitespace, a newline, or common punctuation.
+ * Used to determine if a space needs to be injected after a footnote to prevent
+ * "welded" words (e.g., preventing "allywith" instead of "ally with").
+ */
+export function startsWithPunctuationOrSpace(text: string): boolean {
+  const pattern = /^[\s\n.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]/;
+  return pattern.test(text);
+}
+
+/**
+ * Segments a text string into leading whitespace/newlines, a core word/phrase,
+ * trailing punctuation (including CJK full-width), and trailing breaking space.
+ *
+ * Used by the UI to apply specific treatments (like underlining) to the core word
+ * while keeping punctuation and layout whitespace visually distinct.
+ */
+export function segmentText(text: string) {
+  const match = text.match(
+    /^([\s\n]*)(.*?)(([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*)(\s*))$/,
+  );
+  return {
+    leading: match ? match[1] : '',
+    core: match ? match[2] : text,
+    trailingPunct: match ? match[4] : '',
+    trailingSpace: match ? match[5] : '',
+  };
+}
+
+/**
  * Fetches the verses for a specific chapter in a specific translation and book.
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.

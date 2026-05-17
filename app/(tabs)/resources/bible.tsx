@@ -97,7 +97,8 @@ export default function BibleReaderScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
-  const { menuAnim, menuVisible, setMenuVisible } = useContext(UIStateContext);
+  const { menuAnim, setMenuVisible: setGlobalMenuVisible } = useContext(UIStateContext);
+  const [menuVisible, setMenuVisible] = useState(true);
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
@@ -192,19 +193,37 @@ export default function BibleReaderScreen() {
     }
   };
 
-  // Effect to handle auto-playing when advancing chapters via audio or gesture
   useEffect(() => {
     const autoPlayNext = async () => {
-      if (shouldAutoPlay && chapterData?.thisChapterAudioLinks) {
-        setShouldAutoPlay(false);
-        // Small delay to ensure the UI has transitioned before audio starts
-        setTimeout(() => toggleAudio(), 500);
-      }
+      setShouldAutoPlay(false);
+      setTimeout(() => toggleAudio(), 500);
     };
-    if (chapterData && !loading) {
+
+    // Only trigger auto-play if:
+    // 1. Auto-play was requested (shouldAutoPlay is true)
+    // 2. We are not in the middle of a network request (!loading)
+    // 3. The loaded chapter data matches the user's current selection (translation/book/chapter)
+    // This prevents a race condition where the effect fires for the "old" chapter
+    // before the new data has started loading.
+    if (
+      shouldAutoPlay &&
+      !loading &&
+      chapterData &&
+      chapterData.chapter.number === chapterNum &&
+      chapterData.book.id === book?.id &&
+      chapterData.translation.id === supportedTranslation.id &&
+      chapterData.thisChapterAudioLinks
+    ) {
       autoPlayNext();
     }
-  }, [chapterData, loading]);
+  }, [
+    chapterData,
+    loading,
+    shouldAutoPlay,
+    chapterNum,
+    book?.id,
+    supportedTranslation.id,
+  ]);
 
   // Modal states
   const [modalType, setModalType] = useState<
@@ -288,6 +307,11 @@ export default function BibleReaderScreen() {
     }
   }, [supportedTranslation.id, book?.id, chapterNum, books]);
 
+  const updateMenuVisibility = (visible: boolean) => {
+    setMenuVisible(visible);
+    setGlobalMenuVisible(visible);
+  };
+
   /**
    * Navigates to the next or previous chapter.
    * Automatically handles transitioning between books (e.g., Matt 28 -> Mark 1).
@@ -332,10 +356,10 @@ export default function BibleReaderScreen() {
     if (Math.abs(currentOffset - lastScrollY.current) > 15) {
       if (currentOffset > lastScrollY.current && currentOffset > 100) {
         // Scrolling down: Hide menus
-        setMenuVisible(false);
+        updateMenuVisibility(false);
       } else {
         // Scrolling up: Show menus
-        setMenuVisible(true);
+        updateMenuVisibility(true);
       }
       lastScrollY.current = currentOffset;
     }
@@ -344,7 +368,7 @@ export default function BibleReaderScreen() {
   // Scroll to top when chapter content changes
   useEffect(() => {
     // Ensure menus are visible on mount or chapter change
-    setMenuVisible(true);
+    updateMenuVisibility(true);
 
     if (chapterData) {
       scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -358,9 +382,9 @@ export default function BibleReaderScreen() {
         setIsPlaying(false);
       }
       // Always restore menus when leaving the reader
-      setMenuVisible(true);
+      updateMenuVisibility(true);
     };
-  }, [chapterData, setMenuVisible]);
+  }, [chapterData, setGlobalMenuVisible]);
 
   /**
    * Renders individual content items (text, formatted text, footnotes, etc.)
@@ -434,7 +458,7 @@ export default function BibleReaderScreen() {
       followsFootnote &&
       !(isPoetic && !isLineContinuation && i > 0) &&
       contentText.length > 0 &&
-      !/^[\s\n.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]/.test(contentText)
+      !BibleService.startsWithPunctuationOrSpace(contentText)
     ) {
       contentText = ' ' + contentText;
     }
@@ -458,15 +482,8 @@ export default function BibleReaderScreen() {
     }
 
     const renderText = (text: string, style?: any) => {
-      // Segment the text into: leading whitespace/newlines, core word,
-      // trailing punctuation (English & CUV/RVR full-width), and trailing breaking space.
-      const match = text.match(
-        /^([\s\n]*)(.*?)(([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*)(\s*))$/,
-      );
-      const leading = match ? match[1] : ''; // Captures \u00A0 and \n
-      const core = match ? match[2] : text;
-      const trailingPunct = match ? match[4] : '';
-      const trailingSpace = match ? match[5] : '';
+      const { leading, core, trailingPunct, trailingSpace } =
+        BibleService.segmentText(text);
 
       // 1. Handle Liturgical Markers (Selah/Higgaion)
       if (isSelah) {
@@ -611,7 +628,7 @@ export default function BibleReaderScreen() {
 
   /**
    * Opens the "Verse Detail" modal. This modal aggregates footnotes
-   * and Hebrew/Greek subtitles relevant to the specific verse tapped.
+   * and Hebrew subtitles relevant to the specific verse tapped.
    */
   const openVerseDetails = (num: number) => {
     const { hasFootnotes, hasSubtitle } = getVerseExtras(num);
@@ -1044,6 +1061,11 @@ export default function BibleReaderScreen() {
                           : undefined
                       }
                       onPress={() => {
+                        // If audio is currently playing, ensure the new selection
+                        // starts playing automatically.
+                        if (isPlaying) {
+                          setShouldAutoPlay(true);
+                        }
                         if (lastActiveType === 'translation') {
                           setSupportedTranslation(item as any);
                         } else if (lastActiveType === 'book') {
