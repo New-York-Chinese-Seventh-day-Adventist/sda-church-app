@@ -21,12 +21,15 @@ import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
+import { ReaderStyles } from '@/styles/ReaderStyles';
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 // Generalizing dimensions to ensure responsiveness across iPhone/Tablet
-const DOCK_HEIGHT = 50;
+const DOCK_HEIGHT = 60;
 // This margin should match the approximate height of the bottom tab bar to ensure they sit flush.
 const DOCK_BOTTOM_MARGIN = 49;
-const FOOTER_PADDDING_OFFSET = 120;
+const FOOTER_PADDDING_OFFSET = 150;
 const uiLabels = {
   en: {
     translation: 'Translation',
@@ -96,17 +99,17 @@ export default function BibleReaderScreen() {
   const [book, setBook] = useState<BibleService.TranslationBook | null>(null);
   const [chapterNum, setChapterNum] = useState(1);
 
-  // Animate the Control Dock down to the bottom edge of the screen.
-  // By moving it only by the margin and inset, it docks to the absolute bottom.
-  const dockTranslateY = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [DOCK_BOTTOM_MARGIN + insets.bottom, 0],
-  });
+  // Keep the Bible dock visible at the bottom of the screen at all times.
+  // We only animate the height so it "drops" down to the bottom when the tab bar hides.
+  const dockTranslateY = 0;
 
-  // Taller when active (UI visible). When retracted, it covers the bottom safe area.
+  // Taller when expanded to overlap the tab bar area; shorter when retracted to sit at the absolute bottom.
   const animatedDockHeight = menuAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [DOCK_HEIGHT + insets.bottom, DOCK_HEIGHT + 25],
+    outputRange: [
+      DOCK_HEIGHT + insets.bottom,
+      DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom,
+    ],
   });
 
   // Data state
@@ -366,7 +369,10 @@ export default function BibleReaderScreen() {
     // Footnote Markers: Renders a superscript-style caller (e.g., * or a)
     if ('noteId' in item) {
       return (
-        <Text key={i} style={[styles.footnoteMarker, { color: theme.colors.primary }]}>
+        <Text
+          key={i}
+          style={[ReaderStyles.footnoteMarker, { color: theme.colors.primary }]}
+        >
           {chapterData?.chapter.footnotes.find((f) => f.noteId === item.noteId)?.caller ||
             '*'}
         </Text>
@@ -378,7 +384,7 @@ export default function BibleReaderScreen() {
       return (
         <Text
           key={i}
-          style={[styles.inlineHeading, { color: theme.colors.onSurfaceVariant }]}
+          style={[ReaderStyles.inlineHeading, { color: theme.colors.onSurfaceVariant }]}
         >
           {`\n${item.heading}\n`}
         </Text>
@@ -438,7 +444,7 @@ export default function BibleReaderScreen() {
         return (
           <Text
             key={index}
-            style={[styles.heading, { color: theme.colors.onBackground }]}
+            style={[ReaderStyles.heading, { color: theme.colors.onBackground }]}
           >
             {content.content.join(' ')}
           </Text>
@@ -447,7 +453,10 @@ export default function BibleReaderScreen() {
         return (
           <Text
             key={index}
-            style={[styles.hebrewSubtitle, { color: theme.colors.onSurfaceVariant }]}
+            style={[
+              ReaderStyles.hebrewSubtitle,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
           >
             {content.content.map((item, i) => renderItemContent(item, i))}
           </Text>
@@ -455,10 +464,12 @@ export default function BibleReaderScreen() {
       case 'verse':
         const { hasFootnotes, hasSubtitle } = getVerseExtras(content.number);
         const verseText = (
-          <Text style={[styles.verseContainer, { color: theme.colors.onBackground }]}>
+          <Text
+            style={[ReaderStyles.verseContainer, { color: theme.colors.onBackground }]}
+          >
             <Text
               style={[
-                styles.verseNumber,
+                ReaderStyles.verseNumber,
                 {
                   color:
                     hasFootnotes || hasSubtitle
@@ -485,7 +496,7 @@ export default function BibleReaderScreen() {
           <View key={index}>{verseText}</View>
         );
       case 'line_break':
-        return <View key={index} style={styles.lineBreak} />;
+        return <View key={index} style={ReaderStyles.lineBreak} />;
       default:
         return null;
     }
@@ -505,7 +516,7 @@ export default function BibleReaderScreen() {
         scrollEventThrottle={32}
         onScroll={handleScroll}
         contentContainerStyle={[
-          styles.scrollContent,
+          ReaderStyles.scrollContent,
           {
             paddingTop: headerHeight + 10,
             paddingBottom: insets.bottom + FOOTER_PADDDING_OFFSET,
@@ -513,7 +524,7 @@ export default function BibleReaderScreen() {
         ]}
       >
         {loading ? (
-          <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
+          <ActivityIndicator style={ReaderStyles.loader} color={theme.colors.primary} />
         ) : (
           <>
             {chapterData?.chapter.content.map((c, i) => renderContent(c, i))}
@@ -534,96 +545,148 @@ export default function BibleReaderScreen() {
         )}
       </ScrollView>
 
+      {/* Floating Audio Toggle Overlay */}
+      {chapterData?.thisChapterAudioLinks &&
+        Object.keys(chapterData.thisChapterAudioLinks).length > 0 && (
+          <Animated.View
+            style={[
+              ReaderStyles.floatingAudioButton,
+              {
+                opacity: menuAnim,
+                transform: [
+                  {
+                    translateY: menuAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [100, 0],
+                    }),
+                  },
+                ],
+                bottom: animatedDockHeight.interpolate({
+                  inputRange: [
+                    DOCK_HEIGHT + insets.bottom,
+                    DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom,
+                  ],
+                  outputRange: [
+                    DOCK_HEIGHT + insets.bottom + 16,
+                    DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom + 16,
+                  ],
+                }),
+              },
+            ]}
+          >
+            <IconButton
+              icon={isPlaying ? 'pause' : 'play'}
+              mode="contained"
+              containerColor={theme.colors.tertiary}
+              iconColor={theme.colors.onPrimary}
+              size={32}
+              onPress={toggleAudio}
+              elevation={4}
+            />
+          </Animated.View>
+        )}
+
       {/* Control Dock: Sticky Bottom Navigation & Action Bar */}
       <Animated.View
         style={[
-          styles.controlDock,
+          ReaderStyles.controlDock,
           {
-            bottom: insets.bottom + DOCK_BOTTOM_MARGIN,
+            bottom: 0,
             height: animatedDockHeight,
             transform: [{ translateY: dockTranslateY }],
           },
         ]}
       >
-        <BlurView intensity={50} tint={theme.blurTint} style={StyleSheet.absoluteFill} />
-        <View style={styles.dockInner}>
-          {/* Audio Toggle: Moved to the left side */}
-          {chapterData?.thisChapterAudioLinks &&
-            Object.keys(chapterData.thisChapterAudioLinks).length > 0 && (
-              <>
-                <IconButton
-                  icon={isPlaying ? 'pause' : 'play'}
-                  mode="contained"
-                  containerColor={theme.colors.tertiary}
-                  iconColor={theme.colors.onPrimary}
-                  size={24}
-                  onPress={toggleAudio}
-                  style={[styles.navIcon, { marginLeft: 12 }]}
-                />
-              </>
-            )}
-
-          <View style={styles.navSlot}>
-            {!isFirstChapter && (
+        <AnimatedBlurView
+          intensity={80}
+          tint={theme.blurTint}
+          style={StyleSheet.absoluteFill}
+        />
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: theme.dark
+                ? 'rgba(15, 15, 15, 0.75)'
+                : 'rgba(255, 255, 255, 0.85)',
+            },
+          ]}
+        />
+        <View style={ReaderStyles.dockInner}>
+          <View style={ReaderStyles.sideSlot}>
+            {!isFirstChapter ? (
               <IconButton
                 icon="chevron-left"
-                size={22}
+                size={26}
                 onPress={() => navigateToChapter('prev')}
-                style={styles.navIcon}
+                style={ReaderStyles.navIcon}
               />
+            ) : (
+              <View style={ReaderStyles.buttonPlaceholder} />
             )}
           </View>
 
-          <View style={styles.pillsContainer}>
+          <View style={ReaderStyles.pillsContainer}>
             <TouchableOpacity
-              style={[styles.pill, { backgroundColor: theme.colors.surfaceVariant }]}
+              style={[
+                ReaderStyles.pill,
+                { backgroundColor: theme.colors.surfaceVariant },
+              ]}
               onPress={() => setModalType('translation')}
             >
-              <Text numberOfLines={1} style={styles.pillText}>
+              <Text numberOfLines={1} style={ReaderStyles.pillText}>
                 {supportedTranslation.name}
               </Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={14}
+                size={16}
                 color={theme.colors.onSurfaceVariant}
               />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.pill, { backgroundColor: theme.colors.surfaceVariant }]}
+              style={[
+                ReaderStyles.pill,
+                { backgroundColor: theme.colors.surfaceVariant },
+              ]}
               onPress={() => setModalType('book')}
             >
-              <Text numberOfLines={1} style={styles.pillText}>
+              <Text numberOfLines={1} style={ReaderStyles.pillText}>
                 {book?.name || '...'}
               </Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={14}
+                size={16}
                 color={theme.colors.onSurfaceVariant}
               />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.pill, { backgroundColor: theme.colors.surfaceVariant }]}
+              style={[
+                ReaderStyles.pill,
+                { backgroundColor: theme.colors.surfaceVariant },
+              ]}
               onPress={() => setModalType('chapter')}
             >
-              <Text style={styles.pillText}>{chapterNum}</Text>
+              <Text style={ReaderStyles.pillText}>{chapterNum}</Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={14}
+                size={16}
                 color={theme.colors.onSurfaceVariant}
               />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.navSlot}>
-            {!isLastChapter && (
+          <View style={ReaderStyles.sideSlot}>
+            {!isLastChapter ? (
               <IconButton
                 icon="chevron-right"
-                size={22}
+                size={26}
                 onPress={() => navigateToChapter('next')}
-                style={styles.navIcon}
+                style={ReaderStyles.navIcon}
               />
+            ) : (
+              <View style={ReaderStyles.buttonPlaceholder} />
             )}
           </View>
         </View>
@@ -635,21 +698,21 @@ export default function BibleReaderScreen() {
           visible={!!modalType}
           onDismiss={closeModal}
           contentContainerStyle={[
-            styles.modalContent,
+            ReaderStyles.modalContent,
             { backgroundColor: theme.colors.surface },
           ]}
         >
-          <View style={styles.modalInner}>
+          <View style={ReaderStyles.modalInner}>
             {lastActiveType === 'verse-detail' ? (
               <>
                 <Text
                   variant="titleLarge"
-                  style={[styles.modalTitle, { color: theme.colors.onSurface }]}
+                  style={[ReaderStyles.modalTitle, { color: theme.colors.onSurface }]}
                 >
                   {book?.name} {chapterNum}:{selectedVerseNum}
                 </Text>
                 <Divider />
-                <ScrollView style={styles.modalScroll}>
+                <ScrollView style={ReaderStyles.modalScroll}>
                   {/* 
                       Hebrew Subtitles: These often contain original language 
                       comparisons (e.g., Psalm superscriptions). In the API, 
@@ -659,14 +722,14 @@ export default function BibleReaderScreen() {
                     const subtitle = getAssociatedSubtitle(selectedVerseNum || 0);
                     if (!subtitle) return null;
                     return (
-                      <View style={styles.detailSection}>
+                      <View style={ReaderStyles.detailSection}>
                         <Text
                           variant="labelSmall"
                           style={{ color: theme.colors.tertiary, marginBottom: 4 }}
                         >
                           {labels.hebrewSubtitle}
                         </Text>
-                        <Text style={[styles.detailText, { fontStyle: 'italic' }]}>
+                        <Text style={[ReaderStyles.detailText, { fontStyle: 'italic' }]}>
                           {subtitle.content
                             .map((item) => {
                               if (typeof item === 'string') return item;
@@ -686,14 +749,14 @@ export default function BibleReaderScreen() {
                   {chapterData?.chapter.footnotes
                     .filter((f) => f.reference?.verse === selectedVerseNum)
                     .map((f, i) => (
-                      <View key={`fn-${i}`} style={styles.detailSection}>
+                      <View key={`fn-${i}`} style={ReaderStyles.detailSection}>
                         <Text
                           variant="labelSmall"
                           style={{ color: theme.colors.primary, marginBottom: 4 }}
                         >
                           {labels.footnote} ({f.caller})
                         </Text>
-                        <Text style={styles.detailText}>{f.text}</Text>
+                        <Text style={ReaderStyles.detailText}>{f.text}</Text>
                       </View>
                     ))}
                 </ScrollView>
@@ -702,7 +765,7 @@ export default function BibleReaderScreen() {
               <>
                 <Text
                   variant="titleLarge"
-                  style={[styles.modalTitle, { color: theme.colors.onSurface }]}
+                  style={[ReaderStyles.modalTitle, { color: theme.colors.onSurface }]}
                 >
                   {lastActiveType === 'translation'
                     ? labels.translation
@@ -772,116 +835,3 @@ export default function BibleReaderScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  controlDock: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    overflow: 'hidden',
-  },
-  dockInner: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  pillsContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 16,
-    gap: 2,
-    height: 32,
-  },
-  navSlot: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navIcon: {
-    margin: 0,
-  },
-  pillText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-  },
-  loader: {
-    marginTop: 50,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: '800',
-    marginTop: 32,
-    marginBottom: 8,
-  },
-  verseContainer: {
-    fontSize: 18,
-    lineHeight: 28,
-    marginBottom: 12,
-  },
-  verseNumber: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  hebrewSubtitle: {
-    fontSize: 16,
-    marginBottom: 16,
-    opacity: 0.8,
-  },
-  inlineHeading: {
-    fontWeight: '700',
-    fontSize: 14,
-    lineHeight: 24,
-  },
-  footnoteMarker: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    position: 'relative',
-    top: -6,
-    paddingHorizontal: 2,
-  },
-  lineBreak: {
-    height: 16,
-  },
-  poemText: {},
-  modalScroll: {
-    padding: 16,
-    maxHeight: 400,
-  },
-  detailSection: {
-    marginBottom: 20,
-  },
-  detailText: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  modalContent: {
-    margin: 20,
-    borderRadius: 12,
-    maxHeight: '80%',
-    overflow: 'hidden',
-  },
-  modalInner: {
-    paddingVertical: 16,
-    flexShrink: 1,
-  },
-  modalTitle: {
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-});

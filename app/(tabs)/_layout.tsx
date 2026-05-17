@@ -334,8 +334,18 @@ export default function TabLayout() {
             <View style={StyleSheet.absoluteFill}>
               <BlurView
                 tint={theme.blurTint}
-                intensity={50}
+                intensity={80}
                 style={StyleSheet.absoluteFill}
+              />
+              <View
+                style={[
+                  StyleSheet.absoluteFill,
+                  {
+                    backgroundColor: theme.dark
+                      ? 'rgba(15, 15, 15, 0.75)'
+                      : 'rgba(255, 255, 255, 0.85)',
+                  },
+                ]}
               />
             </View>
           ),
