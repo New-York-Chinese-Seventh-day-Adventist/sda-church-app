@@ -16,7 +16,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/sda-church-app/home",
+  "start_url": "/sda-church-app/",
   "display": "standalone",
   "display_override": ["standalone"],
   "orientation": "portrait",
