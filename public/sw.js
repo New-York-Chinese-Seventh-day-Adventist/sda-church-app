@@ -2,12 +2,12 @@
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
 // This controls a pop-up notification to users when a new version of the app is available for install
 // DO NOT EDIT THIS MANUALLY, as it will be overwritten by the next PR update.
-const VERSION = "0.12.4";
+const VERSION = '0.12.0';
 const CACHE_NAME = `sda-church-v${VERSION}`;
 
-self.addEventListener("install", (event) => {});
+self.addEventListener('install', (event) => {});
 
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     Promise.all([
       self.clients.claim(),
@@ -25,24 +25,22 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
         const resClone = response.clone();
-        caches
-          .open(CACHE_NAME)
-          .then((cache) => cache.put(event.request, resClone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
         return response;
       })
       .catch(() => caches.match(event.request)),
   );
 });
 
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
