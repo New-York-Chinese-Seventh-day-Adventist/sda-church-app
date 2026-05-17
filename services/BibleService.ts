@@ -118,7 +118,6 @@ export interface ChapterVerse {
 export interface FormattedText {
   text: string;
   poem?: number;
-  wordsOfJesus?: boolean;
 }
 
 export interface InlineHeading {

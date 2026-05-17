@@ -359,7 +359,7 @@ export default function BibleReaderScreen() {
 
   /**
    * Renders individual content items (text, formatted text, footnotes, etc.)
-   * Handles poetic indentation and Words of Jesus styling.
+   * Handles poetic indentation.
    */
   const renderItemContent = (
     item: any,
@@ -465,35 +465,37 @@ export default function BibleReaderScreen() {
 
       // 1. Handle Liturgical Markers (Selah/Higgaion)
       if (isSelah) {
+        // Wrap Selah in a View to ensure it behaves as a block-level element
+        // allowing `textAlign: 'right'` to work consistently across platforms.
         return (
-          <Text
-            key={i}
-            style={[
-              style,
-              {
-                textAlign: 'right',
-                width: '100%',
-                fontStyle: 'italic',
-                opacity: 0.7,
-                marginTop: 4,
-                marginBottom: 2,
-              },
-            ]}
-          >
+          <View key={i} style={{ width: '100%' }}>
             <Text
-              style={
-                isFootnoted
-                  ? {
-                      textDecorationLine: 'underline',
-                      textDecorationColor: theme.colors.primary,
-                    }
-                  : undefined
-              }
+              style={[
+                {
+                  textAlign: 'right',
+                  fontStyle: 'italic',
+                  opacity: 0.7,
+                  marginTop: 4,
+                  marginBottom: 2,
+                },
+              ]}
             >
-              {core}
+              <Text
+                style={[
+                  style,
+                  isFootnoted
+                    ? {
+                        textDecorationLine: 'underline',
+                        textDecorationColor: theme.colors.primary,
+                      }
+                    : undefined,
+                ]}
+              >
+                {core}
+              </Text>
+              {trailingPunct}
             </Text>
-            {trailingPunct}
-          </Text>
+          </View>
         );
       }
 
@@ -526,7 +528,7 @@ export default function BibleReaderScreen() {
       return renderText(contentText);
     }
 
-    // Formatted Text (Poetry, Words of Jesus)
+    // Formatted Text (Poetry)
     if ('text' in item) {
       const indent =
         isPoetic && item.poem && item.poem > 1 && !isSelah
@@ -538,10 +540,7 @@ export default function BibleReaderScreen() {
           ? '\n'
           : '') + (!isLineContinuation ? indent : '');
 
-      return renderText(
-        prefix + contentText,
-        item.wordsOfJesus ? { color: theme.colors.error } : undefined,
-      );
+      return renderText(prefix + contentText);
     }
 
     // Inline Line Breaks (explicitly provided in the data)
