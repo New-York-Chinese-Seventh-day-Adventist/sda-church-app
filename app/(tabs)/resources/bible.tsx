@@ -361,8 +361,55 @@ export default function BibleReaderScreen() {
    * Renders individual content items (text, formatted text, footnotes, etc.)
    * Handles poetic indentation and Words of Jesus styling.
    */
-  const renderItemContent = (item: any, i: number) => {
-    if (typeof item === 'string') return <Text key={i}>{item}</Text>;
+  const renderItemContent = (item: any, i: number, contentArray: any[]) => {
+    // Peek ahead to see if this text segment is followed by a footnote marker.
+    // We skip whitespace-only strings to ensure the word itself gets underlined.
+    let isFootnoted = false;
+    for (let j = i + 1; j < contentArray.length; j++) {
+      const next = contentArray[j];
+      if (typeof next === 'object' && 'noteId' in next) {
+        isFootnoted = true;
+        break;
+      }
+      // If we hit another word or a heading before a footnote, stop searching.
+      if (typeof next === 'string' && next.trim().length > 0) break;
+      if (typeof next === 'object' && ('text' in next || 'heading' in next)) break;
+      // Continue if it's just a space or empty string
+    }
+
+    const renderText = (text: string, style?: any) => {
+      if (!isFootnoted)
+        return (
+          <Text key={i} style={style}>
+            {text}
+          </Text>
+        );
+
+      const trimmed = text.trimEnd();
+      const trailing = text.substring(trimmed.length);
+
+      return (
+        <Text key={i}>
+          {trimmed ? (
+            <View
+              style={{
+                borderBottomWidth: 1.5,
+                borderBottomColor: theme.colors.primary,
+                marginBottom: -2,
+                display: 'inline-flex' as any,
+              }}
+            >
+              <Text style={style}>{trimmed}</Text>
+            </View>
+          ) : null}
+          {trailing ? <Text style={style}>{trailing}</Text> : null}
+        </Text>
+      );
+    };
+
+    if (typeof item === 'string') {
+      return renderText(item);
+    }
 
     // Formatted Text (Poetry, Words of Jesus)
     if ('text' in item) {
@@ -372,41 +419,16 @@ export default function BibleReaderScreen() {
       const indent =
         isPoetic && item.poem > 1 ? '\u00A0'.repeat((item.poem - 1) * 3) : '';
 
-      return (
-        <Text key={i} style={[item.wordsOfJesus && { color: theme.colors.error }]}>
-          {/* If it's a poetic segment and not the first item, start a new line */}
-          {isPoetic && i > 0 ? '\n' : ''}
-          {indent}
-          {item.text}
-        </Text>
+      const prefix = (isPoetic && i > 0 ? '\n' : '') + indent;
+      return renderText(
+        prefix + item.text,
+        item.wordsOfJesus && { color: theme.colors.error },
       );
     }
 
-    // Footnote Markers: Renders a superscript-style caller (e.g., * or a)
-    if ('noteId' in item) {
-      return (
-        <Text
-          key={i}
-          style={[ReaderStyles.footnoteMarker, { color: theme.colors.primary }]}
-        >
-          {chapterData?.chapter.footnotes.find((f) => f.noteId === item.noteId)?.caller ||
-            '*'}
-        </Text>
-      );
-    }
-
-    // Inline Headings or Line Breaks
-    if ('heading' in item) {
-      return (
-        <Text
-          key={i}
-          style={[ReaderStyles.inlineHeading, { color: theme.colors.onSurfaceVariant }]}
-        >
-          {`\n${item.heading}\n`}
-        </Text>
-      );
-    }
-    if ('lineBreak' in item) return <Text key={i}>{'\n'}</Text>;
+    // Footnote Markers: Now that we have underlines, we skip rendering the literal
+    // superscript caller (e.g., * or a) to maintain a cleaner reading experience.
+    if ('noteId' in item) return null;
 
     return null;
   };
@@ -474,7 +496,9 @@ export default function BibleReaderScreen() {
               { color: theme.colors.onSurfaceVariant },
             ]}
           >
-            {content.content.map((item, i) => renderItemContent(item, i))}
+            {content.content.map((item, i) =>
+              renderItemContent(item, i, content.content),
+            )}
           </Text>
         );
       case 'verse':
@@ -491,12 +515,15 @@ export default function BibleReaderScreen() {
                     hasFootnotes || hasSubtitle
                       ? theme.colors.primary
                       : theme.colors.outline,
+                  textDecorationLine: 'none',
                 },
               ]}
             >
               {content.number}{' '}
             </Text>
-            {content.content.map((item, i) => renderItemContent(item, i))}
+            {content.content.map((item, i) =>
+              renderItemContent(item, i, content.content),
+            )}
           </Text>
         );
 
