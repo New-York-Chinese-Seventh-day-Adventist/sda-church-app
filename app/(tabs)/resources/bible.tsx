@@ -367,7 +367,7 @@ export default function BibleReaderScreen() {
     contentArray: any[],
     allowUnderline = true,
   ) => {
-    const textValue = typeof item === 'string' ? item : item.text || '';
+    const textValue = typeof item === 'string' ? item : (item as any).text || '';
     const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
     const startsWithNewLine = textValue.startsWith('\n');
     const prevItem = i > 0 ? contentArray[i - 1] : null;
@@ -453,6 +453,16 @@ export default function BibleReaderScreen() {
     }
 
     const renderText = (text: string, style?: any) => {
+      // Segment the text into: leading whitespace/newlines, core word,
+      // trailing punctuation (English & CUV/RVR full-width), and trailing breaking space.
+      const match = text.match(
+        /^([\s\n]*)(.*?)(([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*)(\s*))$/,
+      );
+      const leading = match ? match[1] : ''; // Captures \u00A0 and \n
+      const core = match ? match[2] : text;
+      const trailingPunct = match ? match[4] : '';
+      const trailingSpace = match ? match[5] : '';
+
       // 1. Handle Liturgical Markers (Selah/Higgaion)
       if (isSelah) {
         return (
@@ -470,28 +480,22 @@ export default function BibleReaderScreen() {
               },
             ]}
           >
-            {text.trim()}
+            <Text
+              style={
+                isFootnoted
+                  ? {
+                      textDecorationLine: 'underline',
+                      textDecorationColor: theme.colors.primary,
+                    }
+                  : undefined
+              }
+            >
+              {core}
+            </Text>
+            {trailingPunct}
           </Text>
         );
       }
-
-      // 2. Regular Text Normalization
-      // Extract leading whitespace/newlines, core word, trailing punctuation, and trailing space.
-      // This precision prevents punctuation from jumping to new lines or being underlined.
-      const leadingMatch = text.match(/^[\s\n]*/);
-      const leading = leadingMatch ? leadingMatch[0] : '';
-      const rest = text.substring(leading.length);
-
-      // Capture trailing punctuation (including full-width Chinese) separately from trailing space.
-      const trailingMatch = rest.match(
-        /([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*)(\s*)$/,
-      );
-      const trailingPunct = trailingMatch ? trailingMatch[1] : '';
-      const trailingSpace = trailingMatch ? trailingMatch[2] : '';
-      const core = rest.substring(
-        0,
-        rest.length - (trailingPunct.length + trailingSpace.length),
-      );
 
       if (!isFootnoted || !core) {
         return (
@@ -504,13 +508,6 @@ export default function BibleReaderScreen() {
       return (
         <Text key={i} style={style}>
           {leading}
-          {/*
-              To support natural text wrapping at viewport boundaries, we avoid
-              using View wrappers (which are atomic blocks). Instead, we use
-              nested Text nodes with textDecorationLine, which allows the
-              layout engine to wrap the underlined word across lines if needed
-              while keeping punctuation anchored.
-          */}
           <Text
             style={{
               textDecorationLine: 'underline',
@@ -687,7 +684,7 @@ export default function BibleReaderScreen() {
         };
 
         content.content.forEach((item, i) => {
-          const textValue = typeof item === 'string' ? item : item.text || '';
+          const textValue = typeof item === 'string' ? item : (item as any).text || '';
           const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
 
           if (isSelah) {
