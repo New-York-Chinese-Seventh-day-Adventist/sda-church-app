@@ -456,7 +456,7 @@ export default function BibleReaderScreen() {
         scrollEventThrottle={16}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: headerHeight + 20, paddingBottom: insets.bottom + 140 },
+          { paddingTop: headerHeight + 10, paddingBottom: insets.bottom + 120 },
         ]}
       >
         {loading ? (
@@ -469,7 +469,7 @@ export default function BibleReaderScreen() {
                 variant="labelSmall"
                 style={{
                   textAlign: 'center',
-                  marginTop: 40,
+                  marginTop: 24,
                   marginBottom: 20,
                   opacity: 0.5,
                 }}
@@ -482,18 +482,40 @@ export default function BibleReaderScreen() {
       </ScrollView>
 
       {/* Control Dock: Sticky Bottom Navigation & Action Bar */}
-      <View style={[styles.controlDock, { bottom: insets.bottom + 80 }]}>
-        <BlurView intensity={80} tint={theme.blurTint} style={StyleSheet.absoluteFill} />
+      <View style={[styles.controlDock, { bottom: insets.bottom + 48 }]}>
+        <BlurView intensity={50} tint={theme.blurTint} style={StyleSheet.absoluteFill} />
         <View
           style={[
             StyleSheet.absoluteFill,
             {
               backgroundColor: theme.colors.surface,
-              opacity: theme.dark ? 0.8 : 0.6,
+              opacity: theme.dark ? 0.3 : 0.15,
             },
           ]}
         />
         <View style={styles.dockInner}>
+          {/* Audio Toggle: Moved to the left side */}
+          {chapterData?.thisChapterAudioLinks &&
+            Object.keys(chapterData.thisChapterAudioLinks).length > 0 && (
+              <>
+                <IconButton
+                  icon={isPlaying ? 'pause' : 'play'}
+                  mode="contained"
+                  containerColor={theme.colors.tertiary}
+                  iconColor={theme.dark ? '#0F0F0F' : '#FFFFFF'}
+                  size={24}
+                  onPress={toggleAudio}
+                  style={[styles.navIcon, { marginLeft: 12 }]}
+                />
+                <View
+                  style={[
+                    styles.dockDivider,
+                    { backgroundColor: theme.colors.outlineVariant },
+                  ]}
+                />
+              </>
+            )}
+
           <View style={styles.navSlot}>
             {!isFirstChapter && (
               <IconButton
@@ -557,27 +579,6 @@ export default function BibleReaderScreen() {
               />
             )}
           </View>
-
-          {chapterData?.thisChapterAudioLinks &&
-            Object.keys(chapterData.thisChapterAudioLinks).length > 0 && (
-              <>
-                <View
-                  style={[
-                    styles.dockDivider,
-                    { backgroundColor: theme.colors.outlineVariant },
-                  ]}
-                />
-                <IconButton
-                  icon={isPlaying ? 'pause' : 'play'}
-                  mode="contained"
-                  containerColor={theme.colors.tertiary}
-                  iconColor={theme.dark ? '#0F0F0F' : '#FFFFFF'}
-                  size={24}
-                  onPress={toggleAudio}
-                  style={styles.navIcon}
-                />
-              </>
-            )}
         </View>
       </View>
 
@@ -730,7 +731,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 12,
     right: 12,
-    height: 60,
+    height: 54,
     zIndex: 1000,
     elevation: 4,
     shadowColor: '#000',
