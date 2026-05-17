@@ -120,16 +120,30 @@ export default function TabLayout() {
           ),
         }}
       >
+        {/* 1. Main Home Screen */}
         <Tabs.Screen
           name="index"
           options={{
             title: labels.home,
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
+            // Show search bar for main home screen, not overriden by home/_layout.tsx since index
+            // is to support / path to make manifest.json and +index.tsx easier to configure
+            // and install PWA
+            headerShown: true,
+            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
               <TabBarIcon name="home" color={color} focused={focused} />
             ),
           }}
         />
+
+        {/* 2. Hidden Home Sub-Pages Folder */}
+        <Tabs.Screen
+          name="home"
+          options={{
+            href: null, // This hides it from the bottom bar completely!
+            headerShown: false,
+          }}
+        />
+
         <Tabs.Screen
           name="community"
           options={{
