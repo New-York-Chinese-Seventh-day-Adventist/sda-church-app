@@ -31,6 +31,35 @@ export const DEFAULT_TRANSLATION_MAP: Record<SupportedLanguage, string> = {
   es: 'spa_r09',
 };
 
+/**
+ * Maps translation IDs to their specific liturgical/poetic marker detection patterns.
+ *
+ * The patterns are strictly anchored to ensure we only identify standalone tokens
+ * as liturgical markers. This prevents an entire verse from being right-aligned
+ * just because it contains a specific word.
+ *
+ * Regex Breakdown:
+ * - ^\s* ... \s*$: Matches the start and end of the string to isolate the token.
+ * - [\uff08(]: Matches both ASCII '(' and Chinese full-width '（' parentheses.
+ * - [\uff09)]: Matches both ASCII ')' and Chinese full-width '）' parentheses.
+ * - [.,;!?]?: Accounts for optional trailing punctuation.
+ *
+ * Version Rules:
+ * - spa_r09: Specific to Reina-Valera 1909 (uses "Selah" and "Higaion").
+ * - cmn_cuv/cu1: Strictly matches the traditional/simplified transliteration of "Selah".
+ */
+export const SELAH_PATTERNS: Record<string, RegExp> = {
+  BSB: /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+  eng_kjv:
+    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+  spa_r09:
+    /^\s*[\uff08(]?\s*(Higaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+  cmn_cuv: /^\s*[\uff08(]?\s*(細拉)\s*[\uff09)]?[.,;!?]?\s*$/,
+  cmn_cu1: /^\s*[\uff08(]?\s*(细拉)\s*[\uff09)]?[.,;!?]?\s*$/,
+  default:
+    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[\uff09)]?[.,;!?]?\s*$/i,
+};
+
 export interface Translation {
   id: string;
   name: string;
@@ -198,6 +227,21 @@ export async function fetchBooks(translation: string) {
 }
 
 /**
+ * Determines if a string contains a liturgical or poetic marker (like Selah)
+ * based on the specific translation rules.
+ *
+ * This is used by the UI to segment verses, allowing these markers to be
+ * rendered as block-level, right-aligned elements.
+ *
+ * @param translationId - The ID of the current Bible translation.
+ * @param text - The text string to check.
+ */
+export function isSelahMarker(translationId: string, text: string): boolean {
+  const pattern = SELAH_PATTERNS[translationId] || SELAH_PATTERNS.default;
+  return pattern.test(text);
+}
+
+/**
  * Fetches the verses for a specific chapter in a specific translation and book.
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
@@ -216,11 +260,100 @@ export async function fetchChapter(
     if (!res.ok) {
       throw new Error(`Failed to fetch chapter: ${res.status}`);
     }
-    return await res.json();
+    const data: TranslationBookChapter = await res.json();
+
+    // Normalize content sequences to ensure punctuation stays anchored to words
+    // even when separated by metadata objects (like footnotes), and to preserve
+    // meaningful whitespace and newlines for poetic formatting.
+    if (data.chapter?.content) {
+      data.chapter.content = data.chapter.content.map((item) => {
+        if (item.type === 'verse' || item.type === 'hebrew_subtitle') {
+          return {
+            ...item,
+            content: normalizeContentSequence(item.content),
+          };
+        }
+        return item;
+      });
+    }
+
+    return data;
   } catch (e) {
     console.error(`Failed to load chapter ${book} ${chapter}`, e);
     throw e;
   }
+}
+
+/**
+ * Corrects tokenization artifacts where punctuation or whitespace is separated
+ * from its parent word by footnote markers or metadata objects.
+ *
+ * 1. Anchors trailing punctuation: If a string segment starts with punctuation
+ *    (.,;!?) and follows a footnote marker, it moves that punctuation to the
+ *    preceding text node so they remain visually bound.
+ * 2. Preserves structure: Ensures explicit newlines and heavy whitespace
+ *    are maintained for poetic and right-aligned text blocks.
+ */
+function normalizeContentSequence(content: any[]): any[] {
+  const result: any[] = [];
+
+  for (let i = 0; i < content.length; i++) {
+    let current = content[i];
+
+    /**
+     * 1. Punctuation Anchoring
+     * Look for tokens starting with whitespace/newlines followed by punctuation.
+     * If found, we anchor the punctuation back to the word before the footnote,
+     * but we "shift" the newline so it remains at the start of the remaining
+     * text (like "Selah"), ensuring formatting isn't lost.
+     */
+    const punctMatch =
+      typeof current === 'string' ? current.match(/^([\s]*)([.,;!?:'"]+)/) : null;
+
+    if (punctMatch && result.length > 0) {
+      const leadingWhitespace = punctMatch[1];
+      const leadingPunct = punctMatch[2];
+
+      let anchorIdx = -1;
+      // Scan backwards for the nearest available text node.
+      // We MUST stop if we encounter a newline (\n), as punctuation should
+      // not be anchored to a word on a different structural line.
+      for (let j = result.length - 1; j >= 0; j--) {
+        const prev = result[j];
+        if (typeof prev === 'string' && prev.includes('\n')) break;
+        if (typeof prev === 'string' || (typeof prev === 'object' && 'text' in prev)) {
+          anchorIdx = j;
+          break;
+        }
+      }
+
+      if (anchorIdx !== -1) {
+        const anchor = result[anchorIdx];
+        if (typeof anchor === 'string') {
+          // Only trim horizontal whitespace; preserving \n if present in the anchor
+          result[anchorIdx] = anchor.replace(/[ \t]+$/, '') + leadingPunct;
+        } else {
+          result[anchorIdx] = {
+            ...anchor,
+            text: anchor.text.replace(/[ \t]+$/, '') + leadingPunct,
+          };
+        }
+        // Reconstruct the token: preserve the whitespace (newlines) and strip
+        // only the shifted punctuation. This fixes the "welding" (?Selah) bug.
+        const remainingText = (current as string).substring(
+          leadingWhitespace.length + leadingPunct.length,
+        );
+        current = leadingWhitespace + remainingText;
+      }
+    }
+
+    // Add to result while preserving structural whitespace and newlines
+    if (current !== '') {
+      result.push(current);
+    }
+  }
+
+  return result;
 }
 
 /**

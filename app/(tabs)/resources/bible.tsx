@@ -362,8 +362,14 @@ export default function BibleReaderScreen() {
    * Handles poetic indentation and Words of Jesus styling.
    */
   const renderItemContent = (item: any, i: number, contentArray: any[]) => {
-    // Peek ahead to see if this text segment is followed by a footnote marker.
-    // We skip whitespace-only strings to ensure the word itself gets underlined.
+    const textValue = typeof item === 'string' ? item : item.text || '';
+    const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
+
+    // Version-specific detection for liturgical/poetic markers.
+    // This ensures we don't match modern academic terms in historical translations.
+    const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
+
+    // Peek ahead for footnote markers to apply underlining to the current word
     let isFootnoted = false;
     for (let j = i + 1; j < contentArray.length; j++) {
       const next = contentArray[j];
@@ -371,31 +377,38 @@ export default function BibleReaderScreen() {
         isFootnoted = true;
         break;
       }
-      // If we hit another word or a heading before a footnote, stop searching.
       if (typeof next === 'string' && next.trim().length > 0) break;
       if (typeof next === 'object' && ('text' in next || 'heading' in next)) break;
-      // Continue if it's just a space or empty string
     }
 
     const renderText = (text: string, style?: any) => {
-      if (!isFootnoted)
-        return (
-          <Text key={i} style={style}>
-            {text}
-          </Text>
-        );
+      // If it's a Selah/liturgical marker, we trim it completely as it's
+      // rendered as a separate block-level element via the segmenting logic.
+      const displayContent = isSelah ? text.trim() : text;
 
-      const trimmed = text.trimEnd();
-      const trailing = text.substring(trimmed.length);
+      const trimmed = isSelah ? displayContent : displayContent.trimEnd();
+      const trailing = isSelah ? '' : displayContent.substring(trimmed.length);
 
       return (
-        <Text key={i}>
+        <Text
+          key={i}
+          style={[
+            style,
+            isSelah && {
+              textAlign: 'right',
+              width: '100%',
+              fontStyle: 'italic',
+              opacity: 0.7,
+              marginTop: 4,
+            },
+          ]}
+        >
           {trimmed ? (
             <View
               style={{
-                borderBottomWidth: 1.5,
-                borderBottomColor: theme.colors.primary,
-                marginBottom: -2,
+                borderBottomWidth: isFootnoted ? 1.5 : 0,
+                borderBottomColor: isFootnoted ? theme.colors.primary : 'transparent',
+                marginBottom: isFootnoted ? -2 : 0,
                 display: 'inline-flex' as any,
               }}
             >
@@ -413,16 +426,44 @@ export default function BibleReaderScreen() {
 
     // Formatted Text (Poetry, Words of Jesus)
     if ('text' in item) {
-      const isPoetic = item.poem !== undefined;
-      // Indentation: level 1 is base, level 2+ are indented.
-      // We use non-breaking spaces (\u00A0) for consistent padding in Text components.
-      const indent =
-        isPoetic && item.poem > 1 ? '\u00A0'.repeat((item.poem - 1) * 3) : '';
+      /**
+       * Determine if this is a continuation of a poetic line.
+       * We scan backwards to skip over metadata (like footnotes) to see if the
+       * previous meaningful segment was also poetic. This prevents mid-sentence
+       * line breaks and duplicate indentation in verses broken up by footnotes
+       * (common in Chinese CUV and Spanish RVR).
+       */
+      let isLineContinuation = false;
+      if (isPoetic) {
+        for (let k = i - 1; k >= 0; k--) {
+          const prev = contentArray[k];
+          // Skip footnote references and metadata when checking for line continuity
+          if (typeof prev === 'object' && prev !== null && 'noteId' in prev) continue;
 
-      const prefix = (isPoetic && i > 0 ? '\n' : '') + indent;
+          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
+          const prevIsPoetic =
+            typeof prev === 'object' && prev !== null && 'poem' in prev;
+          const prevIsSelah = BibleService.isSelahMarker(
+            supportedTranslation.id,
+            prevText,
+          );
+
+          if (prevIsPoetic && !prevIsSelah) {
+            isLineContinuation = true;
+          }
+          break;
+        }
+      }
+
+      const indent =
+        isPoetic && item.poem > 1 && !isSelah ? '\u00A0'.repeat((item.poem - 1) * 3) : '';
+
+      const prefix =
+        (isPoetic && !isLineContinuation && !isSelah && i > 0 ? '\n' : '') +
+        (!isLineContinuation ? indent : '');
       return renderText(
         prefix + item.text,
-        item.wordsOfJesus && { color: theme.colors.error },
+        item.wordsOfJesus ? { color: theme.colors.error } : undefined,
       );
     }
 
@@ -503,28 +544,62 @@ export default function BibleReaderScreen() {
         );
       case 'verse':
         const { hasFootnotes, hasSubtitle } = getVerseExtras(content.number);
-        const verseText = (
-          <Text
-            style={[ReaderStyles.verseContainer, { color: theme.colors.onBackground }]}
-          >
+
+        // To support right-aligned liturgical markers (Selah, Higgaion) while
+        // maintaining proper inline word-wrapping for prose/poetry, we segment
+        // the verse. Liturgical markers are rendered as block-level right-aligned
+        // elements, while the rest of the verse remains inline.
+        const verseElements: React.ReactNode[] = [];
+        let inlineBuffer: { item: any; index: number }[] = [];
+
+        const flushBuffer = (key: string) => {
+          if (inlineBuffer.length === 0 && verseElements.length > 0) return;
+          verseElements.push(
             <Text
-              style={[
-                ReaderStyles.verseNumber,
-                {
-                  color:
-                    hasFootnotes || hasSubtitle
-                      ? theme.colors.primary
-                      : theme.colors.outline,
-                  textDecorationLine: 'none',
-                },
-              ]}
+              key={key}
+              style={[ReaderStyles.verseContainer, { color: theme.colors.onBackground }]}
             >
-              {content.number}{' '}
-            </Text>
-            {content.content.map((item, i) =>
-              renderItemContent(item, i, content.content),
-            )}
-          </Text>
+              {verseElements.length === 0 && (
+                <Text
+                  style={[
+                    ReaderStyles.verseNumber,
+                    {
+                      color:
+                        hasFootnotes || hasSubtitle
+                          ? theme.colors.primary
+                          : theme.colors.outline,
+                      textDecorationLine: 'none',
+                    },
+                  ]}
+                >
+                  {content.number}{' '}
+                </Text>
+              )}
+              {inlineBuffer.map((entry) =>
+                renderItemContent(entry.item, entry.index, content.content),
+              )}
+            </Text>,
+          );
+          inlineBuffer = [];
+        };
+
+        content.content.forEach((item, i) => {
+          const textValue = typeof item === 'string' ? item : item.text || '';
+          const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
+
+          if (isSelah) {
+            flushBuffer(`text-pre-${i}`);
+            verseElements.push(renderItemContent(item, i, content.content));
+          } else {
+            inlineBuffer.push({ item, index: i });
+          }
+        });
+        flushBuffer('text-final');
+
+        const verseContent = (
+          <View key={index} style={{ width: '100%' }}>
+            {verseElements}
+          </View>
         );
 
         return hasFootnotes || hasSubtitle ? (
@@ -533,10 +608,10 @@ export default function BibleReaderScreen() {
             onPress={() => openVerseDetails(content.number)}
             activeOpacity={0.6}
           >
-            {verseText}
+            {verseContent}
           </TouchableOpacity>
         ) : (
-          <View key={index}>{verseText}</View>
+          verseContent
         );
       case 'line_break':
         return <View key={index} style={ReaderStyles.lineBreak} />;
@@ -624,7 +699,7 @@ export default function BibleReaderScreen() {
               iconColor={theme.colors.onPrimary}
               size={32}
               onPress={toggleAudio}
-              elevation={4}
+              style={{ elevation: 4 }}
             />
           </Animated.View>
         )}
