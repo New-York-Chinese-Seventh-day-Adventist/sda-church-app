@@ -1,3 +1,4 @@
+import { UIStateContext } from '@/app/(tabs)/_layout';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Audio } from 'expo-av';
 import { BlurView } from 'expo-blur';
@@ -5,6 +6,7 @@ import { Stack } from 'expo-router';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -19,6 +21,12 @@ import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
+
+// Generalizing dimensions to ensure responsiveness across iPhone/Tablet
+const DOCK_HEIGHT = 54;
+const DOCK_BOTTOM_MARGIN = 48;
+const FOOTER_PADDDING_OFFSET = 120;
+const RETREAT_DISTANCE_BUFFER = 50; // Extra buffer to ensure clear exit
 
 const uiLabels = {
   en: {
@@ -71,8 +79,11 @@ export default function BibleReaderScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
+  const { menuAnim, setMenuVisible } = useContext(UIStateContext);
+
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
+  const lastScrollY = useRef(0);
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
   // Selection state
@@ -85,6 +96,19 @@ export default function BibleReaderScreen() {
   });
   const [book, setBook] = useState<BibleService.TranslationBook | null>(null);
   const [chapterNum, setChapterNum] = useState(1);
+
+  // Animate the Control Dock down to the bottom edge of the screen.
+  // By moving it only by the margin and inset, it docks to the absolute bottom.
+  const dockTranslateY = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [DOCK_BOTTOM_MARGIN + insets.bottom, 0],
+  });
+
+  // Expand the height slightly when not retracted.
+  const animatedDockHeight = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [DOCK_HEIGHT, DOCK_HEIGHT + 10],
+  });
 
   // Data state
   const [books, setBooks] = useState<BibleService.TranslationBook[]>([]);
@@ -273,8 +297,32 @@ export default function BibleReaderScreen() {
     }
   };
 
+  /**
+   * Scroll handler to toggle Reader Mode (hiding/showing menus)
+   */
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    // Ignore bounces
+    if (currentOffset < 0) return;
+
+    // If we've scrolled more than a small threshold, determine direction
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 100) {
+        // Scrolling down: Hide menus
+        setMenuVisible(false);
+      } else {
+        // Scrolling up: Show menus
+        setMenuVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
   // Scroll to top when chapter content changes
   useEffect(() => {
+    // Ensure menus are visible on mount or chapter change
+    setMenuVisible(true);
+
     if (chapterData) {
       scrollRef.current?.scrollTo({ y: 0, animated: false });
     }
@@ -286,8 +334,10 @@ export default function BibleReaderScreen() {
         soundRef.current = null;
         setIsPlaying(false);
       }
+      // Always restore menus when leaving the reader
+      setMenuVisible(true);
     };
-  }, [chapterData]);
+  }, [chapterData, setMenuVisible]);
 
   /**
    * Renders individual content items (text, formatted text, footnotes, etc.)
@@ -453,10 +503,14 @@ export default function BibleReaderScreen() {
         ref={scrollRef}
         bounces={true}
         alwaysBounceVertical={true}
-        scrollEventThrottle={16}
+        scrollEventThrottle={32}
+        onScroll={handleScroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: headerHeight + 10, paddingBottom: insets.bottom + 120 },
+          {
+            paddingTop: headerHeight + 10,
+            paddingBottom: insets.bottom + FOOTER_PADDDING_OFFSET,
+          },
         ]}
       >
         {loading ? (
@@ -482,17 +536,17 @@ export default function BibleReaderScreen() {
       </ScrollView>
 
       {/* Control Dock: Sticky Bottom Navigation & Action Bar */}
-      <View style={[styles.controlDock, { bottom: insets.bottom + 48 }]}>
+      <Animated.View
+        style={[
+          styles.controlDock,
+          {
+            bottom: insets.bottom + DOCK_BOTTOM_MARGIN,
+            height: animatedDockHeight,
+            transform: [{ translateY: dockTranslateY }],
+          },
+        ]}
+      >
         <BlurView intensity={50} tint={theme.blurTint} style={StyleSheet.absoluteFill} />
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: theme.colors.surface,
-              opacity: theme.dark ? 0.3 : 0.15,
-            },
-          ]}
-        />
         <View style={styles.dockInner}>
           {/* Audio Toggle: Moved to the left side */}
           {chapterData?.thisChapterAudioLinks &&
@@ -502,16 +556,10 @@ export default function BibleReaderScreen() {
                   icon={isPlaying ? 'pause' : 'play'}
                   mode="contained"
                   containerColor={theme.colors.tertiary}
-                  iconColor={theme.dark ? '#0F0F0F' : '#FFFFFF'}
+                  iconColor={theme.colors.onPrimary}
                   size={24}
                   onPress={toggleAudio}
                   style={[styles.navIcon, { marginLeft: 12 }]}
-                />
-                <View
-                  style={[
-                    styles.dockDivider,
-                    { backgroundColor: theme.colors.outlineVariant },
-                  ]}
                 />
               </>
             )}
@@ -580,7 +628,7 @@ export default function BibleReaderScreen() {
             )}
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Selection Modals */}
       <Portal>
@@ -731,7 +779,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 12,
     right: 12,
-    height: 54,
     zIndex: 1000,
     elevation: 4,
     shadowColor: '#000',
@@ -775,11 +822,6 @@ const styles = StyleSheet.create({
   pillText: {
     fontSize: 13,
     fontWeight: '600',
-  },
-  dockDivider: {
-    width: 1,
-    height: 24,
-    marginHorizontal: 4,
   },
   scrollContent: {
     paddingHorizontal: 20,
