@@ -3,12 +3,24 @@ import { DESIGN_TOKENS } from '@/constants/Layout';
 import { ALL_SEARCH_LABELS, getSearchableItems } from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import { Tabs, router, useSegments } from 'expo-router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
 import { Appbar, List, Portal, Searchbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+/**
+ * Context to drive global UI visibility (Reader Mode).
+ */
+export const UIStateContext = createContext<{
+  menuAnim: Animated.Value;
+  setMenuVisible: (visible: boolean) => void;
+}>({
+  menuAnim: new Animated.Value(1),
+  setMenuVisible: () => {},
+});
 
 export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);
@@ -20,8 +32,16 @@ export const GlobalHeader = (props: any) => {
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<any>(null);
   const headerRef = useRef<View>(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
   const insets = useSafeAreaInsets();
+
+  const { menuAnim } = useContext(UIStateContext);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  // Animate the header off the top of the screen
+  const headerTranslateY = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-(headerHeight || 150), 0],
+  });
 
   // Clear search state whenever the navigation path changes (switching tabs or views)
   useEffect(() => {
@@ -72,7 +92,7 @@ export const GlobalHeader = (props: any) => {
   };
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.headerWrapper,
         {
@@ -80,6 +100,7 @@ export const GlobalHeader = (props: any) => {
           borderBottomColor: theme.colors.glassBorder,
           backgroundColor: theme.colors.background,
           paddingTop: insets.top,
+          transform: [{ translateY: headerTranslateY }],
         },
       ]}
     >
@@ -184,7 +205,7 @@ export const GlobalHeader = (props: any) => {
           </View>
         )}
       </Appbar.Header>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -233,6 +254,26 @@ export default function TabLayout() {
   const theme = useAppTheme();
   const { language } = useContext(LanguageContext);
 
+  // Reader Mode state shared with child screens
+  const menuAnim = useRef(new Animated.Value(1)).current;
+  const isMenuVisible = useRef(true);
+
+  const setMenuVisible = (visible: boolean) => {
+    if (visible === isMenuVisible.current) return;
+    isMenuVisible.current = visible;
+
+    Animated.timing(menuAnim, {
+      toValue: visible ? 1 : 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const tabBarTranslateY = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [120, 0],
+  });
+
   const allLabels = {
     en: {
       home: 'Home',
@@ -263,97 +304,122 @@ export default function TabLayout() {
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: theme.colors.onBackground,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-        headerTransparent: true,
-        header: (props) => <GlobalHeader {...props} />,
-        tabBarStyle: {
-          position: 'absolute',
-          elevation: 0,
-          backgroundColor: 'transparent',
-          borderTopWidth: 0,
-        },
-        tabBarBackground: () => (
-          <View style={StyleSheet.absoluteFill}>
-            <BlurView
-              tint={theme.blurTint}
-              intensity={50}
-              style={StyleSheet.absoluteFill}
-            />
-          </View>
-        ),
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: labels.home,
-          tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-            <TabBarIcon name="home" color={color} focused={focused} />
+    <UIStateContext.Provider value={{ menuAnim, setMenuVisible }}>
+      <Tabs
+        tabBar={(props) => (
+          <Animated.View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              transform: [{ translateY: tabBarTranslateY }],
+            }}
+          >
+            <BottomTabBar {...props} />
+          </Animated.View>
+        )}
+        screenOptions={{
+          tabBarActiveTintColor: theme.colors.onBackground,
+          tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+          headerTransparent: true,
+          header: (props) => <GlobalHeader {...props} />,
+          tabBarStyle: {
+            position: 'absolute',
+            elevation: 0,
+            backgroundColor: 'transparent',
+            borderTopWidth: 0,
+          },
+          tabBarBackground: () => (
+            <View style={StyleSheet.absoluteFill}>
+              <BlurView
+                tint={theme.blurTint}
+                intensity={80}
+                style={StyleSheet.absoluteFill}
+              />
+              <View
+                style={[
+                  StyleSheet.absoluteFill,
+                  {
+                    backgroundColor: theme.dark
+                      ? 'rgba(15, 15, 15, 0.75)'
+                      : 'rgba(255, 255, 255, 0.85)',
+                  },
+                ]}
+              />
+            </View>
           ),
         }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate('/');
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: labels.community,
-          headerShown: false, // Internal Stack handles header for consistency
-          tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-            <TabBarIcon name="account-group" color={color} focused={focused} />
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate('/community');
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="resources"
-        options={{
-          title: labels.resources,
-          headerShown: false, // Internal Stack handles header for consistency
-          tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-            <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.navigate('/resources');
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="you"
-        options={
-          {
-            title: labels.you,
-            headerShown: false, // Internal Stack handles header for consistency
-            unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: labels.home,
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <TabBarIcon name="account-circle" color={color} focused={focused} />
+              <TabBarIcon name="home" color={color} focused={focused} />
             ),
-          } as any
-        }
-        listeners={{
-          tabPress: (e) => {
-            // Ensure the You stack resets to its root whenever the tab is pressed.
-            // This solves the "stuck" state after navigating to sub-pages from Home.
-            e.preventDefault();
-            router.navigate('/you');
-          },
-        }}
-      />
-    </Tabs>
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.navigate('/');
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="community"
+          options={{
+            title: labels.community,
+            headerShown: false, // Internal Stack handles header for consistency
+            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+              <TabBarIcon name="account-group" color={color} focused={focused} />
+            ),
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.navigate('/community');
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="resources"
+          options={{
+            title: labels.resources,
+            headerShown: false, // Internal Stack handles header for consistency
+            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+              <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
+            ),
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.navigate('/resources');
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="you"
+          options={
+            {
+              title: labels.you,
+              headerShown: false, // Internal Stack handles header for consistency
+              unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
+              tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+                <TabBarIcon name="account-circle" color={color} focused={focused} />
+              ),
+            } as any
+          }
+          listeners={{
+            tabPress: (e) => {
+              // Ensure the You stack resets to its root whenever the tab is pressed.
+              // This solves the "stuck" state after navigating to sub-pages from Home.
+              e.preventDefault();
+              router.navigate('/you');
+            },
+          }}
+        />
+      </Tabs>
+    </UIStateContext.Provider>
   );
 }

@@ -1,6 +1,17 @@
 import { InitialSetup } from '@/components/InitialSetup';
-import { DEFAULT_LANG, LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
-import { AppTheme, getAppTheme, THEME_DARK, THEME_LIGHT, THEME_STORAGE_KEY, ThemeContext } from '@/constants/Themes';
+import {
+  DEFAULT_LANG,
+  LanguageContext,
+  SupportedLanguage,
+} from '@/constants/LanguageContext';
+import {
+  AppTheme,
+  getAppTheme,
+  THEME_DARK,
+  THEME_LIGHT,
+  THEME_STORAGE_KEY,
+  ThemeContext,
+} from '@/constants/Themes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -8,7 +19,14 @@ import * as Localization from 'expo-localization';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { Alert, AppState, DevSettings, LogBox, Platform, StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import {
+  AppState,
+  LogBox,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  useColorScheme,
+} from 'react-native';
 import { PaperProvider, Snackbar } from 'react-native-paper';
 import 'react-native-reanimated';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -76,11 +94,15 @@ export default function RootLayout() {
   const [showSetup, setShowSetup] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<any>(null);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'up-to-date'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'up-to-date'>(
+    'idle',
+  );
 
   const getSwUrl = () => {
     // If your app is at the root, use /sw.js. If hosted on GitHub Pages subpath, use /sda-church-app/sw.js
-    return window.location.pathname.includes('sda-church-app') ? '/sda-church-app/sw.js' : '/sw.js';
+    return window.location.pathname.includes('sda-church-app')
+      ? '/sda-church-app/sw.js'
+      : '/sw.js';
   };
 
   const nuclearRefresh = async () => {
@@ -108,7 +130,7 @@ export default function RootLayout() {
 
     if (waitingWorker) {
       waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    } else if (Platform.OS === 'web') {
+    } else {
       // Fallback: manually reload if no worker is found but update was requested
       window.location.reload();
     }
@@ -116,7 +138,7 @@ export default function RootLayout() {
   };
 
   const handleManualCheck = async (options?: { isAuto?: boolean }) => {
-    if (Platform.OS === 'web' && 'serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
       // Do not attempt to check for updates if we know we are offline.
       if (!navigator.onLine) return;
 
@@ -180,21 +202,9 @@ export default function RootLayout() {
   };
 
   useEffect(() => {
-    // Register a debug menu item to reset onboarding without wiping app data (or your WSL IP)
-    if (__DEV__ && Platform.OS !== 'web') {
-      DevSettings.addMenuItem('Debug: Reset Onboarding', async () => {
-        await AsyncStorage.multiRemove(['has-completed-setup', 'user-language', 'user-theme']);
-        Alert.alert(
-          'Onboarding Reset',
-          "The first-time flag has been cleared. Reload the app (press 'r' in terminal or use the dev menu) to see the setup screen again.",
-          [{ text: 'OK' }],
-        );
-      });
-    }
-
     // Register service worker for PWA support on web
     let subscription: { remove: () => void } | undefined;
-    if (Platform.OS === 'web' && 'serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
       let refreshing = false;
       const registerSW = async () => {
         const swUrl = getSwUrl();
@@ -286,7 +296,11 @@ export default function RootLayout() {
 
         // Use saved settings if they exist, otherwise fallback to system defaults
         setLanguage((savedLang as SupportedLanguage) || systemLang);
-        setTheme(getAppTheme(savedTheme ? savedTheme === THEME_DARK : colorScheme === THEME_DARK));
+        setTheme(
+          getAppTheme(
+            savedTheme ? savedTheme === THEME_DARK : colorScheme === THEME_DARK,
+          ),
+        );
 
         if (setupDone !== 'true') {
           setShowSetup(true);
@@ -296,9 +310,7 @@ export default function RootLayout() {
       } finally {
         setIsReady(true);
         // LITERALLY "press" the check for updates button on every app launch
-        if (Platform.OS === 'web') {
-          handleManualCheck({ isAuto: true });
-        }
+        handleManualCheck({ isAuto: true });
       }
     }
     prepare();
@@ -460,7 +472,8 @@ function RootLayoutNav({
     },
   };
 
-  const labels = snackbarLabels[language as keyof typeof snackbarLabels] || snackbarLabels.en;
+  const labels =
+    snackbarLabels[language as keyof typeof snackbarLabels] || snackbarLabels.en;
 
   // Positioning the snackbar at the top avoids conflicts with bottom navigation,
   // gesture indicators, and the software keyboard.
@@ -471,7 +484,7 @@ function RootLayoutNav({
       <ThemeProvider value={theme as any}>
         <StatusBar
           barStyle={theme.statusBarScheme}
-          backgroundColor={Platform.OS === 'web' ? undefined : 'transparent'}
+          backgroundColor={undefined}
           translucent
         />
         <Stack>
@@ -493,7 +506,11 @@ function RootLayoutNav({
               : undefined
           }
         >
-          {updateAvailable ? labels.available : updateStatus === 'checking' ? labels.checking : labels.upToDate}
+          {updateAvailable
+            ? labels.available
+            : updateStatus === 'checking'
+              ? labels.checking
+              : labels.upToDate}
         </Snackbar>
       </ThemeProvider>
     </PaperProvider>

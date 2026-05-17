@@ -70,7 +70,16 @@ export const openBeliefs = () =>
   openURL('https://adventist.org/beliefs#official-beliefs');
 export const openGNYC = () => openURL('https://gnyc.org/');
 export const openAtlanticUnion = () => openURL('https://atlantic-union.org/');
-export const openHymnal = () => openURL('https://www.sdahymnal.org/');
+
+/**
+ * Points directly to the official 1985 SDA index handled by Hymnary.
+ * This is a 100% safe, legal redirect structure.
+ */
+export const openHymnal = (hymnNumber?: string | number) => {
+  const hId =
+    typeof hymnNumber === 'string' || typeof hymnNumber === 'number' ? hymnNumber : '';
+  return openURL(`https://hymnary.org/hymn/SDAH1985/${hId}`);
+};
 
 export const openPhone = (phone: string) => {
   const cleanedPhone = phone.replace(/[^\d+]/g, '');

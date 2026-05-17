@@ -1,17 +1,12 @@
 {
   "name": "sda-church-app",
   "main": "expo-router/entry",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "homepage": "https://codesammich.github.io/sda-church-app",
   "scripts": {
     "sync-version": "node public/sync-version.js",
-    "start": "expo start",
-    "android": "ANDROID_HOME=$ANDROID_HOME npx expo run:android",
-    "wsl": "npx expo start --dev-client --tunnel",
-    "ios": "echo \"export NODE_BINARY=$(which node)\" > ios/.xcode.env && expo run:ios",
     "web": "expo start --web",
-    "predeploy": "rm -rf dist && npx expo export --platform web --clear",
-    "deploy": "npm run sync-version && npx gh-pages -d dist --dotfiles"
+    "deploy": "node public/deploy-web.js $@"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.11",
@@ -19,6 +14,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.1.8",
     "expo": "^55.0.23",
+    "expo-av": "^16.0.8",
     "expo-blur": "~55.0.14",
     "expo-build-properties": "~55.0.13",
     "expo-constants": "~55.0.16",

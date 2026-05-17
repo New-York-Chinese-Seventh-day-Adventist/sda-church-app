@@ -100,7 +100,6 @@ These brand colors are used for third-party recognition in Light Mode and follow
 To maintain a modern, native feel and satisfy **Tenet 5 (Simplicity)**, the app utilizes
 translucent surfaces for persistent navigation and search elements.
 
-- **Glassmorphism:** Blur (Intensity 50) for bottom navigation and search overlays.
 - **Edge-to-Edge Immersive UI:** The app must blend seamlessly into the device's physical
   boundaries, extending the UI to the very edge of the screen at both the top (status bar)
   and bottom (home indicator/navigation bar).
@@ -117,13 +116,11 @@ translucent surfaces for persistent navigation and search elements.
   To prevent initial overlap, screens must apply a `paddingTop` equal to the total header
   height (Status Bar + 64px).
 - **Boundary Definition:** Do not use any boundary definition for the bottom tab
-  navigation bar so there will be a smooth transition from blurred tab bar to unblurred
-  content.
+  navigation bar
 - **Browser Fallback:** For browsers that do not support `backdrop-filter`, the
   high-opacity `rgba` background serves as a graceful fallback to ensure legibility.
 - **Future-Proofing:** It shifts your design from "Standard App" to a custom "Digital
-  Sanctuary." That blurred effect mimics light passing through a window, which is a subtle
-  but powerful spiritual metaphor for a church app.
+  Sanctuary."
 
 ## Navigation Layout
 

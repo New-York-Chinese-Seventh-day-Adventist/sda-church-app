@@ -1,79 +1,79 @@
-import { MenuCard } from "@/components/MenuCard";
+import { MenuCard } from '@/components/MenuCard';
 import {
   openHymnal,
   openSabbathStream,
   openSpotifyPodcast,
-} from "@/constants/ExternalLinks";
-import { LanguageContext } from "@/constants/LanguageContext";
-import { DESIGN_TOKENS } from "@/constants/Layout";
-import { useAppTheme } from "@/constants/Themes";
-import { NavigationStyles } from "@/styles/NavigationStyles";
-import { router, Stack } from "expo-router";
-import { useContext } from "react";
-import { ScrollView } from "react-native";
-import { List } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+} from '@/constants/ExternalLinks';
+import { LanguageContext } from '@/constants/LanguageContext';
+import { DESIGN_TOKENS } from '@/constants/Layout';
+import { useAppTheme } from '@/constants/Themes';
+import { NavigationStyles } from '@/styles/NavigationStyles';
+import { router, Stack } from 'expo-router';
+import { useContext } from 'react';
+import { ScrollView } from 'react-native';
+import { List } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const allLabels = {
   en: {
-    title: "Resources",
-    sermonsWorship: "Watch & Listen",
-    studyLiturgy: "Study & Liturgy",
-    bible: "Holy Bible",
-    bibleSub: "Read scripture in multiple languages",
-    youtube: "Full Services",
-    youtubeSub: "Watch our latest worship services",
-    spotify: "Audio Archive",
-    spotifySub: "Listen to our sermons and Bible study classes",
-    hymnal: "Hymnal",
-    hymnalSub: "Lyrics and music for worship",
-    library: "Library",
-    librarySub: "Devotionals, PDFs and guides",
+    title: 'Resources',
+    sermonsWorship: 'Watch & Listen',
+    studyLiturgy: 'Study & Liturgy',
+    bible: 'Holy Bible',
+    bibleSub: 'Read scripture in multiple languages',
+    youtube: 'Full Services',
+    youtubeSub: 'Watch our latest worship services',
+    spotify: 'Audio Archive',
+    spotifySub: 'Listen to our sermons and Bible study classes',
+    hymnal: 'English Hymnal',
+    hymnalSub: 'Lyrics and music for worship',
+    library: 'Library',
+    librarySub: 'Devotionals, PDFs and guides',
   },
   zh: {
-    title: "資源庫",
-    sermonsWorship: "觀看與收聽",
-    studyLiturgy: "研經與禮儀",
-    bible: "聖經",
-    bibleSub: "閱讀多種語言的聖經",
-    youtube: "完整崇拜服務",
-    youtubeSub: "觀看最新的崇拜服務",
-    spotify: "音頻檔案",
-    spotifySub: "收聽我們的證道與研經課程",
-    hymnal: "詩歌本",
-    hymnalSub: "敬拜用的歌詞與音樂",
-    library: "圖書館",
-    librarySub: "靈修資料、PDF 與指南",
+    title: '資源庫',
+    sermonsWorship: '觀看與收聽',
+    studyLiturgy: '研經與禮儀',
+    bible: '聖經',
+    bibleSub: '閱讀多種語言的聖經',
+    youtube: '完整崇拜服務',
+    youtubeSub: '觀看最新的崇拜服務',
+    spotify: '音頻檔案',
+    spotifySub: '收聽我們的證道與研經課程',
+    hymnal: '英文詩歌本',
+    hymnalSub: '敬拜用的歌詞與音樂',
+    library: '圖書館',
+    librarySub: '靈修資料、PDF 與指南',
   },
-  "zh-cn": {
-    title: "资源库",
-    sermonsWorship: "观看与收听",
-    studyLiturgy: "研经与礼仪",
-    bible: "圣经",
-    bibleSub: "阅读多种语言的圣经",
-    youtube: "完整崇拜服务",
-    youtubeSub: "观看最新的崇拜服务",
-    spotify: "音频存档",
-    spotifySub: "收听我们的证道与研经课程",
-    hymnal: "诗歌本",
-    hymnalSub: "敬拜用的歌词与音乐",
-    library: "图书馆",
-    librarySub: "灵修资料、PDF 与指南",
+  'zh-cn': {
+    title: '资源库',
+    sermonsWorship: '观看与收听',
+    studyLiturgy: '研经与礼仪',
+    bible: '圣经',
+    bibleSub: '阅读多种语言的圣经',
+    youtube: '完整崇拜服务',
+    youtubeSub: '观看最新的崇拜服务',
+    spotify: '音频存档',
+    spotifySub: '收听我们的证道与研经课程',
+    hymnal: '英文诗歌本',
+    hymnalSub: '敬拜用的歌词与音乐',
+    library: '图书馆',
+    librarySub: '灵修资料、PDF 与指南',
   },
   es: {
-    title: "Recursos",
-    sermonsWorship: "Ver y Escuchar",
-    studyLiturgy: "Estudio y Liturgia",
-    bible: "Santa Biblia",
-    bibleSub: "Lee las escrituras en varios idiomas",
-    youtube: "Servicios Completos",
-    youtubeSub: "Mira nuestros últimos servicios de adoración",
-    spotify: "Archivo de Audio",
-    spotifySub: "Escucha nuestros sermones y clases de estudio bíblico",
-    hymnal: "Himnario",
-    hymnalSub: "Letras y música para la adoración",
-    library: "Biblioteca",
-    librarySub: "Devocionales, PDFs y guías",
+    title: 'Recursos',
+    sermonsWorship: 'Ver y Escuchar',
+    studyLiturgy: 'Estudio y Liturgia',
+    bible: 'Santa Biblia',
+    bibleSub: 'Lee las escrituras en varios idiomas',
+    youtube: 'Servicios Completos',
+    youtubeSub: 'Mira nuestros últimos servicios de adoración',
+    spotify: 'Archivo de Audio',
+    spotifySub: 'Escucha nuestros sermones y clases de estudio bíblico',
+    hymnal: 'Himnario en Inglés',
+    hymnalSub: 'Letras y música para la adoración',
+    library: 'Biblioteca',
+    librarySub: 'Devocionales, PDFs y guías',
   },
 };
 
@@ -97,10 +97,7 @@ export default function ResourcesScreen() {
       >
         <List.Section>
           <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
           >
             {labels.studyLiturgy}
           </List.Subheader>
@@ -109,7 +106,7 @@ export default function ResourcesScreen() {
             description={labels.bibleSub}
             icon="book-cross"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push("/resources/bible" as any)}
+            onPress={() => router.push('/resources/bible' as any)}
           />
 
           <MenuCard
@@ -117,7 +114,7 @@ export default function ResourcesScreen() {
             description={labels.hymnalSub}
             icon="music-note"
             iconColor={theme.colors.tertiary}
-            onPress={openHymnal}
+            onPress={() => openHymnal(1)}
           />
 
           <MenuCard
@@ -131,10 +128,7 @@ export default function ResourcesScreen() {
 
         <List.Section>
           <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
           >
             {labels.sermonsWorship}
           </List.Subheader>

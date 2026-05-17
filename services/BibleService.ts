@@ -2,51 +2,563 @@
  * Service for interacting with the Bible.helloao.org API.
  * Follows the design specs for multi-language, native-first rendering.
  *
- * Documentation: docs/feature_designs/bible_integration_design.md
+ * Note: The `SupportedLanguage` type is imported from the global LanguageContext
+ * to ensure consistency in language code mapping.
+ *
+ * Architectural Design: ../docs/feature_designs/bible_integration_design.md
  * API Reference: https://bible.helloao.org/docs/reference/
  */
 
-export const API_BASE = "https://bible.helloao.org/api";
+export const API_BASE = 'https://bible.helloao.org/api';
 
-export const TRANSLATIONS = [
-  { id: "BSB", name: "Berean Standard Bible", lang: "English" },
-  { id: "KJV", name: "King James Version", lang: "English" },
-  { id: "CUV", name: "和合本 (繁體)", lang: "Chinese Traditional" },
-  { id: "CUVS", name: "和合本 (简体)", lang: "Chinese Simplified" },
-  { id: "RVR09", name: "Reina Valera 1909", lang: "Spanish" },
-  { id: "SSE", name: "Spanish Modern (SSE)", lang: "Spanish" },
+import { SupportedLanguage } from '@/constants/LanguageContext';
+
+export const SUPPORTED_TRANSLATIONS = [
+  { id: 'BSB', name: 'BSB', lang: 'en' },
+  { id: 'eng_kjv', name: 'KJV', lang: 'en' },
+  { id: 'cmn_cuv', name: '和合本', lang: 'zh' },
+  { id: 'cmn_cu1', name: '和合本', lang: 'zh-cn' },
+  { id: 'spa_r09', name: 'RVR09', lang: 'es' },
 ];
 
 /**
- * Fetches the list of books available for a specific translation.
+ * Maps application language codes to their default Bible translation IDs.
  */
-export async function fetchBooks(translationId: string) {
+export const DEFAULT_TRANSLATION_MAP: Record<SupportedLanguage, string> = {
+  en: 'BSB',
+  zh: 'cmn_cuv',
+  'zh-cn': 'cmn_cu1',
+  es: 'spa_r09',
+};
+
+/**
+ * Maps translation IDs to their specific liturgical/poetic marker detection patterns.
+ *
+ * The patterns are strictly anchored to ensure we only identify standalone tokens
+ * as liturgical markers. This prevents an entire verse from being right-aligned
+ * just because it contains a specific word.
+ *
+ * Regex Breakdown:
+ * - ^\s* ... \s*$: Matches the start and end of the string to isolate the token.
+ * - [\uff08(]: Matches both ASCII '(' and Chinese full-width '（' parentheses.
+ * - [\uff09)]: Matches both ASCII ')' and Chinese full-width '）' parentheses.
+ * - [.,;!?]?: Accounts for optional trailing punctuation.
+ *
+ * Version Rules:
+ * - spa_r09: Specific to Reina-Valera 1909 (uses "Selah" and "Higaion").
+ * - cmn_cuv/cu1: Strictly matches the traditional/simplified transliteration of "Selah".
+ */
+export const SELAH_PATTERNS: Record<string, RegExp> = {
+  BSB: /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
+  eng_kjv:
+    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
+  spa_r09:
+    /^\s*[\uff08(]?\s*(Higaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
+  cmn_cuv: /^\s*[\uff08(]?\s*(細拉)\s*[\uff09)]?[.,;!?]?\s*$/,
+  cmn_cu1: /^\s*[\uff08(]?\s*(细拉)\s*[\uff09)]?[.,;!?]?\s*$/,
+  default:
+    /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
+};
+
+export interface Translation {
+  id: string;
+  name: string;
+  englishName: string;
+  language: string;
+  languageName?: string;
+  textDirection: 'ltr' | 'rtl';
+  attribution?: string;
+}
+
+export interface TranslationBook {
+  id: string;
+  name: string;
+  commonName: string;
+  title: string | null;
+  numberOfChapters: number;
+  totalNumberOfVerses: number;
+}
+
+/**
+ * Complex Chapter Content Types
+ * These allow us to handle headings, footnotes, and poetry correctly in the UI.
+ */
+export type ChapterContent =
+  | ChapterHeading
+  | ChapterLineBreak
+  | ChapterVerse
+  | ChapterHebrewSubtitle;
+
+export interface ChapterHeading {
+  type: 'heading';
+  content: string[];
+}
+
+export interface ChapterLineBreak {
+  type: 'line_break';
+}
+
+export interface ChapterHebrewSubtitle {
+  type: 'hebrew_subtitle';
+  content: (string | FormattedText | VerseFootnoteReference)[];
+}
+
+export interface ChapterVerse {
+  type: 'verse';
+  number: number;
+  content: (
+    | string
+    | FormattedText
+    | InlineHeading
+    | InlineLineBreak
+    | VerseFootnoteReference
+  )[];
+}
+
+export interface FormattedText {
+  text: string;
+  poem?: number;
+}
+
+export interface InlineHeading {
+  heading: string;
+}
+
+export interface InlineLineBreak {
+  lineBreak: true;
+}
+
+export interface VerseFootnoteReference {
+  noteId: number;
+}
+
+export interface ChapterFootnote {
+  noteId: number;
+  text: string;
+  caller: '+' | string | null;
+  reference?: {
+    chapter: number;
+    verse: number;
+  };
+}
+
+export interface ChapterData {
+  number: number;
+  content: ChapterContent[];
+  footnotes: ChapterFootnote[];
+}
+
+/**
+ * The audio links for a book chapter.
+ * Maps reader names to their respective audio file URLs.
+ */
+export interface TranslationBookChapterAudioLinks {
+  [reader: string]: string;
+}
+
+export interface TranslationBookChapter {
+  translation: Translation;
+  book: TranslationBook;
+  thisChapterLink: string;
+  thisChapterAudioLinks: TranslationBookChapterAudioLinks;
+  nextChapterApiLink: string | null;
+  nextChapterAudioLinks: TranslationBookChapterAudioLinks | null;
+  previousChapterApiLink: string | null;
+  previousChapterAudioLinks: TranslationBookChapterAudioLinks | null;
+  numberOfVerses: number;
+  chapter: ChapterData;
+}
+
+/**
+ * Dataset (Cross-Reference) Types
+ */
+export interface DatasetReference {
+  book: string;
+  chapter: number;
+  verse: number;
+  endVerse?: number;
+  score?: number;
+}
+
+export interface DatasetVerse {
+  verse: number;
+  references: DatasetReference[];
+}
+
+/**
+ * Fetches all available translations.
+ *
+ * @returns {Promise<Translation[]>} A list of available Bible translations.
+ */
+export async function fetchAvailableTranslations() {
   try {
-    const res = await fetch(`${API_BASE}/${translationId}/books.json`);
+    const res = await fetch(`${API_BASE}/available_translations.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch translations: ${res.status}`);
+    }
     const data = await res.json();
-    return data.books;
+    return data.translations;
   } catch (e) {
-    console.error(`Failed to load Bible books for ${translationId}`, e);
+    console.error('Failed to load available translations', e);
     throw e;
   }
 }
 
 /**
+ * Fetches the list of books available for a specific translation.
+ *
+ * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
+ * @example fetchBooks('BSB')
+ * @returns {Promise<TranslationBook[]>}
+ */
+export async function fetchBooks(translation: string) {
+  try {
+    const res = await fetch(`${API_BASE}/${translation}/books.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch books for ${translation}: ${res.status}`);
+    }
+    const data = await res.json();
+    return data.books;
+  } catch (e) {
+    console.error(`Failed to load Bible books for ${translation}`, e);
+    throw e;
+  }
+}
+
+/**
+ * Determines if a string contains a liturgical or poetic marker (like Selah)
+ * based on the specific translation rules.
+ *
+ * This is used by the UI to segment verses, allowing these markers to be
+ * rendered as block-level, right-aligned elements.
+ *
+ * @param translationId - The ID of the current Bible translation.
+ * @param text - The text string to check.
+ */
+export function isSelahMarker(translationId: string, text: string): boolean {
+  const pattern = SELAH_PATTERNS[translationId] || SELAH_PATTERNS.default;
+  return pattern.test(text);
+}
+
+/**
+ * Checks if a string starts with whitespace, a newline, or common punctuation.
+ * Used to determine if a space needs to be injected after a footnote to prevent
+ * "welded" words (e.g., preventing "allywith" instead of "ally with").
+ */
+export function startsWithPunctuationOrSpace(text: string): boolean {
+  const pattern = /^[\s\n.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]/;
+  return pattern.test(text);
+}
+
+/**
+ * Segments a text string into leading whitespace/newlines, a core word/phrase,
+ * trailing punctuation (including CJK full-width), and trailing breaking space.
+ *
+ * Used by the UI to apply specific treatments (like underlining) to the core word
+ * while keeping punctuation and layout whitespace visually distinct.
+ */
+export function segmentText(text: string) {
+  const match = text.match(
+    /^([\s\n]*)(.*?)(([.,;!?:'\"\uff1b\uff1f\u3002\uff0c\uff1a\uff09)]*)(\s*))$/,
+  );
+  return {
+    leading: match ? match[1] : '',
+    core: match ? match[2] : text,
+    trailingPunct: match ? match[4] : '',
+    trailingSpace: match ? match[5] : '',
+  };
+}
+
+/**
  * Fetches the verses for a specific chapter in a specific translation and book.
+ *
+ * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
+ * @param {string} book - The ID of the book. Standard: USFM 3-letter ID (e.g., 'GEN').
+ * @param {number} chapter - The numerical chapter. Standard: 1-based integer.
+ * @example fetchChapter('BSB', 'GEN', 1)
+ * @returns {Promise<TranslationBookChapter>}
  */
 export async function fetchChapter(
-  translationId: string,
-  bookId: string,
+  translation: string,
+  book: string,
+  chapter: number,
+): Promise<TranslationBookChapter> {
+  try {
+    const res = await fetch(`${API_BASE}/${translation}/${book}/${chapter}.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch chapter: ${res.status}`);
+    }
+    const data: TranslationBookChapter = await res.json();
+
+    // Normalize content sequences to ensure punctuation stays anchored to words
+    // even when separated by metadata objects (like footnotes), and to preserve
+    // meaningful whitespace and newlines for poetic formatting.
+    if (data.chapter?.content) {
+      data.chapter.content = data.chapter.content.map((item) => {
+        if (item.type === 'verse' || item.type === 'hebrew_subtitle') {
+          return {
+            ...item,
+            content: normalizeContentSequence(item.content),
+          };
+        }
+        return item;
+      });
+    }
+
+    return data;
+  } catch (e) {
+    console.error(`Failed to load chapter ${book} ${chapter}`, e);
+    throw e;
+  }
+}
+
+/**
+ * Corrects tokenization artifacts where punctuation or whitespace is separated
+ * from its parent word by footnote markers or metadata objects.
+ *
+ * 1. Anchors trailing punctuation: If a string segment starts with punctuation
+ *    (.,;!?) and follows a footnote marker, it moves that punctuation to the
+ *    preceding text node so they remain visually bound.
+ * 2. Preserves structure: Ensures explicit newlines and heavy whitespace
+ *    are maintained for poetic and right-aligned text blocks.
+ */
+function normalizeContentSequence(content: any[]): any[] {
+  const result: any[] = [];
+
+  for (let i = 0; i < content.length; i++) {
+    let current = content[i];
+
+    /**
+     * 1. Punctuation Anchoring
+     * Look for tokens starting with whitespace/newlines followed by punctuation.
+     * If found, we anchor the punctuation back to the word before the footnote,
+     * but we "shift" the newline so it remains at the start of the remaining
+     * text (like "Selah"), ensuring formatting isn't lost.
+     */
+    const punctMatch =
+      typeof current === 'string' ? current.match(/^([\s]*)([.,;!?:'"]+)/) : null;
+
+    if (punctMatch && result.length > 0) {
+      const leadingWhitespace = punctMatch[1];
+      const leadingPunct = punctMatch[2];
+
+      let anchorIdx = -1;
+      // Scan backwards for the nearest available text node.
+      // We MUST stop if we encounter a newline (\n), as punctuation should
+      // not be anchored to a word on a different structural line.
+      for (let j = result.length - 1; j >= 0; j--) {
+        const prev = result[j];
+        if (typeof prev === 'string' && prev.includes('\n')) break;
+        if (typeof prev === 'string' || (typeof prev === 'object' && 'text' in prev)) {
+          anchorIdx = j;
+          break;
+        }
+      }
+
+      if (anchorIdx !== -1) {
+        const anchor = result[anchorIdx];
+        if (typeof anchor === 'string') {
+          // Only trim horizontal whitespace; preserving \n if present in the anchor
+          result[anchorIdx] = anchor.replace(/[ \t]+$/, '') + leadingPunct;
+        } else {
+          result[anchorIdx] = {
+            ...anchor,
+            text: anchor.text.replace(/[ \t]+$/, '') + leadingPunct,
+          };
+        }
+        // Reconstruct the token: preserve the whitespace (newlines) and strip
+        // only the shifted punctuation. This fixes the "welding" (?Selah) bug.
+        const remainingText = (current as string).substring(
+          leadingWhitespace.length + leadingPunct.length,
+        );
+        current = leadingWhitespace + remainingText;
+      }
+    }
+
+    // Add to result while preserving structural whitespace and newlines
+    if (current !== '') {
+      result.push(current);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Fetches the entire translation (Large Payload).
+ *
+ * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
+ * @example fetchCompleteTranslation('BSB')
+ * @returns {Promise<TranslationComplete>}
+ */
+export async function fetchCompleteTranslation(translation: string) {
+  try {
+    // TODO: Implement "Download Feature" logic.
+    // 1. Fetch this large JSON.
+    // 2. Normalize and split into individual chapters.
+    // 3. Store in local storage for full offline availability.
+
+    // TODO: Implement offline fallback logic.
+    // 1. Check local storage (IndexedDB/LocalForage) for cached chapter data.
+    // 2. If found, return cached data immediately to fulfill "Frictionless Access".
+
+    // TODO: Implement fallback even in weak wifi situations where network is up but times out
+    // This is notable for situations like underground subway or parking where TCP ACK is received
+    // but data transfer is very slow. We can set a reasonable timeout (e.g., 5 seconds) and fallback
+    // to cached data if the fetch doesn't complete in time.
+
+    const res = await fetch(`${API_BASE}/${translation}/complete.json`);
+    return await res.json();
+  } catch (e) {
+    console.error(`Failed to load complete translation for ${translation}`, e);
+    throw e;
+  }
+}
+
+/**
+ * COMMENTARY APIS
+ */
+
+export async function fetchAvailableCommentaries() {
+  try {
+    const res = await fetch(`${API_BASE}/available_commentaries.json`);
+    const data = await res.json();
+    return data.commentaries;
+  } catch (e) {
+    console.error('Failed to load available commentaries', e);
+    throw e;
+  }
+}
+
+/**
+ * Fetches the list of books available for a specific commentary.
+ *
+ * @param {string} commentary - The ID of the commentary. Standard: kebab-case.
+ * @example fetchCommentaryBooks('adam-clarke')
+ */
+export async function fetchCommentaryBooks(commentary: string) {
+  try {
+    const res = await fetch(`${API_BASE}/c/${commentary}/books.json`);
+    const data = await res.json();
+    return data.books;
+  } catch (e) {
+    console.error(`Failed to load commentary books for ${commentary}`, e);
+    throw e;
+  }
+}
+
+/**
+ * Fetches the content of a single chapter for a given book and commentary.
+ *
+ * @param {string} commentary - The ID of the commentary.
+ * @param {string} book - The USFM book ID.
+ * @param {number} chapter - The 1-based chapter number.
+ * @example fetchCommentaryChapter('adam-clarke', 'GEN', 1)
+ */
+export async function fetchCommentaryChapter(
+  commentary: string,
+  book: string,
   chapter: number,
 ) {
   try {
-    const res = await fetch(
-      `${API_BASE}/${translationId}/${bookId}/${chapter}.json`,
-    );
+    const res = await fetch(`${API_BASE}/c/${commentary}/${book}/${chapter}.json`);
     const data = await res.json();
-    return data.chapter.verses;
+    return data.chapter;
   } catch (e) {
-    console.error(`Failed to load chapter content for ${bookId} ${chapter}`, e);
+    console.error(
+      `Failed to load commentary chapter for ${commentary} ${book} ${chapter}`,
+      e,
+    );
+    throw e;
+  }
+}
+
+/**
+ * Gets the list of profiles (overviews of people/groups) for a given commentary.
+ *
+ * @param {string} commentary - The ID of the commentary (e.g., 'tyndale').
+ * @example fetchCommentaryProfiles('tyndale')
+ */
+export async function fetchCommentaryProfiles(commentary: string) {
+  try {
+    const res = await fetch(`${API_BASE}/c/${commentary}/profiles.json`);
+    const data = await res.json();
+    return data.profiles;
+  } catch (e) {
+    console.error(`Failed to load commentary profiles for ${commentary}`, e);
+    throw e;
+  }
+}
+
+/**
+ * Gets a specific profile from a commentary.
+ *
+ * @param {string} commentary - The ID of the commentary.
+ * @param {string} profile - The ID of the profile. Standard: lowercase name/id.
+ * @example fetchCommentaryProfileContent('tyndale', 'aaron')
+ */
+export async function fetchCommentaryProfileContent(commentary: string, profile: string) {
+  try {
+    const res = await fetch(`${API_BASE}/c/${commentary}/profiles/${profile}.json`);
+    return await res.json();
+  } catch (e) {
+    console.error(`Failed to load profile content for ${profile} in ${commentary}`, e);
+    throw e;
+  }
+}
+
+/**
+ * DATASET APIS (e.g., Cross-References)
+ */
+
+/** Fetches all available Bible datasets. */
+export async function fetchAvailableDatasets() {
+  try {
+    const res = await fetch(`${API_BASE}/available_datasets.json`);
+    const data = await res.json();
+    return data.datasets;
+  } catch (e) {
+    console.error('Failed to load available datasets', e);
+    throw e;
+  }
+}
+
+/**
+ * Gets the list of books available for a given dataset.
+ *
+ * @param {string} dataset - The ID of the dataset (e.g., 'open-cross-ref').
+ */
+export async function fetchDatasetBooks(dataset: string) {
+  try {
+    const res = await fetch(`${API_BASE}/d/${dataset}/books.json`);
+    const data = await res.json();
+    return data.books;
+  } catch (e) {
+    console.error(`Failed to load dataset books for ${dataset}`, e);
+    throw e;
+  }
+}
+
+/**
+ * Fetches a specific chapter from a dataset (e.g., open-cross-ref).
+ *
+ * @param {string} dataset - The ID of the dataset.
+ * @param {string} book - The USFM book ID.
+ * @param {number} chapter - The 1-based chapter number.
+ * @example fetchDatasetChapter('open-cross-ref', 'GEN', 1)
+ * @returns {Promise<DatasetChapterData>}
+ */
+export async function fetchDatasetChapter(
+  dataset: string,
+  book: string,
+  chapter: number,
+) {
+  try {
+    const res = await fetch(`${API_BASE}/d/${dataset}/${book}/${chapter}.json`);
+    const data = await res.json();
+    return data.chapter;
+  } catch (e) {
+    console.error(`Failed to load dataset chapter for ${dataset} ${book} ${chapter}`, e);
     throw e;
   }
 }
