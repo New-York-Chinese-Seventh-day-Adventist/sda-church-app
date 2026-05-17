@@ -119,7 +119,7 @@ export const GlobalHeader = (props: any) => {
               } else if (segments.includes('community')) {
                 router.navigate('/community' as any);
               } else if (segments.includes('home')) {
-                router.navigate('/home' as any);
+                router.navigate('/' as any);
               } else {
                 router.back();
               }

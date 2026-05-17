@@ -121,19 +121,13 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="home"
+          name="index"
           options={{
             title: labels.home,
-            headerShown: false, // Internal Stack will handle the header
-            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
               <TabBarIcon name="home" color={color} focused={focused} />
             ),
-          }}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-              router.navigate('/home');
-            },
           }}
         />
         <Tabs.Screen

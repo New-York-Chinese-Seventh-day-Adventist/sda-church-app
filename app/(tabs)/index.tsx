@@ -119,7 +119,7 @@ export default function HomeScreen() {
             title={labels.contact}
             icon="map-marker"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/about/contact')}
+            onPress={() => router.push('/home/contact')}
           />
         </List.Section>
       </ScrollView>
