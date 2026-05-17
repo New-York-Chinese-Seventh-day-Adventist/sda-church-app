@@ -172,21 +172,24 @@ export default function BibleReaderScreen() {
 
   /**
    * Renders individual content items (text, formatted text, footnotes, etc.)
-   * This is used within both Verses and Hebrew Subtitles.
+   * Handles poetic indentation and Words of Jesus styling.
    */
   const renderItemContent = (item: any, i: number) => {
     if (typeof item === 'string') return <Text key={i}>{item}</Text>;
 
     // Formatted Text (Poetry, Words of Jesus)
     if ('text' in item) {
+      const isPoetic = item.poem !== undefined;
+      // Indentation: level 1 is base, level 2+ are indented.
+      // We use non-breaking spaces (\u00A0) for consistent padding in Text components.
+      const indent =
+        isPoetic && item.poem > 1 ? '\u00A0'.repeat((item.poem - 1) * 3) : '';
+
       return (
-        <Text
-          key={i}
-          style={[
-            item.poem !== undefined && styles.poemText,
-            item.wordsOfJesus && { color: theme.colors.error },
-          ]}
-        >
+        <Text key={i} style={[item.wordsOfJesus && { color: theme.colors.error }]}>
+          {/* If it's a poetic segment and not the first item, start a new line */}
+          {isPoetic && i > 0 ? '\n' : ''}
+          {indent}
           {item.text}
         </Text>
       );
@@ -203,12 +206,16 @@ export default function BibleReaderScreen() {
     }
 
     // Inline Headings or Line Breaks
-    if ('heading' in item)
+    if ('heading' in item) {
       return (
-        <Text key={i} style={styles.inlineHeading}>
-          {item.heading}
+        <Text
+          key={i}
+          style={[styles.inlineHeading, { color: theme.colors.onSurfaceVariant }]}
+        >
+          {`\n${item.heading}\n`}
         </Text>
       );
+    }
     if ('lineBreak' in item) return <Text key={i}>{'\n'}</Text>;
 
     return null;
@@ -581,15 +588,13 @@ const styles = StyleSheet.create({
   },
   hebrewSubtitle: {
     fontSize: 16,
-    fontStyle: 'italic',
     marginBottom: 16,
-    textAlign: 'center',
     opacity: 0.8,
   },
   inlineHeading: {
     fontWeight: '700',
-    marginTop: 8,
-    display: 'flex',
+    fontSize: 14,
+    lineHeight: 24,
   },
   footnoteMarker: {
     fontSize: 12,
@@ -601,9 +606,7 @@ const styles = StyleSheet.create({
   lineBreak: {
     height: 16,
   },
-  poemText: {
-    fontStyle: 'italic',
-  },
+  poemText: {},
   modalScroll: {
     padding: 16,
     maxHeight: 400,
