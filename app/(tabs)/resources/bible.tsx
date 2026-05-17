@@ -296,6 +296,11 @@ export default function BibleReaderScreen() {
     if (!book || books.length === 0) return;
     const currentBookIdx = books.findIndex((b) => b.id === book.id);
 
+    // If audio is currently playing, ensure the new chapter starts playing automatically
+    if (isPlaying) {
+      setShouldAutoPlay(true);
+    }
+
     if (direction === 'prev') {
       if (chapterNum > 1) {
         setChapterNum((prev) => prev - 1);
