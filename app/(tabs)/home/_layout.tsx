@@ -1,11 +1,11 @@
 import { GlobalHeader } from '@/components/GlobalHeader';
 import { Stack } from 'expo-router';
 
-export default function ResourcesStackLayout() {
+export default function HomeStackLayout() {
   return (
     <Stack screenOptions={{ header: (props) => <GlobalHeader {...props} /> }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="bible" />
+      <Stack.Screen name="about" />
+      <Stack.Screen name="contact" />
     </Stack>
   );
 }

@@ -386,7 +386,7 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
     { ...labels.give, icon: 'gift', route: '/you' },
     { ...labels.darkMode, icon: 'theme-light-dark', route: '/you' },
     { ...labels.language, icon: 'translate', route: '/you/language' },
-    { ...labels.about, icon: 'information', route: '/you/about' },
-    { ...labels.connect, icon: 'email', route: '/you/contact' },
+    { ...labels.about, icon: 'information', route: '/home/about' },
+    { ...labels.connect, icon: 'email', route: '/home/contact' },
   ];
 };

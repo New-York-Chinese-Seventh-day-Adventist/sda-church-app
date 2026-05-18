@@ -1,232 +1,12 @@
+import { GlobalHeader, UIStateContext } from '@/components/GlobalHeader';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
-import { ALL_SEARCH_LABELS, getSearchableItems } from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
-import { BlurView } from 'expo-blur';
-import { Tabs, router, useSegments } from 'expo-router';
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { Tabs, router } from 'expo-router';
+import React, { useContext, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { Appbar, List, Portal, Searchbar } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-/**
- * Context to drive global UI visibility (Reader Mode).
- */
-export const UIStateContext = createContext<{
-  menuAnim: Animated.Value;
-  setMenuVisible: (visible: boolean) => void;
-}>({
-  menuAnim: new Animated.Value(1),
-  setMenuVisible: () => {},
-});
-
-export const GlobalHeader = (props: any) => {
-  const { language } = useContext(LanguageContext);
-  const segments = useSegments();
-  const theme = useAppTheme();
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const searchRef = useRef<any>(null);
-  const headerRef = useRef<View>(null);
-  const insets = useSafeAreaInsets();
-
-  const { menuAnim } = useContext(UIStateContext);
-  const [headerHeight, setHeaderHeight] = useState(0);
-
-  // Animate the header off the top of the screen
-  const headerTranslateY = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-(headerHeight || 150), 0],
-  });
-
-  // Clear search state whenever the navigation path changes (switching tabs or views)
-  useEffect(() => {
-    setSearchQuery('');
-    setIsSearching(false);
-  }, [segments.join('/')]);
-
-  // A pillar root is the entry-point for one of our four main tabs (Tenet 5 & 7).
-  // We use route segments to identify the root index files of the pillar folders.
-  // In Expo Router, the (tabs) group and the tab names form the first 1-2 segments.
-  const isPillarRoot = segments.length <= 2;
-
-  const isSubPage = !isPillarRoot;
-
-  const title = props.options?.title;
-  const backTo = props.options?.backTo;
-
-  const searchLabels =
-    ALL_SEARCH_LABELS[language as keyof typeof ALL_SEARCH_LABELS] || ALL_SEARCH_LABELS.en;
-
-  // Centralized list of everything searchable in the app
-  const searchableItems = getSearchableItems(language);
-
-  const results = searchableItems.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.keywords.some((k) => k.includes(searchQuery.toLowerCase())),
-  );
-
-  const handleSelectResult = (item: (typeof searchableItems)[0]) => {
-    const q = searchQuery.toLowerCase();
-    setSearchQuery('');
-    setIsSearching(false);
-    searchRef.current?.blur();
-
-    const targetParams = {
-      highlight: q,
-    };
-
-    // If already on a subpage, replace to avoid history loops.
-    // Otherwise, navigate normally into the stack.
-    const navFn = isSubPage ? router.replace : router.navigate;
-
-    navFn({
-      pathname: item.route as any,
-      params: targetParams,
-    });
-  };
-
-  return (
-    <Animated.View
-      style={[
-        styles.headerWrapper,
-        {
-          borderBottomWidth: 0.5,
-          borderBottomColor: theme.colors.glassBorder,
-          backgroundColor: theme.colors.background,
-          paddingTop: insets.top,
-          transform: [{ translateY: headerTranslateY }],
-        },
-      ]}
-    >
-      <Appbar.Header
-        ref={headerRef}
-        statusBarHeight={0}
-        style={{ backgroundColor: 'transparent', elevation: 0, height: 64 }}
-        onLayout={(e) => {
-          const { height } = e.nativeEvent.layout;
-          setHeaderHeight(height + insets.top);
-        }}
-      >
-        {isSubPage && (
-          <Appbar.BackAction
-            onPress={() => {
-              if (backTo) {
-                router.navigate(backTo as any);
-              } else if (segments.includes('you')) {
-                router.navigate('/you' as any);
-              } else if (segments.includes('resources')) {
-                router.navigate('/resources' as any);
-              } else if (segments.includes('community')) {
-                router.navigate('/community' as any);
-              } else {
-                router.back();
-              }
-            }}
-          />
-        )}
-        {isSubPage ? (
-          <Appbar.Content
-            title={title}
-            titleStyle={{ color: theme.colors.onSurface, fontWeight: 'bold' }}
-          />
-        ) : (
-          <View style={{ flex: 1 }}>
-            <Searchbar
-              ref={searchRef}
-              placeholder={searchLabels.searchPlaceholder}
-              onChangeText={setSearchQuery}
-              value={searchQuery}
-              onFocus={() => setIsSearching(true)}
-              blurOnSubmit={false}
-              returnKeyType="search"
-              onSubmitEditing={() => {
-                if (results.length > 0) {
-                  handleSelectResult(results[0]);
-                }
-              }}
-              onBlur={() => setTimeout(() => setIsSearching(false), 200)} // Delay to allow onPress to fire
-              style={{
-                backgroundColor: theme.colors.surface,
-                elevation: 0,
-                borderRadius: 24,
-                height: 44,
-                marginHorizontal: 12,
-              }}
-              inputStyle={{
-                minHeight: 0,
-                paddingBottom: 0,
-                paddingTop: 0,
-                fontSize: 16,
-              }}
-              iconColor={theme.colors.onSurfaceVariant}
-              placeholderTextColor={theme.colors.onSurfaceVariant}
-            />
-            {isSearching && searchQuery.length > 0 && results.length > 0 && (
-              <Portal>
-                <View
-                  style={[
-                    styles.resultsOverlay,
-                    {
-                      top: headerHeight,
-                      backgroundColor: 'transparent',
-                      borderWidth: 0.5,
-                      borderColor: theme.colors.glassBorder,
-                    },
-                  ]}
-                >
-                  <BlurView
-                    intensity={50}
-                    tint={theme.blurTint}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  {results.map((item, index) => (
-                    <List.Item
-                      key={index}
-                      title={item.title}
-                      left={(p) => (
-                        <List.Icon
-                          {...p}
-                          icon={item.icon}
-                          color={theme.colors.tertiary}
-                        />
-                      )}
-                      onPress={() => handleSelectResult(item)}
-                    />
-                  ))}
-                </View>
-              </Portal>
-            )}
-          </View>
-        )}
-      </Appbar.Header>
-    </Animated.View>
-  );
-};
-
-const styles = StyleSheet.create({
-  headerWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-  },
-  resultsOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginTop: 8,
-  },
-});
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -331,41 +111,39 @@ export default function TabLayout() {
             borderTopWidth: 0,
           },
           tabBarBackground: () => (
-            <View style={StyleSheet.absoluteFill}>
-              <BlurView
-                tint={theme.blurTint}
-                intensity={80}
-                style={StyleSheet.absoluteFill}
-              />
-              <View
-                style={[
-                  StyleSheet.absoluteFill,
-                  {
-                    backgroundColor: theme.dark
-                      ? 'rgba(15, 15, 15, 0.75)'
-                      : 'rgba(255, 255, 255, 0.85)',
-                  },
-                ]}
-              />
-            </View>
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                { backgroundColor: theme.colors.background },
+              ]}
+            />
           ),
         }}
       >
+        {/* 1. Main Home Screen */}
         <Tabs.Screen
           name="index"
           options={{
             title: labels.home,
+            // Show search bar for main home screen, not overriden by home/_layout.tsx since index
+            // is to support / path to make manifest.json and +index.tsx easier to configure
+            // and install PWA
+            headerShown: true,
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
               <TabBarIcon name="home" color={color} focused={focused} />
             ),
           }}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-              router.navigate('/');
-            },
+        />
+
+        {/* 2. Hidden Home Sub-Pages Folder */}
+        <Tabs.Screen
+          name="home"
+          options={{
+            href: null, // This hides it from the bottom bar completely!
+            headerShown: false,
           }}
         />
+
         <Tabs.Screen
           name="community"
           options={{
@@ -390,12 +168,6 @@ export default function TabLayout() {
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
               <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
             ),
-          }}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-              router.navigate('/resources');
-            },
           }}
         />
         <Tabs.Screen
