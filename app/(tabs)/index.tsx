@@ -19,39 +19,47 @@ export default function HomeScreen() {
 
   const allLabels = {
     en: {
-      header: 'SDA Church',
       welcome: 'Welcome to our Church',
       subtitle: 'The Lord is my shepherd; I lack nothing.\nPsalm 23:1',
       livestream: 'Watch Livestream',
-      about: 'About Us',
+      aboutSDA: 'About Denomination',
+      aboutHistory: 'Our History',
       contact: 'Connect with Us',
+      meetTeam: 'Meet Our Team',
+      bulletin: 'Weekly Bulletin',
       explore: 'Explore',
     },
     zh: {
-      header: '基督復臨安息日會',
       welcome: '歡迎來到我們的教會',
       subtitle: '耶和華是我的牧者，我必不致缺乏。\n詩篇 23:1',
       livestream: '觀看直播',
-      about: '關於我們',
+      aboutSDA: '關於教派',
+      aboutHistory: '我們的歷史',
       contact: '聯繫我們',
+      meetTeam: '認識我們的團隊',
+      bulletin: '每週週報',
       explore: '探索',
     },
     'zh-cn': {
-      header: '基督复临安息日会',
       welcome: '欢迎来到我们的教会',
       subtitle: '耶和华是我的牧者，我必不致缺乏。\n诗篇 23:1',
       livestream: '观看直播',
-      about: '关于我们',
+      aboutSDA: '关于教派',
+      aboutHistory: '我们的历史',
       contact: '联系我们',
+      meetTeam: '认识我们的团队',
+      bulletin: '每周周报',
       explore: '探索',
     },
     es: {
-      header: 'Iglesia Adventista',
       welcome: 'Bienvenido a nuestra iglesia',
       subtitle: 'Jehová es mi pastor; nada me faltará.\nSalmo 23:1',
       livestream: 'Ver Transmisión',
-      about: 'Sobre Nosotros',
+      aboutSDA: 'Sobre la Denominación',
+      aboutHistory: 'Nuestra Historia',
       contact: 'Conéctate con Nosotros',
+      meetTeam: 'Conoce a nuestro equipo',
+      bulletin: 'Boletín Semanal',
       explore: 'Explorar',
     },
   };
@@ -108,10 +116,34 @@ export default function HomeScreen() {
             {labels.explore}
           </List.Subheader>
           <MenuCard
-            title={labels.about}
+            title={labels.aboutSDA}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/about')}
+            onPress={() => router.push('/home/about_sda')}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
+            title={labels.aboutHistory}
+            icon="history"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/home/about_my_church')}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
+            title={labels.meetTeam}
+            icon="account-multiple"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/home/team')}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
+            title={labels.bulletin}
+            icon="file-document-outline"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/home/bulletin')}
             style={{ marginBottom: 12 }}
           />
 
