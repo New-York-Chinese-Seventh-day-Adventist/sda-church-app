@@ -169,12 +169,6 @@ export default function TabLayout() {
               <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
             ),
           }}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-              router.navigate('/resources');
-            },
-          }}
         />
         <Tabs.Screen
           name="you"

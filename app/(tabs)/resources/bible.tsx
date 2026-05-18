@@ -1,5 +1,6 @@
 import { UIStateContext } from '@/components/GlobalHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import { Stack } from 'expo-router';
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -27,6 +28,11 @@ const DOCK_HEIGHT = 60;
 // This margin should match the approximate height of the bottom tab bar to ensure they sit flush.
 const DOCK_BOTTOM_MARGIN = 49;
 const FOOTER_PADDDING_OFFSET = 150;
+
+const BIBLE_TRANS_KEY = 'user-bible-translation';
+const BIBLE_BOOK_KEY = 'user-bible-book';
+const BIBLE_CHAPTER_KEY = 'user-bible-chapter';
+
 const uiLabels = {
   en: {
     translation: 'Translation',
@@ -112,6 +118,53 @@ export default function BibleReaderScreen() {
   });
   const [book, setBook] = useState<BibleService.TranslationBook | null>(null);
   const [chapterNum, setChapterNum] = useState(1);
+
+  // Persistence state
+  const [isPersistenceLoaded, setIsPersistenceLoaded] = useState(false);
+  const initialBookId = useRef<string | null>(null);
+
+  // Load selection from storage on mount
+  useEffect(() => {
+    const loadSelection = async () => {
+      try {
+        const [savedTransId, savedBookId, savedChap] = await Promise.all([
+          AsyncStorage.getItem(BIBLE_TRANS_KEY),
+          AsyncStorage.getItem(BIBLE_BOOK_KEY),
+          AsyncStorage.getItem(BIBLE_CHAPTER_KEY),
+        ]);
+
+        if (savedTransId) {
+          const trans = BibleService.SUPPORTED_TRANSLATIONS.find(
+            (t) => t.id === savedTransId,
+          );
+          if (trans) setSupportedTranslation(trans);
+        }
+        if (savedBookId) initialBookId.current = savedBookId;
+        if (savedChap) setChapterNum(parseInt(savedChap, 10));
+      } catch (e) {
+        console.error('Failed to load Bible selection:', e);
+      } finally {
+        setIsPersistenceLoaded(true);
+      }
+    };
+    loadSelection();
+  }, []);
+
+  // Save selection whenever it changes
+  useEffect(() => {
+    if (!isPersistenceLoaded) return;
+
+    const saveSelection = async () => {
+      try {
+        await AsyncStorage.setItem(BIBLE_TRANS_KEY, supportedTranslation.id);
+        if (book) await AsyncStorage.setItem(BIBLE_BOOK_KEY, book.id);
+        await AsyncStorage.setItem(BIBLE_CHAPTER_KEY, chapterNum.toString());
+      } catch (e) {
+        console.error('Failed to save Bible selection:', e);
+      }
+    };
+    saveSelection();
+  }, [supportedTranslation.id, book?.id, chapterNum, isPersistenceLoaded]);
 
   // Keep the Bible dock visible at the bottom of the screen at all times.
   // We only animate the height so it "drops" down to the bottom when the tab bar hides.
@@ -241,6 +294,8 @@ export default function BibleReaderScreen() {
   // Initial load: Fetch books for default translation
   // This effect loads the books for the selected translation and sets the current book.
   useEffect(() => {
+    if (!isPersistenceLoaded) return;
+
     const loadBooksAndSetBook = async () => {
       try {
         const fetchedBooks = await BibleService.fetchBooks(supportedTranslation.id);
@@ -248,8 +303,12 @@ export default function BibleReaderScreen() {
 
         // Determine the next book based on previous selection or default to Genesis
         setBook((prevBook) => {
+          // Use saved book ID if this is the first load after persistence
+          const targetBookId = initialBookId.current || prevBook?.id;
+          initialBookId.current = null; // Clear it so it doesn't interfere with later changes
+
           const matchingBook = fetchedBooks.find(
-            (b: BibleService.TranslationBook) => b.id === prevBook?.id,
+            (b: BibleService.TranslationBook) => b.id === targetBookId,
           );
 
           if (matchingBook) {
@@ -273,10 +332,12 @@ export default function BibleReaderScreen() {
       }
     };
     loadBooksAndSetBook();
-  }, [supportedTranslation.id]);
+  }, [supportedTranslation.id, isPersistenceLoaded]);
 
   // Load chapter content
   useEffect(() => {
+    if (!isPersistenceLoaded) return;
+
     // Only fetch if we have a book and that book belongs to the current translation's book list
     // This prevents "stale" fetches when switching translations where the book IDs might differ.
     const isBookValidForTranslation = books.some(
@@ -302,7 +363,7 @@ export default function BibleReaderScreen() {
       };
       loadChapter();
     }
-  }, [supportedTranslation.id, book?.id, chapterNum, books]);
+  }, [supportedTranslation.id, book?.id, chapterNum, books, isPersistenceLoaded]);
 
   const updateMenuVisibility = (visible: boolean) => {
     setMenuVisible(visible);
