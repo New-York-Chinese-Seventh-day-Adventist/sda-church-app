@@ -111,7 +111,7 @@ export default function HomeScreen() {
             title={labels.about}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/you/about')}
+            onPress={() => router.push('/home/about')}
             style={{ marginBottom: 12 }}
           />
 
@@ -119,12 +119,7 @@ export default function HomeScreen() {
             title={labels.contact}
             icon="map-marker"
             iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/you/contact',
-                params: { backTo: '/' },
-              })
-            }
+            onPress={() => router.push('/home/contact')}
           />
         </List.Section>
       </ScrollView>

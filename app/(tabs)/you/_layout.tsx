@@ -1,6 +1,5 @@
-import { GlobalHeader } from "@/app/(tabs)/_layout";
-import { Stack } from "expo-router";
-import React from "react";
+import { GlobalHeader } from '@/components/GlobalHeader';
+import { Stack } from 'expo-router';
 
 export default function YouStackLayout() {
   return (

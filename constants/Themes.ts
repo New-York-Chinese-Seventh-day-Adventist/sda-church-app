@@ -73,7 +73,7 @@ export const customLightTheme = {
       level5: '#C0C0C0',
     },
 
-    // Subtle Blur Effect for Glassmorphism Border
+    // Subtle Blur Effect for Glassmorphism Border for Search
     glassBorder: 'rgba(0,0,0,0.1)',
   },
   blurTint: 'light' as 'light' | 'dark',
@@ -142,7 +142,7 @@ export const customDarkTheme: AppTheme = {
       level5: '#383838',
     },
 
-    // Subtle Blur Effect for Glassmorphism Border
+    // Subtle Blur Effect for Glassmorphism Border for Search
     glassBorder: 'rgba(255, 255, 255, 0.1)',
   },
   blurTint: 'dark' as 'light' | 'dark',
@@ -161,6 +161,7 @@ export const ThemeContext = createContext({
 /**
  * Centralized helper to retrieve the correct theme object based on state.
  */
-export const getAppTheme = (isDark: boolean): AppTheme => (isDark ? customDarkTheme : customLightTheme);
+export const getAppTheme = (isDark: boolean): AppTheme =>
+  isDark ? customDarkTheme : customLightTheme;
 
 export const useAppTheme = () => useTheme<AppTheme>();
