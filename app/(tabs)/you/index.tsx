@@ -21,8 +21,6 @@ const allLabels = {
     darkModeSub: 'Toggle between light and dark themes',
     language: 'Language',
     languageSub: 'Change app language',
-    about: 'About Us',
-    aboutSub: "Learn about our church's history and beliefs",
     contact: 'Connect',
     contactSub: 'Contact information and locations',
   },
@@ -34,8 +32,6 @@ const allLabels = {
     darkModeSub: '切換淺色和深色主題',
     language: '語言',
     languageSub: '更改應用程式語言',
-    about: '關於我們',
-    aboutSub: '了解我們教會的歷史和信仰',
     contact: '聯繫',
     contactSub: '聯繫方式和地點',
   },
@@ -47,8 +43,6 @@ const allLabels = {
     darkModeSub: '切换浅色和深色主题',
     language: '语言',
     languageSub: '更改应用语言',
-    about: '关于我们',
-    aboutSub: '了解我们教会的历史和信仰',
     contact: '联系',
     contactSub: '联系方式和地点',
   },
@@ -60,8 +54,6 @@ const allLabels = {
     darkModeSub: 'Alternar entre temas claros y oscuros',
     language: 'Idioma',
     languageSub: 'Cambiar idioma de la aplicación',
-    about: 'Sobre Nosotros',
-    aboutSub: 'Conoce la historia y creencias de nuestra iglesia',
     contact: 'Conectar',
     contactSub: 'Información de contacto y ubicaciones',
   },
@@ -112,28 +104,6 @@ export default function YouScreen() {
             icon="translate"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/you/language' as any)}
-          />
-        </List.Section>
-
-        <List.Section>
-          <List.Subheader
-            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
-          >
-            {labels.about}
-          </List.Subheader>
-          <MenuCard
-            title={labels.about}
-            description={labels.aboutSub}
-            icon="information"
-            iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/about' as any)}
-          />
-          <MenuCard
-            title={labels.contact}
-            description={labels.contactSub}
-            icon="email"
-            iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/contact' as any)}
           />
         </List.Section>
 
