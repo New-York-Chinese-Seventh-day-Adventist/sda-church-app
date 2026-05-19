@@ -9,6 +9,7 @@ export default function HomeStackLayout() {
       <Stack.Screen name="team" />
       <Stack.Screen name="bulletin" />
       <Stack.Screen name="contact" />
+      <Stack.Screen name="give" />
     </Stack>
   );
 }

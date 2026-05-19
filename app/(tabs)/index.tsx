@@ -28,6 +28,7 @@ export default function HomeScreen() {
       meetTeam: 'Meet Our Team',
       bulletin: 'Weekly Bulletin',
       explore: 'Explore',
+      give: 'Tithe & Offering',
     },
     zh: {
       welcome: '歡迎來到我們的教會',
@@ -39,6 +40,7 @@ export default function HomeScreen() {
       meetTeam: '認識我們的團隊',
       bulletin: '每週週報',
       explore: '探索',
+      give: '奉獻',
     },
     'zh-cn': {
       welcome: '欢迎来到我们的教会',
@@ -50,6 +52,7 @@ export default function HomeScreen() {
       meetTeam: '认识我们的团队',
       bulletin: '每周周报',
       explore: '探索',
+      give: '奉献',
     },
     es: {
       welcome: 'Bienvenido a nuestra iglesia',
@@ -61,6 +64,7 @@ export default function HomeScreen() {
       meetTeam: 'Conoce a nuestro equipo',
       bulletin: 'Boletín Semanal',
       explore: 'Explorar',
+      give: 'Diezmos y Ofrendas',
     },
   };
 
@@ -149,9 +153,17 @@ export default function HomeScreen() {
 
           <MenuCard
             title={labels.contact}
-            icon="map-marker"
+            icon="church"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/home/contact')}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
+            title={labels.give}
+            icon="heart-outline"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/home/give')}
           />
         </List.Section>
       </ScrollView>

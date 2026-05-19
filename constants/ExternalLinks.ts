@@ -30,7 +30,7 @@ export const openURL = async (
   }
 };
 
-export const openOnlineGiving = async () => {
+export const openAdventistGiving = async () => {
   return openURL(
     'https://adventistgiving.org/donate/AN48CO',
     'Error',

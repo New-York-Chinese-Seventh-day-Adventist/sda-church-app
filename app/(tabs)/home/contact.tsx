@@ -1,4 +1,5 @@
 import { MenuCard } from '@/components/MenuCard';
+import { CHURCH_LOCATIONS, getLocationNames } from '@/constants/ChurchData';
 import {
   CHURCH_EMAIL,
   CHURCH_PHONE,
@@ -26,71 +27,25 @@ export default function ContactScreen() {
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const locations = [
-    {
-      // TODO: Replace with your own church addresses, starting with primary branch if multiple
-      // address: "123 Church St, City, State, Zip Code",
-      address: '76-06 41st Ave, Elmhurst, Queens, NY 11373',
-      icon: 'church' as const,
-
-      // Google Maps can have conflicting entries for addresses
-      // Searching by specific name provides more accurate results.
-      // Search query must be in standard Google Maps format (e.g. no floor numbers, room numbers)
-      searchQuery: 'New York Chinese Seventh-day Adventist Church',
-    },
-    {
-      address: '53-18 4th Ave (3F), Brooklyn, NY 11220',
-      searchQuery: '53-18 4th Ave, Brooklyn, NY 11220',
-      icon: 'church' as const,
-    },
-    {
-      address: '143-11 Willets Point Blvd, Whitestone, Queens, NY 11357',
-      icon: 'church' as const,
-      searchQuery:
-        'New York Theological Education Center - Chinese Online School of Theology',
-    },
-  ];
-
   const allLabels = {
     en: {
       title: 'Connect with Us',
       addressLabel: 'Locations',
-      locationNames: [
-        // TODO: Please ensure translations below are updated accordingly
-        'Elmhurst SDA Church',
-        'Brooklyn SDA Church (Bay Ridge)',
-        'Flushing Fellowship (Mandarin)',
-      ],
       infoLabel: 'Contact Information',
     },
     zh: {
       title: '聯繫我們',
       addressLabel: '地點',
-      locationNames: [
-        '艾姆赫斯特教會',
-        '布魯克林教會 (Bay Ridge)',
-        '法拉盛團契 (晚餐與靈修) (國語)',
-      ],
       infoLabel: '聯絡資訊',
     },
     'zh-cn': {
       title: '联系我们',
       addressLabel: '地点',
-      locationNames: [
-        '艾姆赫斯特教会',
-        '布鲁克林教会 (Bay Ridge)',
-        '法拉盛团契 (晚餐与灵修) (普通话)',
-      ],
       infoLabel: '联系信息',
     },
     es: {
       title: 'Conéctate con Nosotros',
       addressLabel: 'Ubicaciones',
-      locationNames: [
-        'Iglesia de Elmhurst',
-        'Iglesia de Brooklyn (Bay Ridge)',
-        'Compañerismo en Flushing (Cena y Devoción) (Mandarín)',
-      ],
       infoLabel: 'Información de contacto',
     },
   };
@@ -207,10 +162,10 @@ export default function ContactScreen() {
           >
             {labels.addressLabel}
           </List.Subheader>
-          {locations.map((loc, index) => (
+          {CHURCH_LOCATIONS.map((loc, index) => (
             <MenuCard
               key={index}
-              title={labels.locationNames[index]}
+              title={getLocationNames(language)[index]}
               description={loc.address}
               icon={loc.icon}
               iconColor={theme.colors.tertiary}

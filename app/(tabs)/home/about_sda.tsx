@@ -338,10 +338,10 @@ export default function AboutSDAScreen() {
         style={DocumentStyles.container}
         contentContainerStyle={{ paddingTop: headerHeight }}
       >
-        <View style={styles.header}>
+        <View style={DocumentStyles.header}>
           <Image
             source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
-            style={styles.image}
+            style={DocumentStyles.image}
             accessibilityLabel="Church banner"
           />
           <Text
@@ -478,13 +478,6 @@ export default function AboutSDAScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: 8,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-  },
   subtext: {
     marginBottom: 12,
   },
