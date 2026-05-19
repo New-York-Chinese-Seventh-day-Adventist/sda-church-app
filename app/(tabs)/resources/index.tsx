@@ -1,6 +1,7 @@
 import { MenuCard } from '@/components/MenuCard';
 import {
   openHymnal,
+  openSabbathSchool,
   openSabbathStream,
   openSpotifyPodcast,
 } from '@/constants/ExternalLinks';
@@ -24,7 +25,11 @@ const allLabels = {
     youtube: 'Full Services',
     youtubeSub: 'Watch our latest worship services',
     spotify: 'Audio Archive',
-    spotifySub: 'Listen to our sermons and Bible study classes',
+    spotifySub: 'Listen to sermons and classes',
+    sabbathSchool: 'Sabbath School',
+    sabbathSchoolSub: 'Weekly Bible study guides and discussion',
+    zoomClass: 'Zoom Class',
+    zoomSub: 'Interactive Bible study and fellowship',
     hymnal: 'English Hymnal',
     hymnalSub: 'Lyrics and music for worship',
     library: 'Library',
@@ -39,7 +44,11 @@ const allLabels = {
     youtube: '完整崇拜服務',
     youtubeSub: '觀看最新的崇拜服務',
     spotify: '音頻檔案',
-    spotifySub: '收聽我們的證道與研經課程',
+    spotifySub: '收聽證道與課程',
+    sabbathSchool: '安息日學',
+    sabbathSchoolSub: '每週研經指南與討論',
+    zoomClass: 'Zoom 課程',
+    zoomSub: '互動式研經與團契',
     hymnal: '英文詩歌本',
     hymnalSub: '敬拜用的歌詞與音樂',
     library: '圖書館',
@@ -54,7 +63,11 @@ const allLabels = {
     youtube: '完整崇拜服务',
     youtubeSub: '观看最新的崇拜服务',
     spotify: '音频存档',
-    spotifySub: '收听我们的证道与研经课程',
+    spotifySub: '收听证道与课程',
+    sabbathSchool: '安息日学',
+    sabbathSchoolSub: '每周研经指南与讨论',
+    zoomClass: 'Zoom 课程',
+    zoomSub: '互动式研经与团契',
     hymnal: '英文诗歌本',
     hymnalSub: '敬拜用的歌词与音乐',
     library: '图书馆',
@@ -69,7 +82,11 @@ const allLabels = {
     youtube: 'Servicios Completos',
     youtubeSub: 'Mira nuestros últimos servicios de adoración',
     spotify: 'Archivo de Audio',
-    spotifySub: 'Escucha nuestros sermones y clases de estudio bíblico',
+    spotifySub: 'Escucha sermones y clases',
+    sabbathSchool: 'Escuela Sabática',
+    sabbathSchoolSub: 'Guías de estudio bíblico semanal y discusión',
+    zoomClass: 'Clase de Zoom',
+    zoomSub: 'Estudio bíblico interactivo y compañerismo',
     hymnal: 'Himnario en Inglés',
     hymnalSub: 'Letras y música para la adoración',
     library: 'Biblioteca',
@@ -118,6 +135,15 @@ export default function ResourcesScreen() {
           />
 
           <MenuCard
+            title={labels.sabbathSchool}
+            description={labels.sabbathSchoolSub}
+            icon="book-open-variant"
+            iconColor={theme.colors.tertiary}
+            rightIcon="open-in-new"
+            onPress={() => openSabbathSchool(language)}
+          />
+
+          <MenuCard
             title={labels.library}
             description={labels.librarySub}
             icon="bookshelf"
@@ -147,6 +173,15 @@ export default function ResourcesScreen() {
             icon="spotify"
             iconColor={(theme.colors as any).brandSpotify}
             onPress={openSpotifyPodcast}
+            rightIcon="open-in-new"
+          />
+
+          <MenuCard
+            title={labels.zoomClass}
+            description={labels.zoomSub}
+            icon="video"
+            iconColor={(theme.colors as any).brandZoom}
+            onPress={() => {}} // TODO: Add Linking.openURL with the actual Zoom link
             rightIcon="open-in-new"
           />
         </List.Section>

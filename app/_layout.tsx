@@ -350,7 +350,9 @@ export default function RootLayout() {
   };
 
   const [loaded, error] = useFonts({
-    AdventSans: require('./../assets/fonts/AdventSans-Logo.otf'),
+    'NotoSans-Regular': require('./../assets/fonts/NotoSans-Regular.ttf'),
+    'NotoSans-Medium': require('./../assets/fonts/NotoSans-Medium.ttf'),
+    'NotoSans-Bold': require('./../assets/fonts/NotoSans-Bold.ttf'),
     'material-community': require('../assets/fonts/MaterialCommunityIcons.ttf'),
   });
 

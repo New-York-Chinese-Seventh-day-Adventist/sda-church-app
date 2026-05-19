@@ -1,10 +1,4 @@
-import {
-  CHURCH_BUILDING_IMAGE_URL,
-  CHURCH_NAME,
-  openAtlanticUnion,
-  openBeliefs,
-  openGNYC,
-} from '@/constants/ExternalLinks';
+import { CHURCH_BUILDING_IMAGE_URL, openBeliefs } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
@@ -13,10 +7,10 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Stack } from 'expo-router';
 import { useContext } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Paragraph, Text } from 'react-native-paper';
+import { Button, Card, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function AboutScreen() {
+export default function AboutSDAScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -24,8 +18,9 @@ export default function AboutScreen() {
 
   const allLabels = {
     en: {
-      title: 'About Us',
-      aboutSDA: 'About the Seventh-day Adventist Church',
+      title: 'About Denomination',
+      churchName: 'Seventh-day Adventist Church',
+      aboutSDA: 'About the Denomination',
       sdaDescription:
         'Seventh-day Adventists are a global Christian community that regards the Bible as the supreme authority in their lives. We adhere to the principle of Sola Scriptura (By Scripture Alone), which means that the Bible is the sole infallible source of authority for Christian faith and practice, and the standard by which all teachings and experiences are measured.',
       pillarItems: [
@@ -33,21 +28,8 @@ export default function AboutScreen() {
         { title: 'Faith & Love', icon: 'heart-flash' },
         { title: 'Community', icon: 'account-group' },
       ],
-      history: 'Our History',
-      historySubtext:
-        'The New York Chinese Seventh-day Adventist Church began as a humble gathering in 1973. Today, we are a vibrant community dedicated to outreach and supporting our neighbors.',
-      milestoneItems: [
-        { year: '1973', event: 'First home gathering' },
-        { year: '1987', event: 'Officially organized' },
-        { year: '1996', event: 'Joined conference' },
-        { year: '1999', event: 'Opened permanent home' },
-      ],
       beliefs: 'Our Beliefs',
-      beliefsSubtext:
-        'The 28 Fundamental Beliefs outline how Seventh-day Adventists apply Sola Scriptura principles in daily life.',
-      beliefsNote:
-        'These are a few of our core pillars. We hold 28 fundamental beliefs that guide our community.',
-      learnMore: 'Learn More About Our Beliefs',
+      learnMore: 'Read All 28 Beliefs',
       beliefsItems: [
         {
           title: 'Creation',
@@ -110,19 +92,11 @@ export default function AboutScreen() {
           icon: 'earth',
         },
       ],
-      organization: 'Church Organization',
-      localConference: 'Local Conference',
-      localConfName: 'Greater New York Conference',
-      localConfDesc:
-        'Our local congregation is part of a network of churches across the New York metropolitan area.',
-      unionConference: 'Union Conference',
-      unionConfName: 'Atlantic Union Conference',
-      unionConfDesc:
-        'The Atlantic Union coordinates Adventist mission and education across the Northeast United States and Bermuda.',
     },
     zh: {
-      title: '關於我們',
-      aboutSDA: '關於基督復臨安息日會',
+      title: '關於教派',
+      churchName: '基督復臨安息日會',
+      aboutSDA: '關於教派',
       sdaDescription:
         '基督復臨安息日會是一個全球性的基督徒團體, 將聖經視為生活的最高權威。我們堅持「唯獨聖經」(Sola Scriptura) 的原則, 這意味著聖經是基督徒信仰和實踐的唯一無誤權威來源, 也是衡量所有教導和經驗的標準。',
       pillarItems: [
@@ -130,21 +104,8 @@ export default function AboutScreen() {
         { title: '信仰與愛', icon: 'heart-flash' },
         { title: '社群', icon: 'account-group' },
       ],
-      history: '我們的歷史',
-      historySubtext:
-        '紐約華人基督復臨安息日會始於 1973 年。今天, 我們是一個充滿活力的雙語社群, 始終致力於外展使命並支持鄰居。',
-      milestoneItems: [
-        { year: '1973', event: '首次住宅聚會' },
-        { year: '1987', event: '會眾正式成立' },
-        { year: '1996', event: '加入紐約區會' },
-        { year: '1999', event: '永久會所落成' },
-      ],
       beliefs: '我們的信仰',
-      beliefsSubtext:
-        '28 條基本信仰概述了基督復臨安息日會信徒如何在日常生活中應用唯獨聖經的原則。',
-      beliefsNote:
-        '這些是我們信仰核心支柱中的一部分。我們共有 28 條基本信仰指引著我們的社群。',
-      learnMore: '進一步了解我們的信仰',
+      learnMore: '閱讀全部 28 條基本信仰',
       beliefsItems: [
         {
           title: '創造',
@@ -202,17 +163,11 @@ export default function AboutScreen() {
           icon: 'earth',
         },
       ],
-      organization: '教會組織',
-      localConference: '區會',
-      localConfName: '大紐約區會',
-      localConfDesc: '我們的在地會眾是大紐約大都會地區教會網絡的一部分。',
-      unionConference: '聯合會',
-      unionConfName: '大西洋聯合會',
-      unionConfDesc: '大西洋聯合會負責協調美國東北部和百慕達地區的復臨教會使命與教育。',
     },
     'zh-cn': {
-      title: '关于我们',
-      aboutSDA: '关于基督复临安息日会',
+      title: '关于教派',
+      churchName: '基督复临安息日会',
+      aboutSDA: '关于教派',
       sdaDescription:
         '基督复临安息日会是一个全球性的基督徒团体, 将圣经视为生活的最高权威。我们坚持“唯独圣经”(Sola Scriptura) 的原则, 这意味着圣经是基督徒信仰和实践的唯一无误权威来源, 也是衡量所有教导和经验的标准。',
       pillarItems: [
@@ -220,21 +175,8 @@ export default function AboutScreen() {
         { title: '信仰与爱', icon: 'heart-flash' },
         { title: '社区', icon: 'account-group' },
       ],
-      history: '我们的历史',
-      historySubtext:
-        '纽约华人基督复临安息日会始于 1973 年。今天, 我们是一个充满活力的双语社群, 始终致力于外展使命并支持邻居。',
-      milestoneItems: [
-        { year: '1973', event: '首次住宅聚会' },
-        { year: '1987', event: '会众正式成立' },
-        { year: '1996', event: '加入纽约区会' },
-        { year: '1999', event: '永久会所落成' },
-      ],
       beliefs: '我们的信仰',
-      beliefsSubtext:
-        '28 条基本信仰概述了基督复临安息日会信徒如何在日常生活中应用唯独圣经的原则。',
-      beliefsNote:
-        '这些是我们信仰核心支柱中的一部分。我们共有 28 条基本信仰指引着我们的社群。',
-      learnMore: '进一步了解我们的信仰',
+      learnMore: '阅读全部 28 条基本信仰',
       beliefsItems: [
         {
           title: '创造',
@@ -292,17 +234,11 @@ export default function AboutScreen() {
           icon: 'earth',
         },
       ],
-      organization: '教会组织',
-      localConference: '区会',
-      localConfName: '大纽约区会',
-      localConfDesc: '我们的在地会众是大纽约大都会地区教会网络的一部分。',
-      unionConference: '联合会',
-      unionConfName: '大西洋联合会',
-      unionConfDesc: '大西洋联合会负责协调美国东北部和百慕大地区的复临教会使命与教育。',
     },
     es: {
-      title: 'Sobre Nosotros',
-      aboutSDA: 'Acerca de la Iglesia Adventista del Séptimo Día',
+      title: 'Sobre la Denominación',
+      churchName: 'Iglesia Adventista\ndel Séptimo Día',
+      aboutSDA: 'Acerca de la Denominación',
       sdaDescription:
         'Los Adventistas del Séptimo Día son una comunidad cristiana global que considera la Biblia como la autoridad suprema en sus vidas. Nos adherimos al principio de Sola Scriptura (Solo por la Escritura), lo que significa que la Biblia es la única fuente infalible de autoridad para la fe y la práctica cristiana, y el estándar por el cual se miden todas las enseñanzas y experiencias.',
       pillarItems: [
@@ -310,21 +246,8 @@ export default function AboutScreen() {
         { title: 'Fe y Amor', icon: 'heart-flash' },
         { title: 'Comunidad', icon: 'account-group' },
       ],
-      history: 'Nuestra Historia',
-      historySubtext:
-        'La Iglesia Adventista del Séptimo Día de Nueva York comenzó como una humilde reunión en 1973. Hoy, somos una comunidad bilingüe vibrante dedicada a apoyar a nuestros vecinos.',
-      milestoneItems: [
-        { year: '1973', event: 'Primera reunión' },
-        { year: '1987', event: 'Organizada' },
-        { year: '1996', event: 'Unión a conferencia' },
-        { year: '1999', event: 'Sede propia' },
-      ],
       beliefs: 'Nuestras Creencias',
-      beliefsSubtext:
-        'Las 28 Creencias Fundamentales describen cómo los Adventistas del Séptimo Día aplican los principios de Sola Scriptura en la vida diaria.',
-      beliefsNote:
-        'Estos son algunos de nuestros pilares fundamentales. Sostenemos 28 creencias fundamentales que guían a nuestra comunidad.',
-      learnMore: 'Más Información Sobre Nuestras Creencias',
+      learnMore: 'Leer las 28 Creencias Fundamentales',
       beliefsItems: [
         {
           title: 'La Creación',
@@ -387,15 +310,6 @@ export default function AboutScreen() {
           icon: 'earth',
         },
       ],
-      organization: 'Organización de la Iglesia',
-      localConference: 'Asociación Local',
-      localConfName: 'Greater New York Conference',
-      localConfDesc:
-        'Nuestra congregación local es parte de una red de iglesias en el área metropolitana de Nueva York.',
-      unionConference: 'Unión',
-      unionConfName: 'Atlantic Union Conference',
-      unionConfDesc:
-        'La Unión del Atlántico coordina la misión y educación adventista en el noreste de los Estados Unidos y las Bermudas.',
     },
   };
 
@@ -408,17 +322,17 @@ export default function AboutScreen() {
         style={DocumentStyles.container}
         contentContainerStyle={{ paddingTop: headerHeight }}
       >
-        <View style={styles.header}>
+        <View style={DocumentStyles.header}>
           <Image
             source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
-            style={styles.image}
+            style={DocumentStyles.image}
             accessibilityLabel="Church banner"
           />
           <Text
-            variant="titleLarge"
+            variant="headlineSmall"
             style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
           >
-            {CHURCH_NAME}
+            {labels.churchName}
           </Text>
         </View>
 
@@ -435,11 +349,12 @@ export default function AboutScreen() {
           >
             {labels.aboutSDA}
           </Text>
-          <Paragraph
+          <Text
+            variant="bodyMedium"
             style={[DocumentStyles.description, { color: theme.colors.onSurface }]}
           >
             {labels.sdaDescription}
-          </Paragraph>
+          </Text>
           <View style={styles.pillarContainer}>
             {(labels as any).pillarItems.map((item: any, index: number) => (
               <Card
@@ -481,59 +396,7 @@ export default function AboutScreen() {
               },
             ]}
           >
-            {labels.history}
-          </Text>
-          <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-            {labels.historySubtext}
-          </Text>
-          <View style={styles.timelineContainer}>
-            {(labels as any).milestoneItems.map((item: any, index: number) => (
-              <View key={index} style={styles.timelineColumn}>
-                <View
-                  style={[styles.yearCircle, { backgroundColor: theme.colors.tertiary }]}
-                >
-                  <Text style={[styles.yearText, { color: theme.colors.onTertiary }]}>
-                    {item.year}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.connectorLine,
-                    { backgroundColor: theme.colors.outlineVariant },
-                  ]}
-                />
-                <Text
-                  variant="labelSmall"
-                  style={[
-                    styles.milestoneEvent,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {item.event}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={DocumentStyles.section}>
-          <Text
-            variant="titleLarge"
-            style={[
-              DocumentStyles.sectionTitle,
-              {
-                color: theme.colors.onSurface,
-                borderBottomColor: theme.colors.outlineVariant,
-              },
-            ]}
-          >
             {labels.beliefs}
-          </Text>
-          <Text
-            variant="bodyMedium"
-            style={[styles.subtext, { color: theme.colors.onSurface }]}
-          >
-            {labels.beliefsSubtext}
           </Text>
 
           <View style={styles.cardContainer}>
@@ -560,20 +423,19 @@ export default function AboutScreen() {
                   </Text>
                 </View>
                 <View style={styles.cardContent}>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onSurface }}>
+                  <Text
+                    variant="bodyMedium"
+                    style={[
+                      DocumentStyles.description,
+                      { color: theme.colors.onSurface },
+                    ]}
+                  >
                     {item.description}
                   </Text>
                 </View>
               </Card>
             ))}
           </View>
-
-          <Text
-            variant="bodyMedium"
-            style={[DocumentStyles.note, { color: theme.colors.onSurfaceVariant }]}
-          >
-            {labels.beliefsNote}
-          </Text>
 
           <Button
             mode="contained"
@@ -587,88 +449,6 @@ export default function AboutScreen() {
           </Button>
         </View>
 
-        <View style={DocumentStyles.section}>
-          <Text
-            variant="titleLarge"
-            style={[
-              DocumentStyles.sectionTitle,
-              {
-                color: theme.colors.onSurface,
-                borderBottomColor: theme.colors.outlineVariant,
-              },
-            ]}
-          >
-            {labels.organization}
-          </Text>
-          <Card style={styles.orgCard} mode="outlined">
-            <Card.Content>
-              <Text
-                variant="labelMedium"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                {labels.localConference}
-              </Text>
-              <Text
-                variant="titleLarge"
-                style={[styles.orgName, { color: theme.colors.onSurface }]}
-              >
-                {labels.localConfName}
-              </Text>
-              <Text
-                variant="bodySmall"
-                style={[styles.orgDesc, { color: theme.colors.onSurface }]}
-              >
-                {labels.localConfDesc}
-              </Text>
-            </Card.Content>
-            <Card.Actions>
-              <Button
-                mode="contained"
-                icon="open-in-new"
-                buttonColor={theme.colors.primary}
-                textColor={theme.colors.onPrimary}
-                onPress={openGNYC}
-              >
-                Learn More
-              </Button>
-            </Card.Actions>
-          </Card>
-
-          <Card style={styles.orgCard} mode="outlined">
-            <Card.Content>
-              <Text
-                variant="labelMedium"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                {labels.unionConference}
-              </Text>
-              <Text
-                variant="titleLarge"
-                style={[styles.orgName, { color: theme.colors.onSurface }]}
-              >
-                {labels.unionConfName}
-              </Text>
-              <Text
-                variant="bodySmall"
-                style={[styles.orgDesc, { color: theme.colors.onSurface }]}
-              >
-                {labels.unionConfDesc}
-              </Text>
-            </Card.Content>
-            <Card.Actions>
-              <Button
-                mode="contained"
-                icon="open-in-new"
-                buttonColor={theme.colors.primary}
-                textColor={theme.colors.onPrimary}
-                onPress={openAtlanticUnion}
-              >
-                Learn More
-              </Button>
-            </Card.Actions>
-          </Card>
-        </View>
-
         <View style={{ height: 40 }} />
       </ScrollView>
     </>
@@ -676,16 +456,6 @@ export default function AboutScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: 8,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-  },
-  subtext: {
-    marginBottom: 12,
-  },
   cardContainer: {
     marginVertical: 8,
   },
@@ -722,45 +492,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'center',
     fontWeight: '600',
-  },
-  timelineContainer: {
-    flexDirection: 'row',
-    marginTop: 24,
-  },
-  timelineColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  yearCircle: {
-    width: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE,
-    height: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE,
-    borderRadius: DESIGN_TOKENS.TIMELINE_CIRCLE_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  yearText: {
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  connectorLine: {
-    width: 2,
-    height: 30,
-  },
-  milestoneEvent: {
-    textAlign: 'center',
-    marginTop: 4,
-    fontSize: 10,
-    paddingHorizontal: 2,
-  },
-  orgCard: {
-    marginBottom: 16,
-    backgroundColor: 'transparent',
-  },
-  orgName: {
-    fontSize: 18,
-    marginTop: 4,
-  },
-  orgDesc: {
-    marginTop: 4,
   },
 });
