@@ -187,7 +187,7 @@ export default function HomeScreen() {
           />
           <MenuCard
             title={labels.give}
-            icon="heart-outline"
+            icon="gift"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/home/give')}
           />

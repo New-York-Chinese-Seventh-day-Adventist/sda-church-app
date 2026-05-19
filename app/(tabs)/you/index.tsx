@@ -1,6 +1,5 @@
 import { UpdateContext } from '@/app/_layout';
 import { MenuCard } from '@/components/MenuCard';
-import { openOnlineGiving } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { ThemeContext, useAppTheme } from '@/constants/Themes';
@@ -15,8 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const allLabels = {
   en: {
     settings: 'Settings',
-    give: 'Give',
-    giveSub: 'Support our ministry',
     darkMode: 'Dark Mode',
     darkModeSub: 'Toggle between light and dark themes',
     language: 'Language',
@@ -26,8 +23,6 @@ const allLabels = {
   },
   zh: {
     settings: '設定',
-    give: '奉獻',
-    giveSub: '支持我們的聖工',
     darkMode: '深色模式',
     darkModeSub: '切換淺色和深色主題',
     language: '語言',
@@ -37,8 +32,6 @@ const allLabels = {
   },
   'zh-cn': {
     settings: '设置',
-    give: '奉献',
-    giveSub: '支持我们的圣工',
     darkMode: '深色模式',
     darkModeSub: '切换浅色和深色主题',
     language: '语言',
@@ -48,8 +41,6 @@ const allLabels = {
   },
   es: {
     settings: 'Ajustes',
-    give: 'Dar',
-    giveSub: 'Apoya nuestro ministerio',
     darkMode: 'Modo Oscuro',
     darkModeSub: 'Alternar entre temas claros y oscuros',
     language: 'Idioma',
@@ -104,22 +95,6 @@ export default function YouScreen() {
             icon="translate"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/you/language' as any)}
-          />
-        </List.Section>
-
-        <List.Section>
-          <List.Subheader
-            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
-          >
-            {labels.give}
-          </List.Subheader>
-          <MenuCard
-            title={labels.give}
-            description={labels.giveSub}
-            icon="gift"
-            iconColor={theme.colors.tertiary}
-            rightIcon="open-in-new"
-            onPress={openOnlineGiving}
           />
         </List.Section>
 
