@@ -157,6 +157,14 @@ export default function HomeScreen() {
           />
 
           <MenuCard
+            title={labels.contact}
+            icon="church"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/home/contact')}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
             title={labels.join}
             icon="water-outline"
             iconColor={theme.colors.tertiary}
@@ -175,13 +183,6 @@ export default function HomeScreen() {
             icon="file-document-outline"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/home/bulletin')}
-            style={{ marginBottom: 12 }}
-          />
-          <MenuCard
-            title={labels.contact}
-            icon="church"
-            iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/contact')}
             style={{ marginBottom: 12 }}
           />
           <MenuCard

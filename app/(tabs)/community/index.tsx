@@ -20,7 +20,8 @@ const allLabels = {
     rosterHeader: 'Service Roster',
     weeklyAssignments: 'Weekly Assignments',
     quarterlySchedule: 'Quarterly Overview',
-    prayerHeader: 'Prayer Wall',
+    prayerHeader: 'Prayer',
+    privatePrayer: 'Private Prayer Request',
     prayerRequest: 'Community Prayer Wall',
   },
   zh: {
@@ -33,7 +34,8 @@ const allLabels = {
     rosterHeader: '服事安排',
     weeklyAssignments: '每週服事表',
     quarterlySchedule: '季度總表',
-    prayerHeader: '禱告牆',
+    prayerHeader: '禱告',
+    privatePrayer: '私人代禱請求',
     prayerRequest: '教會禱告牆',
   },
   'zh-cn': {
@@ -46,7 +48,8 @@ const allLabels = {
     rosterHeader: '服事安排',
     weeklyAssignments: '每周服事表',
     quarterlySchedule: '季度总表',
-    prayerHeader: '祷告墙',
+    prayerHeader: '祷告',
+    privatePrayer: '私人代祷请求',
     prayerRequest: '教会祷告墙',
   },
   es: {
@@ -59,7 +62,8 @@ const allLabels = {
     rosterHeader: 'Registro de Servicio',
     weeklyAssignments: 'Asignaciones Semanales',
     quarterlySchedule: 'Horario Trimestral',
-    prayerHeader: 'Muro de Oración',
+    prayerHeader: 'Oración',
+    privatePrayer: 'Petición de Oración Privada',
     prayerRequest: 'Muro de Oración Comunitario',
   },
 };
@@ -134,6 +138,13 @@ export default function CommunityScreen() {
           >
             {labels.prayerHeader}
           </List.Subheader>
+          <MenuCard
+            title={labels.privatePrayer}
+            icon="email-outline"
+            iconColor={theme.colors.tertiary}
+            style={{ marginBottom: 12 }}
+            onPress={() => {}} // TODO: Link to a private Google Form or email
+          />
           <MenuCard
             title={labels.prayerRequest}
             icon="hands-pray"
