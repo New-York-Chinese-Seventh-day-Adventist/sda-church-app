@@ -7,7 +7,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Stack } from 'expo-router';
 import { useContext } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Paragraph, Text } from 'react-native-paper';
+import { Button, Card, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AboutSDAScreen() {
@@ -29,11 +29,7 @@ export default function AboutSDAScreen() {
         { title: 'Community', icon: 'account-group' },
       ],
       beliefs: 'Our Beliefs',
-      beliefsSubtext:
-        'The 28 Fundamental Beliefs outline how Seventh-day Adventists apply Sola Scriptura principles in daily life.',
-      beliefsNote:
-        'These are a few of our core pillars. We hold 28 fundamental beliefs that guide our community.',
-      learnMore: 'Learn More About Our Beliefs',
+      learnMore: 'Read All 28 Beliefs',
       beliefsItems: [
         {
           title: 'Creation',
@@ -109,11 +105,7 @@ export default function AboutSDAScreen() {
         { title: '社群', icon: 'account-group' },
       ],
       beliefs: '我們的信仰',
-      beliefsSubtext:
-        '28 條基本信仰概述了基督復臨安息日會信徒如何在日常生活中應用唯獨聖經的原則。',
-      beliefsNote:
-        '這些是我們信仰核心支柱中的一部分。我們共有 28 條基本信仰指引著我們的社群。',
-      learnMore: '進一步了解我們的信仰',
+      learnMore: '閱讀全部 28 條基本信仰',
       beliefsItems: [
         {
           title: '創造',
@@ -184,11 +176,7 @@ export default function AboutSDAScreen() {
         { title: '社区', icon: 'account-group' },
       ],
       beliefs: '我们的信仰',
-      beliefsSubtext:
-        '28 条基本信仰概述了基督复临安息日会信徒如何在日常生活中应用唯独圣经的原则。',
-      beliefsNote:
-        '这些是我们信仰核心支柱中的一部分。我们共有 28 条基本信仰指引着我们的社群。',
-      learnMore: '进一步了解我们的信仰',
+      learnMore: '阅读全部 28 条基本信仰',
       beliefsItems: [
         {
           title: '创造',
@@ -249,7 +237,7 @@ export default function AboutSDAScreen() {
     },
     es: {
       title: 'Sobre la Denominación',
-      churchName: 'Iglesia Adventista del Séptimo Día',
+      churchName: 'Iglesia Adventista\ndel Séptimo Día',
       aboutSDA: 'Acerca de la Denominación',
       sdaDescription:
         'Los Adventistas del Séptimo Día son una comunidad cristiana global que considera la Biblia como la autoridad suprema en sus vidas. Nos adherimos al principio de Sola Scriptura (Solo por la Escritura), lo que significa que la Biblia es la única fuente infalible de autoridad para la fe y la práctica cristiana, y el estándar por el cual se miden todas las enseñanzas y experiencias.',
@@ -259,11 +247,7 @@ export default function AboutSDAScreen() {
         { title: 'Comunidad', icon: 'account-group' },
       ],
       beliefs: 'Nuestras Creencias',
-      beliefsSubtext:
-        'Las 28 Creencias Fundamentales describen cómo los Adventistas del Séptimo Día aplican los principios de Sola Scriptura en la vida diaria.',
-      beliefsNote:
-        'Estos son algunos de nuestros pilares fundamentales. Sostenemos 28 creencias fundamentales que guían a nuestra comunidad.',
-      learnMore: 'Más Información Sobre Nuestras Creencias',
+      learnMore: 'Leer las 28 Creencias Fundamentales',
       beliefsItems: [
         {
           title: 'La Creación',
@@ -345,7 +329,7 @@ export default function AboutSDAScreen() {
             accessibilityLabel="Church banner"
           />
           <Text
-            variant="titleLarge"
+            variant="headlineSmall"
             style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
           >
             {labels.churchName}
@@ -365,11 +349,12 @@ export default function AboutSDAScreen() {
           >
             {labels.aboutSDA}
           </Text>
-          <Paragraph
+          <Text
+            variant="bodyMedium"
             style={[DocumentStyles.description, { color: theme.colors.onSurface }]}
           >
             {labels.sdaDescription}
-          </Paragraph>
+          </Text>
           <View style={styles.pillarContainer}>
             {(labels as any).pillarItems.map((item: any, index: number) => (
               <Card
@@ -413,12 +398,6 @@ export default function AboutSDAScreen() {
           >
             {labels.beliefs}
           </Text>
-          <Text
-            variant="bodyMedium"
-            style={[styles.subtext, { color: theme.colors.onSurface }]}
-          >
-            {labels.beliefsSubtext}
-          </Text>
 
           <View style={styles.cardContainer}>
             {labels.beliefsItems.map((item, index) => (
@@ -444,20 +423,19 @@ export default function AboutSDAScreen() {
                   </Text>
                 </View>
                 <View style={styles.cardContent}>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onSurface }}>
+                  <Text
+                    variant="bodyMedium"
+                    style={[
+                      DocumentStyles.description,
+                      { color: theme.colors.onSurface },
+                    ]}
+                  >
                     {item.description}
                   </Text>
                 </View>
               </Card>
             ))}
           </View>
-
-          <Text
-            variant="bodyMedium"
-            style={[DocumentStyles.note, { color: theme.colors.onSurfaceVariant }]}
-          >
-            {labels.beliefsNote}
-          </Text>
 
           <Button
             mode="contained"
@@ -478,9 +456,6 @@ export default function AboutSDAScreen() {
 }
 
 const styles = StyleSheet.create({
-  subtext: {
-    marginBottom: 12,
-  },
   cardContainer: {
     marginVertical: 8,
   },

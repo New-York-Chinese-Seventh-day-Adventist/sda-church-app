@@ -26,6 +26,7 @@ export default function HomeScreen() {
       aboutHistory: 'Our History',
       contact: 'Connect with Us',
       meetTeam: 'Meet Our Team',
+      join: 'Joining the Church',
       bulletin: 'Weekly Bulletin',
       explore: 'Explore',
       give: 'Tithe & Offering',
@@ -38,6 +39,7 @@ export default function HomeScreen() {
       aboutHistory: '我們的歷史',
       contact: '聯繫我們',
       meetTeam: '認識我們的團隊',
+      join: '加入教會',
       bulletin: '每週週報',
       explore: '探索',
       give: '奉獻',
@@ -50,6 +52,7 @@ export default function HomeScreen() {
       aboutHistory: '我们的历史',
       contact: '联系我们',
       meetTeam: '认识我们的团队',
+      join: '加入教会',
       bulletin: '每周周报',
       explore: '探索',
       give: '奉献',
@@ -62,6 +65,7 @@ export default function HomeScreen() {
       aboutHistory: 'Nuestra Historia',
       contact: 'Conéctate con Nosotros',
       meetTeam: 'Conoce a nuestro equipo',
+      join: 'Unirse a la Iglesia',
       bulletin: 'Boletín Semanal',
       explore: 'Explorar',
       give: 'Diezmos y Ofrendas',
@@ -140,6 +144,14 @@ export default function HomeScreen() {
             icon="account-multiple"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/home/team')}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
+            title={labels.join}
+            icon="water-outline"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/community/baptism')}
             style={{ marginBottom: 12 }}
           />
 

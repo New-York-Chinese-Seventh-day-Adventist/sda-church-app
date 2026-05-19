@@ -6,7 +6,7 @@ import { DocumentStyles } from '@/styles/DocumentStyles';
 import { Stack } from 'expo-router';
 import { useContext } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Button, Card, Paragraph, Text } from 'react-native-paper';
+import { Button, Card, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function GiveScreen() {
@@ -18,8 +18,6 @@ export default function GiveScreen() {
   const allLabels = {
     en: {
       title: 'Tithe & Offering',
-      description:
-        'Your faithful support allows us to serve our community and share the Gospel message of hope and healing.',
       cashSection: 'In-Person Giving',
       cashLabel: 'Sabbath Service',
       cashTitle: 'Cash',
@@ -45,7 +43,6 @@ export default function GiveScreen() {
     },
     zh: {
       title: '奉獻',
-      description: '您的忠心支持使我們能夠服務社群，並分享充滿希望與醫治的福音信息。',
       cashSection: '現場奉獻',
       cashLabel: '安息日聚會',
       cashTitle: '現金',
@@ -70,7 +67,6 @@ export default function GiveScreen() {
     },
     'zh-cn': {
       title: '奉献',
-      description: '您的忠心支持使我们能够服务社区，并分享充满希望与医治的福音信息。',
       cashSection: '现场奉献',
       cashLabel: '安息日聚会',
       cashTitle: '现金',
@@ -95,8 +91,6 @@ export default function GiveScreen() {
     },
     es: {
       title: 'Diezmos y Ofrendas',
-      description:
-        'Su apoyo fiel nos permite servir a nuestra comunidad y compartir el mensaje evangélico de esperanza y sanación.',
       cashSection: 'Donaciones en Persona',
       cashLabel: 'Servicio Sabático',
       cashTitle: 'Efectivo',
@@ -133,12 +127,14 @@ export default function GiveScreen() {
       >
         <View style={DocumentStyles.section}>
           <Card
-            style={{
-              marginBottom: 24,
-              backgroundColor: theme.colors.surfaceVariant,
-              borderLeftWidth: 4,
-              borderLeftColor: theme.colors.secondary,
-            }}
+            style={[
+              DocumentStyles.card,
+              {
+                backgroundColor: theme.colors.surfaceVariant,
+                borderLeftWidth: 4,
+                borderLeftColor: theme.colors.secondary,
+              },
+            ]}
             mode="contained"
           >
             <Card.Content>
@@ -149,7 +145,7 @@ export default function GiveScreen() {
                   color: theme.colors.onSurfaceVariant,
                 }}
               >
-                "{labels.quote}"
+                {labels.quote}
               </Text>
               <Text
                 variant="labelMedium"
@@ -164,11 +160,6 @@ export default function GiveScreen() {
               </Text>
             </Card.Content>
           </Card>
-          <Paragraph
-            style={[DocumentStyles.description, { color: theme.colors.onSurface }]}
-          >
-            {labels.description}
-          </Paragraph>
           <Text
             variant="bodySmall"
             style={[
@@ -211,8 +202,9 @@ export default function GiveScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.onlineDesc}
               </Text>
@@ -262,8 +254,9 @@ export default function GiveScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.zelleDesc}
               </Text>
@@ -313,8 +306,9 @@ export default function GiveScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.cashDesc}
               </Text>

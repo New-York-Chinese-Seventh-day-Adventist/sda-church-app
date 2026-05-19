@@ -24,7 +24,7 @@ export default function AboutChurchHistoryScreen() {
   const allLabels = {
     en: {
       title: 'Our History',
-      churchName: 'New York Chinese Seventh-day Adventist Church',
+      churchName: 'New York Chinese\nSeventh-day Adventist\nChurch',
       history: 'Our History',
       historySubtext:
         'The New York Chinese Seventh-day Adventist Church began as a humble gathering in 1973. Today, we are a vibrant community dedicated to outreach and supporting our neighbors.',
@@ -113,7 +113,7 @@ export default function AboutChurchHistoryScreen() {
     },
     es: {
       title: 'Nuestra Historia',
-      churchName: 'Iglesia Adventista del Séptimo Día de Nueva York',
+      churchName: 'Iglesia Adventista\ndel Séptimo Día\nde Nueva York',
       history: 'Nuestra Historia',
       historySubtext:
         'La Iglesia Adventista del Séptimo Día de Nueva York comenzó como una humilde reunión en 1973. Hoy, somos una comunidad bilingüe vibrante dedicada a apoyar a nuestros vecinos.',
@@ -161,7 +161,7 @@ export default function AboutChurchHistoryScreen() {
             accessibilityLabel="Church banner"
           />
           <Text
-            variant="titleLarge"
+            variant="headlineSmall"
             style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
           >
             {labels.churchName}
@@ -181,7 +181,10 @@ export default function AboutChurchHistoryScreen() {
           >
             {labels.history}
           </Text>
-          <Text style={[DocumentStyles.description, { color: theme.colors.onSurface }]}>
+          <Text
+            variant="bodyMedium"
+            style={[DocumentStyles.description, { color: theme.colors.onSurface }]}
+          >
             {labels.historySubtext}
           </Text>
           <View style={DocumentStyles.timelineContainer}>
@@ -251,8 +254,9 @@ export default function AboutChurchHistoryScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.elmhurstText}
               </Text>
@@ -303,8 +307,9 @@ export default function AboutChurchHistoryScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.flushingText}
               </Text>
@@ -340,8 +345,9 @@ export default function AboutChurchHistoryScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.brooklynText}
               </Text>
@@ -391,8 +397,9 @@ export default function AboutChurchHistoryScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.localConfDesc}
               </Text>
@@ -428,8 +435,9 @@ export default function AboutChurchHistoryScreen() {
                 style={[
                   DocumentStyles.description,
                   DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
+                  { color: theme.colors.onSurface },
                 ]}
+                variant="bodyMedium"
               >
                 {labels.unionConfDesc}
               </Text>

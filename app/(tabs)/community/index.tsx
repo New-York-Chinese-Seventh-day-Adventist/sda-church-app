@@ -1,122 +1,66 @@
-import { MenuCard } from "@/components/MenuCard";
-import { LanguageContext } from "@/constants/LanguageContext";
-import { DESIGN_TOKENS } from "@/constants/Layout";
-import { useAppTheme } from "@/constants/Themes";
-import { NavigationStyles } from "@/styles/NavigationStyles";
-import { Stack } from "expo-router";
-import { useContext } from "react";
-import { ScrollView, StyleSheet } from "react-native";
-import { List } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MenuCard } from '@/components/MenuCard';
+import { LanguageContext } from '@/constants/LanguageContext';
+import { DESIGN_TOKENS } from '@/constants/Layout';
+import { useAppTheme } from '@/constants/Themes';
+import { NavigationStyles } from '@/styles/NavigationStyles';
+import { router, Stack } from 'expo-router';
+import { useContext } from 'react';
+import { Linking, ScrollView } from 'react-native';
+import { Card, List, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const allLabels = {
   en: {
-    header: "Community",
-    elmhurstTitle: "Elmhurst",
-    brooklynTitle: "Brooklyn (Bay Ridge)",
-    flushingFellowshipTitle: "Flushing Fellowship (Mandarin)",
-    saturday: "Saturday",
-    thursday: "Thursday",
-    locations: {
-      f1: "1st Floor",
-      f2: "2nd Floor",
-      f3: "3rd Floor",
-      basement: "Basement",
-    },
-    eventNames: {
-      song: "Song Service",
-      ss: "Sabbath School / Small Groups",
-      worship: "Worship Service & Sermon",
-      lunch: "Fellowship Lunch",
-      youth: "Youth Ministry (Ages 8-18)",
-      choir: "Choir Practice",
-      seminary: "Theological Seminary",
-      brooklynSS: "Song Service & Sabbath School",
-      brooklynWorship: "Worship Service & Sermon",
-      brooklynLunch: "Fellowship Lunch",
-      dinner: "Dinner & Devotion",
-    },
+    header: 'Community',
+    worship: 'Sabbath Worship',
+    fellowship: 'Fellowship',
+    weeklyHeader: 'Services & Gatherings',
+    upcomingHeader: 'Upcoming Events',
+    upcomingPlaceholder: 'Stay tuned for upcoming special events and programs!',
+    rosterHeader: 'Service Roster',
+    weeklyAssignments: 'Weekly Assignments',
+    quarterlySchedule: 'Quarterly Overview',
+    prayerHeader: 'Prayer Wall',
+    prayerRequest: 'Community Prayer Wall',
   },
   zh: {
-    header: "教會社群",
-    elmhurstTitle: "艾姆赫斯特",
-    brooklynTitle: "布魯克林 (Bay Ridge)",
-    flushingFellowshipTitle: "法拉盛團契 (國語)",
-    saturday: "星期六",
-    thursday: "星期四",
-    locations: {
-      f1: "1 樓",
-      f2: "2 樓",
-      f3: "3 樓",
-      basement: "地下室",
-    },
-    eventNames: {
-      song: "讚美詩歌",
-      ss: "安息日學 / 小組聚會",
-      worship: "崇拜聚會 & 證道",
-      lunch: "教會午餐 (愛筵)",
-      youth: "青年事工 (8-18 歲)",
-      choir: "詩班練習",
-      seminary: "神學講座",
-      brooklynSS: "詩歌崇拜 & 安息日學",
-      brooklynWorship: "崇拜聚會 & 證道",
-      brooklynLunch: "團契午餐",
-      dinner: "晚餐與靈修",
-    },
+    header: '教會社群',
+    worship: '安息日崇拜',
+    fellowship: '團契',
+    weeklyHeader: '崇拜與聚會',
+    upcomingHeader: '近期活動',
+    upcomingPlaceholder: '敬請關注即將舉行的特別活動和節目！',
+    rosterHeader: '服事安排',
+    weeklyAssignments: '每週服事表',
+    quarterlySchedule: '季度總表',
+    prayerHeader: '禱告牆',
+    prayerRequest: '教會禱告牆',
   },
-  "zh-cn": {
-    header: "教会社区",
-    elmhurstTitle: "艾姆赫斯特",
-    brooklynTitle: "布鲁克林 (Bay Ridge)",
-    flushingFellowshipTitle: "法拉盛团契 (国语)",
-    saturday: "星期六",
-    thursday: "星期四",
-    locations: {
-      f1: "1 楼",
-      f2: "2 楼",
-      f3: "3 楼",
-      basement: "地下室",
-    },
-    eventNames: {
-      song: "赞美诗歌",
-      ss: "安息日学 / 小组聚会",
-      worship: "崇拜聚会 & 证道",
-      lunch: "教会午餐 (爱筵)",
-      youth: "青年事工 (8-18 岁)",
-      choir: "诗班练习",
-      seminary: "神学讲座",
-      brooklynSS: "诗歌崇拜 & 安息日学",
-      brooklynWorship: "崇拜聚会 & 证道",
-      brooklynLunch: "团契午餐",
-      dinner: "晚餐与灵修",
-    },
+  'zh-cn': {
+    header: '教会社区',
+    worship: '安息日崇拜',
+    fellowship: '团契',
+    weeklyHeader: '崇拜与聚会',
+    upcomingHeader: '近期活动',
+    upcomingPlaceholder: '敬请关注即将举行的特别活动和节目！',
+    rosterHeader: '服事安排',
+    weeklyAssignments: '每周服事表',
+    quarterlySchedule: '季度总表',
+    prayerHeader: '祷告墙',
+    prayerRequest: '教会祷告墙',
   },
   es: {
-    header: "Comunidad",
-    elmhurstTitle: "Elmhurst",
-    brooklynTitle: "Brooklyn (Bay Ridge)",
-    flushingFellowshipTitle: "Compañerismo en Flushing (Mandarín)",
-    saturday: "Sábado",
-    thursday: "Jueves",
-    locations: {
-      f1: "1er Piso",
-      f2: "2do Piso",
-      f3: "3er Piso",
-      basement: "Sótano",
-    },
-    eventNames: {
-      song: "Servicio de Canto",
-      ss: "Escuela Sabática / Grupos Pequeños",
-      worship: "Adoración y Sermón",
-      lunch: "Almuerzo de Compañerismo",
-      youth: "Ministerio Juvenil (Ages 8-18)",
-      choir: "Práctica del Coro",
-      seminary: "Seminario Teológico",
-      brooklynSS: "Canto y Escuela Sabática",
-      brooklynWorship: "Adoración y Sermón",
-      brooklynLunch: "Almuerzo de Compañerismo",
-      dinner: "Cena y Devoción",
-    },
+    header: 'Comunidad',
+    worship: 'Adoración Sabática',
+    fellowship: 'Compañerismo',
+    weeklyHeader: 'Servicios y Reuniones',
+    upcomingHeader: 'Próximos Eventos',
+    upcomingPlaceholder: '¡Estén atentos a los próximos eventos y programas especiales!',
+    rosterHeader: 'Registro de Servicio',
+    weeklyAssignments: 'Asignaciones Semanales',
+    quarterlySchedule: 'Horario Trimestral',
+    prayerHeader: 'Muro de Oración',
+    prayerRequest: 'Muro de Oración Comunitario',
   },
 };
 
@@ -126,81 +70,6 @@ export default function CommunityScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
-
-  const elmhurstEvents = [
-    {
-      title: labels.eventNames.song,
-      time: `${labels.saturday}, 10:00 AM`,
-      loc: labels.locations.f3,
-      icon: "music-note",
-    },
-    {
-      title: labels.eventNames.ss,
-      time: `${labels.saturday}, 10:30 AM`,
-      loc: `${labels.locations.f2} / ${labels.locations.f3}`,
-      icon: "forum",
-    },
-    {
-      title: labels.eventNames.youth,
-      time: `${labels.saturday}, 10:30 AM`,
-      loc: labels.locations.f2,
-      icon: "account-group",
-    },
-    {
-      title: labels.eventNames.worship,
-      time: `${labels.saturday}, 11:30 AM`,
-      loc: labels.locations.f3,
-      icon: "church",
-    },
-    {
-      title: labels.eventNames.lunch,
-      time: `${labels.saturday}, 1:00 PM`,
-      loc: labels.locations.basement,
-      icon: "silverware-fork-knife",
-    },
-    {
-      title: labels.eventNames.choir,
-      time: `${labels.saturday}, 2:00 PM`,
-      loc: labels.locations.f2,
-      icon: "microphone",
-    },
-    {
-      title: labels.eventNames.seminary,
-      time: `${labels.saturday}, 3:00 - 6:00 PM`,
-      loc: labels.locations.f2,
-      icon: "school",
-    },
-  ];
-
-  const brooklynEvents = [
-    {
-      title: labels.eventNames.brooklynSS,
-      time: `${labels.saturday}, 10:00 - 11:30 AM`,
-      loc: labels.locations.f3,
-      icon: "music-note",
-    },
-    {
-      title: labels.eventNames.brooklynWorship,
-      time: `${labels.saturday}, 11:30 AM - 12:30 PM`,
-      loc: labels.locations.f3,
-      icon: "church",
-    },
-    {
-      title: labels.eventNames.brooklynLunch,
-      time: `${labels.saturday}, 12:30 - 1:00 PM`,
-      loc: labels.locations.f3,
-      icon: "silverware-fork-knife",
-    },
-  ];
-
-  const otherEvents = [
-    {
-      title: labels.eventNames.dinner,
-      time: `${labels.thursday}, 6:30 - 8:00 PM`,
-      loc: labels.locations.basement,
-      icon: "silverware-fork-knife",
-    },
-  ];
 
   return (
     <>
@@ -214,71 +83,87 @@ export default function CommunityScreen() {
       >
         <List.Section>
           <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
           >
-            {labels.elmhurstTitle}
+            {labels.weeklyHeader}
           </List.Subheader>
-          {elmhurstEvents.map((event, index) => (
-            <MenuCard
-              key={`elm-${index}`}
-              title={event.title}
-              description={`${event.time} • ${event.loc}`}
-              icon={event.icon as any}
-              rightIcon={null}
-              style={styles.eventCard}
-            />
-          ))}
+          <MenuCard
+            title={labels.worship}
+            icon="church"
+            iconColor={theme.colors.tertiary}
+            style={{ marginBottom: 12 }}
+            onPress={() => router.push('/community/worship')}
+          />
+          <MenuCard
+            title={labels.fellowship}
+            icon="account-group"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/community/fellowship')}
+          />
         </List.Section>
 
         <List.Section>
           <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
           >
-            {labels.brooklynTitle}
+            {labels.rosterHeader}
           </List.Subheader>
-          {brooklynEvents.map((event, index) => (
-            <MenuCard
-              key={`brk-${index}`}
-              title={event.title}
-              description={`${event.time} • ${event.loc}`}
-              icon={event.icon as any}
-              rightIcon={null}
-              style={styles.eventCard}
-            />
-          ))}
+          <MenuCard
+            title={labels.weeklyAssignments}
+            icon="clipboard-text-outline"
+            iconColor={theme.colors.tertiary}
+            style={{ marginBottom: 12 }}
+            onPress={() => router.push('/community/roster')}
+          />
+          <MenuCard
+            title={labels.quarterlySchedule}
+            icon="file-table-outline"
+            iconColor={theme.colors.tertiary}
+            rightIcon="open-in-new"
+            onPress={() =>
+              Linking.openURL(
+                'https://docs.google.com/spreadsheets/d/1uFp2L6BvXqK-uM6yB8-HhI...placeholder',
+              )
+            }
+          />
         </List.Section>
 
         <List.Section>
           <List.Subheader
-            style={[
-              NavigationStyles.subheader,
-              { color: theme.colors.onBackground },
-            ]}
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
           >
-            {labels.flushingFellowshipTitle}
+            {labels.prayerHeader}
           </List.Subheader>
-          {otherEvents.map((event, index) => (
-            <MenuCard
-              key={`oth-${index}`}
-              title={event.title}
-              description={`${event.time} • ${event.loc}`}
-              icon={event.icon as any}
-              rightIcon={null}
-              style={styles.eventCard}
-            />
-          ))}
+          <MenuCard
+            title={labels.prayerRequest}
+            icon="hands-pray"
+            iconColor={theme.colors.tertiary}
+            onPress={() => router.push('/community/prayer')}
+          />
+        </List.Section>
+
+        <List.Section>
+          <List.Subheader
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.upcomingHeader}
+          </List.Subheader>
+          <Card style={{ backgroundColor: theme.colors.surface }} mode="outlined">
+            <Card.Content>
+              <Text
+                variant="bodyMedium"
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                  textAlign: 'center',
+                  paddingVertical: 20,
+                }}
+              >
+                {labels.upcomingPlaceholder}
+              </Text>
+            </Card.Content>
+          </Card>
         </List.Section>
       </ScrollView>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  eventCard: { marginBottom: 8 },
-});

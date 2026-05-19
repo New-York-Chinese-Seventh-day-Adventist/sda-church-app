@@ -19,8 +19,8 @@ export const CHURCH_LOCATIONS = [
 
 export const CHURCH_LOCATION_LABELS = {
   en: [
-    'Elmhurst SDA Church',
-    'Brooklyn SDA Church (Bay Ridge)',
+    'Elmhurst Church',
+    'Brooklyn Church (Bay Ridge)',
     'Flushing Fellowship (Mandarin)',
   ],
   zh: ['艾姆赫斯特教會', '布魯克林教會 (Bay Ridge)', '法拉盛團契 (晚餐與靈修) (國語)'],

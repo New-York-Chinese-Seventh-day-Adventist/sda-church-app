@@ -1,12 +1,16 @@
 import { createContext } from 'react';
 import { StatusBarStyle } from 'react-native';
-import { MD3DarkTheme, MD3LightTheme, useTheme } from 'react-native-paper';
+import {
+  configureFonts,
+  MD3DarkTheme,
+  MD3LightTheme,
+  useTheme,
+} from 'react-native-paper';
 
 /**
  * Material Design 3 Theme definitions for both React Native Paper and React Navigation.
  * This ensures a cohesive "Digital Sanctuary" across the entire application.
  *
- * Ref: https://m3.material.io/styles/color/the-color-system/tokens
  * Ref: https://callstack.github.io/react-native-paper/docs/guides/theming
  */
 
@@ -14,12 +18,35 @@ export const THEME_STORAGE_KEY = 'user-theme';
 export const THEME_DARK = 'dark';
 export const THEME_LIGHT = 'light';
 
+// AdventSans font is used for physical signage and branding
+// but NotoSans is used for digital interfaces for better readability and multilingual support
+// AdventSans also has special branded styles for certain words that can be problematic
+// "SDA" becomes the Adventist logo inline, which can be difficult to render consistently
+// https://www.nadadventist.org/about/brand-guidelines/color-typography/
+const baseVariants = {
+  displayLarge: { fontFamily: 'NotoSans-Bold' },
+  displayMedium: { fontFamily: 'NotoSans-Bold' },
+  displaySmall: { fontFamily: 'NotoSans-Bold' },
+  headlineLarge: { fontFamily: 'NotoSans-Bold' },
+  headlineMedium: { fontFamily: 'NotoSans-Bold' },
+  headlineSmall: { fontFamily: 'NotoSans-Bold' },
+  titleLarge: { fontFamily: 'NotoSans-Medium' },
+  titleMedium: { fontFamily: 'NotoSans-Medium' },
+  titleSmall: { fontFamily: 'NotoSans-Medium' },
+  labelLarge: { fontFamily: 'NotoSans-Medium' },
+  labelMedium: { fontFamily: 'NotoSans-Medium' },
+  labelSmall: { fontFamily: 'NotoSans-Medium' },
+  bodyLarge: { fontFamily: 'NotoSans-Regular' },
+  bodyMedium: { fontFamily: 'NotoSans-Regular' },
+  bodySmall: { fontFamily: 'NotoSans-Regular' },
+};
+
 export const customLightTheme = {
   ...MD3LightTheme,
   dark: false as boolean,
   version: 3,
   isV3: true,
-  fonts: MD3LightTheme.fonts,
+  fonts: configureFonts({ config: baseVariants }),
   colors: {
     ...MD3LightTheme.colors,
     // Primary: Sanctuary Blue
@@ -61,6 +88,7 @@ export const customLightTheme = {
     // Branding (Special External Brand Colors)
     brandYoutube: '#FF0000',
     brandSpotify: '#1DB954',
+    brandZoom: '#0B5CFF',
 
     // Neutralizing Elevation (Hierarchy of Light - Light Mode)
     // This was not derived from the UI_UX.md spec, only recommended by Gemini
@@ -88,7 +116,7 @@ export const customDarkTheme: AppTheme = {
   dark: true,
   version: 3,
   isV3: true,
-  fonts: MD3DarkTheme.fonts,
+  fonts: configureFonts({ config: baseVariants }),
   colors: {
     ...MD3DarkTheme.colors,
     // Primary: Active Focus
@@ -130,6 +158,7 @@ export const customDarkTheme: AppTheme = {
     // Branding (Standardized Monochrome in Dark Mode)
     brandYoutube: '#FFFFFF',
     brandSpotify: '#FFFFFF',
+    brandZoom: '#FFFFFF',
 
     // Neutralizing Elevation (Hierarchy of Light)
     // This was not derived from the UI_UX.md spec, only recommended by Gemini

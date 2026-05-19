@@ -1,4 +1,5 @@
 import { Alert, Linking } from 'react-native';
+import { SupportedLanguage } from './LanguageContext';
 
 /**
  * Church Identity & Branding Constants
@@ -51,6 +52,35 @@ export const openSabbathStream = async () => {
     'https://www.youtube.com/@newyorkchinesesdachurch1334/streams',
     'Error',
     'Could not open the YouTube livestream.',
+  );
+};
+
+// SABBATH SCHOOL DIGITAL ECOSYSTEM
+// DENOMINATIONAL CORE FRAMEWORK & PUBLIC DATA BACKBONE
+// URL: https://sabbath-school.adventech.io
+// Status: Official / Direct Institutional Partner
+// Context: Developed by Adventech via direct authorization from the General
+//          Conference (Sabbath School and Personal Ministries Department).
+// Content: Web parity for the official "Sabbath School & PM" mobile app,
+//          hosting authorized curriculum for all age divisions.
+// Architecture: Functions as the open-source data engine/API backend that
+//               independent platforms consume to render alternative layouts.
+//
+// Adventech and the General Conference of Seventh-day Adventists have an official partnership
+// https://sspmadventist.org/sspmapp
+export const openSabbathSchool = (language: SupportedLanguage) => {
+  let path = language || 'en';
+
+  if (language === 'zh' || language === 'zh-cn') {
+    // There is no traditional Chinese version of the Sabbath School site,
+    // so we default to simplified Chinese which is more widely used online
+    path = 'zh';
+  }
+
+  return openURL(
+    `https://sabbath-school.adventech.io/${path}`,
+    'Error',
+    'Could not open the Sabbath School link.',
   );
 };
 
