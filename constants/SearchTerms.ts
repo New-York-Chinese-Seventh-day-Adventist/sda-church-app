@@ -64,7 +64,14 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: 'English Hymnal',
       keywords: ['songs', 'lyrics', 'music', 'sing', 'worship', 'praise'],
     },
-    about: { title: 'About Us', keywords: ['history', 'beliefs', 'church'] },
+    aboutSDA: {
+      title: 'About Denomination',
+      keywords: ['sda', 'adventist', 'beliefs', 'doctrine', '28'],
+    },
+    aboutHistory: {
+      title: 'Our History',
+      keywords: ['history', 'church', 'origins', 'milestones'],
+    },
     connect: {
       title: 'Connect',
       keywords: [
@@ -80,9 +87,26 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     give: {
-      title: 'Give',
-      keywords: ['tithe', 'offering', 'donation', 'tithing'],
+      title: 'Tithe & Offering',
+      keywords: ['give', 'tithe', 'offering', 'donation', 'tithing'],
     },
+    team: { title: 'Meet Our Team', keywords: ['staff', 'pastors', 'elders', 'team'] },
+    bulletin: {
+      title: 'Weekly Bulletin',
+      keywords: ['program', 'announcements', 'news'],
+    },
+    events: {
+      title: 'Upcoming Events',
+      keywords: ['announcements', 'news', 'calendar', 'special', 'programs', 'events'],
+    },
+    baptism: { title: 'Joining the Church', keywords: ['baptism', 'membership', 'join'] },
+    worship: { title: 'Sabbath Worship', keywords: ['service', 'program', 'saturday'] },
+    fellowship: { title: 'Fellowship', keywords: ['groups', 'lunch', 'gathering'] },
+    roster: {
+      title: 'Service Roster',
+      keywords: ['volunteer', 'assignments', 'schedule'],
+    },
+    prayer: { title: 'Prayer Wall', keywords: ['requests', 'intercession', 'community'] },
     language: {
       title: 'Language',
       keywords: ['chinese', 'spanish', 'english', 'translate', 'settings'],
@@ -144,7 +168,14 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: '英文詩歌本',
       keywords: ['讚美詩', '歌詞', '音樂', '敬拜', 'hymnal', 'music'],
     },
-    about: { title: '關於我們', keywords: ['歷史', '信仰', '教會', 'about'] },
+    aboutSDA: {
+      title: '關於教派',
+      keywords: ['復臨安息日會', '信仰', '教義', '28條', 'sda'],
+    },
+    aboutHistory: {
+      title: '我們的歷史',
+      keywords: ['歷史', '教會', '起源', '發展'],
+    },
     connect: {
       title: '聯繫我們',
       keywords: [
@@ -166,9 +197,20 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     give: {
-      title: '捐獻',
+      title: '奉獻',
       keywords: ['什一', '奉獻', '捐款', 'give', 'tithe', 'tithing'],
     },
+    team: { title: '認識我們的團隊', keywords: ['同工', '牧師', '長老', 'team'] },
+    bulletin: { title: '每週週報', keywords: ['程序', '報告', 'bulletin'] },
+    events: {
+      title: '近期活動',
+      keywords: ['報告', '公告', '消息', '日曆', '特別項目', 'events'],
+    },
+    baptism: { title: '加入教會', keywords: ['浸禮', '會籍', 'baptism'] },
+    worship: { title: '安息日崇拜', keywords: ['崇拜', '聚會', 'worship'] },
+    fellowship: { title: '團契', keywords: ['小組', '午餐', 'fellowship'] },
+    roster: { title: '服事安排', keywords: ['義工', '服事表', 'roster'] },
+    prayer: { title: '教會禱告牆', keywords: ['代禱', '請求', 'prayer'] },
     language: {
       title: '語言設定',
       keywords: ['中文', '英文', '西班牙文', '翻譯', 'language', '設定'],
@@ -230,7 +272,14 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: '英文诗歌本',
       keywords: ['赞美诗', '歌词', '音乐', '敬拜', 'hymnal', 'music'],
     },
-    about: { title: '关于我们', keywords: ['历史', '信仰', '教会', 'about'] },
+    aboutSDA: {
+      title: '关于教派',
+      keywords: ['复临安息日会', '信仰', '教义', '28条', 'sda'],
+    },
+    aboutHistory: {
+      title: '我们的历史',
+      keywords: ['历史', '教会', '起源', '发展'],
+    },
     connect: {
       title: '联系我们',
       keywords: [
@@ -253,9 +302,20 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     give: {
-      title: '捐献',
+      title: '奉献',
       keywords: ['什一', '奉献', '捐款', 'give', 'tithe'],
     },
+    team: { title: '认识我们的团队', keywords: ['同工', '牧师', '长老', 'team'] },
+    bulletin: { title: '每周周报', keywords: ['程序', '报告', 'bulletin'] },
+    events: {
+      title: '近期活动',
+      keywords: ['报告', '公告', '消息', '日历', '特别项目', 'events'],
+    },
+    baptism: { title: '加入教会', keywords: ['浸礼', '会籍', 'baptism'] },
+    worship: { title: '安息日崇拜', keywords: ['崇拜', '聚会', 'worship'] },
+    fellowship: { title: '团契', keywords: ['小组', '午餐', 'fellowship'] },
+    roster: { title: '服事安排', keywords: ['义工', '服事表', 'roster'] },
+    prayer: { title: '教会祷告墙', keywords: ['代祷', '请求', 'prayer'] },
     language: {
       title: '语言设置',
       keywords: ['中文', '英文', '西班牙文', '翻译', 'language', '设置'],
@@ -321,9 +381,13 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: 'Himnario en Inglés',
       keywords: ['cantos', 'letras', 'música', 'cantar', 'adoración'],
     },
-    about: {
-      title: 'Sobre Nosotros',
-      keywords: ['historia', 'creencias', 'iglesia', 'about'],
+    aboutSDA: {
+      title: 'Sobre la Denominación',
+      keywords: ['adventista', 'creencias', 'doctrina', '28', 'sda'],
+    },
+    aboutHistory: {
+      title: 'Nuestra Historia',
+      keywords: ['historia', 'iglesia', 'origen'],
     },
     connect: {
       title: 'Conéctate',
@@ -344,9 +408,32 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     give: {
-      title: 'Dar',
-      keywords: ['diezmo', 'ofrenda', 'donación', 'give', 'tithe', 'diezmos'],
+      title: 'Diezmos y Ofrendas',
+      keywords: ['dar', 'diezmo', 'ofrenda', 'donación', 'give', 'tithe', 'diezmos'],
     },
+    team: {
+      title: 'Conoce a nuestro equipo',
+      keywords: ['personal', 'pastores', 'team'],
+    },
+    bulletin: {
+      title: 'Boletín Semanal',
+      keywords: ['programa', 'anuncios', 'bulletin'],
+    },
+    events: {
+      title: 'Próximos Eventos',
+      keywords: ['anuncios', 'noticias', 'calendario', 'programas', 'events'],
+    },
+    baptism: {
+      title: 'Unirse a la Iglesia',
+      keywords: ['bautismo', 'membresía', 'join'],
+    },
+    worship: {
+      title: 'Adoración Sabática',
+      keywords: ['servicio', 'liturgia', 'worship'],
+    },
+    fellowship: { title: 'Compañerismo', keywords: ['grupos', 'fellowship'] },
+    roster: { title: 'Registro de Servicio', keywords: ['voluntario', 'roster'] },
+    prayer: { title: 'Muro de Oración', keywords: ['peticiones', 'prayer'] },
     language: {
       title: 'Idioma',
       keywords: ['chino', 'español', 'inglés', 'traducir', 'language', 'ajustes'],
@@ -383,10 +470,19 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
       icon: 'music-note',
       route: '/resources',
     },
-    { ...labels.give, icon: 'gift', route: '/you' },
+    { ...labels.give, icon: 'gift', route: '/home/give' },
     { ...labels.darkMode, icon: 'theme-light-dark', route: '/you' },
     { ...labels.language, icon: 'translate', route: '/you/language' },
-    { ...labels.about, icon: 'information', route: '/home/about' },
+    { ...labels.aboutSDA, icon: 'information', route: '/home/about_sda' },
+    { ...labels.aboutHistory, icon: 'history', route: '/home/about_my_church' },
     { ...labels.connect, icon: 'email', route: '/home/contact' },
+    { ...labels.team, icon: 'account-multiple', route: '/home/team' },
+    { ...labels.bulletin, icon: 'file-document-outline', route: '/home/bulletin' },
+    { ...labels.events, icon: 'calendar-star', route: '/community' },
+    { ...labels.baptism, icon: 'water-outline', route: '/community/baptism' },
+    { ...labels.worship, icon: 'church', route: '/community/worship' },
+    { ...labels.fellowship, icon: 'account-group', route: '/community/fellowship' },
+    { ...labels.roster, icon: 'clipboard-text-outline', route: '/community/roster' },
+    { ...labels.prayer, icon: 'hands-pray', route: '/community/prayer' },
   ];
 };
