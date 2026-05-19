@@ -37,10 +37,9 @@ export default function GiveScreen() {
       onlineDesc:
         'AdventistGiving allows you to return your tithe and give your offerings online while you are at home or on the go.',
       onlineButton: 'AdventistGiving',
-      quote: 'Kindness to the poor is a loan to the LORD, and He will repay the lender.',
-      quoteRef: 'Proverbs 19:17',
-      psalmQuote: 'The LORD is my shepherd; I shall not want.',
-      psalmRef: 'Psalm 23:1',
+      quote:
+        'Bring the full tithe into the storehouse, so that there may be food in My house. Test Me in this,” says the Lord of Hosts. “See if I will not open the windows of heaven and pour out for you blessing without measure.',
+      quoteRef: 'Malachi 3:10',
       taxNote:
         'All donations are tax-deductible. As a registered 501(c)(3) non-profit organization, we issue tax receipts for all contributions at the end of the fiscal year.',
     },
@@ -63,10 +62,9 @@ export default function GiveScreen() {
       onlineDesc:
         'AdventistGiving 讓您無論是在家或在外，都能在線歸還什一奉獻並進行捐款。',
       onlineButton: 'AdventistGiving',
-      psalmQuote: '耶和華是我的牧者，我必不致缺乏。',
-      psalmRef: '詩篇 23:1',
-      quote: '憐憫貧窮的，就是借給耶和華；他的善行，耶和華必償還。',
-      quoteRef: '箴言 19:17',
+      quote:
+        '萬軍之耶和華說：你們要將當納的十分之一全然送入倉庫，使我家有糧，以此試試我，是否為你們敞開天上的窗戶，傾福與你們，甚至無處可容。',
+      quoteRef: '瑪拉基書 3:10',
       taxNote:
         '所有捐款均可扣稅。作為註冊的 501(c)(3) 非營利組織，我們會在財政年度結束時為所有捐款提供報稅收據。',
     },
@@ -89,10 +87,9 @@ export default function GiveScreen() {
       onlineDesc:
         'AdventistGiving 让您无论是在家或在外，都能在线归还什一奉献并进行捐款。',
       onlineButton: 'AdventistGiving',
-      psalmQuote: '耶和华是我的牧者，我必不致缺乏。',
-      psalmRef: '诗篇 23:1',
-      quote: '怜悯贫穷的，就是借给耶和华；他的善行，耶和华必偿还。',
-      quoteRef: '箴言 19:17',
+      quote:
+        '万军之耶和华说：你们要将当纳的十分之一全然送入仓库，使我家有粮，以此试试我，是否为你们敞开天上的窗户，倾福与你们，甚至无处可容。',
+      quoteRef: '玛拉基书 3:10',
       taxNote:
         '所有捐款均可扣税。作为注册的 501(c)(3) 非营利组织，我们会在财政年度结束时为所有捐款提供报税收据。',
     },
@@ -117,10 +114,9 @@ export default function GiveScreen() {
       onlineDesc:
         'AdventistGiving le permite devolver su diezmo y dar sus ofrendas en línea mientras está en casa o fuera.',
       onlineButton: 'AdventistGiving',
-      quote: 'A Jehová empresta el que da al pobre, y él le dará su paga.',
-      quoteRef: 'Proverbios 19:17',
-      psalmQuote: 'JEHOVÁ es mi pastor; nada me faltará.',
-      psalmRef: 'Salmo 23:1',
+      quote:
+        'Traed todos los diezmos al alfolí, y haya alimento en mi casa; y probadme ahora en esto, dice Jehová de los ejércitos, si no os abriré las ventanas de los cielos, y vaciaré sobre vosotros bendición hasta que sobreabunde.',
+      quoteRef: 'Malaquías 3:10',
       taxNote:
         'Todas las donaciones son deducibles de impuestos. Como organización sin fines de lucro 501(c)(3) registrada, emitimos recibos de impuestos por todas las contribuciones al final del año fiscal.',
     },
@@ -136,30 +132,9 @@ export default function GiveScreen() {
         contentContainerStyle={{ paddingTop: headerHeight, paddingBottom: 40 }}
       >
         <View style={DocumentStyles.section}>
-          <Text
-            variant="headlineSmall"
-            style={[DocumentStyles.docTitle, { color: theme.colors.onSurface }]}
-          >
-            {labels.title}
-          </Text>
-          <Paragraph
-            style={[DocumentStyles.description, { color: theme.colors.onSurface }]}
-          >
-            {labels.description}
-          </Paragraph>
-          <Text
-            variant="bodySmall"
-            style={[
-              DocumentStyles.note,
-              { color: theme.colors.onSurfaceVariant, marginTop: 8 },
-            ]}
-          >
-            {labels.taxNote}
-          </Text>
-
           <Card
             style={{
-              marginTop: 24,
+              marginBottom: 24,
               backgroundColor: theme.colors.surfaceVariant,
               borderLeftWidth: 4,
               borderLeftColor: theme.colors.secondary,
@@ -189,79 +164,20 @@ export default function GiveScreen() {
               </Text>
             </Card.Content>
           </Card>
-
-          <Card
-            style={{
-              marginTop: 12,
-              backgroundColor: theme.colors.surfaceVariant,
-              borderLeftWidth: 4,
-              borderLeftColor: theme.colors.secondary,
-            }}
-            mode="contained"
+          <Paragraph
+            style={[DocumentStyles.description, { color: theme.colors.onSurface }]}
           >
-            <Card.Content>
-              <Text
-                variant="bodyLarge"
-                style={{
-                  fontStyle: 'italic',
-                  color: theme.colors.onSurfaceVariant,
-                }}
-              >
-                "{labels.psalmQuote}"
-              </Text>
-              <Text
-                variant="labelMedium"
-                style={{
-                  textAlign: 'right',
-                  marginTop: 8,
-                  fontWeight: 'bold',
-                  color: theme.colors.onSurfaceVariant,
-                }}
-              >
-                — {labels.psalmRef}
-              </Text>
-            </Card.Content>
-          </Card>
-        </View>
-
-        <View style={DocumentStyles.section}>
+            {labels.description}
+          </Paragraph>
           <Text
-            variant="titleLarge"
+            variant="bodySmall"
             style={[
-              DocumentStyles.sectionTitle,
-              {
-                color: theme.colors.onSurface,
-                borderBottomColor: theme.colors.outlineVariant,
-              },
+              DocumentStyles.note,
+              { color: theme.colors.onSurfaceVariant, marginTop: 8 },
             ]}
           >
-            {labels.cashSection}
+            {labels.taxNote}
           </Text>
-          <Card style={[DocumentStyles.card, DocumentStyles.orgCard]} mode="outlined">
-            <Card.Content>
-              <Text
-                variant="labelMedium"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                {labels.cashLabel}
-              </Text>
-              <Text
-                variant="titleLarge"
-                style={[DocumentStyles.orgName, { color: theme.colors.onSurface }]}
-              >
-                {labels.cashTitle}
-              </Text>
-              <Text
-                style={[
-                  DocumentStyles.description,
-                  DocumentStyles.orgDesc,
-                  { color: theme.colors.onSurface, fontSize: 14 },
-                ]}
-              >
-                {labels.cashDesc}
-              </Text>
-            </Card.Content>
-          </Card>
         </View>
 
         <View style={DocumentStyles.section}>
@@ -363,6 +279,46 @@ export default function GiveScreen() {
                 {labels.zelleButton}
               </Button>
             </Card.Actions>
+          </Card>
+        </View>
+
+        <View style={DocumentStyles.section}>
+          <Text
+            variant="titleLarge"
+            style={[
+              DocumentStyles.sectionTitle,
+              {
+                color: theme.colors.onSurface,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {labels.cashSection}
+          </Text>
+          <Card style={[DocumentStyles.card, DocumentStyles.orgCard]} mode="outlined">
+            <Card.Content>
+              <Text
+                variant="labelMedium"
+                style={{ color: theme.colors.onSurfaceVariant }}
+              >
+                {labels.cashLabel}
+              </Text>
+              <Text
+                variant="titleLarge"
+                style={[DocumentStyles.orgName, { color: theme.colors.onSurface }]}
+              >
+                {labels.cashTitle}
+              </Text>
+              <Text
+                style={[
+                  DocumentStyles.description,
+                  DocumentStyles.orgDesc,
+                  { color: theme.colors.onSurface, fontSize: 14 },
+                ]}
+              >
+                {labels.cashDesc}
+              </Text>
+            </Card.Content>
           </Card>
         </View>
       </ScrollView>
