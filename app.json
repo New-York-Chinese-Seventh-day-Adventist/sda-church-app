@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sda-church-app",
+    "name": "NY Chinese SDA",
     "slug": "sda-church-app",
     "version": "0.13.0",
     "orientation": "portrait",
@@ -22,7 +22,7 @@
       "favicon": "./assets/images/icon-48x48.png",
       "display": "standalone",
       "description": "Seventh-day Adventist church community application.",
-      "shortName": "SDA Church",
+      "shortName": "NYCCSDA",
       "lang": "en"
     },
     "ios": {
@@ -37,10 +37,6 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp"
     },
-    "plugins": [
-      "expo-router",
-      "expo-localization",
-      "./withAndroidSDKOverride"
-    ]
+    "plugins": ["expo-router", "expo-localization", "./withAndroidSDKOverride"]
   }
 }
