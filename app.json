@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/icon-2048x2048.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F8F9FA"
     },
     "experiments": {
       "typedRoutes": true,
@@ -32,7 +32,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-1024x1024.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F8F9FA"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp"
