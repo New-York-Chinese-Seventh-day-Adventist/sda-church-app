@@ -28,7 +28,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
           media="(prefers-color-scheme: dark)"
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-title" content="Church" />
+        <meta name="apple-mobile-web-app-title" content="NYCCSDA" />
         <link rel="apple-touch-icon" href="icon-192x192.png" />
         <link rel="manifest" href="manifest.json" />
 

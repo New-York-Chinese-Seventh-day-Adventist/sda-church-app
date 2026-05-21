@@ -1,7 +1,9 @@
 {
-  "short_name": "SDA Church",
-  "name": "SDA Church App",
+  "short_name": "NYCCSDA",
+  "name": "NY Chinese SDA",
   "description": "Seventh-day Adventist church community app.",
+  "background_color": "#F8F9FA",
+  "theme_color": "#F8F9FA",
   "icons": [
     {
       "src": "icon-192x192.png",
