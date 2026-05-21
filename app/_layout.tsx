@@ -367,9 +367,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded && isReady) {
-      // Optional: Add a very small delay if the transition feels too abrupt
-      const timeout = setTimeout(() => SplashScreen.hideAsync(), 200);
-      return () => clearTimeout(timeout);
+      // Instant hide for a performance-first experience once assets are ready.
+      SplashScreen.hideAsync();
     }
   }, [loaded, isReady]);
 
