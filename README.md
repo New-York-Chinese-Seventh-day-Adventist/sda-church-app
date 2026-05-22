@@ -87,6 +87,10 @@ The app is a **Digital Home** that protects users from "doomscrolling" and exter
 algorithms. While we leverage infrastructure like YouTube or Spotify, the user experience
 remains internal to maintain spiritual focus.
 
+> _"Finally, brothers, whatever is true, whatever is honorable, whatever is right,
+> whatever is pure, whatever is lovely, whatever is admirable—if anything is excellent or
+> praiseworthy—think on these things."_ — **Philippians 4:8**
+
 ---
 
 ## Branding & Trademarks
