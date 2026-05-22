@@ -15,6 +15,7 @@ on Safari (iOS) or Chrome (Android).
 - [UI/UX Design](docs/UI_UX.md)
 - [Feature Designs](docs/feature_designs/)
 - [Contributing Code](docs/CONTRIBUTING.md)
+- [Branding & Trademarks](docs/LEGAL_BRANDING.md)
 
 # Project Tenets
 
@@ -89,3 +90,17 @@ remains internal to maintain spiritual focus.
 > _"Finally, brothers, whatever is true, whatever is honorable, whatever is right,
 > whatever is pure, whatever is lovely, whatever is admirable—if anything is excellent or
 > praiseworthy—think on these things."_ — **Philippians 4:8**
+
+---
+
+## Branding & Trademarks
+
+The source code in this repository is licensed under an open-source license, but this
+software license does not grant any rights or permissions to use the proprietary branding,
+registered trademarks, or official logos contained within the project.
+
+**Unauthorized use of the Seventh-day Adventist® (SDA) Church symbol and related branding
+is strictly prohibited.**
+
+Please refer to the [Full Branding Policy](docs/LEGAL_BRANDING.md) for detailed usage
+permissions and restrictions.
