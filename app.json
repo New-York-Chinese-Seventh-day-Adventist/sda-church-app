@@ -2,15 +2,15 @@
   "expo": {
     "name": "NY Chinese SDA",
     "slug": "sda-church-app",
-    "version": "0.13.1",
+    "version": "0.13.4",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-1024x1024.png",
+    "icon": "./public/icon-1024x1024.png",
     "scheme": "sdachurchapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/icon-2048x2048.png",
+      "image": "./public/icon-2048x2048.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F8F9FA"
+      "backgroundColor": "#00405C"
     },
     "experiments": {
       "typedRoutes": true,
@@ -19,7 +19,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/icon-48x48.png",
+      "favicon": "./public/icon-48x48.png",
       "display": "standalone",
       "description": "Seventh-day Adventist church community application.",
       "shortName": "NYCCSDA",
@@ -31,8 +31,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon-1024x1024.png",
-        "backgroundColor": "#F8F9FA"
+        "foregroundImage": "./public/icon-1024x1024.png",
+        "backgroundColor": "#00405C"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.sdachurchapp"
