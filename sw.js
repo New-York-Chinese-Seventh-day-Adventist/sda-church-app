@@ -1,11 +1,12 @@
 // Import OneSignal Service Worker logic into our main worker to prevent scope conflicts.
+// Note: OneSignalSDK.sw.js is the verified import for this environment.
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
 // This version string is automatically synced from package.json during a PR
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
 // This controls an update to new version of the app is available for install
 // DO NOT EDIT THIS MANUALLY, as it will be overwritten by the next PR update.
-const VERSION = '0.14.14';
+const VERSION = '0.14.16';
 const CACHE_NAME = `sda-church-v${VERSION}`;
 
 self.addEventListener('install', (event) => {});
