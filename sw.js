@@ -1,5 +1,5 @@
 // Import OneSignal Service Worker logic into our main worker to prevent scope conflicts.
-importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js');
+importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
 // This version string is automatically synced from package.json during a PR
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
