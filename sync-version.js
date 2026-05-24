@@ -9,7 +9,6 @@ let version = pkg.version;
 // Check for optional increment flag (e.g. node sync-version.js --increment)
 if (process.argv.includes('--increment')) {
   const parts = version.split('.');
-  console.log(parts);
   if (parts.length === 3) {
     parts[2] = parseInt(parts[2], 10) + 1;
     version = parts.join('.');
