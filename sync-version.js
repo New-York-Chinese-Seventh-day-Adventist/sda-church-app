@@ -41,8 +41,11 @@ if (fs.existsSync(appJsonPath)) {
 const swPath = path.join(__dirname, 'sw.js');
 if (fs.existsSync(swPath)) {
   let swContent = fs.readFileSync(swPath, 'utf8');
-  // Regex targets the VERSION constant
-  swContent = swContent.replace(/const VERSION = ".*";/, `const VERSION = "${version}";`);
+  // Regex targets the VERSION constant, supporting both single and double quotes
+  swContent = swContent.replace(
+    /const VERSION = ['"].*['"];/,
+    `const VERSION = '${version}';`,
+  );
   fs.writeFileSync(swPath, swContent);
   console.log('Successfully synced package.json version to sw.js');
 }
