@@ -15,7 +15,8 @@ self.addEventListener('activate', (event) => {
       caches.keys().then((keys) => {
         return Promise.all(
           keys.map((key) => {
-            if (key !== CACHE_NAME) {
+            // Only delete old versions of our app cache, leave OneSignal/other caches alone
+            if (key.startsWith('sda-church-v') && key !== CACHE_NAME) {
               return caches.delete(key);
             }
           }),
