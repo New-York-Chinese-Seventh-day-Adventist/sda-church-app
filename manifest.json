@@ -2,6 +2,7 @@
   "short_name": "NYCCSDA",
   "name": "NY Chinese SDA",
   "description": "Seventh-day Adventist church community app.",
+  "gcm_sender_id": "482941778795",
   "background_color": "#00405C",
   "theme_color": "#00405C",
   "icons": [
