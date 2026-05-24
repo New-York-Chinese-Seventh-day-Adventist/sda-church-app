@@ -3,9 +3,9 @@ importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
 // This version string is automatically synced from package.json during a PR
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
-// This controls a pop-up notification to users when a new version of the app is available for install
+// This controls an update to new version of the app is available for install
 // DO NOT EDIT THIS MANUALLY, as it will be overwritten by the next PR update.
-const VERSION = '0.14.12';
+const VERSION = '0.14.13';
 const CACHE_NAME = `sda-church-v${VERSION}`;
 
 self.addEventListener('install', (event) => {});
@@ -31,6 +31,11 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  // Do not intercept or cache OneSignal API calls or assets.
+  // This ensures the SDK works reliably with its own internal logic and
+  // prevents stale registration data from breaking the notification toggle.
+  if (event.request.url.includes('onesignal')) return;
 
   event.respondWith(
     fetch(event.request)
