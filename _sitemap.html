@@ -14,7 +14,8 @@
                 const isDev = window.location.hostname.includes('codesammich.github.io');
                 const isProd = !isDev && window.location.hostname !== 'localhost';
 
-                const basePath = window.location.pathname.includes('sda-church-app') ? '/sda-church-app/' : '/';
+                // Ensure basePath is absolute and correctly targets your GitHub Pages subfolder.
+                const basePath = window.location.pathname.startsWith('/sda-church-app') ? '/sda-church-app/' : '/';
 
                 const activeAppId = isProd ? PROD_APP_ID : DEV_APP_ID;
                 const activeSafariId = isProd ? PROD_SAFARI_ID : DEV_SAFARI_ID;
@@ -23,10 +24,11 @@
                 await OneSignal.init({
                   appId: activeAppId,
                   safari_web_id: activeSafariId,
-                  // Dynamically points to the worker file based on current URL path
-                  serviceWorkerPath: basePath.slice(1) + 'OneSignalSDKWorker.js',
+                  // Absolute path (leading slash) is critical for subfolder deployments.
+                  // This ensures the worker is found even when deep-linked into the app.
+                  serviceWorkerPath: basePath + 'OneSignalSDKWorker.js',
                   serviceWorkerParam: { scope: basePath },
-                  allowLocalhostAsSecureOrigin: false,
+                  allowLocalhostAsSecureOrigin: true,
                   notifyButton: { enable: false },
                 });
               });</script><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
@@ -523,5 +525,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-1pzkwqh{0%{transform:translateY(100%);}100%{transform:translateY(0%);}}
 @keyframes r-imtty0{0%{opacity:0;}100%{opacity:1;}}
 @keyframes r-q67da2{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
-@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-adbdcb528cefff2035cdd99db5282007.js" defer></script>
+@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-8e313c40276c66bb31dfda6d76c7faec.js" defer></script>
 </body></html>
