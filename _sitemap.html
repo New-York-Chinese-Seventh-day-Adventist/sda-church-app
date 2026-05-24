@@ -9,10 +9,13 @@
                 const DEV_SAFARI_ID = "web.onesignal.auto.63749170-9b18-42e2-ba12-fbd09a76fb84";
 
                 // 2. Detect environment (hostname-based)
-                // Change 'your-prod-username' to your actual production GitHub username
-                const isProd = window.location.hostname === 'your-prod-username.github.io';
+                // NOTE: codesammich.github.io is the DEV environment.
+                // Production endpoint is TBD.
+                const isDev = window.location.hostname.includes('codesammich.github.io');
+                const isProd = !isDev && window.location.hostname !== 'localhost';
 
-                // 3. Select credentials
+                const basePath = window.location.pathname.includes('sda-church-app') ? '/sda-church-app/' : '/';
+
                 const activeAppId = isProd ? PROD_APP_ID : DEV_APP_ID;
                 const activeSafariId = isProd ? PROD_SAFARI_ID : DEV_SAFARI_ID;
 
@@ -20,10 +23,9 @@
                 await OneSignal.init({
                   appId: activeAppId,
                   safari_web_id: activeSafariId,
-                  // These parameters override the dashboard and tell the browser 
-                  // exactly where to look inside your subfolder!
-                  serviceWorkerPath: 'sda-church-app/OneSignalSDKWorker.js',
-                  serviceWorkerParam: { scope: '/sda-church-app/' },
+                  // Dynamically points to the worker file based on current URL path
+                  serviceWorkerPath: basePath.slice(1) + 'OneSignalSDKWorker.js',
+                  serviceWorkerParam: { scope: basePath },
                   allowLocalhostAsSecureOrigin: false,
                   notifyButton: { enable: false },
                 });
@@ -521,5 +523,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-1pzkwqh{0%{transform:translateY(100%);}100%{transform:translateY(0%);}}
 @keyframes r-imtty0{0%{opacity:0;}100%{opacity:1;}}
 @keyframes r-q67da2{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
-@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-0ea12d4cf226cfef263100ad573680d8.js" defer></script>
+@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-adbdcb528cefff2035cdd99db5282007.js" defer></script>
 </body></html>
