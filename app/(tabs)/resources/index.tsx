@@ -3,6 +3,7 @@ import {
   openSabbathSchool,
   openSabbathStream,
   openSpotifyPodcast,
+  openZoomClass,
 } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
@@ -28,7 +29,7 @@ const allLabels = {
     sabbathSchool: 'Sabbath School',
     sabbathSchoolSub: 'Weekly Bible study guides and discussion',
     zoomClass: 'Zoom Class',
-    zoomSub: 'Interactive Bible study and fellowship',
+    zoomSub: 'Interactive Bible study and fellowship. Please ask others for password',
     hymnal: 'English Hymnal',
     hymnalSub: 'Lyrics and music for worship',
     library: 'Library',
@@ -47,7 +48,7 @@ const allLabels = {
     sabbathSchool: '安息日學',
     sabbathSchoolSub: '每週研經指南與討論',
     zoomClass: 'Zoom 課程',
-    zoomSub: '互動式研經與團契',
+    zoomSub: '互動式研經與團契。請向他人詢問密碼',
     hymnal: '英文詩歌本',
     hymnalSub: '敬拜用的歌詞與音樂',
     library: '圖書館',
@@ -66,7 +67,7 @@ const allLabels = {
     sabbathSchool: '安息日学',
     sabbathSchoolSub: '每周研经指南与讨论',
     zoomClass: 'Zoom 课程',
-    zoomSub: '互动式研经与团契',
+    zoomSub: '互动式研经与团契。请向他人询问密码',
     hymnal: '英文诗歌本',
     hymnalSub: '敬拜用的歌词与音乐',
     library: '图书馆',
@@ -85,7 +86,8 @@ const allLabels = {
     sabbathSchool: 'Escuela Sabática',
     sabbathSchoolSub: 'Guías de estudio bíblico semanal y discusión',
     zoomClass: 'Clase de Zoom',
-    zoomSub: 'Estudio bíblico interactivo y compañerismo',
+    zoomSub:
+      'Estudio bíblico interactivo y compañerismo. Por favor, pida la contraseña a otros',
     hymnal: 'Himnario en Inglés',
     hymnalSub: 'Letras y música para la adoración',
     library: 'Biblioteca',
@@ -190,7 +192,7 @@ export default function ResourcesScreen() {
             description={labels.zoomSub}
             icon="video"
             iconColor={(theme.colors as any).brandZoom}
-            onPress={() => {}} // TODO: Add Linking.openURL with the actual Zoom link
+            onPress={openZoomClass}
             rightIcon="open-in-new"
           />
         </List.Section>

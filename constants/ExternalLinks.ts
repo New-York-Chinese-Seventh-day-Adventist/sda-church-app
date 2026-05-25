@@ -47,6 +47,14 @@ export const openSpotifyPodcast = async () => {
   );
 };
 
+export const openZoomClass = async () => {
+  return openURL(
+    'https://us06web.zoom.us/j/2541879535?pwd=Rmhsa0pFK3hQVTRHMzVqQ2swZlBodz09',
+    'Error',
+    'Could not open the Zoom class link.',
+  );
+};
+
 export const openSabbathStream = async () => {
   return openURL(
     'https://www.youtube.com/@newyorkchinesesdachurch1334/streams',
