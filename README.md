@@ -137,7 +137,7 @@ store, any data collected by these external platforms.
 
 ---
 
-## Legal Information
+## Legal Disclaimer
 
 ### 1. Usage of External Resources
 

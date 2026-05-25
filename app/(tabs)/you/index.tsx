@@ -22,7 +22,7 @@ const allLabels = {
     contactSub: 'Contact information and locations',
     privacy: 'Privacy Policy',
     privacySub: 'Legal information (English only)',
-    legal: 'Legal Information',
+    legal: 'Legal Disclaimer',
     legalSub: 'Terms of use and data attribution (English only)',
   },
   zh: {
@@ -35,7 +35,7 @@ const allLabels = {
     contactSub: '聯繫方式和地點',
     privacy: '隱私政策',
     privacySub: '法律資訊 (僅限英文)',
-    legal: '法律資訊',
+    legal: '法律聲明',
     legalSub: '使用條款與資料歸屬 (僅限英文)',
   },
   'zh-cn': {
@@ -48,7 +48,7 @@ const allLabels = {
     contactSub: '联系方式和地点',
     privacy: '隐私政策',
     privacySub: '法律信息 (仅限英文)',
-    legal: '法律信息',
+    legal: '法律声明',
     legalSub: '使用条款与数据归属 (仅限英文)',
   },
   es: {
@@ -61,7 +61,7 @@ const allLabels = {
     contactSub: 'Información de contacto y ubicaciones',
     privacy: 'Política de Privacidad',
     privacySub: 'Información legal (solo en inglés)',
-    legal: 'Información Legal',
+    legal: 'Aviso Legal',
     legalSub: 'Términos de uso y atribución de datos (solo en inglés)',
   },
 };

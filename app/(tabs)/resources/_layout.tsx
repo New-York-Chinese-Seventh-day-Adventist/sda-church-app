@@ -7,7 +7,7 @@ export default function ResourcesStackLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="bible" />
       <Stack.Screen name="hymnal-selection" />
-      <Stack.Screen name="hymnal" />
+      <Stack.Screen name="english-hymnal" />
     </Stack>
   );
 }

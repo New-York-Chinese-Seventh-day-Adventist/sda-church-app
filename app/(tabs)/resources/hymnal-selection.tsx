@@ -80,7 +80,10 @@ export default function HymnalSelectionScreen() {
             onPress={() =>
               router.push({
                 pathname: '/resources/english-hymnal',
-                params: { backTo: '/resources/hymnal-selection' },
+                params: {
+                  backTo: '/resources/hymnal-selection',
+                  refresh: Date.now().toString(),
+                },
               } as any)
             }
           />

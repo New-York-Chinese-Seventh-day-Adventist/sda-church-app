@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Divider, Searchbar, Text, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,51 +16,79 @@ import { NavigationStyles } from '@/styles/NavigationStyles';
 const uiLabels = {
   en: {
     title: 'English Hymnal',
-    search: 'Search by number or title...',
+    search: 'Search by number, title, or scripture...',
     externalLink: 'View on HymnsForWorship.org',
-    legalLink: 'Legal Information',
-    attribution: 'Hymn lyrics and sheet music are hosted on HymnsForWorship.org.',
+    legalLink: 'Legal Disclaimer',
+    attribution:
+      'Tap a hymn card to open its lyrics and sheet music externally on HymnsForWorship.org.',
     watchYouTube: 'YouTube',
     readScripture: 'Bible',
   },
   zh: {
     title: '英文詩歌本',
-    search: '按編號或標題搜尋...',
+    search: '按編號、標題或經文搜尋...',
     externalLink: '在 HymnsForWorship.org 查看',
-    legalLink: '法律資訊',
-    attribution: '詩歌歌詞與琴譜託管於 HymnsForWorship.org。',
+    legalLink: '法律聲明',
+    attribution: '點擊詩歌卡片即可在 HymnsForWorship.org 查看歌詞與琴譜。',
     watchYouTube: 'YouTube',
     readScripture: '查閱聖經',
   },
   'zh-cn': {
     title: '英文诗歌本',
-    search: '按编号或标题搜索...',
+    search: '按编号、标题或经文搜索...',
     externalLink: '在 HymnsForWorship.org 查看',
-    legalLink: '法律信息',
-    attribution: '诗歌歌词与琴谱托管于 HymnsForWorship.org。',
+    legalLink: '法律声明',
+    attribution: '点击诗歌卡片即可在 HymnsForWorship.org 查看歌词与琴谱。',
     watchYouTube: 'YouTube',
     readScripture: '查阅圣经',
   },
   es: {
     title: 'Himnario en Inglés',
-    search: 'Buscar por número o título...',
+    search: 'Buscar por número, título o referencia...',
     externalLink: 'Ver en HymnsForWorship.org',
-    legalLink: 'Información legal',
+    legalLink: 'Aviso legal',
     attribution:
-      'Las letras y partituras de los himnos están alojadas en HymnsForWorship.org.',
+      'Toca una tarjeta de himno para abrir sus letras y partituras externamente en HymnsForWorship.org.',
     watchYouTube: 'YouTube',
     readScripture: 'Biblia',
   },
 };
 
+// Module-level persistence to ensure search results remain when navigating back,
+// even if the component unmounts (common in PWA/Mobile stacks).
+let savedSearchQuery = '';
+let lastProcessedRefresh = '';
+
 export default function HymnalScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
-  const { backTo } = useLocalSearchParams<{ backTo?: string }>();
+  const { backTo, refresh } = useLocalSearchParams<{
+    backTo?: string;
+    refresh?: string;
+  }>();
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
 
-  const [searchQuery, setSearchQuery] = useState('');
+  // Initialize state from persistence, but check if we should reset
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (refresh && refresh !== lastProcessedRefresh) return '';
+    return savedSearchQuery;
+  });
+
+  // Effect to handle the "Conventional Navigation" reset vs "Back" persistence
+  useEffect(() => {
+    if (refresh && refresh !== lastProcessedRefresh) {
+      lastProcessedRefresh = refresh;
+      setSearchQuery('');
+      savedSearchQuery = '';
+    }
+  }, [refresh]);
+
+  // Persist state whenever it changes
+  useEffect(() => {
+    savedSearchQuery = searchQuery;
+  }, [searchQuery]);
+
   const allHymns = useMemo(() => getSortedHymns('en'), []);
 
   const filteredHymns = useMemo(() => {
@@ -68,7 +96,10 @@ export default function HymnalScreen() {
     if (!query) return allHymns;
 
     return allHymns.filter(
-      (h) => h.number.toString().includes(query) || h.title.toLowerCase().includes(query),
+      (h) =>
+        h.number.toString().includes(query) ||
+        h.title.toLowerCase().includes(query) ||
+        h.scriptureReference?.toLowerCase().includes(query),
     );
   }, [searchQuery, allHymns]);
 
@@ -90,7 +121,7 @@ export default function HymnalScreen() {
         >
           <View style={styles.cardContent}>
             <MaterialCommunityIcons
-              name="music-note"
+              name="music-clef-treble"
               size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
               color={theme.colors.tertiary}
               style={styles.leadingIcon}
@@ -195,7 +226,8 @@ export default function HymnalScreen() {
           placeholder={labels.search}
           onChangeText={setSearchQuery}
           value={searchQuery}
-          style={[styles.searchbar, { backgroundColor: theme.colors.surfaceVariant }]}
+          style={[styles.searchbar, { backgroundColor: theme.colors.surface }]}
+          inputStyle={styles.searchbarInput}
           elevation={0}
         />
         <TouchableOpacity
@@ -207,7 +239,15 @@ export default function HymnalScreen() {
           }
           style={styles.legalNotice}
         >
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+          <Text
+            variant="bodySmall"
+            style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
+          >
+            <MaterialCommunityIcons
+              name="music-clef-treble"
+              size={14}
+              color={theme.colors.onSurfaceVariant}
+            />{' '}
             {labels.attribution}{' '}
             <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
               {labels.legalLink}
@@ -222,7 +262,7 @@ export default function HymnalScreen() {
         renderItem={renderHymnItem}
         contentContainerStyle={[
           NavigationStyles.contentContainer,
-          { paddingBottom: insets.bottom + 20 },
+          { paddingTop: 0, paddingBottom: insets.bottom + 20 },
         ]}
       />
     </View>
@@ -287,7 +327,14 @@ const styles = StyleSheet.create({
     height: 24,
   },
   searchbar: {
-    borderRadius: 8,
+    borderRadius: 24,
+    height: 44,
+  },
+  searchbarInput: {
+    minHeight: 0,
+    paddingBottom: 0,
+    paddingTop: 0,
+    fontSize: 16,
   },
   legalNotice: {
     marginTop: 10,

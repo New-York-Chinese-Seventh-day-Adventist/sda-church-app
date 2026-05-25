@@ -29,13 +29,13 @@ export default function LegalScreen() {
         { paddingTop: headerHeight + 20, paddingBottom: insets.bottom + 80 },
       ]}
     >
-      <Stack.Screen options={{ title: 'Legal Information', backTo } as any} />
+      <Stack.Screen options={{ title: 'Legal Disclaimer', backTo } as any} />
 
       <Text
         variant="headlineSmall"
         style={[styles.title, { color: theme.colors.onBackground }]}
       >
-        Legal Information
+        Legal Disclaimer
       </Text>
       <Text
         variant="labelSmall"
