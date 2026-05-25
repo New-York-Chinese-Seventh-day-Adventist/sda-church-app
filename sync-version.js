@@ -9,6 +9,7 @@ let version = pkg.version;
 // Check for optional increment flag (e.g. node sync-version.js --increment)
 if (process.argv.includes('--increment')) {
   const parts = version.split('.');
+  console.log(parts);
   if (parts.length === 3) {
     parts[2] = parseInt(parts[2], 10) + 1;
     version = parts.join('.');
@@ -40,11 +41,8 @@ if (fs.existsSync(appJsonPath)) {
 const swPath = path.join(__dirname, 'sw.js');
 if (fs.existsSync(swPath)) {
   let swContent = fs.readFileSync(swPath, 'utf8');
-  // Regex targets the VERSION constant, supporting both single and double quotes
-  swContent = swContent.replace(
-    /const VERSION = ['"].*['"];/,
-    `const VERSION = '${version}';`,
-  );
+  // Regex targets the VERSION constant
+  swContent = swContent.replace(/const VERSION = ".*";/, `const VERSION = "${version}";`);
   fs.writeFileSync(swPath, swContent);
   console.log('Successfully synced package.json version to sw.js');
 }

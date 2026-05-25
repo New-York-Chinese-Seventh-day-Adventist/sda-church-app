@@ -1,13 +1,8 @@
-// Import OneSignal Service Worker logic into our main worker to prevent scope conflicts.
-// OneSignalSDK.sw.js is the verified import for this environment.
-// Note: OneSignalSDKWorker.js is the official standard name for v16 engines.
-importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
-
 // This version string is automatically synced from package.json during a PR
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
-// This controls an update to new version of the app is available for install
+// This controls a pop-up notification to users when a new version of the app is available for install
 // DO NOT EDIT THIS MANUALLY, as it will be overwritten by the next PR update.
-const VERSION = '0.14.23';
+const VERSION = '0.12.0';
 const CACHE_NAME = `sda-church-v${VERSION}`;
 
 self.addEventListener('install', (event) => {});
@@ -20,8 +15,7 @@ self.addEventListener('activate', (event) => {
       caches.keys().then((keys) => {
         return Promise.all(
           keys.map((key) => {
-            // Only delete old versions of our app cache, leave OneSignal/other caches alone
-            if (key.startsWith('sda-church-v') && key !== CACHE_NAME) {
+            if (key !== CACHE_NAME) {
               return caches.delete(key);
             }
           }),
@@ -33,11 +27,6 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-
-  // Do not intercept or cache OneSignal API calls or assets.
-  // This ensures the SDK works reliably with its own internal logic and
-  // prevents stale registration data from breaking the notification toggle.
-  if (event.request.url.includes('onesignal')) return;
 
   event.respondWith(
     fetch(event.request)

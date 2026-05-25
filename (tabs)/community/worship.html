@@ -1,39 +1,4 @@
-<!DOCTYPE html><html  lang="en"><head><title data-rh="true"></title><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="theme-color" content="#F8F9FA" media="(prefers-color-scheme: light)"/><meta name="theme-color" content="#0F0F0F" media="(prefers-color-scheme: dark)"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="NYCCSDA"/><link rel="apple-touch-icon" href="icon-192x192.png"/><link rel="manifest" href="/sda-church-app/manifest.json"/><script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer=""></script><script>
-              window.OneSignalDeferred = window.OneSignalDeferred || [];
-              OneSignalDeferred.push(async function(OneSignal) {
-                // 1. Define IDs for both environments
-                const PROD_APP_ID = "YOUR_PRODUCTION_APP_ID_HERE";
-                const PROD_SAFARI_ID = "YOUR_PRODUCTION_SAFARI_WEB_ID_HERE";
-
-                const DEV_APP_ID = "3463e213-e584-459b-b32a-14901116bfda";
-                const DEV_SAFARI_ID = "web.onesignal.auto.63749170-9b18-42e2-ba12-fbd09a76fb84";
-
-                // 2. Detect environment (hostname-based)
-                // NOTE: codesammich.github.io is the DEV environment.
-                // Production endpoint is TBD.
-                const isDev = window.location.hostname.includes('codesammich.github.io');
-                const isProd = !isDev && window.location.hostname !== 'localhost';
-
-                // Ensure basePath is absolute and correctly targets your GitHub Pages subfolder.
-                const basePath = window.location.pathname.startsWith('/sda-church-app') ? '/sda-church-app/' : '/';
-
-                const activeAppId = isProd ? PROD_APP_ID : DEV_APP_ID;
-                const activeSafariId = isProd ? PROD_SAFARI_ID : DEV_SAFARI_ID;
-
-                // 4. Initialize OneSignal
-                await OneSignal.init({
-                  appId: activeAppId,
-                  safari_web_id: activeSafariId,
-                  // We must be extremely explicit with the path and name for v16.
-                  // Even though the file is sw.js, OneSignal needs to know exactly where its scope ends.
-                  serviceWorkerPath: basePath + 'sw.js',
-                  serviceWorkerParam: { scope: '/sda-church-app/' },
-                  // Ensure the SDK doesn't try to use a default filename
-                  workerPath: basePath + 'sw.js',
-                  allowLocalhostAsSecureOrigin: true,
-                  notifyButton: { enable: false },
-                });
-              });</script><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
+<!DOCTYPE html><html  lang="en"><head><title data-rh="true"></title><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="theme-color" content="#F8F9FA" media="(prefers-color-scheme: light)"/><meta name="theme-color" content="#0F0F0F" media="(prefers-color-scheme: dark)"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="NYCCSDA"/><link rel="apple-touch-icon" href="icon-192x192.png"/><link rel="manifest" href="manifest.json"/><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
 :root { 
   --app-bg: #F8F9FA; 
 }
@@ -530,5 +495,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><style id="expo-generated-fonts">@font-face{font-family:"NotoSans-Regular";src:url("/sda-church-app/assets/assets/fonts/NotoSans-Regular.f46b08cc90d994b34b647ae24c46d504.ttf");font-display:auto}
 @font-face{font-family:"NotoSans-Medium";src:url("/sda-church-app/assets/assets/fonts/NotoSans-Medium.a1311858ffd88b69aa5eadafd8f5c164.ttf");font-display:auto}
 @font-face{font-family:"NotoSans-Bold";src:url("/sda-church-app/assets/assets/fonts/NotoSans-Bold.28c191ce33ca36e0f75106491846de68.ttf");font-display:auto}
-@font-face{font-family:"material-community";src:url("/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf");font-display:auto}</style><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Regular.f46b08cc90d994b34b647ae24c46d504.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Medium.a1311858ffd88b69aa5eadafd8f5c164.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Bold.28c191ce33ca36e0f75106491846de68.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf" as="font" crossorigin="" /><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"><!--$--><!--/$--></div></div><script src="/sda-church-app/_expo/static/js/web/entry-3138dd9c89d6da6d4dfb3ec0f0b953c5.js" defer></script>
+@font-face{font-family:"material-community";src:url("/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf");font-display:auto}</style><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Regular.f46b08cc90d994b34b647ae24c46d504.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Medium.a1311858ffd88b69aa5eadafd8f5c164.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Bold.28c191ce33ca36e0f75106491846de68.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf" as="font" crossorigin="" /><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"><!--$--><!--/$--></div></div><script src="/sda-church-app/_expo/static/js/web/entry-7a910eb4438f516109cfd256dc607409.js" defer></script>
 </body></html>
