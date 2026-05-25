@@ -10,6 +10,10 @@ export default function Root({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
+
+        {/* Prevent search engines from indexing the site */}
+        <meta name="robots" content="noindex, nofollow" />
+
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
 
         {/* PWA Meta Tags */}

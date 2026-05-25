@@ -16,32 +16,28 @@ const uiLabels = {
   en: {
     title: 'English Hymnal',
     search: 'Search by number or title...',
-    copyrighted: 'Copyright Protected (Lyrics/Scan restricted)',
-    externalLink: 'View on Hymnary.org',
+    externalLink: 'View on HymnsForWorship.org',
     legalNotice: 'Why are some hymns restricted?',
     legalLink: 'Legal Information',
   },
   zh: {
     title: '英文詩歌本',
     search: '按編號或標題搜尋...',
-    copyrighted: '受版權保護 (歌詞/掃描受限)',
-    externalLink: '在 Hymnary.org 查看',
+    externalLink: '在 HymnsForWorship.org 查看',
     legalNotice: '為什麼有些詩歌受到限制？',
     legalLink: '法律資訊',
   },
   'zh-cn': {
     title: '英文诗歌本',
     search: '按编号或标题搜索...',
-    copyrighted: '受版权保护 (歌词/扫描受限)',
-    externalLink: '在 Hymnary.org 查看',
+    externalLink: '在 HymnsForWorship.org 查看',
     legalNotice: '为什么有些诗歌受到限制？',
     legalLink: '法律信息',
   },
   es: {
     title: 'Himnario en Inglés',
     search: 'Buscar por número o título...',
-    copyrighted: 'Protegido por derechos de autor',
-    externalLink: 'Ver en Hymnary.org',
+    externalLink: 'Ver en HymnsForWorship.org',
     legalNotice: '¿Por qué algunos himnos están restringidos?',
     legalLink: 'Información legal',
   },
@@ -66,24 +62,20 @@ export default function HymnalScreen() {
   }, [searchQuery, allHymns]);
 
   const renderHymnItem = ({ item }: { item: HydratedHymn }) => {
-    const isCopyrighted = !item.hasLyricsOrScan;
-
     return (
       <View style={styles.cardRow}>
-        <View style={[styles.cardWrapper, { opacity: isCopyrighted ? 0.5 : 1 }]}>
+        <View style={styles.cardWrapper}>
           <MenuCard
             title={`${item.number}. ${item.title}`}
             description={
-              isCopyrighted
-                ? labels.copyrighted
-                : item.scriptureReference
-                  ? `${labels.externalLink} • ${item.scriptureReference}`
-                  : labels.externalLink
+              item.scriptureReference
+                ? `${labels.externalLink} • ${item.scriptureReference}`
+                : labels.externalLink
             }
-            icon={isCopyrighted ? 'lock-outline' : 'music-note'}
-            iconColor={isCopyrighted ? theme.colors.outline : theme.colors.primary}
-            rightIcon={isCopyrighted ? undefined : 'open-in-new'}
-            onPress={isCopyrighted ? undefined : () => openHymnal(item.number)}
+            icon="music-note"
+            iconColor={theme.colors.primary}
+            rightIcon="open-in-new"
+            onPress={() => openHymnal(item.number)}
           />
         </View>
         <IconButton

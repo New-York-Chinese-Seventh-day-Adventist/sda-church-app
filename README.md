@@ -127,12 +127,13 @@ threats. Cloudflare may process basic connection data (such as IP addresses) to 
 malicious traffic and optimize performance. No user-level activity within the app is
 tracked by this service.
 
-### 4. External Services (YouTube, Spotify, Hymnary.org)
+### 4. External Services
 
-This application provides links to external platforms. When you interact with these links,
-you are subject to the privacy policies of those third-party providers. These services may
-collect data (such as IP addresses) as part of their standard operations. We do not have
-access to, nor do we store, any data collected by these external platforms.
+This application provides links to external platforms, such as YouTube, Spotify, and
+HymnsForWorship.org. When you interact with these links, you are subject to the privacy
+policies of those third-party providers. These services may collect data (such as IP
+addresses) as part of their standard operations. We do not have access to, nor do we
+store, any data collected by these external platforms.
 
 ---
 
@@ -140,10 +141,10 @@ access to, nor do we store, any data collected by these external platforms.
 
 ### 1. Usage of External Resources
 
-This app links to Hymnary.org for hymn resources. Please be aware that some hymns are
-copyrighted. When you follow these links, you are subject to Hymnary.org’s terms and
-conditions. You may be prompted to accept their terms before viewing certain content.
-Please respect copyright laws and do not attempt to bypass these requirements.
+This app links to HymnsForWorship.org for hymn resources. Please be aware that some hymns
+are copyrighted. When you follow these links, you are subject to HymnsForWorship.org’s
+terms and conditions. You may be prompted to accept their terms before viewing certain
+content. Please respect copyright laws and do not attempt to bypass these requirements.
 
 ### 2. Data Attribution
 
@@ -154,16 +155,16 @@ providers.
 
 ### 3. External Media (YouTube)
 
-This application may provide links to search results on YouTube to assist users in
-locating musical performances. Please note that YouTube is an external platform. We do not
-host, curate, or endorse the specific videos returned in these search results. Users are
-responsible for ensuring that their playback of such content complies with their local
-copyright and performance licensing requirements.
+This application may provide links to search results on external platforms, such as
+YouTube, to assist users in locating musical performances. Please note that these are
+external platforms. We do not host, curate, or endorse the specific videos returned in
+these search results. Users are responsible for ensuring that their playback of such
+content complies with their local copyright and performance licensing requirements.
 
 ### 4. External Streaming Services
 
-This application may provide links to third-party streaming services (e.g., Spotify, Apple
-Music) to help users locate musical recordings. These are external services, and your use
-of them is subject to their respective terms and conditions. We do not host, curate, or
-endorse the content provided on these platforms, nor does linking to such services
-constitute legal authorization for public performance.
+This application may provide links to third-party services (e.g., Spotify, Apple Music) to
+help users locate musical recordings or musical score. These are external services, and
+your use of them is subject to their respective terms and conditions. We do not host,
+curate, or endorse the content provided on these platforms, nor does linking to such
+services constitute legal authorization for public performance.

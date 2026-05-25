@@ -26,7 +26,7 @@ export default function PrivacyPolicyScreen() {
       style={[NavigationStyles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={[
         NavigationStyles.contentContainer,
-        { paddingTop: headerHeight + 20, paddingBottom: 40 },
+        { paddingTop: headerHeight + 20, paddingBottom: insets.bottom + 80 },
       ]}
     >
       <Stack.Screen options={{ title: 'Privacy Policy', backTo } as any} />
@@ -93,17 +93,17 @@ export default function PrivacyPolicyScreen() {
         variant="titleMedium"
         style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
       >
-        4. External Services (YouTube, Spotify, Hymnary.org)
+        4. External Services
       </Text>
       <Text
         variant="bodyMedium"
         style={[styles.bodyText, { color: theme.colors.onSurface }]}
       >
-        This application provides links to external platforms. When you interact with
-        these links, you are subject to the privacy policies of those third-party
-        providers. These services may collect data (such as IP addresses) as part of their
-        standard operations. We do not have access to, nor do we store, any data collected
-        by these external platforms.
+        This application provides links to external platforms, such as YouTube, Spotify,
+        and HymnsForWorship.org. When you interact with these links, you are subject to
+        the privacy policies of those third-party providers. These services may collect
+        data (such as IP addresses) as part of their standard operations. We do not have
+        access to, nor do we store, any data collected by these external platforms.
       </Text>
     </ScrollView>
   );
