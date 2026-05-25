@@ -20,6 +20,8 @@ const allLabels = {
     languageSub: 'Change app language',
     contact: 'Connect',
     contactSub: 'Contact information and locations',
+    privacy: 'Privacy Policy',
+    privacySub: 'Legal information (English only)',
   },
   zh: {
     settings: '設定',
@@ -29,6 +31,8 @@ const allLabels = {
     languageSub: '更改應用程式語言',
     contact: '聯繫',
     contactSub: '聯繫方式和地點',
+    privacy: '隱私政策',
+    privacySub: '法律資訊 (僅限英文)',
   },
   'zh-cn': {
     settings: '设置',
@@ -38,6 +42,8 @@ const allLabels = {
     languageSub: '更改应用语言',
     contact: '联系',
     contactSub: '联系方式和地点',
+    privacy: '隐私政策',
+    privacySub: '法律信息 (仅限英文)',
   },
   es: {
     settings: 'Ajustes',
@@ -47,6 +53,8 @@ const allLabels = {
     languageSub: 'Cambiar idioma de la aplicación',
     contact: 'Conectar',
     contactSub: 'Información de contacto y ubicaciones',
+    privacy: 'Política de Privacidad',
+    privacySub: 'Información legal (solo en inglés)',
   },
 };
 
@@ -95,6 +103,13 @@ export default function YouScreen() {
             icon="translate"
             iconColor={theme.colors.tertiary}
             onPress={() => router.push('/you/language' as any)}
+          />
+          <MenuCard
+            title={labels.privacy}
+            description={labels.privacySub}
+            icon="shield-account"
+            iconColor={theme.colors.secondary}
+            onPress={() => router.push('/you/privacy' as any)}
           />
         </List.Section>
 
