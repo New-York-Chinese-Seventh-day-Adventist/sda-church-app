@@ -57,7 +57,7 @@ export default function HymnalScreen() {
   }, [searchQuery, allHymns]);
 
   const renderHymnItem = ({ item }: { item: HydratedHymn }) => {
-    const isCopyrighted = !item.hasScan && !item.hasLyrics;
+    const isCopyrighted = !item.hasLyricsOrScan;
 
     return (
       <View style={{ opacity: isCopyrighted ? 0.5 : 1 }}>
@@ -66,7 +66,9 @@ export default function HymnalScreen() {
           description={
             isCopyrighted
               ? labels.copyrighted
-              : item.scriptureReference || labels.externalLink
+              : item.scriptureReference
+                ? `${labels.externalLink} • ${item.scriptureReference}`
+                : labels.externalLink
           }
           icon={isCopyrighted ? 'lock-outline' : 'music-note'}
           iconColor={isCopyrighted ? theme.colors.outline : theme.colors.primary}
