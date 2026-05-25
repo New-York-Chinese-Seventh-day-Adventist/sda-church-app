@@ -1,6 +1,5 @@
 import { MenuCard } from '@/components/MenuCard';
 import {
-  openHymnal,
   openSabbathSchool,
   openSabbathStream,
   openSpotifyPodcast,
@@ -131,7 +130,7 @@ export default function ResourcesScreen() {
             description={labels.hymnalSub}
             icon="music-note"
             iconColor={theme.colors.tertiary}
-            onPress={() => openHymnal(1)}
+            onPress={() => router.push('/resources/hymnal' as any)}
           />
 
           <MenuCard

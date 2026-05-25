@@ -468,7 +468,7 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
     {
       ...labels.hymnal,
       icon: 'music-note',
-      route: '/resources',
+      route: '/resources/hymnal',
     },
     { ...labels.give, icon: 'gift', route: '/home/give' },
     { ...labels.darkMode, icon: 'theme-light-dark', route: '/you' },
