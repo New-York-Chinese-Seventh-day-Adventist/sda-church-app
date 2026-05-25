@@ -24,12 +24,11 @@
                 await OneSignal.init({
                   appId: activeAppId,
                   safari_web_id: activeSafariId,
-                  // We must be extremely explicit with the path and name for v16.
-                  // Even though the file is sw.js, OneSignal needs to know exactly where its scope ends.
-                  serviceWorkerPath: basePath + 'sw.js',
-                  serviceWorkerParam: { scope: '/sda-church-app/' },
-                  // Ensure the SDK doesn't try to use a default filename
-                  workerPath: basePath + 'sw.js',
+                  // OneSignal v16 Custom Worker Handshake:
+                  // serviceWorkerPath is the folder, workerPath is the filename.
+                  serviceWorkerPath: basePath,
+                  workerPath: 'sw.js',
+                  serviceWorkerParam: { scope: basePath },
                   allowLocalhostAsSecureOrigin: true,
                   notifyButton: { enable: false },
                 });
@@ -527,5 +526,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-1pzkwqh{0%{transform:translateY(100%);}100%{transform:translateY(0%);}}
 @keyframes r-imtty0{0%{opacity:0;}100%{opacity:1;}}
 @keyframes r-q67da2{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
-@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-6b9022af60880e0b113845f76e0d67b6.js" defer></script>
+@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-4b7d24007ef1b2bc67ac0562c250a1bb.js" defer></script>
 </body></html>
