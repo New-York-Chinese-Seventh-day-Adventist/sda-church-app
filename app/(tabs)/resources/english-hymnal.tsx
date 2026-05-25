@@ -1,8 +1,8 @@
-import { MenuCard } from '@/components/MenuCard';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { useContext, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { IconButton, Searchbar, Text } from 'react-native-paper';
+import { Divider, Searchbar, Text, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getSortedHymns, HydratedHymn, openHymnal } from '@/constants/EnglishHymnal';
@@ -19,6 +19,8 @@ const uiLabels = {
     externalLink: 'View on HymnsForWorship.org',
     legalNotice: 'Why are some hymns restricted?',
     legalLink: 'Legal Information',
+    attribution: 'Hymn lyrics and sheet music are provided by HymnsForWorship.org.',
+    watchYouTube: 'Sing on YouTube',
   },
   zh: {
     title: '英文詩歌本',
@@ -26,6 +28,8 @@ const uiLabels = {
     externalLink: '在 HymnsForWorship.org 查看',
     legalNotice: '為什麼有些詩歌受到限制？',
     legalLink: '法律資訊',
+    attribution: '詩歌歌詞與琴譜由 HymnsForWorship.org 提供。',
+    watchYouTube: '在 YouTube 上歌唱',
   },
   'zh-cn': {
     title: '英文诗歌本',
@@ -33,6 +37,8 @@ const uiLabels = {
     externalLink: '在 HymnsForWorship.org 查看',
     legalNotice: '为什么有些诗歌受到限制？',
     legalLink: '法律信息',
+    attribution: '诗歌歌词与琴谱由 HymnsForWorship.org 提供。',
+    watchYouTube: '在 YouTube 上歌唱',
   },
   es: {
     title: 'Himnario en Inglés',
@@ -40,6 +46,9 @@ const uiLabels = {
     externalLink: 'Ver en HymnsForWorship.org',
     legalNotice: '¿Por qué algunos himnos están restringidos?',
     legalLink: 'Información legal',
+    attribution:
+      'Las letras y partituras de los himnos son proporcionados por HymnsForWorship.org.',
+    watchYouTube: 'Cantar en YouTube',
   },
 };
 
@@ -63,26 +72,70 @@ export default function HymnalScreen() {
 
   const renderHymnItem = ({ item }: { item: HydratedHymn }) => {
     return (
-      <View style={styles.cardRow}>
-        <View style={styles.cardWrapper}>
-          <MenuCard
-            title={`${item.number}. ${item.title}`}
-            description={
-              item.scriptureReference
-                ? `${labels.externalLink} • ${item.scriptureReference}`
-                : labels.externalLink
-            }
-            icon="music-note"
-            iconColor={theme.colors.primary}
-            rightIcon="open-in-new"
-            onPress={() => openHymnal(item.number)}
-          />
-        </View>
-        <IconButton
-          icon="youtube"
-          iconColor={(theme.colors as any).brandYoutube}
+      <View
+        style={[
+          styles.hymnCardContainer,
+          {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.outlineVariant,
+          },
+        ]}
+      >
+        {/* Top Section: Link to Sheet Music Website */}
+        <TouchableRipple
+          onPress={() => openHymnal(item.number)}
+          style={styles.topSection}
+        >
+          <View style={styles.cardContent}>
+            <MaterialCommunityIcons
+              name="music-note"
+              size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
+              color={theme.colors.tertiary}
+              style={styles.leadingIcon}
+            />
+            <View style={styles.textContainer}>
+              <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
+                {item.number}. {item.title}
+              </Text>
+              {item.scriptureReference && (
+                <Text
+                  style={[styles.cardSubtitle, { color: theme.colors.onSurfaceVariant }]}
+                >
+                  {item.scriptureReference}
+                </Text>
+              )}
+            </View>
+            <MaterialCommunityIcons
+              name="open-in-new"
+              size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </View>
+        </TouchableRipple>
+
+        <Divider />
+
+        {/* Bottom Section: YouTube Search */}
+        <TouchableRipple
           onPress={() => openYouTubeSearch(`SDA Hymnal 1985 ${item.title}`)}
-        />
+          style={styles.bottomSection}
+        >
+          <View style={styles.youtubeButtonContent}>
+            <MaterialCommunityIcons
+              name="youtube"
+              size={24}
+              color={(theme.colors as any).brandYoutube}
+            />
+            <Text
+              style={[
+                styles.youtubeButtonText,
+                { color: (theme.colors as any).brandYoutube },
+              ]}
+            >
+              {labels.watchYouTube}
+            </Text>
+          </View>
+        </TouchableRipple>
       </View>
     );
   };
@@ -120,6 +173,12 @@ export default function HymnalScreen() {
             </Text>
           </Text>
         </TouchableOpacity>
+        <Text
+          variant="bodySmall"
+          style={[styles.attributionText, { color: theme.colors.onSurfaceVariant }]}
+        >
+          {labels.attribution}
+        </Text>
       </View>
 
       <FlatList
@@ -140,13 +199,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
-  cardRow: {
+  hymnCardContainer: {
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  topSection: {
+    padding: 16,
+  },
+  cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
   },
-  cardWrapper: {
+  textContainer: {
     flex: 1,
+    marginRight: 8,
+  },
+  leadingIcon: {
+    marginRight: 12,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  bottomSection: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  youtubeButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  youtubeButtonText: {
+    marginLeft: 8,
+    fontWeight: '600',
+    fontSize: 15,
   },
   searchbar: {
     borderRadius: 8,
@@ -154,5 +248,10 @@ const styles = StyleSheet.create({
   legalNotice: {
     marginTop: 10,
     paddingHorizontal: 4,
+  },
+  attributionText: {
+    marginTop: 4,
+    paddingHorizontal: 4,
+    opacity: 0.8,
   },
 });

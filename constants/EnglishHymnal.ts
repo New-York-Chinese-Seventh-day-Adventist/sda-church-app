@@ -51,10 +51,6 @@ export interface HymnEntry {
    * A primary scripture passage associated with the hymn's theme or lyrics.
    */
   scriptureReference?: string;
-  /**
-   * Indicates if a scan of the sheet music is explicitly noted as available.
-   */
-  hasScan?: boolean;
 }
 
 /**
@@ -409,7 +405,7 @@ export const SDA_HYMNAL_1985: SDAHymnalData = {
     285: { title: 'Jesus Calls Us' },
     286: { title: 'Wonderful Words of Life' },
     287: { title: 'Softly and Tenderly' },
-    288: { title: 'I Am Going to Calvary', hasScan: true },
+    288: { title: 'I Am Going to Calvary' },
     289: { title: 'The Savior Is Waiting' },
     290: { title: 'Turn Your Eyes Upon Jesus' },
     291: { title: 'We Have Not Known Thee' },
@@ -501,7 +497,7 @@ export const SDA_HYMNAL_1985: SDAHymnalData = {
     374: { title: 'Jesus, With Thy Church Abide' },
     375: { title: 'Work, for the Night Is Coming' },
     376: { title: 'All Things Are Thine' },
-    377: { title: 'Go Forth, Go Forth With Christ', hasScan: true },
+    377: { title: 'Go Forth, Go Forth With Christ' },
     378: { title: 'Go, Preach My Gospel', scriptureReference: 'Mark 16:15-17' },
     379: { title: 'We Give This Child to You' },
     380: { title: 'Welcome, Day of Sweet Repose' },
