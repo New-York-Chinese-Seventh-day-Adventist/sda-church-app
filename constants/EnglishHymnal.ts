@@ -42,14 +42,11 @@ export const openHymnal = (hymnNumber?: string | number) => {
     );
   }
 
-  return openURL(`https://hymnsforworship.org/sdah-${hId}`);
+  return openURL(`https://hymnsforworship.org/sdah-${hId.toString().padStart(3, '0')}`);
 };
 
 export interface HymnEntry {
   title: string;
-  /**
-   * A primary scripture passage associated with the hymn's theme or lyrics.
-   */
   scriptureReference?: string;
 }
 

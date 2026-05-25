@@ -10,6 +10,7 @@ import { openYouTubeSearch } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
+import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
 
 const uiLabels = {
@@ -20,7 +21,8 @@ const uiLabels = {
     legalNotice: 'Why are some hymns restricted?',
     legalLink: 'Legal Information',
     attribution: 'Hymn lyrics and sheet music are provided by HymnsForWorship.org.',
-    watchYouTube: 'Sing on YouTube',
+    watchYouTube: 'YouTube',
+    readScripture: 'Bible',
   },
   zh: {
     title: '英文詩歌本',
@@ -29,7 +31,8 @@ const uiLabels = {
     legalNotice: '為什麼有些詩歌受到限制？',
     legalLink: '法律資訊',
     attribution: '詩歌歌詞與琴譜由 HymnsForWorship.org 提供。',
-    watchYouTube: '在 YouTube 上歌唱',
+    watchYouTube: 'YouTube',
+    readScripture: '查閱聖經',
   },
   'zh-cn': {
     title: '英文诗歌本',
@@ -38,7 +41,8 @@ const uiLabels = {
     legalNotice: '为什么有些诗歌受到限制？',
     legalLink: '法律信息',
     attribution: '诗歌歌词与琴谱由 HymnsForWorship.org 提供。',
-    watchYouTube: '在 YouTube 上歌唱',
+    watchYouTube: 'YouTube',
+    readScripture: '查阅圣经',
   },
   es: {
     title: 'Himnario en Inglés',
@@ -48,7 +52,8 @@ const uiLabels = {
     legalLink: 'Información legal',
     attribution:
       'Las letras y partituras de los himnos son proporcionados por HymnsForWorship.org.',
-    watchYouTube: 'Cantar en YouTube',
+    watchYouTube: 'YouTube',
+    readScripture: 'Biblia',
   },
 };
 
@@ -115,27 +120,72 @@ export default function HymnalScreen() {
 
         <Divider />
 
-        {/* Bottom Section: YouTube Search */}
-        <TouchableRipple
-          onPress={() => openYouTubeSearch(`SDA Hymnal 1985 ${item.title}`)}
-          style={styles.bottomSection}
-        >
-          <View style={styles.youtubeButtonContent}>
-            <MaterialCommunityIcons
-              name="youtube"
-              size={24}
-              color={(theme.colors as any).brandYoutube}
-            />
-            <Text
-              style={[
-                styles.youtubeButtonText,
-                { color: (theme.colors as any).brandYoutube },
-              ]}
-            >
-              {labels.watchYouTube}
-            </Text>
-          </View>
-        </TouchableRipple>
+        {/* Bottom Action Section */}
+        <View style={styles.bottomSection}>
+          {/* YouTube Search */}
+          <TouchableRipple
+            onPress={() => openYouTubeSearch(`SDA Hymnal 1985 ${item.title}`)}
+            style={styles.flexButton}
+          >
+            <View style={styles.buttonContent}>
+              <MaterialCommunityIcons
+                name="youtube"
+                size={24}
+                color={(theme.colors as any).brandYoutube}
+              />
+              <Text
+                style={[styles.buttonText, { color: (theme.colors as any).brandYoutube }]}
+              >
+                {labels.watchYouTube}
+              </Text>
+            </View>
+          </TouchableRipple>
+
+          {item.scriptureReference && (
+            <>
+              <View
+                style={[
+                  styles.verticalDivider,
+                  { backgroundColor: theme.colors.outlineVariant },
+                ]}
+              />
+              <TouchableRipple
+                onPress={() => {
+                  const scripture = BibleService.parseScriptureReference(
+                    item.scriptureReference,
+                  );
+                  router.push({
+                    pathname: '/resources/bible',
+                    params: {
+                      backTo: '/resources/english-hymnal',
+                      ...(scripture
+                        ? {
+                            bookId: scripture.bookId,
+                            chapter: scripture.chapter.toString(),
+                          }
+                        : {}),
+                    },
+                  } as any);
+                }}
+                style={styles.flexButton}
+              >
+                <View style={styles.buttonContent}>
+                  <MaterialCommunityIcons
+                    name="book-cross"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.buttonText, { color: theme.colors.primary }]}
+                  >
+                    {item.scriptureReference}
+                  </Text>
+                </View>
+              </TouchableRipple>
+            </>
+          )}
+        </View>
       </View>
     );
   };
@@ -229,18 +279,27 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   bottomSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  flexButton: {
+    flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  youtubeButtonContent: {
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  youtubeButtonText: {
+  buttonText: {
     marginLeft: 8,
     fontWeight: '600',
     fontSize: 15,
+  },
+  verticalDivider: {
+    width: 1,
+    height: 24,
   },
   searchbar: {
     borderRadius: 8,
