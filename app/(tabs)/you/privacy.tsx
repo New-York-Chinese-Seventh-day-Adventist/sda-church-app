@@ -12,6 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * To maintain legal consistency and avoid ambiguity across different
  * jurisdictions or languages, the Privacy Policy is intentionally kept in
  * English-only. This aligns with Project Tenet 2 (Liability-Free).
+ *
+ * Please make sure the content syncs with README.md
  */
 export default function PrivacyPolicyScreen() {
   const theme = useAppTheme();
@@ -85,6 +87,23 @@ export default function PrivacyPolicyScreen() {
         web threats. Cloudflare may process basic connection data (such as IP addresses)
         to identify malicious traffic and optimize performance. No user-level activity
         within the app is tracked by this service.
+      </Text>
+
+      <Text
+        variant="titleMedium"
+        style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
+      >
+        4. External Services (YouTube, Spotify, Hymnary.org)
+      </Text>
+      <Text
+        variant="bodyMedium"
+        style={[styles.bodyText, { color: theme.colors.onSurface }]}
+      >
+        This application provides links to external platforms. When you interact with
+        these links, you are subject to the privacy policies of those third-party
+        providers. These services may collect data (such as IP addresses) as part of their
+        standard operations. We do not have access to, nor do we store, any data collected
+        by these external platforms.
       </Text>
     </ScrollView>
   );

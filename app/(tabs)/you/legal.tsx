@@ -12,6 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * To maintain legal consistency and avoid ambiguity across different
  * jurisdictions or languages, Legal Information is intentionally kept in
  * English-only. This aligns with Project Tenet 2 (Liability-Free).
+ *
+ * Please make sure the content syncs with README.md
  */
 export default function LegalScreen() {
   const theme = useAppTheme();
@@ -73,6 +75,41 @@ export default function LegalScreen() {
         index numbers) to facilitate navigation. We do not host or reproduce protected
         musical notation or lyrics. All external content is accessed through direct links
         to authorized third-party providers.
+      </Text>
+
+      <Text
+        variant="titleMedium"
+        style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
+      >
+        3. External Media (YouTube)
+      </Text>
+      <Text
+        variant="bodyMedium"
+        style={[styles.bodyText, { color: theme.colors.onSurface }]}
+      >
+        This application may provide links to search results on YouTube to assist users in
+        locating musical performances. Please note that YouTube is an external platform.
+        We do not host, curate, or endorse the specific videos returned in these search
+        results. Users are responsible for ensuring that their playback of such content
+        complies with their local copyright and performance licensing requirements.
+      </Text>
+
+      <Text
+        variant="titleMedium"
+        style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
+      >
+        4. External Streaming Services
+      </Text>
+      <Text
+        variant="bodyMedium"
+        style={[styles.bodyText, { color: theme.colors.onSurface }]}
+      >
+        This application may provide links to third-party streaming services (e.g.,
+        Spotify, Apple Music) to help users locate musical recordings. These are external
+        services, and your use of them is subject to their respective terms and
+        conditions. We do not host, curate, or endorse the content provided on these
+        platforms, nor does linking to such services constitute legal authorization for
+        public performance.
       </Text>
     </ScrollView>
   );
