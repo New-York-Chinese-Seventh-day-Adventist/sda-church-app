@@ -7,7 +7,7 @@ importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 // via GitHub actions via scripts/sync-version.js when creating or updating a new PR.
 // This controls an update to new version of the app is available for install
 // DO NOT EDIT THIS MANUALLY, as it will be overwritten by the next PR update.
-const VERSION = '0.14.23';
+const VERSION = '0.14.24';
 const CACHE_NAME = `sda-church-v${VERSION}`;
 
 self.addEventListener('install', (event) => {});
