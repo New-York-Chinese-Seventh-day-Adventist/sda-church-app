@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Divider, Searchbar, Text, TouchableRipple } from 'react-native-paper';
@@ -18,7 +18,6 @@ const uiLabels = {
     title: 'English Hymnal',
     search: 'Search by number or title...',
     externalLink: 'View on HymnsForWorship.org',
-    legalNotice: 'Why are some hymns restricted?',
     legalLink: 'Legal Information',
     attribution: 'Hymn lyrics and sheet music are hosted on HymnsForWorship.org.',
     watchYouTube: 'YouTube',
@@ -28,7 +27,6 @@ const uiLabels = {
     title: '英文詩歌本',
     search: '按編號或標題搜尋...',
     externalLink: '在 HymnsForWorship.org 查看',
-    legalNotice: '為什麼有些詩歌受到限制？',
     legalLink: '法律資訊',
     attribution: '詩歌歌詞與琴譜託管於 HymnsForWorship.org。',
     watchYouTube: 'YouTube',
@@ -38,7 +36,6 @@ const uiLabels = {
     title: '英文诗歌本',
     search: '按编号或标题搜索...',
     externalLink: '在 HymnsForWorship.org 查看',
-    legalNotice: '为什么有些诗歌受到限制？',
     legalLink: '法律信息',
     attribution: '诗歌歌词与琴谱托管于 HymnsForWorship.org。',
     watchYouTube: 'YouTube',
@@ -48,7 +45,6 @@ const uiLabels = {
     title: 'Himnario en Inglés',
     search: 'Buscar por número o título...',
     externalLink: 'Ver en HymnsForWorship.org',
-    legalNotice: '¿Por qué algunos himnos están restringidos?',
     legalLink: 'Información legal',
     attribution:
       'Las letras y partituras de los himnos están alojadas en HymnsForWorship.org.',
@@ -61,6 +57,7 @@ export default function HymnalScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
+  const { backTo } = useLocalSearchParams<{ backTo?: string }>();
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,13 +99,6 @@ export default function HymnalScreen() {
               <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
                 {item.number}. {item.title}
               </Text>
-              {item.scriptureReference && (
-                <Text
-                  style={[styles.cardSubtitle, { color: theme.colors.onSurfaceVariant }]}
-                >
-                  {item.scriptureReference}
-                </Text>
-              )}
             </View>
             <MaterialCommunityIcons
               name="open-in-new"
@@ -193,7 +183,7 @@ export default function HymnalScreen() {
 
   return (
     <View style={NavigationStyles.container}>
-      <Stack.Screen options={{ title: labels.title }} />
+      <Stack.Screen options={{ title: labels.title, backTo } as any} />
 
       <View
         style={[
@@ -218,18 +208,12 @@ export default function HymnalScreen() {
           style={styles.legalNotice}
         >
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {labels.legalNotice}{' '}
+            {labels.attribution}{' '}
             <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
               {labels.legalLink}
             </Text>
           </Text>
         </TouchableOpacity>
-        <Text
-          variant="bodySmall"
-          style={[styles.attributionText, { color: theme.colors.onSurfaceVariant }]}
-        >
-          {labels.attribution}
-        </Text>
       </View>
 
       <FlatList

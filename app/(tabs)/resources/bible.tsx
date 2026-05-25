@@ -107,10 +107,12 @@ export default function BibleReaderScreen() {
     bookId: paramBookId,
     chapter: paramChapter,
     translationId: paramTransId,
+    backTo: paramBackTo,
   } = useLocalSearchParams<{
     bookId?: string;
     chapter?: string;
     translationId?: string;
+    backTo?: string;
   }>();
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
@@ -132,6 +134,21 @@ export default function BibleReaderScreen() {
   // Persistence state
   const [isPersistenceLoaded, setIsPersistenceLoaded] = useState(false);
   const initialBookId = useRef<string | null>(null);
+
+  // Data state
+  const [books, setBooks] = useState<BibleService.TranslationBook[]>([]);
+  const [chapterData, setChapterData] =
+    useState<BibleService.TranslationBookChapter | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Modal states
+  const [modalType, setModalType] = useState<
+    'translation' | 'book' | 'chapter' | 'verse-detail' | null
+  >(null);
+  const [selectedVerseNum, setSelectedVerseNum] = useState<number | null>(null);
+
+  // To prevent the "content flash" during modal dismissal
+  const [lastActiveType, setLastActiveType] = useState<typeof modalType>(null);
 
   // Load selection from storage on mount
   useEffect(() => {
@@ -223,12 +240,6 @@ export default function BibleReaderScreen() {
     ],
   });
 
-  // Data state
-  const [books, setBooks] = useState<BibleService.TranslationBook[]>([]);
-  const [chapterData, setChapterData] =
-    useState<BibleService.TranslationBookChapter | null>(null);
-  const [loading, setLoading] = useState(false);
-
   // Determine navigation boundaries
   const currentBookIdx = books.findIndex((b) => b.id === book?.id);
   const isFirstChapter = chapterNum === 1 && currentBookIdx === 0;
@@ -319,16 +330,6 @@ export default function BibleReaderScreen() {
     supportedTranslation.id,
   ]);
 
-  // Modal states
-  const [modalType, setModalType] = useState<
-    'translation' | 'book' | 'chapter' | 'verse-detail' | null
-  >(null);
-  const [selectedVerseNum, setSelectedVerseNum] = useState<number | null>(null);
-
-  // To prevent the "content flash" during modal dismissal (where it defaults to
-  // the chapter selector during the fade-out animation), we track the last
-  // active modal type to keep the UI stable.
-  const [lastActiveType, setLastActiveType] = useState<typeof modalType>(null);
   useEffect(() => {
     if (modalType) {
       setLastActiveType(modalType);
@@ -848,7 +849,12 @@ export default function BibleReaderScreen() {
   return (
     <View style={NavigationStyles.container}>
       <Stack.Screen
-        options={{ title: book ? `${book.name} ${chapterNum}` : labels.bible }}
+        options={
+          {
+            title: book ? `${book.name} ${chapterNum}` : labels.bible,
+            backTo: paramBackTo,
+          } as any
+        }
       />
       <ScrollView
         ref={scrollRef}
