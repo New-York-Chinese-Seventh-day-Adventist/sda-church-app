@@ -1,8 +1,8 @@
 import { MenuCard } from '@/components/MenuCard';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useContext, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
-import { Searchbar } from 'react-native-paper';
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Searchbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getSortedHymns, HydratedHymn, openHymnal } from '@/constants/Hymnal';
@@ -17,24 +17,32 @@ const uiLabels = {
     search: 'Search by number or title...',
     copyrighted: 'Copyright Protected (Lyrics/Scan restricted)',
     externalLink: 'View on Hymnary.org',
+    legalNotice: 'Why are some hymns restricted?',
+    legalLink: 'Legal Information',
   },
   zh: {
     title: '英文詩歌本',
     search: '按編號或標題搜尋...',
     copyrighted: '受版權保護 (歌詞/掃描受限)',
     externalLink: '在 Hymnary.org 查看',
+    legalNotice: '為什麼有些詩歌受到限制？',
+    legalLink: '法律資訊',
   },
   'zh-cn': {
     title: '英文诗歌本',
     search: '按编号或标题搜索...',
     copyrighted: '受版权保护 (歌词/扫描受限)',
     externalLink: '在 Hymnary.org 查看',
+    legalNotice: '为什么有些诗歌受到限制？',
+    legalLink: '法律信息',
   },
   es: {
     title: 'Himnario en Inglés',
     search: 'Buscar por número o título...',
     copyrighted: 'Protegido por derechos de autor',
     externalLink: 'Ver en Hymnary.org',
+    legalNotice: '¿Por qué algunos himnos están restringidos?',
+    legalLink: 'Información legal',
   },
 };
 
@@ -96,6 +104,22 @@ export default function HymnalScreen() {
           style={[styles.searchbar, { backgroundColor: theme.colors.surfaceVariant }]}
           elevation={0}
         />
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: '/you/legal',
+              params: { backTo: '/resources/hymnal' },
+            } as any)
+          }
+          style={styles.legalNotice}
+        >
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            {labels.legalNotice}{' '}
+            <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+              {labels.legalLink}
+            </Text>
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -118,5 +142,9 @@ const styles = StyleSheet.create({
   },
   searchbar: {
     borderRadius: 8,
+  },
+  legalNotice: {
+    marginTop: 10,
+    paddingHorizontal: 4,
   },
 });

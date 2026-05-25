@@ -122,7 +122,12 @@ export default function ResourcesScreen() {
             description={labels.bibleSub}
             icon="book-cross"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/resources/bible' as any)}
+            onPress={() =>
+              router.push({
+                pathname: '/resources/bible',
+                params: { backTo: '/resources' },
+              } as any)
+            }
           />
 
           <MenuCard
@@ -130,7 +135,12 @@ export default function ResourcesScreen() {
             description={labels.hymnalSub}
             icon="music-note"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/resources/hymnal' as any)}
+            onPress={() =>
+              router.push({
+                pathname: '/resources/hymnal',
+                params: { backTo: '/resources' },
+              } as any)
+            }
           />
 
           <MenuCard

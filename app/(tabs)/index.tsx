@@ -136,7 +136,12 @@ export default function HomeScreen() {
             title={labels.aboutSDA}
             icon="information"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/about_sda')}
+            onPress={() =>
+              router.push({
+                pathname: '/home/about_sda',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
 
@@ -144,7 +149,12 @@ export default function HomeScreen() {
             title={labels.aboutHistory}
             icon="history"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/about_my_church')}
+            onPress={() =>
+              router.push({
+                pathname: '/home/about_my_church',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
 
@@ -152,7 +162,12 @@ export default function HomeScreen() {
             title={labels.meetTeam}
             icon="account-multiple"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/team')}
+            onPress={() =>
+              router.push({
+                pathname: '/home/team',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
 
@@ -160,7 +175,12 @@ export default function HomeScreen() {
             title={labels.contact}
             icon="church"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/contact')}
+            onPress={() =>
+              router.push({
+                pathname: '/home/contact',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
 
@@ -168,7 +188,12 @@ export default function HomeScreen() {
             title={labels.join}
             icon="water-outline"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/community/baptism')}
+            onPress={() =>
+              router.push({
+                pathname: '/community/baptism',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
 
@@ -182,14 +207,24 @@ export default function HomeScreen() {
             title={labels.bulletin}
             icon="file-document-outline"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/bulletin')}
+            onPress={() =>
+              router.push({
+                pathname: '/home/bulletin',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
           <MenuCard
             title={labels.give}
             icon="gift"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/home/give')}
+            onPress={() =>
+              router.push({
+                pathname: '/home/give',
+                params: { backTo: '/' },
+              } as any)
+            }
           />
         </List.Section>
       </ScrollView>

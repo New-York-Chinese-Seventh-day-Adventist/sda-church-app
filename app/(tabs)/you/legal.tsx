@@ -10,10 +10,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * ATTENTION: This file must ONLY ever use English.
  *
  * To maintain legal consistency and avoid ambiguity across different
- * jurisdictions or languages, the Privacy Policy is intentionally kept in
+ * jurisdictions or languages, Legal Information is intentionally kept in
  * English-only. This aligns with Project Tenet 2 (Liability-Free).
  */
-export default function PrivacyPolicyScreen() {
+export default function LegalScreen() {
   const theme = useAppTheme();
   const { backTo } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
@@ -27,13 +27,13 @@ export default function PrivacyPolicyScreen() {
         { paddingTop: headerHeight + 20, paddingBottom: 40 },
       ]}
     >
-      <Stack.Screen options={{ title: 'Privacy Policy', backTo } as any} />
+      <Stack.Screen options={{ title: 'Legal Information', backTo } as any} />
 
       <Text
         variant="headlineSmall"
         style={[styles.title, { color: theme.colors.onBackground }]}
       >
-        Privacy Policy
+        Legal Information
       </Text>
       <Text
         variant="labelSmall"
@@ -46,45 +46,33 @@ export default function PrivacyPolicyScreen() {
         variant="titleMedium"
         style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
       >
-        1. Introduction
+        1. Usage of External Resources
       </Text>
       <Text
         variant="bodyMedium"
         style={[styles.bodyText, { color: theme.colors.onSurface }]}
       >
-        This application values your privacy. We do not host, store, or manage any
-        personal identifiable information on our own servers. This page outlines how
-        third-party services handle data to keep the application functional.
+        This app links to Hymnary.org for hymn resources. Please be aware that some hymns
+        are copyrighted. When you follow these links, you are subject to Hymnary.org’s
+        terms and conditions. You may be prompted to accept their terms before viewing
+        certain content. Please respect copyright laws and do not attempt to bypass these
+        requirements.
       </Text>
 
       <Text
         variant="titleMedium"
         style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
       >
-        2. Hosting (GitHub Pages)
+        2. Data Attribution
       </Text>
       <Text
         variant="bodyMedium"
         style={[styles.bodyText, { color: theme.colors.onSurface }]}
       >
-        This web application is deployed using GitHub Pages. GitHub may collect basic
-        server logs and IP addresses for security, debugging, and operational maintenance.
-      </Text>
-
-      <Text
-        variant="titleMedium"
-        style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
-      >
-        3. Traffic Management (Cloudflare)
-      </Text>
-      <Text
-        variant="bodyMedium"
-        style={[styles.bodyText, { color: theme.colors.onSurface }]}
-      >
-        We use Cloudflare to manage domain traffic and protect the application from common
-        web threats. Cloudflare may process basic connection data (such as IP addresses)
-        to identify malicious traffic and optimize performance. No user-level activity
-        within the app is tracked by this service.
+        This application provides access to non-copyrightable metadata (hymn titles and
+        index numbers) to facilitate navigation. We do not host or reproduce protected
+        musical notation or lyrics. All external content is accessed through direct links
+        to authorized third-party providers.
       </Text>
     </ScrollView>
   );
