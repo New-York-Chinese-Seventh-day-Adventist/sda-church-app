@@ -138,7 +138,7 @@ export default function HomeScreen() {
             iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
-                pathname: '/home/about_sda',
+                pathname: '/home/about-sda',
                 params: { backTo: '/' },
               } as any)
             }
@@ -151,7 +151,7 @@ export default function HomeScreen() {
             iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
-                pathname: '/home/about_my_church',
+                pathname: '/home/about-my-church',
                 params: { backTo: '/' },
               } as any)
             }

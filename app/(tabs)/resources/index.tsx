@@ -30,8 +30,8 @@ const allLabels = {
     sabbathSchoolSub: 'Weekly Bible study guides and discussion',
     zoomClass: 'Zoom Class',
     zoomSub: 'Interactive Bible study and fellowship. Please ask others for password',
-    hymnal: 'English Hymnal',
-    hymnalSub: 'Lyrics and music for worship',
+    hymnal: 'Hymnal',
+    hymnalSub: 'English and Chinese worship music',
     library: 'Library',
     librarySub: 'Devotionals, PDFs and guides',
   },
@@ -49,8 +49,8 @@ const allLabels = {
     sabbathSchoolSub: '每週研經指南與討論',
     zoomClass: 'Zoom 課程',
     zoomSub: '互動式研經與團契。請向他人詢問密碼',
-    hymnal: '英文詩歌本',
-    hymnalSub: '敬拜用的歌詞與音樂',
+    hymnal: '詩歌本',
+    hymnalSub: '中英文敬拜音樂',
     library: '圖書館',
     librarySub: '靈修資料、PDF 與指南',
   },
@@ -68,8 +68,8 @@ const allLabels = {
     sabbathSchoolSub: '每周研经指南与讨论',
     zoomClass: 'Zoom 课程',
     zoomSub: '互动式研经与团契。请向他人询问密码',
-    hymnal: '英文诗歌本',
-    hymnalSub: '敬拜用的歌词与音乐',
+    hymnal: '诗歌本',
+    hymnalSub: '中英文敬拜音乐',
     library: '图书馆',
     librarySub: '灵修资料、PDF 与指南',
   },
@@ -88,8 +88,8 @@ const allLabels = {
     zoomClass: 'Clase de Zoom',
     zoomSub:
       'Estudio bíblico interactivo y compañerismo. Por favor, pida la contraseña a otros',
-    hymnal: 'Himnario en Inglés',
-    hymnalSub: 'Letras y música para la adoración',
+    hymnal: 'Himnario',
+    hymnalSub: 'Música de adoración en inglés y chino',
     library: 'Biblioteca',
     librarySub: 'Devocionales, PDFs y guías',
   },
@@ -139,7 +139,7 @@ export default function ResourcesScreen() {
             iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
-                pathname: '/resources/hymnal',
+                pathname: '/resources/hymnal-selection',
                 params: { backTo: '/resources' },
               } as any)
             }

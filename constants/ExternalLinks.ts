@@ -63,6 +63,14 @@ export const openSabbathStream = async () => {
   );
 };
 
+export const openYouTubeSearch = (query: string) => {
+  return openURL(
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+    'Error',
+    'Could not open the YouTube search results.',
+  );
+};
+
 // SABBATH SCHOOL DIGITAL ECOSYSTEM
 // DENOMINATIONAL CORE FRAMEWORK & PUBLIC DATA BACKBONE
 // URL: https://sabbath-school.adventech.io
@@ -91,6 +99,20 @@ export const openSabbathSchool = (language: SupportedLanguage) => {
     'Could not open the Sabbath School link.',
   );
 };
+
+export const openChineseHymnalIos = () =>
+  openURL(
+    'https://apps.apple.com/us/app/506%E8%AE%9A%E7%BE%8E%E8%A9%A9-traditional-chinese/id6498894032',
+    'Error',
+    'Could not open the App Store link.',
+  );
+
+export const openChineseHymnalAndroid = () =>
+  openURL(
+    'https://play.google.com/store/apps/details?id=org.chumadventist.hymnal506.next',
+    'Error',
+    'Could not open the Google Play link.',
+  );
 
 /**
  * Opens a given address in the Google Maps app or browser.

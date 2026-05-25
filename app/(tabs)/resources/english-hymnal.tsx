@@ -2,10 +2,11 @@ import { MenuCard } from '@/components/MenuCard';
 import { router, Stack } from 'expo-router';
 import { useContext, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Searchbar, Text } from 'react-native-paper';
+import { IconButton, Searchbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { getSortedHymns, HydratedHymn, openHymnal } from '@/constants/Hymnal';
+import { getSortedHymns, HydratedHymn, openHymnal } from '@/constants/EnglishHymnal';
+import { openYouTubeSearch } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
@@ -68,20 +69,27 @@ export default function HymnalScreen() {
     const isCopyrighted = !item.hasLyricsOrScan;
 
     return (
-      <View style={{ opacity: isCopyrighted ? 0.5 : 1 }}>
-        <MenuCard
-          title={`${item.number}. ${item.title}`}
-          description={
-            isCopyrighted
-              ? labels.copyrighted
-              : item.scriptureReference
-                ? `${labels.externalLink} • ${item.scriptureReference}`
-                : labels.externalLink
-          }
-          icon={isCopyrighted ? 'lock-outline' : 'music-note'}
-          iconColor={isCopyrighted ? theme.colors.outline : theme.colors.primary}
-          rightIcon={isCopyrighted ? undefined : 'open-in-new'}
-          onPress={isCopyrighted ? undefined : () => openHymnal(item.number)}
+      <View style={styles.cardRow}>
+        <View style={[styles.cardWrapper, { opacity: isCopyrighted ? 0.5 : 1 }]}>
+          <MenuCard
+            title={`${item.number}. ${item.title}`}
+            description={
+              isCopyrighted
+                ? labels.copyrighted
+                : item.scriptureReference
+                  ? `${labels.externalLink} • ${item.scriptureReference}`
+                  : labels.externalLink
+            }
+            icon={isCopyrighted ? 'lock-outline' : 'music-note'}
+            iconColor={isCopyrighted ? theme.colors.outline : theme.colors.primary}
+            rightIcon={isCopyrighted ? undefined : 'open-in-new'}
+            onPress={isCopyrighted ? undefined : () => openHymnal(item.number)}
+          />
+        </View>
+        <IconButton
+          icon="youtube"
+          iconColor={(theme.colors as any).brandYoutube}
+          onPress={() => openYouTubeSearch(`SDA Hymnal 1985 ${item.title}`)}
         />
       </View>
     );
@@ -108,7 +116,7 @@ export default function HymnalScreen() {
           onPress={() =>
             router.push({
               pathname: '/you/legal',
-              params: { backTo: '/resources/hymnal' },
+              params: { backTo: '/resources/english-hymnal' },
             } as any)
           }
           style={styles.legalNotice}
@@ -139,6 +147,14 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingBottom: 12,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cardWrapper: {
+    flex: 1,
   },
   searchbar: {
     borderRadius: 8,
