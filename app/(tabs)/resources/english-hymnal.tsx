@@ -20,7 +20,7 @@ const uiLabels = {
     externalLink: 'View on HymnsForWorship.org',
     legalNotice: 'Why are some hymns restricted?',
     legalLink: 'Legal Information',
-    attribution: 'Hymn lyrics and sheet music are provided by HymnsForWorship.org.',
+    attribution: 'Hymn lyrics and sheet music are hosted on HymnsForWorship.org.',
     watchYouTube: 'YouTube',
     readScripture: 'Bible',
   },
@@ -30,7 +30,7 @@ const uiLabels = {
     externalLink: '在 HymnsForWorship.org 查看',
     legalNotice: '為什麼有些詩歌受到限制？',
     legalLink: '法律資訊',
-    attribution: '詩歌歌詞與琴譜由 HymnsForWorship.org 提供。',
+    attribution: '詩歌歌詞與琴譜託管於 HymnsForWorship.org。',
     watchYouTube: 'YouTube',
     readScripture: '查閱聖經',
   },
@@ -40,7 +40,7 @@ const uiLabels = {
     externalLink: '在 HymnsForWorship.org 查看',
     legalNotice: '为什么有些诗歌受到限制？',
     legalLink: '法律信息',
-    attribution: '诗歌歌词与琴谱由 HymnsForWorship.org 提供。',
+    attribution: '诗歌歌词与琴谱托管于 HymnsForWorship.org。',
     watchYouTube: 'YouTube',
     readScripture: '查阅圣经',
   },
@@ -51,7 +51,7 @@ const uiLabels = {
     legalNotice: '¿Por qué algunos himnos están restringidos?',
     legalLink: 'Información legal',
     attribution:
-      'Las letras y partituras de los himnos son proporcionados por HymnsForWorship.org.',
+      'Las letras y partituras de los himnos están alojadas en HymnsForWorship.org.',
     watchYouTube: 'YouTube',
     readScripture: 'Biblia',
   },
@@ -157,6 +157,7 @@ export default function HymnalScreen() {
                   router.push({
                     pathname: '/resources/bible',
                     params: {
+                      translationId: 'BSB',
                       backTo: '/resources/english-hymnal',
                       ...(scripture
                         ? {

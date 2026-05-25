@@ -2,7 +2,7 @@ import { UIStateContext } from '@/components/GlobalHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -103,6 +103,16 @@ export default function BibleReaderScreen() {
   const { menuAnim, setMenuVisible: setGlobalMenuVisible } = useContext(UIStateContext);
   const [menuVisible, setMenuVisible] = useState(true);
 
+  const {
+    bookId: paramBookId,
+    chapter: paramChapter,
+    translationId: paramTransId,
+  } = useLocalSearchParams<{
+    bookId?: string;
+    chapter?: string;
+    translationId?: string;
+  }>();
+
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
   const lastScrollY = useRef(0);
@@ -165,6 +175,40 @@ export default function BibleReaderScreen() {
     };
     saveSelection();
   }, [supportedTranslation.id, book?.id, chapterNum, isPersistenceLoaded]);
+
+  // Reactive effect to sync state with navigation parameters (e.g., from Hymnal)
+  useEffect(() => {
+    if (!isPersistenceLoaded) return;
+
+    if (paramTransId) {
+      const trans = BibleService.SUPPORTED_TRANSLATIONS.find(
+        (t) => t.id === paramTransId,
+      );
+      if (trans && trans.id !== supportedTranslation.id) {
+        setSupportedTranslation(trans);
+      }
+    }
+
+    if (paramBookId) {
+      // If the book is already in our current 'books' list, we can set it immediately.
+      // Otherwise, we set initialBookId so the fetchBooks effect picks it up.
+      const matchingBook = books.find((b) => b.id === paramBookId);
+      if (matchingBook) {
+        if (matchingBook.id !== book?.id) {
+          setBook(matchingBook);
+        }
+      } else {
+        initialBookId.current = paramBookId;
+      }
+    }
+
+    if (paramChapter) {
+      const chap = parseInt(paramChapter, 10);
+      if (!isNaN(chap) && chap !== chapterNum) {
+        setChapterNum(chap);
+      }
+    }
+  }, [paramTransId, paramBookId, paramChapter, isPersistenceLoaded, books]);
 
   // Keep the Bible dock visible at the bottom of the screen at all times.
   // We only animate the height so it "drops" down to the bottom when the tab bar hides.

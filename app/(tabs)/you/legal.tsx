@@ -81,36 +81,21 @@ export default function LegalScreen() {
         variant="titleMedium"
         style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
       >
-        3. External Media
+        3. External Platforms & Services
       </Text>
       <Text
         variant="bodyMedium"
         style={[styles.bodyText, { color: theme.colors.onSurface }]}
       >
-        This application may provide links to search results on external platforms, such
-        as YouTube, to assist users in locating musical performances. Please note that
-        these are external platforms. We do not host, curate, or endorse the specific
-        videos returned in these search results. Users are responsible for ensuring that
-        their playback of such content complies with their local copyright and performance
-        licensing requirements.
-      </Text>
-
-      <Text
-        variant="titleMedium"
-        style={[styles.sectionHeader, { color: theme.colors.onBackground }]}
-      >
-        4. External Services
-      </Text>
-      <Text
-        variant="bodyMedium"
-        style={[styles.bodyText, { color: theme.colors.onSurface }]}
-      >
-        This application may provide links to third-party services (e.g., Spotify, Apple
-        Music) to help users locate musical recordings or musical score. These are
-        external services, and your use of them is subject to their respective terms and
-        conditions. We do not host, curate, or endorse the content provided on these
-        platforms, nor does linking to such services constitute legal authorization for
-        public performance.
+        This application provides links to external platforms and third-party services
+        (e.g., YouTube, Spotify, and HymnsForWorship.org) to assist users in locating
+        musical performances, recordings, or sheet music. Please note that these are
+        external platforms, and your use of them is subject to their respective terms and
+        conditions. We do not host, curate, or endorse the specific content or search
+        results returned by these services. Users are responsible for ensuring that their
+        playback or usage of such content complies with their local copyright and
+        performance licensing requirements; linking to these services does not constitute
+        legal authorization for public performance.
       </Text>
     </ScrollView>
   );
