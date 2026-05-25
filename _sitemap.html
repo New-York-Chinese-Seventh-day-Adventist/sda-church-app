@@ -24,12 +24,13 @@
                 await OneSignal.init({
                   appId: activeAppId,
                   safari_web_id: activeSafariId,
-                  // OneSignal v16 Custom Worker Handshake:
-                  // serviceWorkerPath is the folder, workerPath is the filename.
+                  // v16 Custom Worker Handshake for subfolders:
+                  // serviceWorkerPath must be the folder, workerPath must be the filename.
+                  // This allows the SDK to link to sw.js and trigger the POST API calls.
                   serviceWorkerPath: basePath,
                   workerPath: 'sw.js',
                   serviceWorkerParam: { scope: basePath },
-                  allowLocalhostAsSecureOrigin: true,
+                  allowLocalhostAsSecureOrigin: isDev || window.location.hostname === 'localhost',
                   notifyButton: { enable: false },
                 });
               });</script><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
@@ -526,5 +527,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-1pzkwqh{0%{transform:translateY(100%);}100%{transform:translateY(0%);}}
 @keyframes r-imtty0{0%{opacity:0;}100%{opacity:1;}}
 @keyframes r-q67da2{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
-@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-18bb36d6d86a1b4973766b658b910750.js" defer></script>
+@keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"></div></div><script src="/sda-church-app/_expo/static/js/web/entry-f6dbc446a3f92519564adaa6df491b27.js" defer></script>
 </body></html>

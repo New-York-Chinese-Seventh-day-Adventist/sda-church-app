@@ -24,12 +24,13 @@
                 await OneSignal.init({
                   appId: activeAppId,
                   safari_web_id: activeSafariId,
-                  // OneSignal v16 Custom Worker Handshake:
-                  // serviceWorkerPath is the folder, workerPath is the filename.
+                  // v16 Custom Worker Handshake for subfolders:
+                  // serviceWorkerPath must be the folder, workerPath must be the filename.
+                  // This allows the SDK to link to sw.js and trigger the POST API calls.
                   serviceWorkerPath: basePath,
                   workerPath: 'sw.js',
                   serviceWorkerParam: { scope: basePath },
-                  allowLocalhostAsSecureOrigin: true,
+                  allowLocalhostAsSecureOrigin: isDev || window.location.hostname === 'localhost',
                   notifyButton: { enable: false },
                 });
               });</script><style id="expo-reset">#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}</style><style>
@@ -529,5 +530,5 @@ input::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-web
 @keyframes r-t2lo5v{0%{opacity:1;}100%{opacity:0;}}</style><style id="expo-generated-fonts">@font-face{font-family:"NotoSans-Regular";src:url("/sda-church-app/assets/assets/fonts/NotoSans-Regular.f46b08cc90d994b34b647ae24c46d504.ttf");font-display:auto}
 @font-face{font-family:"NotoSans-Medium";src:url("/sda-church-app/assets/assets/fonts/NotoSans-Medium.a1311858ffd88b69aa5eadafd8f5c164.ttf");font-display:auto}
 @font-face{font-family:"NotoSans-Bold";src:url("/sda-church-app/assets/assets/fonts/NotoSans-Bold.28c191ce33ca36e0f75106491846de68.ttf");font-display:auto}
-@font-face{font-family:"material-community";src:url("/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf");font-display:auto}</style><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Regular.f46b08cc90d994b34b647ae24c46d504.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Medium.a1311858ffd88b69aa5eadafd8f5c164.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Bold.28c191ce33ca36e0f75106491846de68.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf" as="font" crossorigin="" /><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"><!--$--><!--/$--></div></div><script src="/sda-church-app/_expo/static/js/web/entry-18bb36d6d86a1b4973766b658b910750.js" defer></script>
+@font-face{font-family:"material-community";src:url("/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf");font-display:auto}</style><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Regular.f46b08cc90d994b34b647ae24c46d504.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Medium.a1311858ffd88b69aa5eadafd8f5c164.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/NotoSans-Bold.28c191ce33ca36e0f75106491846de68.ttf" as="font" crossorigin="" /><link rel="preload" href="/sda-church-app/assets/assets/fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf" as="font" crossorigin="" /><script type="module">globalThis.__EXPO_ROUTER_HYDRATE__=true;</script><link rel="icon" href="/sda-church-app/favicon.ico" /></head><body  style="background-color:transparent"><div id="root"><div class="css-g5y9jx r-13awgt0"><!--$--><!--/$--></div></div><script src="/sda-church-app/_expo/static/js/web/entry-f6dbc446a3f92519564adaa6df491b27.js" defer></script>
 </body></html>
