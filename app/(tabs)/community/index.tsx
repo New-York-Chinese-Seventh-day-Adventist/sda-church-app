@@ -96,13 +96,23 @@ export default function CommunityScreen() {
             icon="church"
             iconColor={theme.colors.tertiary}
             style={{ marginBottom: 12 }}
-            onPress={() => router.push('/community/worship')}
+            onPress={() =>
+              router.push({
+                pathname: '/community/worship',
+                params: { backTo: '/community' },
+              } as any)
+            }
           />
           <MenuCard
             title={labels.fellowship}
             icon="account-group"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/community/fellowship')}
+            onPress={() =>
+              router.push({
+                pathname: '/community/fellowship',
+                params: { backTo: '/community' },
+              } as any)
+            }
           />
         </List.Section>
 
@@ -117,7 +127,12 @@ export default function CommunityScreen() {
             icon="clipboard-text-outline"
             iconColor={theme.colors.tertiary}
             style={{ marginBottom: 12 }}
-            onPress={() => router.push('/community/roster')}
+            onPress={() =>
+              router.push({
+                pathname: '/community/roster',
+                params: { backTo: '/community' },
+              } as any)
+            }
           />
           <MenuCard
             title={labels.quarterlySchedule}
@@ -149,7 +164,12 @@ export default function CommunityScreen() {
             title={labels.prayerRequest}
             icon="hands-pray"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/community/prayer')}
+            onPress={() =>
+              router.push({
+                pathname: '/community/prayer',
+                params: { backTo: '/community' },
+              } as any)
+            }
           />
         </List.Section>
 

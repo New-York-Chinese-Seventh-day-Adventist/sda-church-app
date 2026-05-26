@@ -2,7 +2,7 @@ import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import { DocumentStyles } from '@/styles/DocumentStyles';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Card, Text } from 'react-native-paper';
@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BaptismScreen() {
   const { language } = useContext(LanguageContext);
+  const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
@@ -79,10 +80,13 @@ export default function BaptismScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: labels.title }} />
+      <Stack.Screen options={{ title: labels.title, backTo } as any} />
       <ScrollView
         style={DocumentStyles.container}
-        contentContainerStyle={{ paddingTop: headerHeight, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingTop: headerHeight,
+          paddingBottom: insets.bottom + 50,
+        }}
       >
         <View style={DocumentStyles.section}>
           <Text

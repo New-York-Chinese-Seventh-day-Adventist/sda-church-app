@@ -47,11 +47,27 @@ export const openSpotifyPodcast = async () => {
   );
 };
 
+export const openZoomClass = async () => {
+  return openURL(
+    'https://us06web.zoom.us/j/2541879535?pwd=Rmhsa0pFK3hQVTRHMzVqQ2swZlBodz09',
+    'Error',
+    'Could not open the Zoom class link.',
+  );
+};
+
 export const openSabbathStream = async () => {
   return openURL(
     'https://www.youtube.com/@newyorkchinesesdachurch1334/streams',
     'Error',
     'Could not open the YouTube livestream.',
+  );
+};
+
+export const openYouTubeSearch = (query: string) => {
+  return openURL(
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+    'Error',
+    'Could not open the YouTube search results.',
   );
 };
 
@@ -84,6 +100,20 @@ export const openSabbathSchool = (language: SupportedLanguage) => {
   );
 };
 
+export const openChineseHymnalIos = () =>
+  openURL(
+    'https://apps.apple.com/us/app/506%E8%AE%9A%E7%BE%8E%E8%A9%A9-traditional-chinese/id6498894032',
+    'Error',
+    'Could not open the App Store link.',
+  );
+
+export const openChineseHymnalAndroid = () =>
+  openURL(
+    'https://play.google.com/store/apps/details?id=org.chumadventist.hymnal506.next',
+    'Error',
+    'Could not open the Google Play link.',
+  );
+
 /**
  * Opens a given address in the Google Maps app or browser.
  * @param address The formatted address string to search for.
@@ -100,16 +130,6 @@ export const openBeliefs = () =>
   openURL('https://adventist.org/beliefs#official-beliefs');
 export const openGNYC = () => openURL('https://gnyc.org/');
 export const openAtlanticUnion = () => openURL('https://atlantic-union.org/');
-
-/**
- * Points directly to the official 1985 SDA index handled by Hymnary.
- * This is a 100% safe, legal redirect structure.
- */
-export const openHymnal = (hymnNumber?: string | number) => {
-  const hId =
-    typeof hymnNumber === 'string' || typeof hymnNumber === 'number' ? hymnNumber : '';
-  return openURL(`https://hymnary.org/hymn/SDAH1985/${hId}`);
-};
 
 export const openPhone = (phone: string) => {
   const cleanedPhone = phone.replace(/[^\d+]/g, '');

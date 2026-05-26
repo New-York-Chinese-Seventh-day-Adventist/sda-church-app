@@ -152,7 +152,10 @@ export default function AboutChurchHistoryScreen() {
       <Stack.Screen options={{ title: labels.title }} />
       <ScrollView
         style={DocumentStyles.container}
-        contentContainerStyle={{ paddingTop: headerHeight }}
+        contentContainerStyle={{
+          paddingTop: headerHeight,
+          paddingBottom: insets.bottom + 50,
+        }}
       >
         <View style={DocumentStyles.header}>
           <Image
@@ -455,8 +458,6 @@ export default function AboutChurchHistoryScreen() {
             </Card.Actions>
           </Card>
         </View>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
     </>
   );

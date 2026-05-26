@@ -20,6 +20,10 @@ const allLabels = {
     languageSub: 'Change app language',
     contact: 'Connect',
     contactSub: 'Contact information and locations',
+    privacy: 'Privacy Policy',
+    privacySub: 'Legal information (English only)',
+    legal: 'Legal Disclaimer',
+    legalSub: 'Terms of use and data attribution (English only)',
   },
   zh: {
     settings: '設定',
@@ -29,6 +33,10 @@ const allLabels = {
     languageSub: '更改應用程式語言',
     contact: '聯繫',
     contactSub: '聯繫方式和地點',
+    privacy: '隱私政策',
+    privacySub: '法律資訊 (僅限英文)',
+    legal: '法律聲明',
+    legalSub: '使用條款與資料歸屬 (僅限英文)',
   },
   'zh-cn': {
     settings: '设置',
@@ -38,6 +46,10 @@ const allLabels = {
     languageSub: '更改应用语言',
     contact: '联系',
     contactSub: '联系方式和地点',
+    privacy: '隐私政策',
+    privacySub: '法律信息 (仅限英文)',
+    legal: '法律声明',
+    legalSub: '使用条款与数据归属 (仅限英文)',
   },
   es: {
     settings: 'Ajustes',
@@ -47,6 +59,10 @@ const allLabels = {
     languageSub: 'Cambiar idioma de la aplicación',
     contact: 'Conectar',
     contactSub: 'Información de contacto y ubicaciones',
+    privacy: 'Política de Privacidad',
+    privacySub: 'Información legal (solo en inglés)',
+    legal: 'Aviso Legal',
+    legalSub: 'Términos de uso y atribución de datos (solo en inglés)',
   },
 };
 
@@ -94,7 +110,36 @@ export default function YouScreen() {
             description={labels.languageSub}
             icon="translate"
             iconColor={theme.colors.tertiary}
-            onPress={() => router.push('/you/language' as any)}
+            onPress={() =>
+              router.push({
+                pathname: '/you/language',
+                params: { backTo: '/you' },
+              } as any)
+            }
+          />
+          <MenuCard
+            title={labels.privacy}
+            description={labels.privacySub}
+            icon="shield-account"
+            iconColor={theme.colors.secondary}
+            onPress={() =>
+              router.push({
+                pathname: '/you/privacy',
+                params: { backTo: '/you' },
+              } as any)
+            }
+          />
+          <MenuCard
+            title={labels.legal}
+            description={labels.legalSub}
+            icon="file-document-outline"
+            iconColor={theme.colors.secondary}
+            onPress={() =>
+              router.push({
+                pathname: '/you/legal',
+                params: { backTo: '/you' },
+              } as any)
+            }
           />
         </List.Section>
 

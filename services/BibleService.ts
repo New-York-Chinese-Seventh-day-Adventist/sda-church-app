@@ -60,6 +60,105 @@ export const SELAH_PATTERNS: Record<string, RegExp> = {
     /^\s*[\uff08(]?\s*(Higgaion(?:[.,;!?]?\s+Selah)?|Selah)\s*[.,;!?]?\s*[\uff09)]?\s*[.,;!?]?\s*$/i,
 };
 
+/**
+ * Maps human-readable book names to USFM 3-letter IDs.
+ */
+const BOOK_NAME_TO_ID: Record<string, string> = {
+  Genesis: 'GEN',
+  Exodus: 'EXO',
+  Leviticus: 'LEV',
+  Numbers: 'NUM',
+  Deuteronomy: 'DEU',
+  Joshua: 'JOS',
+  Judges: 'JDG',
+  Ruth: 'RUT',
+  '1 Samuel': '1SA',
+  '2 Samuel': '2SA',
+  '1 Kings': '1KI',
+  '2 Kings': '2KI',
+  '1 Chronicles': '1CH',
+  '2 Chronicles': '2CH',
+  Ezra: 'EZR',
+  Nehemiah: 'NEH',
+  Esther: 'EST',
+  Job: 'JOB',
+  Psalm: 'PSA',
+  Psalms: 'PSA',
+  Proverbs: 'PRO',
+  Ecclesiastes: 'ECC',
+  'Song of Solomon': 'SNG',
+  Isaiah: 'ISA',
+  Jeremiah: 'JER',
+  Lamentations: 'LAM',
+  Ezekiel: 'EZK',
+  Daniel: 'DAN',
+  Hosea: 'HOS',
+  Joel: 'JOL',
+  Amos: 'AMO',
+  Obadiah: 'OBA',
+  Jonah: 'JON',
+  Micah: 'MIC',
+  Nahum: 'NAH',
+  Habakkuk: 'HAB',
+  Zephaniah: 'ZEP',
+  Haggai: 'HAG',
+  Zechariah: 'ZEC',
+  Malachi: 'MAL',
+  Matthew: 'MAT',
+  Mark: 'MRK',
+  Luke: 'LUK',
+  John: 'JHN',
+  Acts: 'ACT',
+  Romans: 'ROM',
+  '1 Corinthians': '1CO',
+  '2 Corinthians': '2CO',
+  Galatians: 'GAL',
+  Ephesians: 'EPH',
+  Philippians: 'PHP',
+  Colossians: 'COL',
+  '1 Thessalonians': '1TH',
+  '2 Thessalonians': '2TH',
+  '1 Timothy': '1TI',
+  '2 Timothy': '2TI',
+  Titus: 'TIT',
+  Philemon: 'PHM',
+  Hebrews: 'HEB',
+  James: 'JAS',
+  '1 Peter': '1PE',
+  '2 Peter': '2PE',
+  '1 John': '1JN',
+  '2 John': '2JN',
+  '3 John': '3JN',
+  Jude: 'JUD',
+  Revelation: 'REV',
+};
+
+/**
+ * Parses a scripture reference string into USFM book ID and chapter.
+ * Supports formats like "Psalm 103:2-5", "1 Timothy 1:17", "Psalm 103".
+ */
+export const parseScriptureReference = (
+  ref?: string,
+): { bookId: string; chapter: number } | null => {
+  if (!ref) return null;
+
+  // Pattern: [Book Name] [Chapter][:Verse[-EndVerse]]
+  // Group 1: Book Name (allows digits/spaces for "1 Timothy")
+  // Group 2: Chapter
+  const regex = /^([\d\s]*[a-zA-Z\s]+)\s+(\d+)(?::\d+(?:-\d+)?)?$/;
+  const match = ref.trim().match(regex);
+
+  if (!match) return null;
+
+  const name = match[1].trim();
+  const chapter = parseInt(match[2], 10);
+
+  const bookId = BOOK_NAME_TO_ID[name];
+  if (!bookId) return null;
+
+  return { bookId, chapter };
+};
+
 export interface Translation {
   id: string;
   name: string;

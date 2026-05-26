@@ -320,7 +320,10 @@ export default function AboutSDAScreen() {
       <Stack.Screen options={{ title: labels.title }} />
       <ScrollView
         style={DocumentStyles.container}
-        contentContainerStyle={{ paddingTop: headerHeight }}
+        contentContainerStyle={{
+          paddingTop: headerHeight,
+          paddingBottom: insets.bottom + 50,
+        }}
       >
         <View style={DocumentStyles.header}>
           <Image
@@ -448,8 +451,6 @@ export default function AboutSDAScreen() {
             {labels.learnMore}
           </Button>
         </View>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
     </>
   );

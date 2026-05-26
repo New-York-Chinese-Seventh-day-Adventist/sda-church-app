@@ -123,7 +123,10 @@ export default function GiveScreen() {
       <Stack.Screen options={{ title: labels.title }} />
       <ScrollView
         style={DocumentStyles.container}
-        contentContainerStyle={{ paddingTop: headerHeight, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingTop: headerHeight,
+          paddingBottom: insets.bottom + 50,
+        }}
       >
         <View style={DocumentStyles.section}>
           <Card

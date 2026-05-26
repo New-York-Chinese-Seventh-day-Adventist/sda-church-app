@@ -64,6 +64,19 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: 'English Hymnal',
       keywords: ['songs', 'lyrics', 'music', 'sing', 'worship', 'praise'],
     },
+    chineseHymnal: {
+      title: 'Chinese Hymnal',
+      keywords: [
+        '506',
+        'songs',
+        'lyrics',
+        'music',
+        'praise',
+        'worship',
+        'traditional',
+        'simplified',
+      ],
+    },
     aboutSDA: {
       title: 'About Denomination',
       keywords: ['sda', 'adventist', 'beliefs', 'doctrine', '28'],
@@ -168,6 +181,10 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: '英文詩歌本',
       keywords: ['讚美詩', '歌詞', '音樂', '敬拜', 'hymnal', 'music'],
     },
+    chineseHymnal: {
+      title: '506 讚美詩',
+      keywords: ['詩歌', '歌詞', '音樂', '506', '讚美詩', 'hymnal', 'chinese'],
+    },
     aboutSDA: {
       title: '關於教派',
       keywords: ['復臨安息日會', '信仰', '教義', '28條', 'sda'],
@@ -271,6 +288,10 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
     hymnal: {
       title: '英文诗歌本',
       keywords: ['赞美诗', '歌词', '音乐', '敬拜', 'hymnal', 'music'],
+    },
+    chineseHymnal: {
+      title: '506 赞美诗',
+      keywords: ['诗歌', '歌词', '音乐', '506', '赞美诗', 'hymnal', 'chinese'],
     },
     aboutSDA: {
       title: '关于教派',
@@ -381,6 +402,10 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       title: 'Himnario en Inglés',
       keywords: ['cantos', 'letras', 'música', 'cantar', 'adoración'],
     },
+    chineseHymnal: {
+      title: 'Himnario Chino',
+      keywords: ['cantos', 'letras', 'música', 'chino', '506'],
+    },
     aboutSDA: {
       title: 'Sobre la Denominación',
       keywords: ['adventista', 'creencias', 'doctrina', '28', 'sda'],
@@ -468,13 +493,18 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
     {
       ...labels.hymnal,
       icon: 'music-note',
-      route: '/resources',
+      route: '/resources/english-hymnal',
+    },
+    {
+      ...labels.chineseHymnal,
+      icon: 'music-note',
+      route: '/resources/hymnal-selection',
     },
     { ...labels.give, icon: 'gift', route: '/home/give' },
     { ...labels.darkMode, icon: 'theme-light-dark', route: '/you' },
     { ...labels.language, icon: 'translate', route: '/you/language' },
-    { ...labels.aboutSDA, icon: 'information', route: '/home/about_sda' },
-    { ...labels.aboutHistory, icon: 'history', route: '/home/about_my_church' },
+    { ...labels.aboutSDA, icon: 'information', route: '/home/about-sda' },
+    { ...labels.aboutHistory, icon: 'history', route: '/home/about-my-church' },
     { ...labels.connect, icon: 'email', route: '/home/contact' },
     { ...labels.team, icon: 'account-multiple', route: '/home/team' },
     { ...labels.bulletin, icon: 'file-document-outline', route: '/home/bulletin' },

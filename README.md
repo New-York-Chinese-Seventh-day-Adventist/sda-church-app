@@ -104,3 +104,62 @@ is strictly prohibited.**
 
 Please refer to the [Full Branding Policy](docs/LEGAL_BRANDING.md) for detailed usage
 permissions and restrictions.
+
+---
+
+## Privacy Policy
+
+### 1. Introduction
+
+This application values your privacy. We do not host, store, or manage any personal
+identifiable information on our own servers. This section outlines how third-party
+services handle data to keep the application functional.
+
+### 2. Hosting (GitHub Pages)
+
+This web application is deployed using GitHub Pages. GitHub may collect basic server logs
+and IP addresses for security, debugging, and operational maintenance.
+
+### 3. Traffic Management (Cloudflare)
+
+We use Cloudflare to manage domain traffic and protect the application from common web
+threats. Cloudflare may process basic connection data (such as IP addresses) to identify
+malicious traffic and optimize performance. No user-level activity within the app is
+tracked by this service.
+
+### 4. External Services
+
+This application provides links to external platforms, such as YouTube, Spotify, and
+HymnsForWorship.org. When you interact with these links, you are subject to the privacy
+policies of those third-party providers. These services may collect data (such as IP
+addresses) as part of their standard operations. We do not have access to, nor do we
+store, any data collected by these external platforms.
+
+---
+
+## Legal Disclaimer
+
+### 1. Usage of External Resources
+
+This app links to HymnsForWorship.org for hymn resources. Please be aware that some hymns
+are copyrighted. When you follow these links, you are subject to HymnsForWorship.org’s
+terms and conditions. You may be prompted to accept their terms before viewing certain
+content. Please respect copyright laws and do not attempt to bypass these requirements.
+
+### 2. Data Attribution
+
+This application provides access to non-copyrightable metadata (hymn titles and index
+numbers) to facilitate navigation. We do not host or reproduce protected musical notation
+or lyrics. All external content is accessed through direct links to authorized third-party
+providers.
+
+### 3. External Platforms & Services
+
+This application provides links to external platforms and third-party services (e.g.,
+YouTube, Spotify, HymnsForWorship.org) to assist users in locating musical performances,
+recordings, or sheet music. Please note that these are external platforms, and your use of
+them is subject to their respective terms and conditions. We do not host, curate, or
+endorse the specific content or search results returned by these services. Users are
+responsible for ensuring that their playback or usage of such content complies with their
+local copyright and performance licensing requirements; linking to these services does not
+constitute legal authorization for public performance.
