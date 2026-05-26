@@ -262,7 +262,7 @@ export default function HymnalScreen() {
         renderItem={renderHymnItem}
         contentContainerStyle={[
           NavigationStyles.contentContainer,
-          { paddingTop: 0, paddingBottom: insets.bottom + 20 },
+          { paddingTop: 0, paddingBottom: insets.bottom + 50 },
         ]}
       />
     </View>
