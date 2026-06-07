@@ -1,11 +1,11 @@
 import { LanguageContext } from '@/constants/LanguageContext';
 import {
   ALL_SEARCH_LABELS,
-  BIBLE_REF_REGEX,
   getSearchableItems,
   getSearchRoute,
   getSearchSubtitle,
   isSearchMatch,
+  resolveBibleReference,
   SearchableItem,
 } from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
@@ -58,6 +58,8 @@ export const GlobalHeader = (props: any) => {
   // In Expo Router, the (tabs) group and the tab names form the first 1-2 segments.
   const isPillarRoot = segments.length <= 2;
 
+  const isBiblePage = segments.includes('bible');
+  const isHymnalPage = segments.includes('english-hymnal');
   const isSubPage = !isPillarRoot;
 
   const title = props.options?.title;
@@ -69,11 +71,13 @@ export const GlobalHeader = (props: any) => {
   // Centralized list of everything searchable in the app
   const searchableItems = getSearchableItems(language);
 
-  const filtered = searchableItems.filter((item) => isSearchMatch(item, searchQuery));
+  const filtered = searchableItems.filter((item) =>
+    isSearchMatch(item, searchQuery, language),
+  );
 
   // Deduplicate: If the query is a Bible reference, we only show the primary "Holy Bible" card
   // as the smart gateway, hiding individual book entries to prevent redundant results.
-  const isBibleRef = BIBLE_REF_REGEX.test(searchQuery.trim());
+  const isBibleRef = !!resolveBibleReference(searchQuery, language);
   const deduplicated = isBibleRef
     ? filtered.filter((item) => !item.isBibleBook || item.route === '/resources/bible')
     : filtered;
@@ -150,7 +154,7 @@ export const GlobalHeader = (props: any) => {
             }}
           />
         )}
-        {isSubPage ? (
+        {isSubPage && !isBiblePage && !isHymnalPage ? (
           <Appbar.Content
             title={title}
             titleStyle={{ color: theme.colors.onSurface, fontWeight: 'bold' }}
@@ -176,7 +180,8 @@ export const GlobalHeader = (props: any) => {
                 elevation: 0,
                 borderRadius: 24,
                 height: 44,
-                marginHorizontal: 12,
+                marginRight: 12,
+                marginLeft: 12,
               }}
               inputStyle={{
                 minHeight: 0,

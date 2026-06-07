@@ -1,3 +1,4 @@
+import { getSortedHymns } from '@/constants/EnglishHymnal';
 import { SupportedLanguage } from '@/constants/LanguageContext';
 import * as BibleService from '@/services/BibleService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,14 +10,30 @@ export interface SearchableItem {
   route: string;
   subtitle?: string;
   isBibleBook?: boolean;
+  isHymn?: boolean;
 }
+
+/**
+ * Punctuation characters used as separators between chapter and verse.
+ * Supports standard ASCII colon and full-width variants (e.g. Chinese/Spanish).
+ */
+export const BIBLE_COLONS = [':', '：'];
+const BIBLE_COLON_CLASS = BIBLE_COLONS.join('');
 
 /**
  * Regex to detect if user input looks like a Bible reference (Book Chapter:Verse).
  * Supports: "John", "John ", "John 3", "John 3:16", "1 John 2", etc.
  */
-export const BIBLE_REF_REGEX =
-  /^(?:[1-3]\s*)?[a-zA-Z\u00C0-\u017F\u4e00-\u9fa5]+(?:\s+[a-zA-Z\u00C0-\u017F\u4e00-\u9fa5]+)*\s*\d*\s*(?::\s*\d*)?\s*$/;
+export const BIBLE_REF_REGEX = new RegExp(
+  `^(?:[1-3]\\s*)?[a-zA-Z\\u00C0-\\u017F\\u4e00-\\u9fa5]+(?:\\s+[a-zA-Z\\u00C0-\\u017F\\u4e00-\\u9fa5]+)*\\s*\\d*\\s*(?:[${BIBLE_COLON_CLASS}]\\s*\\d*)?\\s*$`,
+);
+
+/**
+ * Regex to parse coordinates (chapter and optional verse) from a potential Bible reference.
+ */
+const BIBLE_COORDINATES_REGEX = new RegExp(
+  `^(.*?)\\s*(\\d+)\\s*(?:[${BIBLE_COLON_CLASS}]\\s*(\\d+))?\\s*$`,
+);
 
 /**
  * Resolves a book ID and coordinates from a raw search query.
@@ -27,7 +44,7 @@ export const resolveBibleReference = (query: string, language: string) => {
   if (!q) return null;
 
   // Try to match "Book Chapter:Verse" or "Book Chapter"
-  const match = q.match(/^(.*?)\s*(\d+)\s*(?::\s*(\d+))?\s*$/);
+  const match = q.match(BIBLE_COORDINATES_REGEX);
 
   let bookPart: string;
   let chapter: number = 1;
@@ -64,7 +81,11 @@ export const resolveBibleReference = (query: string, language: string) => {
  * Validates if a searchable item matches the current query, with special handling
  * for Bible books to allow coordinates (chapters/verses) to be typed.
  */
-export const isSearchMatch = (item: SearchableItem, query: string): boolean => {
+export const isSearchMatch = (
+  item: SearchableItem,
+  query: string,
+  language: string,
+): boolean => {
   const q = query.toLowerCase();
   const trimmedQ = q.trim();
   if (!trimmedQ) return false;
@@ -73,12 +94,21 @@ export const isSearchMatch = (item: SearchableItem, query: string): boolean => {
   if (item.title.toLowerCase().includes(trimmedQ)) return true;
   if (item.keywords.some((k) => k.toLowerCase().includes(trimmedQ))) return true;
 
+  // 1b. Specific logic for Hymn numbers (e.g. searching "123" should match Hymn 123)
+  if (item.isHymn && /^\d+$/.test(trimmedQ)) {
+    const hymnNum = item.title.split('.')[0];
+    if (hymnNum === trimmedQ) return true;
+  }
+
   // 2. Bible-specific "Smart Parsing":
   // If the item is a Bible book and the query looks like a reference starting with this book.
   if (item.isBibleBook && BIBLE_REF_REGEX.test(trimmedQ)) {
-    // If this is the main 'Holy Bible' card, it should stay visible for any bible reference
-    // to act as the primary gateway for coordinate entry.
-    if (item.route === '/resources/bible') return true;
+    // If this is the main 'Holy Bible' card, we only show it if the reference
+    // can actually be resolved to a specific book. This prevents random strings
+    // like "fff" from triggering the Bible smart gateway.
+    if (item.route === '/resources/bible') {
+      return !!resolveBibleReference(trimmedQ, language);
+    }
 
     // For specific book cards, check if the query starts with one of the book's keywords
     // (e.g., "John" matches "John 3").
@@ -92,7 +122,7 @@ export const isSearchMatch = (item: SearchableItem, query: string): boolean => {
         return (
           !nextChar ||
           nextChar === ' ' ||
-          nextChar === ':' ||
+          BIBLE_COLONS.includes(nextChar) ||
           (nextChar >= '0' && nextChar <= '9')
         );
       }
@@ -123,12 +153,16 @@ export const getSearchSubtitle = (
   query: string,
   language: string,
 ): string | undefined => {
+  const labels = ALL_SEARCH_LABELS[language] || ALL_SEARCH_LABELS.en;
+
   if (item.isBibleBook && BIBLE_REF_REGEX.test(query)) {
-    const labels = ALL_SEARCH_LABELS[language] || ALL_SEARCH_LABELS.en;
-    if (labels.goStraightTo) {
-      return labels.goStraightTo.replace('{q}', query.trim());
-    }
+    return labels.goStraightTo?.replace('{q}', query.trim());
   }
+
+  if (item.isHymn) {
+    return labels.goToHymn?.replace('{q}', item.title);
+  }
+
   return item.subtitle;
 };
 
@@ -674,6 +708,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
   en: {
     searchPlaceholder: 'Search app...',
     goStraightTo: 'Go straight to {q}',
+    goToHymn: 'Go directly to hymn',
     home: {
       title: 'Home',
       keywords: ['welcome', 'start', 'pulse', 'livestream', 'happening'],
@@ -796,6 +831,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
   zh: {
     searchPlaceholder: '搜尋...',
     goStraightTo: '直接前往 {q}',
+    goToHymn: '直接前往讚美詩',
     home: {
       title: '首頁',
       keywords: ['歡迎', '開始', 'home', '脈搏', '直播'],
@@ -905,6 +941,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
   'zh-cn': {
     searchPlaceholder: '搜索...',
     goStraightTo: '直接前往 {q}',
+    goToHymn: '直接前往赞美诗',
     home: {
       title: '首页',
       keywords: ['欢迎', '开始', 'home', '脉搏', '直播'],
@@ -1015,6 +1052,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
   es: {
     searchPlaceholder: 'Buscar...',
     goStraightTo: 'Ir directamente a {q}',
+    goToHymn: 'Ir directamente al himno',
     home: {
       title: 'Inicio',
       keywords: ['bienvenido', 'comenzar', 'home', 'pulso', 'en vivo'],
@@ -1202,5 +1240,21 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
     },
   );
 
-  return [...baseItems, ...bibleBooks];
+  // Dynamically add all English hymns to the search list
+  // This allows the unified search bar to act as the primary filter for the hymnal.
+  const englishHymns: SearchableItem[] = getSortedHymns('en').map((h) => ({
+    title: `${h.number}. ${h.title}`,
+    subtitle: h.scriptureReference,
+    keywords: [
+      h.number.toString(),
+      h.title,
+      h.scriptureReference || '',
+      labels.hymnal?.title || 'Hymnal',
+    ],
+    icon: 'music-note',
+    route: `/resources/english-hymnal?hymnNum=${h.number}&backTo=/resources`,
+    isHymn: true,
+  }));
+
+  return [...baseItems, ...bibleBooks, ...englishHymns];
 };

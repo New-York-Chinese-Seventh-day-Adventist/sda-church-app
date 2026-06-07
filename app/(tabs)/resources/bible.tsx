@@ -1267,7 +1267,6 @@ export default function BibleReaderScreen() {
                 {labels.shareAction}
               </Button>
             </View>
-            <Divider />
           </View>
         )}
 
@@ -1358,7 +1357,7 @@ export default function BibleReaderScreen() {
           onDismiss={closeModal}
           contentContainerStyle={[
             ReaderStyles.modalContent,
-            { backgroundColor: theme.colors.surface },
+            { backgroundColor: theme.colors.background },
           ]}
         >
           <View style={ReaderStyles.modalInner}>
