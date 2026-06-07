@@ -483,16 +483,25 @@ export default function BibleReaderScreen() {
     ) as BibleService.ChapterVerse;
     if (!verse) return '';
 
-    return verse.content
-      .map((item) => {
-        if (typeof item === 'string') return item;
-        if (typeof item === 'object' && item !== null && 'text' in item) return item.text;
-        return '';
-      })
-      .join('')
-      .replace(/\n/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    let result = '';
+    verse.content.forEach((item, i) => {
+      const textValue = typeof item === 'string' ? item : (item as any).text || '';
+      if (textValue) {
+        const prevItem = i > 0 ? verse.content[i - 1] : null;
+        const followsFootnote = !!(
+          prevItem &&
+          typeof prevItem === 'object' &&
+          'noteId' in prevItem
+        );
+
+        if (followsFootnote && !BibleService.startsWithPunctuationOrSpace(textValue)) {
+          result += ' ';
+        }
+        result += textValue;
+      }
+    });
+
+    return result.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
   };
 
   const handleShare = async () => {
