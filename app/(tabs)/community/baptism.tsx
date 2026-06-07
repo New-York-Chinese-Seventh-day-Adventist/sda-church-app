@@ -1,11 +1,19 @@
+import {
+  BAPTISM_MEANING_DATA,
+  BAPTISMAL_VOWS,
+  CHURCH_LIFE_PILLARS,
+  DIETARY_PRINCIPLES,
+  JOINING_CHURCH,
+  TEN_COMMANDMENTS,
+} from '@/constants/DoctrineData';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import { DocumentStyles } from '@/styles/DocumentStyles';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Card, Text } from 'react-native-paper';
+import { Card, List, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BaptismScreen() {
@@ -15,68 +23,76 @@ export default function BaptismScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
+  const [expanded, setExpanded] = useState<string | null>(null);
+
   const allLabels = {
     en: {
       title: 'Joining the Church',
-      baptismHeader: 'Baptism',
+      baptismHeader: 'The Meaning of Baptism',
       baptismQuote: '“Whoever believes and is baptized will be saved.”',
       baptismRef: 'Mark 16:16',
-      processTitle: 'The Path to Baptism',
-      processDesc:
-        'To join through baptism, we invite you to study our biblical doctrines first. Afterward, you will make a public declaration of faith and submit an application for the church to arrange your baptismal service.',
-      professionTitle: 'Profession of Faith',
-      professionDesc:
-        'Brothers and sisters who have already been baptized in another Christian denomination may join our community through a public profession of faith.',
-      transferTitle: 'Membership Transfer',
-      transferDesc:
-        'If you are currently a member of another Seventh-day Adventist congregation, you can become a part of our local church through a formal membership transfer.',
+      vowsTitle: 'Baptismal Vows',
+      commandmentsTitle: 'The Ten Commandments',
+      lifestyleTitle: 'Adventist Lifestyle',
+      commitmentsHeader: 'Fundamental Resources',
     },
     zh: {
       title: '加入教會',
-      baptismHeader: '受洗事項',
+      baptismHeader: '受洗的意義',
       baptismQuote: '「信而受洗的必然得救。」',
       baptismRef: '馬可福音 16:16',
-      processTitle: '受洗程序',
-      processDesc:
-        '受洗前需要先學習我們的信仰教義，然後公開宣告信仰，申請加入教會，我們將為您安排受洗。',
-      professionTitle: '宣告認信',
-      professionDesc:
-        '已經在其他的教會受洗的弟兄姐妹，可以通過宣告信仰的方式，加入教會。',
-      transferTitle: '會籍轉移',
-      transferDesc: '其他教會的 SDA 教友，可以通過教友的會籍轉移，轉移到我們的教會。',
+      baptismIntro: '受洗之時，需信奉持守耶穌所傳的真道。',
+      vowsTitle: '浸禮約言',
+      commandmentsTitle: '十條誡命',
+      lifestyleTitle: '安息日會的生活方式',
+      commitmentsHeader: '信仰與生活根基',
     },
     'zh-cn': {
       title: '加入教会',
-      baptismHeader: '受洗事项',
+      baptismHeader: '受洗的意义',
       baptismQuote: '“信而受洗的必然得救。”',
       baptismRef: '马可福音 16:16',
-      processTitle: '受洗程序',
-      processDesc:
-        '受洗前需要先学习我们的信仰教义，然后公开宣告信仰，申请加入教会，我们将为您安排受洗。',
-      professionTitle: '宣告认信',
-      professionDesc:
-        '已经在其他的教会受洗的弟兄姐妹，可以通过宣告信仰的方式，加入教会。',
-      transferTitle: '会籍转移',
-      transferDesc: '其他教会的 SDA 教友，可以通过教友的会籍转移，转移到我们的教会。',
+      baptismIntro: '受洗之时，需信奉持守耶稣所传的真道。',
+      baptismQuote: '“信而受洗的必然得救。”',
+      baptismRef: '马可福音 16:16',
+      vowsTitle: '浸礼约言',
+      commandmentsTitle: '十条诫命',
+      lifestyleTitle: '安息日会的生活方式',
+      commitmentsHeader: '信仰与生活根基',
     },
     es: {
       title: 'Unirse a la Iglesia',
-      baptismHeader: 'Bautismo',
+      baptismHeader: 'El Significado del Bautismo',
       baptismQuote: '“El que creyere y fuere bautizado, será salvo.”',
       baptismRef: 'Marcos 16:16',
-      processTitle: 'El Camino al Bautismo',
-      processDesc:
-        'Para unirse a través del bautismo, le invitamos a estudiar primero nuestras doctrinas bíblicas. Después, hará una declaración pública de fe y presentará una solicitud para que la iglesia organice su servicio bautismal.',
-      professionTitle: 'Profesión de Fe',
-      professionDesc:
-        'Los hermanos y hermanas que ya han sido bautizados en otra denominación cristiana pueden unirse a nuestra comunidad a través de una profesión pública de fe.',
-      transferTitle: 'Traslado de Membresía',
-      transferDesc:
-        'Si actualmente es miembro de otra congregación Adventista del Séptimo Día, puede formar parte de nuestra iglesia local mediante un traslado formal de membresía.',
+      baptismIntro:
+        'Al ser bautizado, uno debe creer, confesar, mantener y observar el verdadero camino enseñado por Jesús.',
+      pillarsTitle: 'Cuatro Pilares de la Vida Eclesial',
+      vowsTitle: 'Votos Bautismales',
+      commandmentsTitle: 'Los Diez Mandamientos',
+      lifestyleTitle: 'Estilo de Vida Adventista',
+      commitmentsHeader: 'Fundamental Resources',
     },
   };
 
-  const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
+  const langKey = (language as keyof typeof allLabels) || 'en';
+  const labels = allLabels[langKey];
+
+  const joining =
+    JOINING_CHURCH[langKey as keyof typeof JOINING_CHURCH] || JOINING_CHURCH.en;
+  const pillars =
+    CHURCH_LIFE_PILLARS[langKey as keyof typeof CHURCH_LIFE_PILLARS] ||
+    CHURCH_LIFE_PILLARS.en;
+  const vows =
+    BAPTISMAL_VOWS[langKey as keyof typeof BAPTISMAL_VOWS] || BAPTISMAL_VOWS.en;
+  const commandments =
+    TEN_COMMANDMENTS[langKey as keyof typeof TEN_COMMANDMENTS] || TEN_COMMANDMENTS.en;
+  const diet =
+    DIETARY_PRINCIPLES[langKey as keyof typeof DIETARY_PRINCIPLES] ||
+    DIETARY_PRINCIPLES.en;
+  const meaning =
+    BAPTISM_MEANING_DATA[langKey as keyof typeof BAPTISM_MEANING_DATA] ||
+    BAPTISM_MEANING_DATA.en;
 
   return (
     <>
@@ -101,14 +117,15 @@ export default function BaptismScreen() {
               {
                 backgroundColor: theme.colors.surfaceVariant,
                 borderLeftWidth: 4,
-                borderLeftColor: theme.colors.primary,
+                borderLeftColor: theme.colors.secondary,
+                marginBottom: 16,
               },
             ]}
             mode="contained"
           >
             <Card.Content>
               <Text
-                variant="bodyLarge"
+                variant="bodyMedium"
                 style={{
                   fontStyle: 'italic',
                   color: theme.colors.onSurfaceVariant,
@@ -130,78 +147,261 @@ export default function BaptismScreen() {
               </Text>
             </Card.Content>
           </Card>
-        </View>
 
-        <View style={DocumentStyles.section}>
+          <Text
+            variant="bodyMedium"
+            style={{
+              color: theme.colors.onSurfaceVariant,
+              marginBottom: 12,
+              fontWeight: 'bold',
+            }}
+          >
+            {meaning.intro}
+          </Text>
+
           <Card style={DocumentStyles.card} mode="outlined">
-            <Card.Content>
-              <Text
-                variant="titleLarge"
-                style={[DocumentStyles.orgName, { color: theme.colors.primary }]}
-              >
-                {labels.processTitle}
-              </Text>
-              <Text
-                style={[
-                  DocumentStyles.description,
-                  { color: theme.colors.onSurface, marginTop: 8 },
-                ]}
-                variant="bodyMedium"
-              >
-                {labels.processDesc}
-              </Text>
-            </Card.Content>
+            {meaning.points.map((point: any, index: number) => (
+              <View key={index}>
+                <List.Item
+                  title={point.title}
+                  titleStyle={{ fontWeight: 'bold', color: theme.colors.onSurface }}
+                  description={() => (
+                    <View style={{ marginTop: 4 }}>
+                      <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
+                        {point.desc}
+                      </Text>
+                      <Text
+                        variant="labelSmall"
+                        style={{
+                          fontStyle: 'italic',
+                          color: theme.colors.onSurfaceVariant,
+                        }}
+                      >
+                        {point.ref}
+                      </Text>
+                    </View>
+                  )}
+                  left={(props) => <List.Icon {...props} icon={point.icon} />}
+                  descriptionNumberOfLines={10}
+                />
+                {index < meaning.points.length - 1 && (
+                  <List.Icon
+                    icon="minus"
+                    style={{ alignSelf: 'center', height: 10, opacity: 0.1 }}
+                  />
+                )}
+              </View>
+            ))}
           </Card>
         </View>
 
         <View style={DocumentStyles.section}>
-          <Card style={DocumentStyles.card} mode="outlined">
-            <Card.Content>
-              <Text
-                variant="titleLarge"
-                style={[
-                  DocumentStyles.orgName,
-                  { color: theme.colors.onSurface, fontWeight: 'bold' },
-                ]}
-              >
-                {labels.professionTitle}
-              </Text>
-              <Text
-                style={[
-                  DocumentStyles.description,
-                  { color: theme.colors.onSurface, marginTop: 8 },
-                ]}
-                variant="bodyMedium"
-              >
-                {labels.professionDesc}
-              </Text>
-            </Card.Content>
-          </Card>
+          <Text
+            variant="titleLarge"
+            style={[
+              DocumentStyles.sectionTitle,
+              {
+                color: theme.colors.onSurface,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {pillars.title}
+          </Text>
+          <Text
+            variant="bodyMedium"
+            style={{ marginBottom: 16, color: theme.colors.onSurfaceVariant }}
+          >
+            {pillars.intro}
+          </Text>
+          {pillars.items.map((pillar: any, index: number) => (
+            <Card
+              key={index}
+              style={[DocumentStyles.card, { marginBottom: 12 }]}
+              mode="outlined"
+            >
+              <Card.Content>
+                <Text
+                  variant="titleMedium"
+                  style={{ fontWeight: 'bold', color: theme.colors.onSurface }}
+                >
+                  {pillar.title}
+                </Text>
+                <Text variant="bodyMedium" style={{ marginTop: 4 }}>
+                  {pillar.desc}
+                </Text>
+              </Card.Content>
+            </Card>
+          ))}
+          {pillars.footer && (
+            <Text
+              variant="bodyMedium"
+              style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}
+            >
+              {pillars.footer}
+            </Text>
+          )}
         </View>
 
         <View style={DocumentStyles.section}>
-          <Card style={DocumentStyles.card} mode="outlined">
-            <Card.Content>
-              <Text
-                variant="titleLarge"
-                style={[
-                  DocumentStyles.orgName,
-                  { color: theme.colors.onSurface, fontWeight: 'bold' },
-                ]}
-              >
-                {labels.transferTitle}
-              </Text>
-              <Text
-                style={[
-                  DocumentStyles.description,
-                  { color: theme.colors.onSurface, marginTop: 8 },
-                ]}
-                variant="bodyMedium"
-              >
-                {labels.transferDesc}
-              </Text>
-            </Card.Content>
-          </Card>
+          <List.Subheader
+            style={{
+              color: theme.colors.onSurface,
+              fontWeight: 'bold',
+              fontSize: 16,
+              paddingLeft: 0,
+            }}
+          >
+            {joining.title}: {joining.intro}
+          </List.Subheader>
+
+          {joining.methods.map((method: any, idx: number) => (
+            <Card
+              key={idx}
+              style={[DocumentStyles.card, { marginTop: idx > 0 ? 12 : 0 }]}
+              mode="outlined"
+            >
+              <Card.Content>
+                <Text
+                  variant="titleMedium"
+                  style={{ color: theme.colors.primary, fontWeight: 'bold' }}
+                >
+                  {method.title}
+                </Text>
+                <Text
+                  style={{ color: theme.colors.onSurface, marginTop: 8 }}
+                  variant="bodyMedium"
+                >
+                  {method.desc}
+                </Text>
+              </Card.Content>
+            </Card>
+          ))}
+        </View>
+
+        <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
+          <List.Subheader
+            style={{
+              color: theme.colors.onSurface,
+              fontWeight: 'bold',
+              fontSize: 16,
+              paddingLeft: 0,
+            }}
+          >
+            {labels.commitmentsHeader}
+          </List.Subheader>
+        </View>
+
+        <View style={DocumentStyles.section}>
+          <List.Accordion
+            title={labels.vowsTitle}
+            expanded={expanded === 'vows'}
+            onPress={() => setExpanded(expanded === 'vows' ? null : 'vows')}
+            left={(props) => <List.Icon {...props} icon="check-decagram" />}
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <Card style={DocumentStyles.card} mode="outlined">
+              <Card.Content>
+                {vows.map((vow, idx) => (
+                  <Text key={idx} style={{ marginBottom: 8 }}>
+                    {idx + 1}. {vow}
+                  </Text>
+                ))}
+              </Card.Content>
+            </Card>
+          </List.Accordion>
+
+          <List.Accordion
+            title={labels.commandmentsTitle}
+            expanded={expanded === 'commandments'}
+            onPress={() =>
+              setExpanded(expanded === 'commandments' ? null : 'commandments')
+            }
+            left={(props) => <List.Icon {...props} icon="script-text" />}
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <Card style={DocumentStyles.card} mode="outlined">
+              <Card.Content>
+                {commandments.intro && (
+                  <Text
+                    variant="bodyMedium"
+                    style={{ marginBottom: 16, fontWeight: 'bold' }}
+                  >
+                    {commandments.intro}
+                  </Text>
+                )}
+                {commandments.items.map((cmd: string, idx: number) => (
+                  <Text key={idx} style={{ marginBottom: 12 }}>
+                    {cmd}
+                  </Text>
+                ))}
+                {commandments.citation && (
+                  <Text
+                    variant="labelSmall"
+                    style={{
+                      textAlign: 'right',
+                      marginTop: 8,
+                      fontStyle: 'italic',
+                      color: theme.colors.onSurfaceVariant,
+                    }}
+                  >
+                    {commandments.citation}
+                  </Text>
+                )}
+              </Card.Content>
+            </Card>
+          </List.Accordion>
+
+          <List.Accordion
+            title={labels.lifestyleTitle}
+            expanded={expanded === 'lifestyle'}
+            onPress={() => setExpanded(expanded === 'lifestyle' ? null : 'lifestyle')}
+            left={(props) => <List.Icon {...props} icon="heart-pulse" />}
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <Card style={DocumentStyles.card} mode="outlined">
+              <Card.Content>
+                <Text
+                  variant="titleMedium"
+                  style={{
+                    fontWeight: 'bold',
+                    marginBottom: 8,
+                    color: theme.colors.onSurface,
+                  }}
+                >
+                  {diet.title}
+                </Text>
+                <Text
+                  variant="bodySmall"
+                  style={{ marginBottom: 16, color: theme.colors.onSurfaceVariant }}
+                >
+                  {diet.scripture}
+                </Text>
+                <Text
+                  variant="labelLarge"
+                  style={{ fontWeight: 'bold', marginBottom: 8 }}
+                >
+                  {diet.summaryTitle}
+                </Text>
+                <List.Item title={diet.land} titleNumberOfLines={3} />
+                <List.Item title={diet.water} titleNumberOfLines={3} />
+                <List.Item title={diet.insects} titleNumberOfLines={3} />
+                <List.Item title={diet.birds} titleNumberOfLines={3} />
+                <View
+                  style={{
+                    marginTop: 8,
+                    padding: 12,
+                    backgroundColor: theme.colors.surfaceVariant,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text variant="bodyMedium" style={{ fontStyle: 'italic' }}>
+                    {diet.lifestyle}
+                  </Text>
+                </View>
+              </Card.Content>
+            </Card>
+          </List.Accordion>
         </View>
       </ScrollView>
     </>

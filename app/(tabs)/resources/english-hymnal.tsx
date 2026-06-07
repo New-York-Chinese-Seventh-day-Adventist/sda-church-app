@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Divider, Searchbar, Text, TouchableRipple } from 'react-native-paper';
+import { Divider, Text, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getSortedHymns, HydratedHymn, openHymnal } from '@/constants/EnglishHymnal';
@@ -63,36 +63,21 @@ export default function HymnalScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
-  const { backTo, refresh } = useLocalSearchParams<{
+  const { backTo, refresh, hymnNum, highlight } = useLocalSearchParams<{
     backTo?: string;
     refresh?: string;
+    hymnNum?: string;
+    highlight?: string;
   }>();
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
-
-  // Initialize state from persistence, but check if we should reset
-  const [searchQuery, setSearchQuery] = useState(() => {
-    if (refresh && refresh !== lastProcessedRefresh) return '';
-    return savedSearchQuery;
-  });
-
-  // Effect to handle the "Conventional Navigation" reset vs "Back" persistence
-  useEffect(() => {
-    if (refresh && refresh !== lastProcessedRefresh) {
-      lastProcessedRefresh = refresh;
-      setSearchQuery('');
-      savedSearchQuery = '';
-    }
-  }, [refresh]);
-
-  // Persist state whenever it changes
-  useEffect(() => {
-    savedSearchQuery = searchQuery;
-  }, [searchQuery]);
+  const flatListRef = useRef<FlatList>(null);
 
   const allHymns = useMemo(() => getSortedHymns('en'), []);
 
-  const filteredHymns = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
+  // If we have a highlight query from the search bar, filter the list.
+  // This allows the header search to behave like a filter for this view.
+  const displayHymns = useMemo(() => {
+    const query = (highlight || '').toLowerCase().trim();
     if (!query) return allHymns;
 
     return allHymns.filter(
@@ -101,7 +86,23 @@ export default function HymnalScreen() {
         h.title.toLowerCase().includes(query) ||
         h.scriptureReference?.toLowerCase().includes(query),
     );
-  }, [searchQuery, allHymns]);
+  }, [highlight, allHymns]);
+
+  // Scroll to a specific hymn if requested via search params (hymnNum)
+  useEffect(() => {
+    if (hymnNum) {
+      const index = allHymns.findIndex((h) => h.number.toString() === hymnNum);
+      if (index !== -1) {
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({
+            index,
+            animated: true,
+            viewPosition: 0,
+          });
+        }, 100);
+      }
+    }
+  }, [hymnNum, allHymns]);
 
   const renderHymnItem = ({ item }: { item: HydratedHymn }) => {
     return (
@@ -219,17 +220,9 @@ export default function HymnalScreen() {
       <View
         style={[
           styles.header,
-          { paddingTop: insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE + 8 },
+          { paddingTop: insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE + 4 },
         ]}
       >
-        <Searchbar
-          placeholder={labels.search}
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={[styles.searchbar, { backgroundColor: theme.colors.surface }]}
-          inputStyle={styles.searchbarInput}
-          elevation={0}
-        />
         <TouchableOpacity
           onPress={() =>
             router.push({
@@ -257,12 +250,13 @@ export default function HymnalScreen() {
       </View>
 
       <FlatList
-        data={filteredHymns}
+        ref={flatListRef}
+        data={displayHymns}
         keyExtractor={(item) => item.number.toString()}
         renderItem={renderHymnItem}
         contentContainerStyle={[
           NavigationStyles.contentContainer,
-          { paddingTop: 0, paddingBottom: insets.bottom + 50 },
+          { paddingTop: 8, paddingBottom: insets.bottom + 50 },
         ]}
       />
     </View>

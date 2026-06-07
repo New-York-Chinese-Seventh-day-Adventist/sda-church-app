@@ -3,21 +3,31 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
   FlatList,
   ScrollView,
+  Share,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Divider, IconButton, List, Modal, Portal, Text } from 'react-native-paper';
+import {
+  Button,
+  Divider,
+  IconButton,
+  List,
+  Modal,
+  Portal,
+  Text,
+} from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
+import * as SearchTerms from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
@@ -44,6 +54,10 @@ const uiLabels = {
     hebrewSubtitle: 'Hebrew (Original)',
     prevChapter: 'Prev',
     nextChapter: 'Next',
+    share: 'Share Verse',
+    selected: '{n} selected',
+    cancel: 'Cancel',
+    shareAction: 'Share',
     en: 'English',
     zh: 'Chinese (Traditional)',
     'zh-cn': 'Chinese (Simplified)',
@@ -59,6 +73,10 @@ const uiLabels = {
     hebrewSubtitle: '希伯來語 (原文)',
     prevChapter: '上一章',
     nextChapter: '下一章',
+    share: '分享經文',
+    selected: '已選擇 {n} 節',
+    cancel: '取消',
+    shareAction: '分享',
     en: '英文',
     zh: '繁體中文',
     'zh-cn': '簡體中文',
@@ -74,6 +92,10 @@ const uiLabels = {
     hebrewSubtitle: '希伯来语 (原文)',
     prevChapter: '上一章',
     nextChapter: '下一章',
+    share: '分享经文',
+    selected: '已选择 {n} 节',
+    cancel: '取消',
+    shareAction: '分享',
     en: '英文',
     zh: '繁体中文',
     'zh-cn': '简体中文',
@@ -89,6 +111,10 @@ const uiLabels = {
     hebrewSubtitle: 'Hebreo (Original)',
     prevChapter: 'Anterior',
     nextChapter: 'Siguiente',
+    share: 'Compartir Versículo',
+    selected: '{n} seleccionados',
+    cancel: 'Cancelar',
+    shareAction: 'Compartir',
     en: 'Inglés',
     zh: 'Chino (Tradicional)',
     'zh-cn': 'Chino (Simplificado)',
@@ -107,16 +133,19 @@ export default function BibleReaderScreen() {
     bookId: paramBookId,
     chapter: paramChapter,
     translationId: paramTransId,
+    q: paramQuery,
     backTo: paramBackTo,
   } = useLocalSearchParams<{
     bookId?: string;
     chapter?: string;
     translationId?: string;
+    q?: string;
     backTo?: string;
   }>();
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
+  const versePositions = useRef<Record<number, number>>({});
   const lastScrollY = useRef(0);
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
@@ -140,6 +169,7 @@ export default function BibleReaderScreen() {
   const [chapterData, setChapterData] =
     useState<BibleService.TranslationBookChapter | null>(null);
   const [loading, setLoading] = useState(false);
+  const appliedQuery = useRef<string | null>(null);
 
   // Modal states
   const [modalType, setModalType] = useState<
@@ -149,6 +179,33 @@ export default function BibleReaderScreen() {
 
   // To prevent the "content flash" during modal dismissal
   const [lastActiveType, setLastActiveType] = useState<typeof modalType>(null);
+
+  // Multi-selection state
+  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
+  const toggleVerseSelection = (num: number) => {
+    setSelectedVerses((prev) => {
+      const next = new Set(prev);
+      if (next.has(num)) {
+        next.delete(num);
+      } else {
+        next.add(num);
+      }
+      return next;
+    });
+  };
+  const clearSelection = () => setSelectedVerses(new Set());
+  const isSelectionActive = selectedVerses.size > 0;
+
+  const updateMenuVisibility = (visible: boolean) => {
+    setMenuVisible(visible);
+    setGlobalMenuVisible(visible);
+  };
+
+  useEffect(() => {
+    if (isSelectionActive && !menuVisible) {
+      updateMenuVisibility(true);
+    }
+  }, [isSelectionActive]);
 
   // Load selection from storage on mount
   useEffect(() => {
@@ -225,20 +282,65 @@ export default function BibleReaderScreen() {
         setChapterNum(chap);
       }
     }
-  }, [paramTransId, paramBookId, paramChapter, isPersistenceLoaded, books]);
+  }, [paramTransId, paramBookId, paramChapter, isPersistenceLoaded, books, paramQuery]);
+
+  /**
+   * Handles jumping to a specific chapter/verse if provided via a search query 'q'.
+   * Uses a multi-lingual resolver to determine the book and coordinates.
+   */
+  useEffect(() => {
+    if (paramQuery && appliedQuery.current !== paramQuery && books.length > 0) {
+      const ref = SearchTerms.resolveBibleReference(paramQuery, language);
+      if (ref) {
+        const matchingBook = books.find((b) => b.id === ref.bookId);
+        if (matchingBook) {
+          setBook(matchingBook);
+          if (ref.chapter <= matchingBook.numberOfChapters) {
+            setChapterNum(ref.chapter);
+          }
+        }
+      }
+      appliedQuery.current = paramQuery;
+    }
+  }, [paramQuery, books, language]);
+
+  // Scroll to verse if specified in query
+  useEffect(() => {
+    if (paramQuery && chapterData && !loading) {
+      const ref = SearchTerms.resolveBibleReference(paramQuery, language);
+      if (ref && ref.verse) {
+        if (
+          ref.bookId === book?.id &&
+          ref.chapter === chapterNum &&
+          versePositions.current[ref.verse] !== undefined
+        ) {
+          // Delay slightly to ensure layout is complete and off-screen items are rendered
+          const timer = setTimeout(() => {
+            scrollRef.current?.scrollTo({
+              y: versePositions.current[ref.verse!] - 20,
+              animated: true,
+            });
+          }, 150);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [chapterData, loading, paramQuery, chapterNum]);
 
   // Keep the Bible dock visible at the bottom of the screen at all times.
   // We only animate the height so it "drops" down to the bottom when the tab bar hides.
   const dockTranslateY = 0;
 
-  // Taller when expanded to overlap the tab bar area; shorter when retracted to sit at the absolute bottom.
-  const animatedDockHeight = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      DOCK_HEIGHT + insets.bottom,
-      DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom,
-    ],
-  });
+  // Taller when expanded to overlap the tab bar area; shorter when retracted.
+  const animatedDockHeight = useMemo(() => {
+    return menuAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [
+        DOCK_HEIGHT + insets.bottom + (isSelectionActive ? 56 : 0),
+        DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom + (isSelectionActive ? 56 : 0),
+      ],
+    });
+  }, [menuAnim, insets.bottom, isSelectionActive]);
 
   // Determine navigation boundaries
   const currentBookIdx = books.findIndex((b) => b.id === book?.id);
@@ -410,9 +512,149 @@ export default function BibleReaderScreen() {
     }
   }, [supportedTranslation.id, book?.id, chapterNum, books, isPersistenceLoaded]);
 
-  const updateMenuVisibility = (visible: boolean) => {
-    setMenuVisible(visible);
-    setGlobalMenuVisible(visible);
+  const getVersePlainText = (verseNum: number) => {
+    if (!chapterData) return '';
+    const verse = chapterData.chapter.content.find(
+      (c) => c.type === 'verse' && c.number === verseNum,
+    ) as BibleService.ChapterVerse;
+    if (!verse) return '';
+
+    let result = '';
+    verse.content.forEach((item, i) => {
+      if (typeof item === 'object' && item !== null && 'noteId' in item) return;
+      if (typeof item === 'object' && item !== null && 'lineBreak' in item) {
+        result += '\n';
+        return;
+      }
+
+      const textValue = typeof item === 'string' ? item : (item as any).text || '';
+      const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
+      const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
+      const prevItem = i > 0 ? verse.content[i - 1] : null;
+      const prevIsLineBreak = !!(
+        prevItem &&
+        typeof prevItem === 'object' &&
+        'lineBreak' in prevItem
+      );
+
+      let isLineContinuation = false;
+      if (isPoetic && i > 0 && !prevIsLineBreak) {
+        for (let k = i - 1; k >= 0; k--) {
+          const prev = verse.content[k];
+          const isMetadata =
+            typeof prev === 'object' && prev !== null && 'noteId' in prev;
+          const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
+          if (isMetadata || isWhitespace) continue;
+          const prevIsPoetic =
+            typeof prev === 'object' && prev !== null && 'poem' in prev;
+          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
+          const prevIsSelah = BibleService.isSelahMarker(
+            supportedTranslation.id,
+            prevText,
+          );
+          if (
+            prevIsPoetic &&
+            !prevIsSelah &&
+            (prev as any).poem === (item as any).poem &&
+            !textValue.startsWith('\n')
+          ) {
+            isLineContinuation = true;
+          }
+          break;
+        }
+      }
+
+      const followsFootnote = !!(
+        prevItem &&
+        typeof prevItem === 'object' &&
+        'noteId' in prevItem
+      );
+      let contentText = textValue;
+      if (
+        (followsFootnote || isSelah) &&
+        !(isPoetic && !isLineContinuation && i > 0) &&
+        contentText.length > 0 &&
+        !BibleService.startsWithPunctuationOrSpace(contentText)
+      ) {
+        contentText = ' ' + contentText;
+      }
+
+      if (isSelah) {
+        result += '\n' + contentText;
+      } else if (isPoetic) {
+        const indentCount = (item as any).poem > 1 ? (item as any).poem - 1 : 0;
+        const indent = '  '.repeat(indentCount);
+        const prefix =
+          (i > 0 && !isLineContinuation && !prevIsLineBreak ? '\n' : '') +
+          (!isLineContinuation ? indent : '');
+        result += prefix + contentText;
+      } else {
+        result += contentText;
+      }
+    });
+
+    return result.trim();
+  };
+
+  const handleShare = async () => {
+    if (!book || !chapterData) return;
+
+    const isMultiSelect = selectedVerses.size > 0;
+    const verseNumbers = isMultiSelect
+      ? Array.from(selectedVerses).sort((a, b) => a - b)
+      : selectedVerseNum
+        ? [selectedVerseNum]
+        : [];
+
+    if (verseNumbers.length === 0) return;
+
+    let fullText = '';
+    if (verseNumbers.length === 1) {
+      fullText = getVersePlainText(verseNumbers[0]);
+    } else {
+      fullText = verseNumbers.map((num) => getVersePlainText(num)).join('\n\n');
+    }
+
+    // Calculate smart ranges for citation (e.g., "1-4, 16")
+    const ranges: string[] = [];
+    let start = verseNumbers[0];
+    let prev = verseNumbers[0];
+
+    for (let i = 1; i <= verseNumbers.length; i++) {
+      if (i < verseNumbers.length && verseNumbers[i] === prev + 1) {
+        prev = verseNumbers[i];
+      } else {
+        ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+        if (i < verseNumbers.length) {
+          start = verseNumbers[i];
+          prev = verseNumbers[i];
+        }
+      }
+    }
+    const rangeString = ranges.join(', ');
+    const reference = `${book.name} ${chapterNum}:${rangeString}`;
+
+    const translation = supportedTranslation.name;
+    const message = `"${fullText}"\n\n— ${reference} (${translation})`;
+
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share({
+          title: reference,
+          text: message,
+        });
+      } else {
+        await Share.share({
+          message: `${message}`,
+          title: reference,
+        });
+      }
+      if (isMultiSelect) clearSelection();
+    } catch (e) {
+      if ((e as any).name !== 'AbortError') {
+        console.error('Sharing failed', e);
+      }
+    }
   };
 
   /**
@@ -451,6 +693,7 @@ export default function BibleReaderScreen() {
    * Scroll handler to toggle Reader Mode (hiding/showing menus)
    */
   const handleScroll = (event: any) => {
+    if (isSelectionActive) return; // Don't hide menus while selecting
     const currentOffset = event.nativeEvent.contentOffset.y;
     // Ignore bounces
     if (currentOffset < 0) return;
@@ -474,6 +717,8 @@ export default function BibleReaderScreen() {
     updateMenuVisibility(true);
 
     if (chapterData) {
+      clearSelection();
+      versePositions.current = {}; // Clear previous chapter positions
       scrollRef.current?.scrollTo({ y: 0, animated: false });
     }
 
@@ -498,6 +743,7 @@ export default function BibleReaderScreen() {
     i: number,
     contentArray: any[],
     allowUnderline = true,
+    isBold = false,
   ) => {
     const textValue = typeof item === 'string' ? item : (item as any).text || '';
     const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
@@ -553,22 +799,22 @@ export default function BibleReaderScreen() {
       if (!foundPreviousContent) isLineContinuation = true;
     }
 
+    // Version-specific detection for liturgical/poetic markers.
+    // This ensures we don't match modern academic terms in historical translations.
+    const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
+
     // If we follow a footnote and don't start with whitespace or punctuation,
     // inject a space to prevent "welded" words like "allywith".
     // We only inject if we AREN'T about to start a new poetic line (which adds a newline).
     let contentText = textValue;
     if (
-      followsFootnote &&
+      (followsFootnote || isSelah) &&
       !(isPoetic && !isLineContinuation && i > 0) &&
       contentText.length > 0 &&
       !BibleService.startsWithPunctuationOrSpace(contentText)
     ) {
       contentText = ' ' + contentText;
     }
-
-    // Version-specific detection for liturgical/poetic markers.
-    // This ensures we don't match modern academic terms in historical translations.
-    const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
 
     // Peek ahead for footnote markers to apply underlining to the current word
     let isFootnoted = false;
@@ -614,6 +860,7 @@ export default function BibleReaderScreen() {
                         textDecorationColor: theme.colors.primary,
                       }
                     : undefined,
+                  isBold && { fontWeight: 'bold' },
                 ]}
               >
                 {core}
@@ -626,14 +873,14 @@ export default function BibleReaderScreen() {
 
       if (!isFootnoted || !core) {
         return (
-          <Text key={i} style={style}>
+          <Text key={i} style={[style, isBold && { fontWeight: 'bold' }]}>
             {text}
           </Text>
         );
       }
 
       return (
-        <Text key={i} style={style}>
+        <Text key={i} style={[style, isBold && { fontWeight: 'bold' }]}>
           {leading}
           <Text
             style={{
@@ -643,7 +890,7 @@ export default function BibleReaderScreen() {
           >
             {core}
           </Text>
-          <Text style={style}>{trailingPunct}</Text>
+          <Text style={[style, isBold && { fontWeight: 'bold' }]}>{trailingPunct}</Text>
           {trailingSpace}
         </Text>
       );
@@ -734,11 +981,8 @@ export default function BibleReaderScreen() {
    * and Hebrew subtitles relevant to the specific verse tapped.
    */
   const openVerseDetails = (num: number) => {
-    const { hasFootnotes, hasSubtitle } = getVerseExtras(num);
-    if (hasFootnotes || hasSubtitle) {
-      setSelectedVerseNum(num);
-      setModalType('verse-detail');
-    }
+    setSelectedVerseNum(num);
+    setModalType('verse-detail');
   };
 
   const renderContent = (content: BibleService.ChapterContent, index: number) => {
@@ -768,6 +1012,7 @@ export default function BibleReaderScreen() {
         );
       case 'verse':
         const { hasFootnotes, hasSubtitle } = getVerseExtras(content.number);
+        const isSelected = selectedVerses.has(content.number);
 
         // To support right-aligned liturgical markers (Selah, Higgaion) while
         // maintaining proper inline word-wrapping for prose/poetry, we segment
@@ -781,7 +1026,11 @@ export default function BibleReaderScreen() {
           verseElements.push(
             <Text
               key={key}
-              style={[ReaderStyles.verseContainer, { color: theme.colors.onBackground }]}
+              style={[
+                ReaderStyles.verseContainer,
+                { color: theme.colors.onBackground },
+                isSelected && { fontWeight: 'bold' },
+              ]}
             >
               {verseElements.length === 0 && (
                 <Text
@@ -794,13 +1043,20 @@ export default function BibleReaderScreen() {
                           : theme.colors.outline,
                       textDecorationLine: 'none',
                     },
+                    isSelected && { fontWeight: 'bold' },
                   ]}
                 >
                   {content.number}{' '}
                 </Text>
               )}
               {inlineBuffer.map((entry) =>
-                renderItemContent(entry.item, entry.index, content.content, hasFootnotes),
+                renderItemContent(
+                  entry.item,
+                  entry.index,
+                  content.content,
+                  hasFootnotes,
+                  isSelected,
+                ),
               )}
             </Text>,
           );
@@ -813,29 +1069,58 @@ export default function BibleReaderScreen() {
 
           if (isSelah) {
             flushBuffer(`text-pre-${i}`);
-            verseElements.push(renderItemContent(item, i, content.content));
+            verseElements.push(
+              renderItemContent(item, i, content.content, hasFootnotes, isSelected),
+            );
           } else {
             inlineBuffer.push({ item, index: i });
           }
         });
         flushBuffer('text-final');
 
-        const verseContent = (
-          <View key={index} style={{ width: '100%' }}>
-            {verseElements}
-          </View>
-        );
+        const ref = paramQuery
+          ? SearchTerms.resolveBibleReference(paramQuery, language)
+          : null;
+        const isTargetedVerse =
+          ref &&
+          ref.bookId === book?.id &&
+          ref.chapter === chapterNum &&
+          ref.verse === content.number;
 
-        return hasFootnotes || hasSubtitle ? (
+        return (
           <TouchableOpacity
             key={index}
-            onPress={() => openVerseDetails(content.number)}
+            onPress={() => {
+              if (selectedVerses.size > 0) {
+                toggleVerseSelection(content.number);
+              } else {
+                openVerseDetails(content.number);
+              }
+            }}
+            onLongPress={() => toggleVerseSelection(content.number)}
             activeOpacity={0.6}
+            style={[
+              isTargetedVerse
+                ? {
+                    backgroundColor: theme.colors.primaryContainer,
+                    borderRadius: 4,
+                    marginHorizontal: -8,
+                    paddingHorizontal: 8,
+                  }
+                : undefined,
+              isSelected && {
+                backgroundColor: theme.colors.secondaryContainer,
+                borderRadius: 4,
+                marginHorizontal: -8,
+                paddingHorizontal: 8,
+              },
+            ]}
+            onLayout={(e) => {
+              versePositions.current[content.number] = e.nativeEvent.layout.y;
+            }}
           >
-            {verseContent}
+            <View style={{ width: '100%' }}>{verseElements}</View>
           </TouchableOpacity>
-        ) : (
-          verseContent
         );
       case 'line_break':
         return <View key={index} style={ReaderStyles.lineBreak} />;
@@ -916,8 +1201,12 @@ export default function BibleReaderScreen() {
                     DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom,
                   ],
                   outputRange: [
-                    DOCK_HEIGHT + insets.bottom + 16,
-                    DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom + 16,
+                    DOCK_HEIGHT + insets.bottom + 16 + (selectedVerses.size > 0 ? 56 : 0),
+                    DOCK_HEIGHT +
+                      DOCK_BOTTOM_MARGIN +
+                      insets.bottom +
+                      16 +
+                      (selectedVerses.size > 0 ? 56 : 0),
                   ],
                 }),
               },
@@ -956,6 +1245,31 @@ export default function BibleReaderScreen() {
             },
           ]}
         />
+
+        {/* Selection Actions Bar (Integrated) */}
+        {isSelectionActive && (
+          <View style={{ height: 56 }}>
+            <View style={styles.selectionBarInner}>
+              <Text
+                variant="labelLarge"
+                style={{ marginLeft: 16, color: theme.colors.onSurface }}
+              >
+                {labels.selected.replace('{n}', selectedVerses.size.toString())}
+              </Text>
+              <View style={{ flex: 1 }} />
+              <Button onPress={clearSelection}>{labels.cancel}</Button>
+              <Button
+                mode="contained"
+                icon="share-variant"
+                onPress={handleShare}
+                style={{ marginRight: 8, borderRadius: 20 }}
+              >
+                {labels.shareAction}
+              </Button>
+            </View>
+          </View>
+        )}
+
         <View style={ReaderStyles.dockInner}>
           <View style={ReaderStyles.sideSlot}>
             {!isFirstChapter ? (
@@ -1043,7 +1357,7 @@ export default function BibleReaderScreen() {
           onDismiss={closeModal}
           contentContainerStyle={[
             ReaderStyles.modalContent,
-            { backgroundColor: theme.colors.surface },
+            { backgroundColor: theme.colors.background },
           ]}
         >
           <View style={ReaderStyles.modalInner}>
@@ -1057,6 +1371,12 @@ export default function BibleReaderScreen() {
                 </Text>
                 <Divider />
                 <ScrollView style={ReaderStyles.modalScroll}>
+                  <View style={ReaderStyles.detailSection}>
+                    <Text style={[ReaderStyles.detailText, { fontWeight: '500' }]}>
+                      {getVersePlainText(selectedVerseNum || 0)}
+                    </Text>
+                  </View>
+                  <Divider style={{ marginBottom: 16 }} />
                   {/* 
                       Aggregated Verse Content:
                       We calculate the subtitle text first to identify and filter
@@ -1117,6 +1437,16 @@ export default function BibleReaderScreen() {
                     );
                   })()}
                 </ScrollView>
+                <View style={{ padding: 16 }}>
+                  <Button
+                    mode="contained"
+                    icon="share-variant"
+                    onPress={handleShare}
+                    style={{ borderRadius: 24 }}
+                  >
+                    {labels.share}
+                  </Button>
+                </View>
               </>
             ) : (
               <>
@@ -1199,3 +1529,12 @@ export default function BibleReaderScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  selectionBarInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: '100%',
+    paddingRight: 8,
+  },
+});

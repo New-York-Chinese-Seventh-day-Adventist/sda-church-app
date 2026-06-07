@@ -1,5 +1,13 @@
 import { LanguageContext } from '@/constants/LanguageContext';
-import { ALL_SEARCH_LABELS, getSearchableItems } from '@/constants/SearchTerms';
+import {
+  ALL_SEARCH_LABELS,
+  getSearchableItems,
+  getSearchRoute,
+  getSearchSubtitle,
+  isSearchMatch,
+  resolveBibleReference,
+  SearchableItem,
+} from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
 import { router, useSegments } from 'expo-router';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
@@ -50,6 +58,8 @@ export const GlobalHeader = (props: any) => {
   // In Expo Router, the (tabs) group and the tab names form the first 1-2 segments.
   const isPillarRoot = segments.length <= 2;
 
+  const isBiblePage = segments.includes('bible');
+  const isHymnalPage = segments.includes('english-hymnal');
   const isSubPage = !isPillarRoot;
 
   const title = props.options?.title;
@@ -61,29 +71,47 @@ export const GlobalHeader = (props: any) => {
   // Centralized list of everything searchable in the app
   const searchableItems = getSearchableItems(language);
 
-  const results = searchableItems.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.keywords.some((k) => k.includes(searchQuery.toLowerCase())),
+  const filtered = searchableItems.filter((item) =>
+    isSearchMatch(item, searchQuery, language),
   );
 
-  const handleSelectResult = (item: (typeof searchableItems)[0]) => {
+  // Deduplicate: If the query is a Bible reference, we only show the primary "Holy Bible" card
+  // as the smart gateway, hiding individual book entries to prevent redundant results.
+  const isBibleRef = !!resolveBibleReference(searchQuery, language);
+  const deduplicated = isBibleRef
+    ? filtered.filter((item) => !item.isBibleBook || item.route === '/resources/bible')
+    : filtered;
+
+  const results = deduplicated.map((item) => ({
+    ...item,
+    route: getSearchRoute(item, searchQuery),
+    subtitle: getSearchSubtitle(item, searchQuery, language),
+  }));
+
+  const handleSelectResult = (item: SearchableItem) => {
     const q = searchQuery.toLowerCase();
     setSearchQuery('');
     setIsSearching(false);
     searchRef.current?.blur();
 
-    const targetParams = {
-      highlight: q,
-    };
-
     // If already on a subpage, replace to avoid history loops.
     // Otherwise, navigate normally into the stack.
     const navFn = isSubPage ? router.replace : router.navigate;
 
+    // Parse out existing query parameters from the route string if present.
+    // This ensures Expo Router handles discrete params correctly during navigation.
+    const [pathname, queryString] = item.route.split('?');
+    const routeParams: Record<string, string> = {};
+    if (queryString) {
+      queryString.split('&').forEach((pair) => {
+        const [key, value] = pair.split('=');
+        routeParams[key] = decodeURIComponent(value);
+      });
+    }
+
     navFn({
-      pathname: item.route as any,
-      params: targetParams,
+      pathname: pathname as any,
+      params: { ...routeParams, highlight: q },
     });
   };
 
@@ -126,7 +154,7 @@ export const GlobalHeader = (props: any) => {
             }}
           />
         )}
-        {isSubPage ? (
+        {isSubPage && !isBiblePage && !isHymnalPage ? (
           <Appbar.Content
             title={title}
             titleStyle={{ color: theme.colors.onSurface, fontWeight: 'bold' }}
@@ -152,7 +180,8 @@ export const GlobalHeader = (props: any) => {
                 elevation: 0,
                 borderRadius: 24,
                 height: 44,
-                marginHorizontal: 12,
+                marginRight: 12,
+                marginLeft: 12,
               }}
               inputStyle={{
                 minHeight: 0,
@@ -178,6 +207,7 @@ export const GlobalHeader = (props: any) => {
                     <List.Item
                       key={index}
                       title={item.title}
+                      description={item.subtitle}
                       left={(p) => (
                         <List.Icon
                           {...p}
