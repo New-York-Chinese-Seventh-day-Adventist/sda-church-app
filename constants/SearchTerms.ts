@@ -24,12 +24,25 @@ export const BIBLE_REF_REGEX =
  */
 export const resolveBibleReference = (query: string, language: string) => {
   const q = query.toLowerCase().trim();
-  const match = q.match(/^(.*?)\s*(\d+)\s*(?::\s*(\d+))?\s*$/);
-  if (!match) return null;
+  if (!q) return null;
 
-  const bookPart = match[1].trim();
-  const chapter = parseInt(match[2], 10);
-  const verse = match[3] ? parseInt(match[3], 10) : undefined;
+  // Try to match "Book Chapter:Verse" or "Book Chapter"
+  const match = q.match(/^(.*?)\s*(\d+)\s*(?::\s*(\d+))?\s*$/);
+
+  let bookPart: string;
+  let chapter: number = 1;
+  let verse: number | undefined;
+
+  if (match) {
+    bookPart = match[1].trim();
+    chapter = parseInt(match[2], 10);
+    verse = match[3] ? parseInt(match[3], 10) : undefined;
+  } else {
+    // If no numbers are present, treat the entire query as a potential book name
+    bookPart = q;
+  }
+
+  if (!bookPart) return null;
 
   // Find the book ID by checking all localized names and abbreviations
   const bookEntry = Object.entries(BIBLE_BOOKS_DATA).find(([id, data]) => {
