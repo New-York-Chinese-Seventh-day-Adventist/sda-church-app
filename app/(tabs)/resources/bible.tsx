@@ -27,6 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
+import * as SearchTerms from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
@@ -120,16 +121,19 @@ export default function BibleReaderScreen() {
     bookId: paramBookId,
     chapter: paramChapter,
     translationId: paramTransId,
+    q: paramQuery,
     backTo: paramBackTo,
   } = useLocalSearchParams<{
     bookId?: string;
     chapter?: string;
     translationId?: string;
+    q?: string;
     backTo?: string;
   }>();
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const scrollRef = useRef<ScrollView>(null);
+  const versePositions = useRef<Record<number, number>>({});
   const lastScrollY = useRef(0);
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 
@@ -153,6 +157,7 @@ export default function BibleReaderScreen() {
   const [chapterData, setChapterData] =
     useState<BibleService.TranslationBookChapter | null>(null);
   const [loading, setLoading] = useState(false);
+  const appliedQuery = useRef<string | null>(null);
 
   // Modal states
   const [modalType, setModalType] = useState<
@@ -238,7 +243,50 @@ export default function BibleReaderScreen() {
         setChapterNum(chap);
       }
     }
-  }, [paramTransId, paramBookId, paramChapter, isPersistenceLoaded, books]);
+  }, [paramTransId, paramBookId, paramChapter, isPersistenceLoaded, books, paramQuery]);
+
+  /**
+   * Handles jumping to a specific chapter/verse if provided via a search query 'q'.
+   * Uses a multi-lingual resolver to determine the book and coordinates.
+   */
+  useEffect(() => {
+    if (paramQuery && appliedQuery.current !== paramQuery && books.length > 0) {
+      const ref = SearchTerms.resolveBibleReference(paramQuery, language);
+      if (ref) {
+        const matchingBook = books.find((b) => b.id === ref.bookId);
+        if (matchingBook) {
+          setBook(matchingBook);
+          if (ref.chapter <= matchingBook.numberOfChapters) {
+            setChapterNum(ref.chapter);
+          }
+        }
+      }
+      appliedQuery.current = paramQuery;
+    }
+  }, [paramQuery, books, language]);
+
+  // Scroll to verse if specified in query
+  useEffect(() => {
+    if (paramQuery && chapterData && !loading) {
+      const ref = SearchTerms.resolveBibleReference(paramQuery, language);
+      if (ref && ref.verse) {
+        if (
+          ref.bookId === book?.id &&
+          ref.chapter === chapterNum &&
+          versePositions.current[ref.verse] !== undefined
+        ) {
+          // Delay slightly to ensure layout is complete and off-screen items are rendered
+          const timer = setTimeout(() => {
+            scrollRef.current?.scrollTo({
+              y: versePositions.current[ref.verse!] - 20,
+              animated: true,
+            });
+          }, 150);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [chapterData, loading, paramQuery, chapterNum]);
 
   // Keep the Bible dock visible at the bottom of the screen at all times.
   // We only animate the height so it "drops" down to the bottom when the tab bar hides.
@@ -455,7 +503,6 @@ export default function BibleReaderScreen() {
     const translation = supportedTranslation.name;
 
     const currentPath = window.location.href.split('?')[0];
-    const shareUrl = `${currentPath}?bookId=${book.id}&chapter=${chapterNum}&translationId=${supportedTranslation.id}`;
     const message = `"${verseText}"\n\n— ${reference} (${translation})`;
 
     try {
@@ -463,13 +510,11 @@ export default function BibleReaderScreen() {
         await navigator.share({
           title: reference,
           text: message,
-          url: shareUrl,
         });
       } else {
         // Fallback for browsers that don't support the Web Share API (e.g. Chrome Desktop)
         await Share.share({
-          message: `${message}\n\nRead more at: ${shareUrl}`,
-          url: shareUrl,
+          message: `${message}`,
           title: reference,
         });
       }
@@ -539,6 +584,7 @@ export default function BibleReaderScreen() {
     updateMenuVisibility(true);
 
     if (chapterData) {
+      versePositions.current = {}; // Clear previous chapter positions
       scrollRef.current?.scrollTo({ y: 0, animated: false });
     }
 
@@ -882,19 +928,35 @@ export default function BibleReaderScreen() {
         });
         flushBuffer('text-final');
 
-        const verseContent = (
-          <View key={index} style={{ width: '100%' }}>
-            {verseElements}
-          </View>
-        );
+        const ref = paramQuery
+          ? SearchTerms.resolveBibleReference(paramQuery, language)
+          : null;
+        const isTargetedVerse =
+          ref &&
+          ref.bookId === book?.id &&
+          ref.chapter === chapterNum &&
+          ref.verse === content.number;
 
         return (
           <TouchableOpacity
             key={index}
             onPress={() => openVerseDetails(content.number)}
             activeOpacity={0.6}
+            style={
+              isTargetedVerse
+                ? {
+                    backgroundColor: theme.colors.primaryContainer,
+                    borderRadius: 4,
+                    marginHorizontal: -8,
+                    paddingHorizontal: 8,
+                  }
+                : undefined
+            }
+            onLayout={(e) => {
+              versePositions.current[content.number] = e.nativeEvent.layout.y;
+            }}
           >
-            {verseContent}
+            <View style={{ width: '100%' }}>{verseElements}</View>
           </TouchableOpacity>
         );
       case 'line_break':
