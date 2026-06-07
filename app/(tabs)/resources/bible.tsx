@@ -9,11 +9,20 @@ import {
   Animated,
   FlatList,
   ScrollView,
+  Share,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Divider, IconButton, List, Modal, Portal, Text } from 'react-native-paper';
+import {
+  Button,
+  Divider,
+  IconButton,
+  List,
+  Modal,
+  Portal,
+  Text,
+} from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LanguageContext } from '@/constants/LanguageContext';
@@ -44,6 +53,7 @@ const uiLabels = {
     hebrewSubtitle: 'Hebrew (Original)',
     prevChapter: 'Prev',
     nextChapter: 'Next',
+    share: 'Share Verse',
     en: 'English',
     zh: 'Chinese (Traditional)',
     'zh-cn': 'Chinese (Simplified)',
@@ -59,6 +69,7 @@ const uiLabels = {
     hebrewSubtitle: '希伯來語 (原文)',
     prevChapter: '上一章',
     nextChapter: '下一章',
+    share: '分享經文',
     en: '英文',
     zh: '繁體中文',
     'zh-cn': '簡體中文',
@@ -74,6 +85,7 @@ const uiLabels = {
     hebrewSubtitle: '希伯来语 (原文)',
     prevChapter: '上一章',
     nextChapter: '下一章',
+    share: '分享经文',
     en: '英文',
     zh: '繁体中文',
     'zh-cn': '简体中文',
@@ -89,6 +101,7 @@ const uiLabels = {
     hebrewSubtitle: 'Hebreo (Original)',
     prevChapter: 'Anterior',
     nextChapter: 'Siguiente',
+    share: 'Compartir Versículo',
     en: 'Inglés',
     zh: 'Chino (Tradicional)',
     'zh-cn': 'Chino (Simplificado)',
@@ -415,6 +428,58 @@ export default function BibleReaderScreen() {
     setGlobalMenuVisible(visible);
   };
 
+  const getVersePlainText = (verseNum: number) => {
+    if (!chapterData) return '';
+    const verse = chapterData.chapter.content.find(
+      (c) => c.type === 'verse' && c.number === verseNum,
+    ) as BibleService.ChapterVerse;
+    if (!verse) return '';
+
+    return verse.content
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null && 'text' in item) return item.text;
+        return '';
+      })
+      .join('')
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const handleShare = async () => {
+    if (!book || !selectedVerseNum || !chapterData) return;
+
+    const verseText = getVersePlainText(selectedVerseNum);
+    const reference = `${book.name} ${chapterNum}:${selectedVerseNum}`;
+    const translation = supportedTranslation.name;
+
+    const currentPath = window.location.href.split('?')[0];
+    const shareUrl = `${currentPath}?bookId=${book.id}&chapter=${chapterNum}&translationId=${supportedTranslation.id}`;
+    const message = `"${verseText}"\n\n— ${reference} (${translation})`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: reference,
+          text: message,
+          url: shareUrl,
+        });
+      } else {
+        // Fallback for browsers that don't support the Web Share API (e.g. Chrome Desktop)
+        await Share.share({
+          message: `${message}\n\nRead more at: ${shareUrl}`,
+          url: shareUrl,
+          title: reference,
+        });
+      }
+    } catch (e) {
+      if ((e as any).name !== 'AbortError') {
+        console.error('Sharing failed', e);
+      }
+    }
+  };
+
   /**
    * Navigates to the next or previous chapter.
    * Automatically handles transitioning between books (e.g., Matt 28 -> Mark 1).
@@ -734,11 +799,8 @@ export default function BibleReaderScreen() {
    * and Hebrew subtitles relevant to the specific verse tapped.
    */
   const openVerseDetails = (num: number) => {
-    const { hasFootnotes, hasSubtitle } = getVerseExtras(num);
-    if (hasFootnotes || hasSubtitle) {
-      setSelectedVerseNum(num);
-      setModalType('verse-detail');
-    }
+    setSelectedVerseNum(num);
+    setModalType('verse-detail');
   };
 
   const renderContent = (content: BibleService.ChapterContent, index: number) => {
@@ -826,7 +888,7 @@ export default function BibleReaderScreen() {
           </View>
         );
 
-        return hasFootnotes || hasSubtitle ? (
+        return (
           <TouchableOpacity
             key={index}
             onPress={() => openVerseDetails(content.number)}
@@ -834,8 +896,6 @@ export default function BibleReaderScreen() {
           >
             {verseContent}
           </TouchableOpacity>
-        ) : (
-          verseContent
         );
       case 'line_break':
         return <View key={index} style={ReaderStyles.lineBreak} />;
@@ -1057,6 +1117,12 @@ export default function BibleReaderScreen() {
                 </Text>
                 <Divider />
                 <ScrollView style={ReaderStyles.modalScroll}>
+                  <View style={ReaderStyles.detailSection}>
+                    <Text style={[ReaderStyles.detailText, { fontWeight: '500' }]}>
+                      {getVersePlainText(selectedVerseNum || 0)}
+                    </Text>
+                  </View>
+                  <Divider style={{ marginBottom: 16 }} />
                   {/* 
                       Aggregated Verse Content:
                       We calculate the subtitle text first to identify and filter
@@ -1117,6 +1183,16 @@ export default function BibleReaderScreen() {
                     );
                   })()}
                 </ScrollView>
+                <View style={{ padding: 16 }}>
+                  <Button
+                    mode="contained"
+                    icon="share-variant"
+                    onPress={handleShare}
+                    style={{ borderRadius: 24 }}
+                  >
+                    {labels.share}
+                  </Button>
+                </View>
               </>
             ) : (
               <>
