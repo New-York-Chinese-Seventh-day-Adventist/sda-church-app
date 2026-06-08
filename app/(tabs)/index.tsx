@@ -143,6 +143,7 @@ export default function HomeScreen() {
   const [isSabbath, setIsSabbath] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [useGps, setUseGps] = useState(false);
+  const [targetDate, setTargetDate] = useState<Date | null>(null);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [sunsets, setSunsets] = useState<{ fri: Date | null; sat: Date | null }>({
     fri: null,
@@ -185,8 +186,17 @@ export default function HomeScreen() {
 
       const now = new Date();
       const getDayDate = (d: number) => {
-        const t = new Date(now);
-        t.setDate(now.getDate() + (d - now.getDay()));
+        const t = new Date();
+        // Normalize to Noon local time to ensure the date is stable across UTC/Local
+        // conversions before we apply our longitude-based shift.
+        t.setDate(t.getDate() + (d - t.getDay()));
+        t.setHours(12, 0, 0, 0);
+
+        // For Western longitudes (lng < -15), the local evening sunset of a
+        // calendar day actually falls on the NEXT calendar day in UTC.
+        if (lng < -15) {
+          t.setDate(t.getDate() + 1);
+        }
         return t.toISOString().split('T')[0];
       };
 
@@ -208,6 +218,35 @@ export default function HomeScreen() {
     };
     fetchSunsets();
   }, [useGps, userCoords, new Date().toDateString()]);
+
+  const formatDisplayDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    };
+
+    if (language === 'en') {
+      const day = date.getDate();
+      const suffix = (d: number) => {
+        if (d > 3 && d < 21) return 'th';
+        switch (d % 10) {
+          case 1:
+            return 'st';
+          case 2:
+            return 'nd';
+          case 3:
+            return 'rd';
+          default:
+            return 'th';
+        }
+      };
+      const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+      const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
+      return `${weekday}, ${month} ${day}${suffix(day)}`;
+    }
+    return new Intl.DateTimeFormat(language, options).format(date);
+  };
 
   useEffect(() => {
     // If GPS status changes (user clicks "Allow"), the component will re-render
@@ -243,6 +282,7 @@ export default function HomeScreen() {
         target.setDate(target.getDate() + 7);
       }
 
+      setTargetDate(target);
       setIsSabbath(isSabbathNow);
 
       const diff = Math.max(0, target.getTime() - now.getTime());
@@ -476,6 +516,12 @@ export default function HomeScreen() {
         </ImageBackground>
 
         <List.Section style={NavigationStyles.contentContainer}>
+          <List.Subheader
+            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
+          >
+            {labels.thisWeek}
+          </List.Subheader>
+
           {/* Sabbath Countdown Widget */}
           <Card
             style={[styles.timerCard, { backgroundColor: theme.colors.surface }]}
@@ -496,6 +542,14 @@ export default function HomeScreen() {
                   >
                     {isSabbath ? labels.sabbathEnds : labels.sabbathStarts}
                   </Text>
+                  {targetDate && (
+                    <Text
+                      variant="labelSmall"
+                      style={{ color: theme.colors.primary, fontWeight: '700' }}
+                    >
+                      {formatDisplayDate(targetDate)}
+                    </Text>
+                  )}
                   <Text
                     variant="labelSmall"
                     style={{ color: theme.colors.onSurfaceVariant, opacity: 0.6 }}
@@ -522,6 +576,31 @@ export default function HomeScreen() {
             icon="youtube"
             iconColor={(theme.colors as any).brandYoutube}
             onPress={openSabbathStream}
+            style={{ marginBottom: 12 }}
+          />
+
+          <MenuCard
+            title={labels.bulletin}
+            icon="file-document-outline"
+            iconColor={theme.colors.tertiary}
+            onPress={() =>
+              router.push({
+                pathname: '/home/bulletin',
+                params: { backTo: '/' },
+              } as any)
+            }
+            style={{ marginBottom: 12 }}
+          />
+          <MenuCard
+            title={labels.give}
+            icon="gift"
+            iconColor={theme.colors.tertiary}
+            onPress={() =>
+              router.push({
+                pathname: '/home/give',
+                params: { backTo: '/' },
+              } as any)
+            }
             style={{ marginBottom: 12 }}
           />
 
@@ -594,36 +673,6 @@ export default function HomeScreen() {
               } as any)
             }
             style={{ marginBottom: 12 }}
-          />
-
-          <List.Subheader
-            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
-          >
-            {labels.thisWeek}
-          </List.Subheader>
-
-          <MenuCard
-            title={labels.bulletin}
-            icon="file-document-outline"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/bulletin',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-          <MenuCard
-            title={labels.give}
-            icon="gift"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/give',
-                params: { backTo: '/' },
-              } as any)
-            }
           />
         </List.Section>
       </ScrollView>
