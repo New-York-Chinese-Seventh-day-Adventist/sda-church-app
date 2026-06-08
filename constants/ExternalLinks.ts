@@ -75,6 +75,14 @@ export const openSermonArchive = async () => {
   );
 };
 
+export const openSabbathStream = async () => {
+  return openURL(
+    'https://www.youtube.com/@newyorkchinesesdachurch1334/streams',
+    'Error',
+    'Could not open the YouTube livestream.',
+  );
+};
+
 export const openYouTubeSearch = (query: string) => {
   return openURL(
     `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,

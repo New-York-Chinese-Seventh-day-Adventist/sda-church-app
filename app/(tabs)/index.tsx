@@ -4,7 +4,7 @@ import {
   CHURCH_LATITUDE,
   CHURCH_LONGITUDE,
   getSunsetApiUrl,
-  openSermonArchive,
+  openSabbathStream,
 } from '@/constants/ExternalLinks';
 import { LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
@@ -41,7 +41,7 @@ export default function HomeScreen() {
       verseOfDay: 'A word for your unique journey today',
       readVerse: 'Read Verse',
       shareVerse: 'Share Verse',
-      livestream: 'Sermon Archive',
+      livestream: 'Watch Livestream',
       aboutSDA: 'About Denomination',
       aboutHistory: 'Our History',
       discover: 'Discover',
@@ -64,7 +64,7 @@ export default function HomeScreen() {
       verseOfDay: '今日為您預備的話語',
       readVerse: '查閱經文',
       shareVerse: '分享經文',
-      livestream: '講道回顧',
+      livestream: '觀看直播',
       aboutSDA: '關於教派',
       aboutHistory: '我們的歷史',
       discover: '探索',
@@ -87,7 +87,7 @@ export default function HomeScreen() {
       verseOfDay: '今日为您准备的话语',
       readVerse: '查阅经文',
       shareVerse: '分享经文',
-      livestream: '讲道回顾',
+      livestream: '观看直播',
       aboutSDA: '关于教派',
       aboutHistory: '我们的历史',
       discover: '探索',
@@ -110,7 +110,7 @@ export default function HomeScreen() {
       verseOfDay: 'Una palabra para tu camino hoy',
       readVerse: 'Leer Versículo',
       shareVerse: 'Compartir',
-      livestream: 'Archivo de Sermones',
+      livestream: 'Ver Transmisión',
       aboutSDA: 'Sobre la Denominación',
       aboutHistory: 'Nuestra Historia',
       discover: 'Descubrir',
@@ -521,7 +521,7 @@ export default function HomeScreen() {
             title={labels.livestream}
             icon="youtube"
             iconColor={(theme.colors as any).brandYoutube}
-            onPress={openSermonArchive}
+            onPress={openSabbathStream}
             style={{ marginBottom: 12 }}
           />
 
