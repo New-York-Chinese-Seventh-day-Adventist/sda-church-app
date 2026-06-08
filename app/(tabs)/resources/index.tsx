@@ -1,7 +1,7 @@
 import { MenuCard } from '@/components/MenuCard';
 import {
   openSabbathSchool,
-  openSabbathStream,
+  openSermonArchive,
   openSpotifyPodcast,
   openZoomClass,
 } from '@/constants/ExternalLinks';
@@ -22,8 +22,8 @@ const allLabels = {
     studyLiturgy: 'Study & Liturgy',
     bible: 'Holy Bible',
     bibleSub: 'Read scripture in multiple languages',
-    youtube: 'Full Services',
-    youtubeSub: 'Watch our latest worship services',
+    youtube: 'Sermon Archive',
+    youtubeSub: 'Watch our latest sermons and worship services',
     spotify: 'Audio Archive',
     spotifySub: 'Listen to sermons and classes',
     sabbathSchool: 'Sabbath School',
@@ -41,8 +41,8 @@ const allLabels = {
     studyLiturgy: '研經與禮儀',
     bible: '聖經',
     bibleSub: '閱讀多種語言的聖經',
-    youtube: '完整崇拜服務',
-    youtubeSub: '觀看最新的崇拜服務',
+    youtube: '講道回顧',
+    youtubeSub: '觀看最新的講道與崇拜影片',
     spotify: '音頻檔案',
     spotifySub: '收聽證道與課程',
     sabbathSchool: '安息日學',
@@ -60,8 +60,8 @@ const allLabels = {
     studyLiturgy: '研经与礼仪',
     bible: '圣经',
     bibleSub: '阅读多种语言的圣经',
-    youtube: '完整崇拜服务',
-    youtubeSub: '观看最新的崇拜服务',
+    youtube: '讲道回顾',
+    youtubeSub: '观看最新的讲道与崇拜视频',
     spotify: '音频存档',
     spotifySub: '收听证道与课程',
     sabbathSchool: '安息日学',
@@ -79,8 +79,8 @@ const allLabels = {
     studyLiturgy: 'Estudio y Liturgia',
     bible: 'Santa Biblia',
     bibleSub: 'Lee las escrituras en varios idiomas',
-    youtube: 'Servicios Completos',
-    youtubeSub: 'Mira nuestros últimos servicios de adoración',
+    youtube: 'Archivo de Sermones',
+    youtubeSub: 'Vea nuestros últimos sermones y servicios de adoración',
     spotify: 'Archivo de Audio',
     spotifySub: 'Escucha sermones y clases',
     sabbathSchool: 'Escuela Sabática',
@@ -174,7 +174,7 @@ export default function ResourcesScreen() {
             description={labels.youtubeSub}
             icon="youtube"
             iconColor={(theme.colors as any).brandYoutube}
-            onPress={openSabbathStream}
+            onPress={openSermonArchive}
             rightIcon="open-in-new"
           />
 

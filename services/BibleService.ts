@@ -382,6 +382,94 @@ export function segmentText(text: string) {
 }
 
 /**
+ * Converts a structured verse object into a formatted plain-text string.
+ * This preserves poetic indentation, line breaks, and handles liturgical markers (Selah)
+ * consistently across the app.
+ */
+export function renderVerseToPlainText(
+  translationId: string,
+  verse: ChapterVerse,
+): string {
+  let result = '';
+  verse.content.forEach((item, i) => {
+    // 1. Skip metadata/footnotes
+    if (typeof item === 'object' && item !== null && 'noteId' in item) return;
+
+    // 2. Handle explicit line breaks
+    if (typeof item === 'object' && item !== null && 'lineBreak' in item) {
+      result += '\n';
+      return;
+    }
+
+    const textValue = typeof item === 'string' ? item : (item as any).text || '';
+    const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
+    const isSelah = isSelahMarker(translationId, textValue);
+
+    const prevItem = i > 0 ? verse.content[i - 1] : null;
+    const prevIsLineBreak = !!(
+      prevItem &&
+      typeof prevItem === 'object' &&
+      'lineBreak' in prevItem
+    );
+
+    // Calculate Poetic Continuity
+    let isLineContinuation = false;
+    if (isPoetic && i > 0 && !prevIsLineBreak) {
+      for (let k = i - 1; k >= 0; k--) {
+        const prev = verse.content[k];
+        const isMetadata = typeof prev === 'object' && prev !== null && 'noteId' in prev;
+        const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
+        if (isMetadata || isWhitespace) continue;
+
+        const prevIsPoetic = typeof prev === 'object' && prev !== null && 'poem' in prev;
+        const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
+        const prevIsSelah = isSelahMarker(translationId, prevText);
+
+        if (
+          prevIsPoetic &&
+          !prevIsSelah &&
+          (prev as any).poem === (item as any).poem &&
+          !textValue.startsWith('\n')
+        ) {
+          isLineContinuation = true;
+        }
+        break;
+      }
+    }
+
+    const followsFootnote = !!(
+      prevItem &&
+      typeof prevItem === 'object' &&
+      'noteId' in prevItem
+    );
+    let contentText = textValue;
+
+    if (
+      (followsFootnote || isSelah) &&
+      !(isPoetic && !isLineContinuation && i > 0) &&
+      contentText.length > 0 &&
+      !startsWithPunctuationOrSpace(contentText)
+    ) {
+      contentText = ' ' + contentText;
+    }
+
+    if (isSelah) {
+      result += '\n' + contentText;
+    } else if (isPoetic) {
+      const indentCount = (item as any).poem > 1 ? (item as any).poem - 1 : 0;
+      const indent = '  '.repeat(indentCount);
+      const prefix =
+        (i > 0 && !isLineContinuation && !prevIsLineBreak ? '\n' : '') +
+        (!isLineContinuation ? indent : '');
+      result += prefix + contentText;
+    } else {
+      result += contentText;
+    }
+  });
+  return result.trim();
+}
+
+/**
  * Fetches the verses for a specific chapter in a specific translation and book.
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.

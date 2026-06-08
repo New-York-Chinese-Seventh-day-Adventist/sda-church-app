@@ -244,16 +244,24 @@ export default function BaptismScreen() {
         </View>
 
         <View style={DocumentStyles.section}>
-          <List.Subheader
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: 'bold',
-              fontSize: 16,
-              paddingLeft: 0,
-            }}
+          <Text
+            variant="titleLarge"
+            style={[
+              DocumentStyles.sectionTitle,
+              {
+                color: theme.colors.onSurface,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
           >
-            {joining.title}: {joining.intro}
-          </List.Subheader>
+            {joining.title}
+          </Text>
+          <Text
+            variant="bodyMedium"
+            style={{ marginBottom: 16, color: theme.colors.onSurfaceVariant }}
+          >
+            {joining.intro}
+          </Text>
 
           {joining.methods.map((method: any, idx: number) => (
             <Card
@@ -279,20 +287,20 @@ export default function BaptismScreen() {
           ))}
         </View>
 
-        <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
-          <List.Subheader
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: 'bold',
-              fontSize: 16,
-              paddingLeft: 0,
-            }}
+        <View style={DocumentStyles.section}>
+          <Text
+            variant="titleLarge"
+            style={[
+              DocumentStyles.sectionTitle,
+              {
+                color: theme.colors.onSurface,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
           >
             {labels.commitmentsHeader}
-          </List.Subheader>
-        </View>
+          </Text>
 
-        <View style={DocumentStyles.section}>
           <List.Accordion
             title={labels.vowsTitle}
             expanded={expanded === 'vows'}

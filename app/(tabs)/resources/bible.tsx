@@ -557,81 +557,7 @@ export default function BibleReaderScreen() {
     ) as BibleService.ChapterVerse;
     if (!verse) return '';
 
-    let result = '';
-    verse.content.forEach((item, i) => {
-      if (typeof item === 'object' && item !== null && 'noteId' in item) return;
-      if (typeof item === 'object' && item !== null && 'lineBreak' in item) {
-        result += '\n';
-        return;
-      }
-
-      const textValue = typeof item === 'string' ? item : (item as any).text || '';
-      const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
-      const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
-      const prevItem = i > 0 ? verse.content[i - 1] : null;
-      const prevIsLineBreak = !!(
-        prevItem &&
-        typeof prevItem === 'object' &&
-        'lineBreak' in prevItem
-      );
-
-      let isLineContinuation = false;
-      if (isPoetic && i > 0 && !prevIsLineBreak) {
-        for (let k = i - 1; k >= 0; k--) {
-          const prev = verse.content[k];
-          const isMetadata =
-            typeof prev === 'object' && prev !== null && 'noteId' in prev;
-          const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
-          if (isMetadata || isWhitespace) continue;
-          const prevIsPoetic =
-            typeof prev === 'object' && prev !== null && 'poem' in prev;
-          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
-          const prevIsSelah = BibleService.isSelahMarker(
-            supportedTranslation.id,
-            prevText,
-          );
-          if (
-            prevIsPoetic &&
-            !prevIsSelah &&
-            (prev as any).poem === (item as any).poem &&
-            !textValue.startsWith('\n')
-          ) {
-            isLineContinuation = true;
-          }
-          break;
-        }
-      }
-
-      const followsFootnote = !!(
-        prevItem &&
-        typeof prevItem === 'object' &&
-        'noteId' in prevItem
-      );
-      let contentText = textValue;
-      if (
-        (followsFootnote || isSelah) &&
-        !(isPoetic && !isLineContinuation && i > 0) &&
-        contentText.length > 0 &&
-        !BibleService.startsWithPunctuationOrSpace(contentText)
-      ) {
-        contentText = ' ' + contentText;
-      }
-
-      if (isSelah) {
-        result += '\n' + contentText;
-      } else if (isPoetic) {
-        const indentCount = (item as any).poem > 1 ? (item as any).poem - 1 : 0;
-        const indent = '  '.repeat(indentCount);
-        const prefix =
-          (i > 0 && !isLineContinuation && !prevIsLineBreak ? '\n' : '') +
-          (!isLineContinuation ? indent : '');
-        result += prefix + contentText;
-      } else {
-        result += contentText;
-      }
-    });
-
-    return result.trim();
+    return BibleService.renderVerseToPlainText(supportedTranslation.id, verse);
   };
 
   const handleShare = async () => {
@@ -704,29 +630,6 @@ export default function BibleReaderScreen() {
     const currentBookIdx = books.findIndex(
       (b: BibleService.TranslationBook) => b.id === book.id,
     );
-
-    // If audio is currently playing, ensure the new chapter starts playing automatically
-    if (isPlaying) {
-      setShouldAutoPlay(true);
-    }
-
-    if (direction === 'prev') {
-      if (chapterNum > 1) {
-        setChapterNum((prev) => prev - 1);
-      } else if (currentBookIdx > 0) {
-        const prevBook = books[currentBookIdx - 1];
-        setBook(prevBook);
-        setChapterNum(prevBook.numberOfChapters);
-      }
-    } else {
-      if (chapterNum < book.numberOfChapters) {
-        setChapterNum((prev) => prev + 1);
-      } else if (currentBookIdx < books.length - 1) {
-        const nextBook = books[currentBookIdx + 1];
-        setBook(nextBook);
-        setChapterNum(1);
-      }
-    }
   };
 
   /**

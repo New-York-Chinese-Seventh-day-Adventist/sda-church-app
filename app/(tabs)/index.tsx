@@ -4,13 +4,14 @@ import {
   CHURCH_LATITUDE,
   CHURCH_LONGITUDE,
   getSunsetApiUrl,
-  openSabbathStream,
+  openSermonArchive,
 } from '@/constants/ExternalLinks';
 import { LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { NavigationStyles } from '@/styles/NavigationStyles';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -37,10 +38,10 @@ export default function HomeScreen() {
     en: {
       welcome: 'Welcome!',
       subtitle: 'Loading daily verse...',
-      verseOfDay: 'Verse of the Day',
+      verseOfDay: 'A word for your unique journey today',
       readVerse: 'Read Verse',
       shareVerse: 'Share Verse',
-      livestream: 'Watch Livestream',
+      livestream: 'Sermon Archive',
       aboutSDA: 'About Denomination',
       aboutHistory: 'Our History',
       discover: 'Discover',
@@ -60,10 +61,10 @@ export default function HomeScreen() {
     zh: {
       welcome: '歡迎！',
       subtitle: '正在載入經文...',
-      verseOfDay: '今日經文',
+      verseOfDay: '今日為您預備的話語',
       readVerse: '查閱經文',
       shareVerse: '分享經文',
-      livestream: '觀看直播',
+      livestream: '講道回顧',
       aboutSDA: '關於教派',
       aboutHistory: '我們的歷史',
       discover: '探索',
@@ -83,10 +84,10 @@ export default function HomeScreen() {
     'zh-cn': {
       welcome: '欢迎！',
       subtitle: '正在载入经文...',
-      verseOfDay: '今日经文',
+      verseOfDay: '今日为您准备的话语',
       readVerse: '查阅经文',
       shareVerse: '分享经文',
-      livestream: '观看直播',
+      livestream: '讲道回顾',
       aboutSDA: '关于教派',
       aboutHistory: '我们的历史',
       discover: '探索',
@@ -106,10 +107,10 @@ export default function HomeScreen() {
     es: {
       welcome: '¡Bienvenido!',
       subtitle: 'Cargando versículo...',
-      verseOfDay: 'Versículo del Día',
+      verseOfDay: 'Una palabra para tu camino hoy',
       readVerse: 'Leer Versículo',
       shareVerse: 'Compartir',
-      livestream: 'Ver Transmisión',
+      livestream: 'Archivo de Sermones',
       aboutSDA: 'Sobre la Denominación',
       aboutHistory: 'Nuestra Historia',
       discover: 'Descubrir',
@@ -335,17 +336,7 @@ export default function HomeScreen() {
         ) as BibleService.ChapterVerse;
 
         if (verseContent) {
-          const text = verseContent.content
-            .map((item) => {
-              if (typeof item === 'string') return item;
-              if (typeof item === 'object' && item !== null && 'text' in item)
-                return (item as any).text || '';
-              return '';
-            })
-            .join('')
-            .replace(/\s+/g, ' ')
-            .trim();
-
+          const text = BibleService.renderVerseToPlainText(transId, verseContent);
           const newVOTD = {
             text: `"${text}"`,
             reference: `${book.name} ${selection.chapter}:${selection.verse}`,
@@ -492,6 +483,12 @@ export default function HomeScreen() {
           >
             <Card.Content style={styles.timerContentSubtle}>
               <View style={styles.timerRow}>
+                <MaterialCommunityIcons
+                  name="sun-clock-outline"
+                  size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
+                  color={theme.colors.tertiary}
+                  style={{ marginRight: 12 }}
+                />
                 <View style={styles.labelColumn}>
                   <Text
                     variant="bodyLarge"
@@ -524,7 +521,7 @@ export default function HomeScreen() {
             title={labels.livestream}
             icon="youtube"
             iconColor={(theme.colors as any).brandYoutube}
-            onPress={openSabbathStream}
+            onPress={openSermonArchive}
             style={{ marginBottom: 12 }}
           />
 
