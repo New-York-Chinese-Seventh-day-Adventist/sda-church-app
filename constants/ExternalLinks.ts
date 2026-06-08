@@ -12,6 +12,18 @@ export const CHURCH_EMAIL = 'nycsdac@gmail.com';
 export const CHURCH_BUILDING_IMAGE_URL =
   'https://lh3.googleusercontent.com/nK9F_oIMAeFUg3zR4Zp7Qp-r0ywqGwZ6RN5TtSh8otJbUBqoTqdMdCUzAULPqnPM1slZdSeOqaLNtvnz=w1626';
 
+// Hardcoded to 760 41st Ave Elmhurst, NY 11373
+export const CHURCH_LATITUDE = 40.74546;
+export const CHURCH_LONGITUDE = -73.88914;
+
+/**
+ * Sunset API Endpoint
+ * Centralizing this here follows Tenet 5 (Simplicity) by providing a
+ * single source for external API endpoints.
+ */
+export const getSunsetApiUrl = (lat: number, lng: number, date: string) =>
+  `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&date=${date}&formatted=0`;
+
 /**
  * Centralized hub for external destinations.
  * Consolidating these here satisfies Tenet 5 (Simplicity) by providing
@@ -52,6 +64,14 @@ export const openZoomClass = async () => {
     'https://us06web.zoom.us/j/2541879535?pwd=Rmhsa0pFK3hQVTRHMzVqQ2swZlBodz09',
     'Error',
     'Could not open the Zoom class link.',
+  );
+};
+
+export const openSermonArchive = async () => {
+  return openURL(
+    'https://www.youtube.com/playlist?list=PLX85oBoVF4TKC4p0hJ6EK6X_2zXOB53eW',
+    'Error',
+    'Could not open the YouTube sermon archive.',
   );
 };
 

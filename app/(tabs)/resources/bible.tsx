@@ -3,7 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -129,18 +129,28 @@ export default function BibleReaderScreen() {
   const { menuAnim, setMenuVisible: setGlobalMenuVisible } = useContext(UIStateContext);
   const [menuVisible, setMenuVisible] = useState(true);
 
+  const animatedDockHeight = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [
+      DOCK_HEIGHT + insets.bottom,
+      DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom,
+    ],
+  });
+
   const {
     bookId: paramBookId,
     chapter: paramChapter,
     translationId: paramTransId,
     q: paramQuery,
     backTo: paramBackTo,
+    refresh: paramRefresh,
   } = useLocalSearchParams<{
     bookId?: string;
     chapter?: string;
     translationId?: string;
     q?: string;
     backTo?: string;
+    refresh?: string;
   }>();
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
@@ -170,6 +180,7 @@ export default function BibleReaderScreen() {
     useState<BibleService.TranslationBookChapter | null>(null);
   const [loading, setLoading] = useState(false);
   const appliedQuery = useRef<string | null>(null);
+  const appliedRefresh = useRef<string | null>(null);
 
   // Modal states
   const [modalType, setModalType] = useState<
@@ -256,7 +267,7 @@ export default function BibleReaderScreen() {
 
     if (paramTransId) {
       const trans = BibleService.SUPPORTED_TRANSLATIONS.find(
-        (t) => t.id === paramTransId,
+        (t: any) => t.id === paramTransId,
       );
       if (trans && trans.id !== supportedTranslation.id) {
         setSupportedTranslation(trans);
@@ -266,7 +277,9 @@ export default function BibleReaderScreen() {
     if (paramBookId) {
       // If the book is already in our current 'books' list, we can set it immediately.
       // Otherwise, we set initialBookId so the fetchBooks effect picks it up.
-      const matchingBook = books.find((b) => b.id === paramBookId);
+      const matchingBook = books.find(
+        (b: BibleService.TranslationBook) => b.id === paramBookId,
+      );
       if (matchingBook) {
         if (matchingBook.id !== book?.id) {
           setBook(matchingBook);
@@ -282,17 +295,32 @@ export default function BibleReaderScreen() {
         setChapterNum(chap);
       }
     }
-  }, [paramTransId, paramBookId, paramChapter, isPersistenceLoaded, books, paramQuery]);
+  }, [
+    paramTransId,
+    paramBookId,
+    paramChapter,
+    isPersistenceLoaded,
+    books,
+    paramQuery,
+    paramRefresh,
+  ]);
 
   /**
    * Handles jumping to a specific chapter/verse if provided via a search query 'q'.
    * Uses a multi-lingual resolver to determine the book and coordinates.
    */
   useEffect(() => {
-    if (paramQuery && appliedQuery.current !== paramQuery && books.length > 0) {
+    const isNewRefresh = paramRefresh && appliedRefresh.current !== paramRefresh;
+    if (
+      paramQuery &&
+      (appliedQuery.current !== paramQuery || isNewRefresh) &&
+      books.length > 0
+    ) {
       const ref = SearchTerms.resolveBibleReference(paramQuery, language);
       if (ref) {
-        const matchingBook = books.find((b) => b.id === ref.bookId);
+        const matchingBook = books.find(
+          (b: BibleService.TranslationBook) => b.id === ref.bookId,
+        );
         if (matchingBook) {
           setBook(matchingBook);
           if (ref.chapter <= matchingBook.numberOfChapters) {
@@ -301,8 +329,9 @@ export default function BibleReaderScreen() {
         }
       }
       appliedQuery.current = paramQuery;
+      appliedRefresh.current = paramRefresh || null;
     }
-  }, [paramQuery, books, language]);
+  }, [paramQuery, books, language, paramRefresh]);
 
   // Scroll to verse if specified in query
   useEffect(() => {
@@ -314,36 +343,45 @@ export default function BibleReaderScreen() {
           ref.chapter === chapterNum &&
           versePositions.current[ref.verse] !== undefined
         ) {
-          // Delay slightly to ensure layout is complete and off-screen items are rendered
-          const timer = setTimeout(() => {
+          scrollRef.current?.scrollTo({
+            y: versePositions.current[ref.verse!] - 20,
+            animated: true,
+          });
+          return;
+        }
+
+        // If positions aren't ready (common when navigating from other screens),
+        // use a retry mechanism to wait for the layout engine to settle.
+        let attempts = 0;
+        const checkAndScroll = () => {
+          if (
+            ref.bookId === book?.id &&
+            ref.chapter === chapterNum &&
+            versePositions.current[ref.verse!] !== undefined
+          ) {
             scrollRef.current?.scrollTo({
               y: versePositions.current[ref.verse!] - 20,
               animated: true,
             });
-          }, 150);
-          return () => clearTimeout(timer);
-        }
+          } else if (attempts < 10) {
+            attempts++;
+            setTimeout(checkAndScroll, 100);
+          }
+        };
+        const timer = setTimeout(checkAndScroll, 100);
+        return () => clearTimeout(timer);
       }
     }
-  }, [chapterData, loading, paramQuery, chapterNum]);
+  }, [chapterData, loading, paramQuery, chapterNum, paramRefresh]);
 
   // Keep the Bible dock visible at the bottom of the screen at all times.
   // We only animate the height so it "drops" down to the bottom when the tab bar hides.
   const dockTranslateY = 0;
 
-  // Taller when expanded to overlap the tab bar area; shorter when retracted.
-  const animatedDockHeight = useMemo(() => {
-    return menuAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [
-        DOCK_HEIGHT + insets.bottom + (isSelectionActive ? 56 : 0),
-        DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + insets.bottom + (isSelectionActive ? 56 : 0),
-      ],
-    });
-  }, [menuAnim, insets.bottom, isSelectionActive]);
-
   // Determine navigation boundaries
-  const currentBookIdx = books.findIndex((b) => b.id === book?.id);
+  const currentBookIdx = books.findIndex(
+    (b: BibleService.TranslationBook) => b.id === book?.id,
+  );
   const isFirstChapter = chapterNum === 1 && currentBookIdx === 0;
   const isLastChapter = !!(
     book &&
@@ -519,81 +557,7 @@ export default function BibleReaderScreen() {
     ) as BibleService.ChapterVerse;
     if (!verse) return '';
 
-    let result = '';
-    verse.content.forEach((item, i) => {
-      if (typeof item === 'object' && item !== null && 'noteId' in item) return;
-      if (typeof item === 'object' && item !== null && 'lineBreak' in item) {
-        result += '\n';
-        return;
-      }
-
-      const textValue = typeof item === 'string' ? item : (item as any).text || '';
-      const isPoetic = typeof item === 'object' && item !== null && 'poem' in item;
-      const isSelah = BibleService.isSelahMarker(supportedTranslation.id, textValue);
-      const prevItem = i > 0 ? verse.content[i - 1] : null;
-      const prevIsLineBreak = !!(
-        prevItem &&
-        typeof prevItem === 'object' &&
-        'lineBreak' in prevItem
-      );
-
-      let isLineContinuation = false;
-      if (isPoetic && i > 0 && !prevIsLineBreak) {
-        for (let k = i - 1; k >= 0; k--) {
-          const prev = verse.content[k];
-          const isMetadata =
-            typeof prev === 'object' && prev !== null && 'noteId' in prev;
-          const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
-          if (isMetadata || isWhitespace) continue;
-          const prevIsPoetic =
-            typeof prev === 'object' && prev !== null && 'poem' in prev;
-          const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
-          const prevIsSelah = BibleService.isSelahMarker(
-            supportedTranslation.id,
-            prevText,
-          );
-          if (
-            prevIsPoetic &&
-            !prevIsSelah &&
-            (prev as any).poem === (item as any).poem &&
-            !textValue.startsWith('\n')
-          ) {
-            isLineContinuation = true;
-          }
-          break;
-        }
-      }
-
-      const followsFootnote = !!(
-        prevItem &&
-        typeof prevItem === 'object' &&
-        'noteId' in prevItem
-      );
-      let contentText = textValue;
-      if (
-        (followsFootnote || isSelah) &&
-        !(isPoetic && !isLineContinuation && i > 0) &&
-        contentText.length > 0 &&
-        !BibleService.startsWithPunctuationOrSpace(contentText)
-      ) {
-        contentText = ' ' + contentText;
-      }
-
-      if (isSelah) {
-        result += '\n' + contentText;
-      } else if (isPoetic) {
-        const indentCount = (item as any).poem > 1 ? (item as any).poem - 1 : 0;
-        const indent = '  '.repeat(indentCount);
-        const prefix =
-          (i > 0 && !isLineContinuation && !prevIsLineBreak ? '\n' : '') +
-          (!isLineContinuation ? indent : '');
-        result += prefix + contentText;
-      } else {
-        result += contentText;
-      }
-    });
-
-    return result.trim();
+    return BibleService.renderVerseToPlainText(supportedTranslation.id, verse);
   };
 
   const handleShare = async () => {
@@ -663,30 +627,9 @@ export default function BibleReaderScreen() {
    */
   const navigateToChapter = (direction: 'prev' | 'next') => {
     if (!book || books.length === 0) return;
-    const currentBookIdx = books.findIndex((b) => b.id === book.id);
-
-    // If audio is currently playing, ensure the new chapter starts playing automatically
-    if (isPlaying) {
-      setShouldAutoPlay(true);
-    }
-
-    if (direction === 'prev') {
-      if (chapterNum > 1) {
-        setChapterNum((prev) => prev - 1);
-      } else if (currentBookIdx > 0) {
-        const prevBook = books[currentBookIdx - 1];
-        setBook(prevBook);
-        setChapterNum(prevBook.numberOfChapters);
-      }
-    } else {
-      if (chapterNum < book.numberOfChapters) {
-        setChapterNum((prev) => prev + 1);
-      } else if (currentBookIdx < books.length - 1) {
-        const nextBook = books[currentBookIdx + 1];
-        setBook(nextBook);
-        setChapterNum(1);
-      }
-    }
+    const currentBookIdx = books.findIndex(
+      (b: BibleService.TranslationBook) => b.id === book.id,
+    );
   };
 
   /**
@@ -719,7 +662,18 @@ export default function BibleReaderScreen() {
     if (chapterData) {
       clearSelection();
       versePositions.current = {}; // Clear previous chapter positions
-      scrollRef.current?.scrollTo({ y: 0, animated: false });
+
+      // Determine if the current query is targeting a specific verse in the chapter being loaded.
+      // If it is, we skip the "reset to top" scroll to avoid conflicting with the targeted scroll logic.
+      const ref = paramQuery
+        ? SearchTerms.resolveBibleReference(paramQuery, language)
+        : null;
+      const isTargetingThisChapter =
+        ref && ref.bookId === book?.id && ref.chapter === chapterNum;
+
+      if (!isTargetingThisChapter) {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      }
     }
 
     // Stop and unload audio when the chapter changes or the component unmounts
@@ -732,7 +686,7 @@ export default function BibleReaderScreen() {
       // Always restore menus when leaving the reader
       updateMenuVisibility(true);
     };
-  }, [chapterData, setGlobalMenuVisible]);
+  }, [chapterData, setGlobalMenuVisible, paramQuery, language, book?.id, chapterNum]);
 
   /**
    * Renders individual content items (text, formatted text, footnotes, etc.)

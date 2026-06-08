@@ -1,7 +1,7 @@
 import { MenuCard } from '@/components/MenuCard';
 import {
   openSabbathSchool,
-  openSabbathStream,
+  openSermonArchive,
   openSpotifyPodcast,
   openZoomClass,
 } from '@/constants/ExternalLinks';
@@ -22,14 +22,15 @@ const allLabels = {
     studyLiturgy: 'Study & Liturgy',
     bible: 'Holy Bible',
     bibleSub: 'Read scripture in multiple languages',
-    youtube: 'Full Services',
-    youtubeSub: 'Watch our latest worship services',
+    youtube: 'Sermon Archive',
+    youtubeSub: 'Watch our latest sermons and worship services',
     spotify: 'Audio Archive',
     spotifySub: 'Listen to sermons and classes',
     sabbathSchool: 'Sabbath School',
     sabbathSchoolSub: 'Weekly Bible study guides and discussion',
     zoomClass: 'Zoom Class',
-    zoomSub: 'Interactive Bible study and fellowship. Please ask others for password',
+    zoomSub:
+      'Interactive Bible study and fellowship. Please see physical bulletin or ask others for password',
     hymnal: 'Hymnal',
     hymnalSub: 'English and Chinese worship music',
     library: 'Library',
@@ -41,14 +42,14 @@ const allLabels = {
     studyLiturgy: '研經與禮儀',
     bible: '聖經',
     bibleSub: '閱讀多種語言的聖經',
-    youtube: '完整崇拜服務',
-    youtubeSub: '觀看最新的崇拜服務',
+    youtube: '講道回顧',
+    youtubeSub: '觀看最新的講道與崇拜影片',
     spotify: '音頻檔案',
     spotifySub: '收聽證道與課程',
     sabbathSchool: '安息日學',
     sabbathSchoolSub: '每週研經指南與討論',
     zoomClass: 'Zoom 課程',
-    zoomSub: '互動式研經與團契。請向他人詢問密碼',
+    zoomSub: '互動式研經與團契。請參閱紙本週報或向他人詢問密碼',
     hymnal: '詩歌本',
     hymnalSub: '中英文敬拜音樂',
     library: '圖書館',
@@ -60,14 +61,14 @@ const allLabels = {
     studyLiturgy: '研经与礼仪',
     bible: '圣经',
     bibleSub: '阅读多种语言的圣经',
-    youtube: '完整崇拜服务',
-    youtubeSub: '观看最新的崇拜服务',
+    youtube: '讲道回顾',
+    youtubeSub: '观看最新的讲道与崇拜视频',
     spotify: '音频存档',
     spotifySub: '收听证道与课程',
     sabbathSchool: '安息日学',
     sabbathSchoolSub: '每周研经指南与讨论',
     zoomClass: 'Zoom 课程',
-    zoomSub: '互动式研经与团契。请向他人询问密码',
+    zoomSub: '互动式研经与团契。请参阅纸本周报或向他人询问密码',
     hymnal: '诗歌本',
     hymnalSub: '中英文敬拜音乐',
     library: '图书馆',
@@ -79,15 +80,15 @@ const allLabels = {
     studyLiturgy: 'Estudio y Liturgia',
     bible: 'Santa Biblia',
     bibleSub: 'Lee las escrituras en varios idiomas',
-    youtube: 'Servicios Completos',
-    youtubeSub: 'Mira nuestros últimos servicios de adoración',
+    youtube: 'Archivo de Sermones',
+    youtubeSub: 'Vea nuestros últimos sermones y servicios de adoración',
     spotify: 'Archivo de Audio',
     spotifySub: 'Escucha sermones y clases',
     sabbathSchool: 'Escuela Sabática',
     sabbathSchoolSub: 'Guías de estudio bíblico semanal y discusión',
     zoomClass: 'Clase de Zoom',
     zoomSub:
-      'Estudio bíblico interactivo y compañerismo. Por favor, pida la contraseña a otros',
+      'Estudio bíblico interactivo y compañerismo. Por favor, consulte el boletín físico o pida la contraseña a otros',
     hymnal: 'Himnario',
     hymnalSub: 'Música de adoración en inglés y chino',
     library: 'Biblioteca',
@@ -174,7 +175,7 @@ export default function ResourcesScreen() {
             description={labels.youtubeSub}
             icon="youtube"
             iconColor={(theme.colors as any).brandYoutube}
-            onPress={openSabbathStream}
+            onPress={openSermonArchive}
             rightIcon="open-in-new"
           />
 

@@ -104,6 +104,13 @@ export const customLightTheme = {
     // Subtle Blur Effect for Glassmorphism Border for Search
     glassBorder: 'rgba(0,0,0,0.1)',
   },
+  gradients: {
+    heroOverlay: ['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.4)', 'transparent'] as [
+      string,
+      string,
+      ...string[],
+    ],
+  },
   blurTint: 'light' as 'light' | 'dark',
   statusBarScheme: 'dark-content' as StatusBarStyle,
   roundness: 3,
@@ -173,6 +180,13 @@ export const customDarkTheme: AppTheme = {
 
     // Subtle Blur Effect for Glassmorphism Border for Search
     glassBorder: 'rgba(255, 255, 255, 0.1)',
+  },
+  gradients: {
+    heroOverlay: ['rgba(0,0,0,0.9)', 'rgba(0,0,0,0.6)', 'transparent'] as [
+      string,
+      string,
+      ...string[],
+    ],
   },
   blurTint: 'dark' as 'light' | 'dark',
   statusBarScheme: 'light-content' as StatusBarStyle,
