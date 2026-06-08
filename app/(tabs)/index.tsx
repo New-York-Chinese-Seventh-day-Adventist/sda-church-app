@@ -184,19 +184,12 @@ export default function HomeScreen() {
       const lat = useGps && userCoords ? userCoords.lat : CHURCH_LATITUDE;
       const lng = useGps && userCoords ? userCoords.lng : CHURCH_LONGITUDE;
 
-      const now = new Date();
       const getDayDate = (d: number) => {
         const t = new Date();
         // Normalize to Noon local time to ensure the date is stable across UTC/Local
         // conversions before we apply our longitude-based shift.
         t.setDate(t.getDate() + (d - t.getDay()));
         t.setHours(12, 0, 0, 0);
-
-        // For Western longitudes (lng < -15), the local evening sunset of a
-        // calendar day actually falls on the NEXT calendar day in UTC.
-        if (lng < -15) {
-          t.setDate(t.getDate() + 1);
-        }
         return t.toISOString().split('T')[0];
       };
 
