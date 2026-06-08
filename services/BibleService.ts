@@ -304,13 +304,26 @@ export async function fetchAvailableTranslations() {
 }
 
 /**
+ * Returns a random book and a random chapter number within that book's bounds.
+ * Useful for implementing "Random Verse" features.
+ *
+ * @param books - The list of available books.
+ */
+export function selectRandomChapter(books: TranslationBook[]) {
+  if (!books || books.length === 0) return null;
+  const book = books[Math.floor(Math.random() * books.length)];
+  const chapter = Math.floor(Math.random() * book.numberOfChapters) + 1;
+  return { book, chapter };
+}
+
+/**
  * Fetches the list of books available for a specific translation.
  *
  * @param {string} translation - The ID of the translation. Standard: Uppercase ID.
  * @example fetchBooks('BSB')
  * @returns {Promise<TranslationBook[]>}
  */
-export async function fetchBooks(translation: string) {
+export async function fetchBooks(translation: string): Promise<TranslationBook[]> {
   try {
     const res = await fetch(`${API_BASE}/${translation}/books.json`);
     if (!res.ok) {
