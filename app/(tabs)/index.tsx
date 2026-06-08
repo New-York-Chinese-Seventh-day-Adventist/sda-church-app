@@ -308,22 +308,14 @@ export default function HomeScreen() {
       const transId =
         BibleService.DEFAULT_TRANSLATION_MAP[language as SupportedLanguage] || 'BSB';
 
-      // 1. Check if we have the specific translation already cached for today
-      const cachedText = await AsyncStorage.getItem(VOTD_CACHE_KEY);
-      if (cachedText) {
-        const parsed = JSON.parse(cachedText);
-        if (parsed.dateKey === currentDateKey) {
-          setRandomVerse(parsed);
-          return;
-        }
-      }
-
-      // 2. Check if a master verse was selected for today in any language
-      const masterConfig = await AsyncStorage.getItem(VOTD_CONFIG_KEY);
+      // 1. Check if we have coordinates (selection) already cached for today.
+      // We only use the cache for the "Selection" to ensure we pick the same verse,
+      // but we ALWAYS re-render the text from the chapter content to ensure
+      // any fixes to the BibleService renderer are applied immediately.
+      const cached = await AsyncStorage.getItem(VOTD_CACHE_KEY);
       let selection: { bookId: string; chapter: number; verse: number } | null = null;
-
-      if (masterConfig) {
-        const parsed = JSON.parse(masterConfig);
+      if (cached) {
+        const parsed = JSON.parse(cached);
         if (parsed.dateKey === currentDateKey) {
           selection = {
             bookId: parsed.bookId,

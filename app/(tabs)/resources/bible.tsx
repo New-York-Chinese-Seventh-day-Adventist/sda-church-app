@@ -750,7 +750,7 @@ export default function BibleReaderScreen() {
         }
         break;
       }
-      if (!foundPreviousContent) isLineContinuation = true;
+      if (!foundPreviousContent) isLineContinuation = false;
     }
 
     // Version-specific detection for liturgical/poetic markers.
@@ -761,9 +761,19 @@ export default function BibleReaderScreen() {
     // inject a space to prevent "welded" words like "allywith".
     // We only inject if we AREN'T about to start a new poetic line (which adds a newline).
     let contentText = textValue;
+    const willAddPoeticNewLine =
+      isPoetic &&
+      !isLineContinuation &&
+      i > 0 &&
+      foundPreviousContent &&
+      !prevIsLineBreak;
+    const willAddSelahNewLine = isSelah && i > 0 && !prevIsLineBreak;
+
     if (
       (followsFootnote || isSelah) &&
       !(isPoetic && !isLineContinuation && i > 0) &&
+      !willAddPoeticNewLine &&
+      !willAddSelahNewLine &&
       contentText.length > 0 &&
       !BibleService.startsWithPunctuationOrSpace(contentText)
     ) {
@@ -862,7 +872,12 @@ export default function BibleReaderScreen() {
           : '';
 
       const prefix =
-        (isPoetic && !isLineContinuation && !isSelah && i > 0 && !prevIsLineBreak
+        (isPoetic &&
+        foundPreviousContent &&
+        !isLineContinuation &&
+        !isSelah &&
+        i > 0 &&
+        !prevIsLineBreak
           ? '\n'
           : '') + (!isLineContinuation ? indent : '');
 
