@@ -414,13 +414,21 @@ export function renderVerseToPlainText(
 
     // Calculate Poetic Continuity
     let isLineContinuation = false;
+    let foundPreviousContent = false;
+
     if (isPoetic && i > 0 && !prevIsLineBreak) {
+      let skippedInterruption = false;
       for (let k = i - 1; k >= 0; k--) {
         const prev = verse.content[k];
         const isMetadata = typeof prev === 'object' && prev !== null && 'noteId' in prev;
         const isWhitespace = typeof prev === 'string' && prev.trim().length === 0;
-        if (isMetadata || isWhitespace) continue;
 
+        if (isMetadata || isWhitespace) {
+          skippedInterruption = true;
+          continue;
+        }
+
+        foundPreviousContent = true;
         const prevIsPoetic = typeof prev === 'object' && prev !== null && 'poem' in prev;
         const prevText = typeof prev === 'string' ? prev : (prev as any)?.text || '';
         const prevIsSelah = isSelahMarker(translationId, prevText);
@@ -429,12 +437,14 @@ export function renderVerseToPlainText(
           prevIsPoetic &&
           !prevIsSelah &&
           (prev as any).poem === (item as any).poem &&
+          skippedInterruption &&
           !textValue.startsWith('\n')
         ) {
           isLineContinuation = true;
         }
         break;
       }
+      if (!foundPreviousContent) isLineContinuation = false;
     }
 
     const followsFootnote = !!(
@@ -444,9 +454,19 @@ export function renderVerseToPlainText(
     );
     let contentText = textValue;
 
+    const willAddPoeticNewLine =
+      isPoetic &&
+      !isLineContinuation &&
+      i > 0 &&
+      foundPreviousContent &&
+      !prevIsLineBreak;
+    const willAddSelahNewLine = isSelah && i > 0 && !prevIsLineBreak;
+
     if (
       (followsFootnote || isSelah) &&
       !(isPoetic && !isLineContinuation && i > 0) &&
+      !willAddPoeticNewLine &&
+      !willAddSelahNewLine &&
       contentText.length > 0 &&
       !startsWithPunctuationOrSpace(contentText)
     ) {
@@ -454,19 +474,24 @@ export function renderVerseToPlainText(
     }
 
     if (isSelah) {
-      result += '\n' + contentText;
+      result += (i > 0 && !prevIsLineBreak ? '\n' : '') + contentText;
     } else if (isPoetic) {
       const indentCount = (item as any).poem > 1 ? (item as any).poem - 1 : 0;
-      const indent = '  '.repeat(indentCount);
+      const indent = '\u00A0'.repeat(indentCount * 3);
       const prefix =
-        (i > 0 && !isLineContinuation && !prevIsLineBreak ? '\n' : '') +
-        (!isLineContinuation ? indent : '');
+        (i > 0 &&
+        foundPreviousContent &&
+        !isLineContinuation &&
+        !isSelah &&
+        !prevIsLineBreak
+          ? '\n'
+          : '') + (!isLineContinuation ? indent : '');
       result += prefix + contentText;
     } else {
       result += contentText;
     }
   });
-  return result.trim();
+  return result.replace(/^\n+/, '').trimEnd();
 }
 
 /**
