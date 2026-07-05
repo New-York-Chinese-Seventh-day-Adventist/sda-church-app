@@ -630,6 +630,29 @@ export default function BibleReaderScreen() {
     const currentBookIdx = books.findIndex(
       (b: BibleService.TranslationBook) => b.id === book.id,
     );
+    if (currentBookIdx === -1) return;
+
+    if (isPlaying) {
+      setShouldAutoPlay(true);
+    }
+
+    if (direction === 'next') {
+      if (chapterNum < book.numberOfChapters) {
+        setChapterNum(chapterNum + 1);
+      } else if (currentBookIdx < books.length - 1) {
+        const nextBook = books[currentBookIdx + 1];
+        setBook(nextBook);
+        setChapterNum(1);
+      }
+    } else {
+      if (chapterNum > 1) {
+        setChapterNum(chapterNum - 1);
+      } else if (currentBookIdx > 0) {
+        const prevBook = books[currentBookIdx - 1];
+        setBook(prevBook);
+        setChapterNum(prevBook.numberOfChapters);
+      }
+    }
   };
 
   /**
