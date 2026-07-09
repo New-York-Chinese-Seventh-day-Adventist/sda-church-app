@@ -53,8 +53,6 @@ export default function BaptismScreen() {
       baptismQuote: '“信而受洗的必然得救。”',
       baptismRef: '马可福音 16:16',
       baptismIntro: '受洗之时，需信奉持守耶稣所传的真道。',
-      baptismQuote: '“信而受洗的必然得救。”',
-      baptismRef: '马可福音 16:16',
       vowsTitle: '浸礼约言',
       commandmentsTitle: '十条诫命',
       lifestyleTitle: '安息日会的生活方式',
