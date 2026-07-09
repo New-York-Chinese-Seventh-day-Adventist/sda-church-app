@@ -25,7 +25,7 @@ import {
   Platform,
   StatusBar,
   StyleSheet,
-  useColorScheme,
+  useColorScheme
 } from 'react-native';
 import { PaperProvider, Snackbar } from 'react-native-paper';
 import 'react-native-reanimated';
@@ -33,7 +33,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from 'expo-router';
 
 // Suppress all warning logs in the UI
@@ -125,11 +125,12 @@ export default function RootLayout() {
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (workerOverride?: any) => {
     await nuclearRefresh();
 
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    const worker = workerOverride || waitingWorker;
+    if (worker) {
+      worker.postMessage({ type: 'SKIP_WAITING' });
     } else {
       // Fallback: manually reload if no worker is found but update was requested
       window.location.reload();
@@ -165,17 +166,18 @@ export default function RootLayout() {
           await new Promise((resolve) => setTimeout(resolve, 800));
 
           if (registration.waiting) {
-            setWaitingWorker(registration.waiting);
+            const worker = registration.waiting;
+            setWaitingWorker(worker);
             setUpdateAvailable(true);
             setUpdateStatus('idle');
-            await handleUpdate();
+            await handleUpdate(worker);
           } else if (registration.installing) {
             const installingWorker = registration.installing;
             installingWorker.onstatechange = () => {
               if (installingWorker.state === 'installed') {
                 setWaitingWorker(installingWorker);
                 setUpdateAvailable(true);
-                handleUpdate();
+                handleUpdate(installingWorker);
               }
             };
           } else {
@@ -230,7 +232,7 @@ export default function RootLayout() {
           // 1. Check if there is already an updated worker waiting
           if (registration.waiting) {
             console.log('New SW already waiting. Auto-updating...');
-            await nuclearRefresh();
+            // await nuclearRefresh();     TODO: Causes infinite loop and app crashes
             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
 

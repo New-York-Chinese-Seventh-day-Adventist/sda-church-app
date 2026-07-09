@@ -46,6 +46,7 @@ jobs:
     if: |
       github.event_name == 'pull_request' &&
       github.event.pull_request.merged == true && 
+      github.event.pull_request.base.ref == 'main' &&
       startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
     permissions:
@@ -94,3 +95,10 @@ jobs:
             git push origin "$TAG"
             echo "Successfully tagged $TAG"
           fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to GitHub Pages
+        run: |
+          npm run deploy
