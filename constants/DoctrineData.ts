@@ -132,7 +132,15 @@ export const BAPTISM_MEANING_DATA = {
   },
 };
 
-export const CHURCH_LIFE_PILLARS = {
+export const CHURCH_LIFE_PILLARS: Record<
+  string,
+  {
+    title: string;
+    intro: string;
+    items: { title: string; desc: string }[];
+    footer?: string;
+  }
+> = {
   en: {
     title: 'Four Pillars of Church Life',
     intro:
