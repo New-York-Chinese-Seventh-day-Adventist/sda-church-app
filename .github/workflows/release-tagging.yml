@@ -2,7 +2,7 @@ name: Release - Tagging and Sync
 on:
   # ensure that workflows are run on various PR events
   pull_request:
-    types: [opened, edited, synchronized, closed]
+    types: [opened, edited, synchronize, closed]
     branches:
       - main
 
