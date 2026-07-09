@@ -8,7 +8,7 @@ import { SupportedLanguage } from './LanguageContext';
  */
 export const CHURCH_NAME = 'New York Chinese SDA Church';
 export const CHURCH_PHONE = '(718) 205-8618';
-export const CHURCH_EMAIL = 'nycsdac@gmail.com';
+export const CHURCH_EMAIL = 'pastor@nyccsda.org';
 export const CHURCH_BUILDING_IMAGE_URL =
   'https://lh3.googleusercontent.com/nK9F_oIMAeFUg3zR4Zp7Qp-r0ywqGwZ6RN5TtSh8otJbUBqoTqdMdCUzAULPqnPM1slZdSeOqaLNtvnz=w1626';
 
