@@ -8,29 +8,29 @@ This project uses **Semantic Versioning** (npm SemVer Guide). The `package.json`
 
 The versioning workflow is automated via GitHub Actions to ensure consistency across the mobile app, PWA, and repository tags.
 
-1. **Create a Release Branch** from `main`:
+1. **Create a Release Branch** from `release/x.x.x` on the primary [New-York-Chinese-Seventh-day-Adventist/sda-church-app](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app). If a release branch is not created, please ask an administrator to create one. You **must not PR to main as that skips GitHub Actions workflows**:
 
    ```bash
    git checkout main
    git pull origin main
-   git checkout -b release/v0.8.2
+   git checkout -b release/v0.8.2     # as an example
+   git checkout -b feature/your-feat-name
    ```
 
    Check the latest tag to determine the next version.
 
-2. **Update the Version and Push**:
+2. **Update the Version and Push to fork**:
    - Increment the `version` field in `package.json` manually (or use `npm version patch`).
    - Push the changes: `git push -u origin release/v0.8.2`.
    - The CI will validate the bump and automatically synchronize `app.json` and `sw.js` via automated commits.
 
 3. **Create a Pull Request**:
-   - Open a PR from your release branch → `main`.
+   - Open a PR from your release branch → `New-York-Chinese-Seventh-day-Adventist/sda-church-app` corresponding release branch.
    - The CI will validate that the version in `package.json` is higher than the current version on `main`.
    - Complete the testing checklist and wait for reviews.
 
-4. **Merge to Main**:
-   - Once approved and merged, the `Release - Tagging and Sync` workflow triggers.
-   - It creates a Git tag (e.g., `v0.8.2`) matching the `package.json` version and ensures all deployment files are perfectly in sync.
+4. **MAINTAINERS ONLY**:
+   - Once a `release/x.x.x` branch is ready for release, create a final PR and validate all GitHub Actions are successfully run, then approve and merge.
 
 ## Branch Protection & Workflow
 
