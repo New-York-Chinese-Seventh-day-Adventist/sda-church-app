@@ -25,9 +25,14 @@ jobs:
           node-version: "lts/*"
 
       - name: Sync and Tag from package.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Rewrite the remote URL to include the authentication token
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
 
           VERSION=$(jq -r .version package.json)
           TAG="v$VERSION"
