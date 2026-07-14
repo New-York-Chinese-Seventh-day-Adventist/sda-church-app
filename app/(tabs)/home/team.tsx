@@ -1,4 +1,3 @@
-import { openEmail, openPhone } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { TEAM_MEMBERS } from '@/constants/TeamData';
@@ -6,9 +5,17 @@ import { useAppTheme } from '@/constants/Themes';
 import { DocumentStyles } from '@/styles/DocumentStyles';
 import { Stack } from 'expo-router';
 import { useContext } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Avatar, Button, Card, Paragraph, Text } from 'react-native-paper';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Card, Paragraph, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const styles = StyleSheet.create({
+  cardImage: {
+    width: '100%', // Stretches to fill the card's horizontal space
+    height: 200, // Give it a fixed height so it occupies physical space
+    marginTop: 12, // Add space between the text and the image
+  },
+});
 
 export default function MeetOurTeamScreen() {
   const { language } = useContext(LanguageContext);
@@ -21,7 +28,7 @@ export default function MeetOurTeamScreen() {
       title: 'Meet Our Team',
       description:
         'Our leadership is dedicated to serving the community and sharing the message of hope.',
-      pastorsHeader: 'Pastoral Staff',
+      staffHeader: 'Staff',
       seniorPastor: 'Senior Pastor',
       bibleWorker: 'Bible Worker',
       childrensMinistry: "Children's Ministry",
@@ -31,7 +38,7 @@ export default function MeetOurTeamScreen() {
     zh: {
       title: '認識我們的團隊',
       description: '我們的領導團隊致力於服務社群並分享希望的信息。',
-      pastorsHeader: '教牧團隊',
+      staffHeader: '教牧團隊',
       seniorPastor: '主任牧師',
       bibleWorker: '聖經助理',
       childrensMinistry: '兒童事工',
@@ -41,7 +48,7 @@ export default function MeetOurTeamScreen() {
     'zh-cn': {
       title: '认识我们的团队',
       description: '我们的领导团队致力于服务社区并分享希望的信息。',
-      pastorsHeader: '教牧团队',
+      staffHeader: '教牧团队',
       seniorPastor: '主任牧师',
       bibleWorker: '圣经助理',
       childrensMinistry: '儿童事工',
@@ -52,7 +59,7 @@ export default function MeetOurTeamScreen() {
       title: 'Conoce a nuestro equipo',
       description:
         'Nuestro liderazgo está dedicado a servir a la comunidad y compartir el mensaje de esperanza.',
-      pastorsHeader: 'Personal Pastoral',
+      staffHeader: 'Personal',
       seniorPastor: 'Pastor Principal',
       bibleWorker: 'Obrero Bíblico',
       childrensMinistry: 'Ministerio Infantil',
@@ -95,7 +102,7 @@ export default function MeetOurTeamScreen() {
               },
             ]}
           >
-            {labels.pastorsHeader}
+            {labels.staffHeader}
           </Text>
 
           {TEAM_MEMBERS.map((member, index) => (
@@ -105,36 +112,23 @@ export default function MeetOurTeamScreen() {
               mode="outlined"
             >
               <Card.Title
-                title={member.name}
+                title={member.name[language as keyof typeof allLabels] || member.name.en}
                 subtitle={labels[member.roleKey as keyof typeof labels]}
-                left={(props) => (
-                  <Avatar.Text
-                    {...props}
-                    label={member.initials}
-                    style={{ backgroundColor: theme.colors.tertiary }}
-                  />
-                )}
               />
-              <Card.Actions>
-                {member.phone && (
-                  <Button
-                    icon="phone"
-                    mode="text"
-                    onPress={() => openPhone(member.phone!)}
-                  >
-                    {labels.call}
-                  </Button>
-                )}
-                {member.email && (
-                  <Button
-                    icon="email"
-                    mode="text"
-                    onPress={() => openEmail(member.email!)}
-                  >
-                    {labels.email}
-                  </Button>
-                )}
-              </Card.Actions>
+              <Card.Content>
+                <Text variant="bodyMedium">
+                  {member.description[language as keyof typeof allLabels] ||
+                    member.description.en}
+                </Text>
+
+                <Image
+                  source={{
+                    uri: member.imageUrl,
+                  }}
+                  style={styles.cardImage}
+                  resizeMode="contain"
+                />
+              </Card.Content>
             </Card>
           ))}
         </View>

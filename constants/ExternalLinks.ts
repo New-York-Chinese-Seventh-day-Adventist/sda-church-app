@@ -9,8 +9,16 @@ import { SupportedLanguage } from './LanguageContext';
 export const CHURCH_NAME = 'New York Chinese SDA Church';
 export const CHURCH_PHONE = '(718) 205-8618';
 export const CHURCH_EMAIL = 'pastor@nyccsda.org';
+
+// Relative path to various church specific images in the public folder on GitHub Pages
 export const CHURCH_BUILDING_IMAGE_URL =
-  'https://lh3.googleusercontent.com/nK9F_oIMAeFUg3zR4Zp7Qp-r0ywqGwZ6RN5TtSh8otJbUBqoTqdMdCUzAULPqnPM1slZdSeOqaLNtvnz=w1626';
+  'https://assets.adventistconnect.org/newyork2/2026/07/13221703/church_building.jpg';
+export const PASTOR_IMAGE_URL =
+  'https://assets.adventistconnect.org/newyork2/2026/07/13221020/moses_fang-1536x1024.jpg';
+export const BIBLE_WORKER_IMAGE_URL =
+  'https://assets.adventistconnect.org/newyork2/2026/07/13221317/sarah_fang-1536x1024.jpg';
+export const CHILDREN_MINISTRY_WORKER_IMAGE_URL =
+  'https://assets.adventistconnect.org/newyork2/2026/07/13221357/geng_shuang-1536x1024.jpg';
 
 // Hardcoded to 760 41st Ave Elmhurst, NY 11373
 export const CHURCH_LATITUDE = 40.74546;
