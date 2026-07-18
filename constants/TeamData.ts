@@ -32,11 +32,11 @@ export const TEAM_MEMBERS: TeamMember[] = [
     roleKey: 'seniorPastor',
     imageUrl: PASTOR_IMAGE_URL,
     description: {
-      en: 'Originally from Shenyang, China, Pastor Fang led local churches for years before moving to the US as a pastor for the Boston Chinese Church. Pastor Fang has been our pastor since 2023.',
-      zh: '原籍中国沈阳，方牧师在搬到美国之前一直在当地教会服侍。方牧师自2023年以来一直是我们的牧师。',
+      en: 'Originally from Shenyang, China, Pastor Fang led local churches for years before moving to the US as a pastor for the Boston Chinese Church. Pastor Fang has been our pastor since 2022.',
+      zh: '原籍中国沈阳，方牧师在搬到美国之前一直在当地教会服侍。方牧师自2022年以来一直是我们的牧师。',
       'zh-cn':
-        '原籍中国沈阳，方牧师在搬到美国之前一直在当地教会服侍。方牧师自2023年以来一直是我们的牧师。',
-      es: 'Originario de Shenyang, China, el Pastor Fang lideró iglesias locales durante años antes de mudarse a Estados Unidos como pastor de la Iglesia China de Boston. El Pastor Fang ha sido nuestro pastor desde 2023.',
+        '原籍中国沈阳，方牧师在搬到美国之前一直在当地教会服侍。方牧师自2022年以来一直是我们的牧师。',
+      es: 'Originario de Shenyang, China, el Pastor Fang lideró iglesias locales durante años antes de mudarse a Estados Unidos como pastor de la Iglesia China de Boston. El Pastor Fang ha sido nuestro pastor desde 2022.',
     },
   },
   {
