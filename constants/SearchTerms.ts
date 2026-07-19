@@ -1211,7 +1211,6 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
     { ...labels.language, icon: 'translate', route: '/you/language' },
     { ...labels.aboutSDA, icon: 'information', route: '/home/about-sda' },
     { ...labels.aboutHistory, icon: 'history', route: '/home/about-my-church' },
-    { ...labels.connect, icon: 'email', route: '/home/contact' },
     { ...labels.team, icon: 'account-multiple', route: '/home/team' },
     { ...labels.bulletin, icon: 'file-document-outline', route: '/home/bulletin' },
     { ...labels.events, icon: 'calendar-star', route: '/community' },

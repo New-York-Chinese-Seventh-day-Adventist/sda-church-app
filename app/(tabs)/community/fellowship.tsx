@@ -190,13 +190,22 @@ export default function FellowshipsAndFoodScreen() {
             <View style={styles.quoteContainer}>
               <Text
                 variant="bodyMedium"
-                style={[styles.heroQuote, { color: theme.colors.onSecondary }]}
+                style={[
+                  styles.heroQuote,
+                  { color: theme.dark ? theme.colors.primary : theme.colors.onSecondary },
+                ]}
               >
                 {labels.expansionVerse}
               </Text>
               <Text
                 variant="labelSmall"
-                style={[styles.heroRef, { color: theme.colors.onSecondary, opacity: 0.9 }]}
+                style={[
+                  styles.heroRef,
+                  {
+                    color: theme.dark ? theme.colors.primary : theme.colors.onSecondary,
+                    opacity: 0.9,
+                  },
+                ]}
               >
                 — {labels.expansionRef}
               </Text>
@@ -277,30 +286,32 @@ export default function FellowshipsAndFoodScreen() {
                 <List.Item
                   title={labels.elmhurstWorshipTitle}
                   titleStyle={styles.listItemTitle}
-                  description={labels.elmhurstWorshipDesc}
-                  descriptionStyle={styles.listItemDesc}
+                  description={() => (
+                    <View style={styles.listItemDescContainer}>
+                      <Text style={[styles.listItemDesc, { color: theme.colors.onSurfaceVariant }]}>
+                        {labels.elmhurstWorshipDesc}
+                      </Text>
+                      <Button 
+                        mode="contained" 
+                        onPress={() => router.push({
+                          pathname: '/community/worship',
+                          params: { backTo: '/community/fellowship' },
+                        } as any)}
+                        buttonColor={theme.colors.tertiary}
+                        textColor={theme.colors.onSecondary}
+                        style={styles.descriptionButton}
+                        labelStyle={styles.descriptionButtonLabel}
+                      >
+                        {labels.viewSchedule}
+                      </Button>
+                    </View>
+                  )}
                   descriptionNumberOfLines={10}
                   left={(props) => <List.Icon {...props} icon="church" color={theme.colors.tertiary} />}
                   onPress={() => router.push({
                     pathname: '/community/worship',
                     params: { backTo: '/community/fellowship' },
                   } as any)}
-                  right={() => (
-                    <Button 
-                      mode="contained" 
-                      onPress={() => router.push({
-                        pathname: '/community/worship',
-                        params: { backTo: '/community/fellowship' },
-                      } as any)}
-                      buttonColor={theme.colors.tertiary}
-                      textColor={theme.colors.onSecondary}
-                      style={styles.inlineButton}
-                      labelStyle={{ fontSize: 12, fontWeight: 'bold' }}
-                      compact
-                    >
-                      {labels.viewSchedule}
-                    </Button>
-                  )}
                 />
                 <Divider style={styles.listItemDivider} />
                 <List.Item
@@ -315,23 +326,25 @@ export default function FellowshipsAndFoodScreen() {
                 <List.Item
                   title={labels.elmhurstOnlineTitle}
                   titleStyle={styles.listItemTitle}
-                  description={labels.elmhurstOnlineDesc}
-                  descriptionStyle={styles.listItemDesc}
+                  description={() => (
+                    <View style={styles.listItemDescContainer}>
+                      <Text style={[styles.listItemDesc, { color: theme.colors.onSurfaceVariant }]}>
+                        {labels.elmhurstOnlineDesc}
+                      </Text>
+                      <Button 
+                        mode="contained" 
+                        onPress={openZoomClass}
+                        buttonColor={theme.colors.brandZoom}
+                        textColor={theme.colors.onSecondary}
+                        style={styles.descriptionButton}
+                        labelStyle={styles.descriptionButtonLabel}
+                      >
+                        Zoom
+                      </Button>
+                    </View>
+                  )}
                   descriptionNumberOfLines={10}
                   left={(props) => <List.Icon {...props} icon="laptop" color={theme.colors.tertiary} />}
-                  right={() => (
-                    <Button 
-                      mode="contained" 
-                      onPress={openZoomClass}
-                      buttonColor={theme.colors.brandZoom}
-                      textColor={theme.colors.onSecondary}
-                      style={styles.inlineButton}
-                      labelStyle={{ fontSize: 12, fontWeight: 'bold' }}
-                      compact
-                    >
-                      Zoom
-                    </Button>
-                  )}
                 />
                 <Divider style={styles.listItemDivider} />
                 <List.Item
@@ -534,9 +547,17 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     opacity: 0.5,
   },
-  inlineButton: {
-    alignSelf: 'center',
-    marginLeft: 8,
+  listItemDescContainer: {
+    marginTop: 6,
+  },
+  descriptionButton: {
+    marginTop: 10,
+    alignSelf: 'stretch',
+    borderRadius: 8,
+  },
+  descriptionButtonLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   outreachText: {
     fontSize: 15,
