@@ -1,7 +1,7 @@
 {
   "name": "sda-church-app",
   "main": "expo-router/entry",
-  "version": "0.19.5",
+  "version": "0.20.0",
   "homepage": "https://codesammich.github.io/sda-church-app",
   "scripts": {
     "sync-version": "node public/sync-version.js",
@@ -13,7 +13,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.1.8",
-    "expo": "^55.0.23",
+    "expo": "~55.0.23",
     "expo-av": "^16.0.8",
     "expo-blur": "~55.0.14",
     "expo-build-properties": "~55.0.13",
@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.10",
+    "babel-preset-expo": "^57.0.2",
     "gh-pages": "^6.3.0",
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
