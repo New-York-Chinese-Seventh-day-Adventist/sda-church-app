@@ -19,6 +19,15 @@ export const BIBLE_WORKER_IMAGE_URL =
   'https://assets.adventistconnect.org/newyork2/2026/07/13221317/sarah_fang-1536x1024.jpg';
 export const CHILDREN_MINISTRY_WORKER_IMAGE_URL =
   'https://assets.adventistconnect.org/newyork2/2026/07/13221357/geng_shuang-1536x1024.jpg';
+export const FOOD_BANK_IMAGE_URL =
+  'https://assets.adventistconnect.org/newyork2/2025/09/28035000/mmexport1738506529402.jpg.jpg';
+export const FELLOWSHIP_IMAGES_URLS = [
+  'https://assets.adventistconnect.org/newyork2/2026/07/19120609/fellowship_1.png',
+  'https://assets.adventistconnect.org/newyork2/2026/07/19120602/fellowship_2.png',
+];
+export const ELMHURST_SABBATH_URLS = [
+  'https://assets.adventistconnect.org/newyork2/2026/07/19124827/elmhurst_sabbath.png'
+]
 
 // Hardcoded to 760 41st Ave Elmhurst, NY 11373
 export const CHURCH_LATITUDE = 40.74546;

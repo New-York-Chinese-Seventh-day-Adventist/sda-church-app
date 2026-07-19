@@ -92,18 +92,6 @@ export default function CommunityScreen() {
             {labels.weeklyHeader}
           </List.Subheader>
           <MenuCard
-            title={labels.worship}
-            icon="church"
-            iconColor={theme.colors.tertiary}
-            style={{ marginBottom: 12 }}
-            onPress={() =>
-              router.push({
-                pathname: '/community/worship',
-                params: { backTo: '/community' },
-              } as any)
-            }
-          />
-          <MenuCard
             title={labels.fellowship}
             icon="account-group"
             iconColor={theme.colors.tertiary}
