@@ -23,9 +23,9 @@ export default function AboutChurchHistoryScreen() {
 
   const allLabels = {
     en: {
-      title: 'Our History',
+      title: 'History',
       churchName: 'New York Chinese\nSeventh-day Adventist\nChurch',
-      history: 'Our History',
+      history: 'History',
       historySubtext:
         'The New York Chinese Seventh-day Adventist Church began as a humble gathering in 1973. Today, we are a vibrant community dedicated to outreach and supporting our neighbors.',
       milestoneItems: [
@@ -34,7 +34,7 @@ export default function AboutChurchHistoryScreen() {
         { year: '1996', event: 'Joined conference' },
         { year: '1999', event: 'Opened permanent home' },
       ],
-      locationsTitle: 'Our Locations & Services',
+      locationsTitle: 'Locations & Services',
       elmhurstText:
         'Church services are conducted in both English and Mandarin Chinese. We are blessed to have a vibrant, multiethnic congregation. Our members come from various backgrounds and speak many languages, including Spanish, French, German, Japanese, and more.',
       flushingText:
@@ -54,9 +54,9 @@ export default function AboutChurchHistoryScreen() {
       getDirections: 'Get Directions',
     },
     zh: {
-      title: '我們的歷史',
+      title: '歷史',
       churchName: '紐約華人基督復臨安息日會',
-      history: '我們的歷史',
+      history: '歷史',
       historySubtext:
         '紐約華人基督復臨安息日會始於 1973 年。今天, 我們是一個充滿活力的雙語社群, 始終致力於外展使命並支持鄰居。',
       milestoneItems: [
@@ -83,9 +83,9 @@ export default function AboutChurchHistoryScreen() {
       getDirections: '獲取路線',
     },
     'zh-cn': {
-      title: '我们的历史',
+      title: '历史',
       churchName: '纽约华人基督复临安息日会',
-      history: '我们的历史',
+      history: '历史',
       historySubtext:
         '纽约华人基督复临安息日会始于 1973 年。今天, 我们是一个充满活力的双语社群, 始终致力于外展使命并支持邻居。',
       milestoneItems: [
@@ -112,9 +112,9 @@ export default function AboutChurchHistoryScreen() {
       getDirections: '获取路线',
     },
     es: {
-      title: 'Nuestra Historia',
+      title: 'Historia',
       churchName: 'Iglesia Adventista\ndel Séptimo Día\nde Nueva York',
-      history: 'Nuestra Historia',
+      history: 'Historia',
       historySubtext:
         'La Iglesia Adventista del Séptimo Día de Nueva York comenzó como una humilde reunión en 1973. Hoy, somos una comunidad bilingüe vibrante dedicada a apoyar a nuestros vecinos.',
       milestoneItems: [
@@ -123,7 +123,7 @@ export default function AboutChurchHistoryScreen() {
         { year: '1996', event: 'Unión a conferencia' },
         { year: '1999', event: 'Sede propia' },
       ],
-      locationsTitle: 'Nuestras Ubicaciones y Servicios',
+      locationsTitle: 'Ubicaciones y Servicios',
       elmhurstText:
         'Los servicios de la iglesia se llevan a cabo tanto en inglés como en chino mandarín. Tenemos la bendición de tener una congregación multiétnica vibrante. Nuestros miembros provienen de diversos orígenes y hablan muchos idiomas, incluidos español, francés, alemán, japonés y más.',
       flushingText:

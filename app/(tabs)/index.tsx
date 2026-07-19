@@ -43,7 +43,7 @@ export default function HomeScreen() {
       shareVerse: 'Share Verse',
       livestream: 'Watch Livestream',
       aboutSDA: 'About Denomination',
-      aboutHistory: 'Our History',
+      aboutHistory: 'Locations & History',
       discover: 'Discover',
       thisWeek: 'This Week',
       contact: 'Connect with Us',
@@ -66,7 +66,7 @@ export default function HomeScreen() {
       shareVerse: '分享經文',
       livestream: '觀看直播',
       aboutSDA: '關於教派',
-      aboutHistory: '我們的歷史',
+      aboutHistory: '地點與歷史',
       discover: '探索',
       thisWeek: '本週焦點',
       contact: '聯繫我們',
@@ -89,7 +89,7 @@ export default function HomeScreen() {
       shareVerse: '分享经文',
       livestream: '观看直播',
       aboutSDA: '关于教派',
-      aboutHistory: '我们的历史',
+      aboutHistory: '地点与历史',
       discover: '探索',
       thisWeek: '本周焦点',
       contact: '联系我们',
@@ -112,7 +112,7 @@ export default function HomeScreen() {
       shareVerse: 'Compartir',
       livestream: 'Ver Transmisión',
       aboutSDA: 'Sobre la Denominación',
-      aboutHistory: 'Nuestra Historia',
+      aboutHistory: 'Ubicaciones e Historia',
       discover: 'Descubrir',
       thisWeek: 'Esta Semana',
       contact: 'Conéctate con Nosotros',
@@ -628,19 +628,6 @@ export default function HomeScreen() {
             onPress={() =>
               router.push({
                 pathname: '/home/team',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-
-          <MenuCard
-            title={labels.contact}
-            icon="church"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/contact',
                 params: { backTo: '/' },
               } as any)
             }
