@@ -41,6 +41,11 @@ const baseVariants = {
   bodySmall: { fontFamily: 'NotoSans-Regular' },
 };
 
+// Card background colors (light mode) moved into customLightTheme.colors
+// Dark mode will use surface color from customDarkTheme.colors
+// Icon colors (light mode) moved into customLightTheme.colors
+// Dark mode icons will use onSurface from customDarkTheme.colors
+
 export const customLightTheme = {
   ...MD3LightTheme,
   dark: false as boolean,
@@ -54,7 +59,40 @@ export const customLightTheme = {
     onPrimary: '#F8F9FA', // Inverted Text (The Stencil)
     primaryContainer: '#E3F2FD', // Selection Container
     onPrimaryContainer: '#3EA6FF', // General Iconography
-
+    // Card background colors for light mode
+    cardBgColors: {
+      // home page
+      livestream:           '#FCE8E6', // Soft blush
+      bulletin:             '#FFFBEB', // Warm cream
+      tithe:                '#F0FDF4', // Faint mint
+      discover:             '#F5F3FF', // Soft periwinkle / lavender
+      prayer:               '#EBF5FF', // Sky blue
+      events:               '#FFF4E6', // Peach / warm amber tones
+      // discover page
+      aboutSDA:             '#FCE8E6', // Soft blush
+      aboutHistory:         '#FFFBEB', // Warm cream
+      meetTeam:             '#F0FDF4', // Faint mint
+      join:                 '#EBF5FF', // Sky blue
+      fellowship:           '#F5F3FF', // Soft periwinkle / lavender
+      bible:                '#FFF4E6', // Peach / warm amber tones
+    },
+    // Icon colors for light mode
+    iconColors: {
+      // home page
+      livestream:           'rgba(185,28,28,0.50)',     // Rich crimson
+      bulletin:             'rgba(146,64,14,0.50)',     // Warm amber/brown
+      tithe:                'rgba(4,120,87,0.50)',      // Deep forest/emerald green
+      discover:             'rgba(55,48,163,0.50)',     // Deep indigo/navy
+      prayer:               'rgba(2, 132, 199, 0.85)',  // Deep ocean blue
+      events:               'rgba(217, 119, 6, 0.85)',  // Warm burnt amber / Terracotta
+      // discover page
+      aboutSDA:             'rgba(185,28,28,0.50)',     // Rich crimson
+      aboutHistory:         'rgba(146,64,14,0.50)',     // Warm amber/brown
+      meetTeam:             'rgba(4,120,87,0.50)',      // Deep forest/emerald green
+      join:                 'rgba(2, 132, 199, 0.85)',  // Deep ocean blue
+      fellowship:           'rgba(55,48,163,0.50)',     // Deep indigo/navy   
+      bible:                'rgba(217, 119, 6, 0.85)',  // Warm burnt amber / Terracotta
+    },
     // Secondary: Utility UI (Chips, Muted Actions)
     secondary: '#606060',
     onSecondary: '#FFFFFF',
@@ -68,9 +106,9 @@ export const customLightTheme = {
     onTertiaryContainer: '#3EA6FF',
 
     // Backgrounds & Surfaces
-    background: '#F8F9FA', // The Canvas
+    background: '#F2E6DF', // The Canvas
     onBackground: '#1A1A1A', // The Ink: High-contrast text on Canvas
-    surface: '#FFFFFF', // The Object: Cards/Containers
+    surface: '#F7F7F7', // The Object: Cards/Containers
     onSurface: '#1A1A1A', // The Ink: High-contrast text on Surfaces
 
     // UI Variants & Boundaries
@@ -131,7 +169,24 @@ export const customDarkTheme: AppTheme = {
     onPrimary: '#0F0F0F', // The Stencil / Inverted Text
     primaryContainer: '#2C2C2C', // Selection Container
     onPrimaryContainer: '#FFFFFF', // General Iconography
-
+    // Card background colors for dark mode – use surface color for all cards
+    cardBgColors: {
+      livestream: '#1E1E1E', // surface
+      bulletin:   '#1E1E1E',
+      tithe:      '#1E1E1E',
+      discover:   '#1E1E1E',
+      prayer:     '#1E1E1E',
+      events:     '#1E1E1E'
+    },
+    // Icon colors for dark mode – use onSurface for all icons
+    iconColors: {
+      livestream: '#F5F5F5', // onSurface
+      bulletin:   '#F5F5F5',
+      tithe:      '#F5F5F5',
+      discover:   '#F5F5F5',
+      prayer:     '#F5F5F5',
+      events:     '#F5F5F5',
+    },
     // Secondary: Utility UI (Chips, Muted Actions)
     secondary: '#AAAAAA',
     onSecondary: '#0F0F0F',
@@ -161,6 +216,8 @@ export const customDarkTheme: AppTheme = {
     text: '#F5F5F5', // The Ink
     border: '#3F3F3F', // The Divider
     notification: '#FFFFFF', // Pure White
+    // Preserve existing surface, onSurface, etc.
+    // surface and onSurface are already defined above, so no duplicates here
 
     // Branding (Standardized Monochrome in Dark Mode)
     brandYoutube: '#FFFFFF',

@@ -12,10 +12,9 @@ import {
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
-import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, List, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -177,41 +176,32 @@ export default function FellowshipsAndFoodScreen() {
         }}
       >
         {/* Hero Section Banner */}
-        <ImageBackground
-          source={{ uri: FELLOWSHIP_IMAGES_URLS[0] }}
-          style={[styles.hero, { paddingTop: headerHeight + 20 }]}
-          resizeMode="cover"
-        >
-          <LinearGradient
-            colors={theme.gradients.heroOverlay}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={styles.heroContent}>
-            <View style={styles.quoteContainer}>
-              <Text
-                variant="bodyMedium"
-                style={[
-                  styles.heroQuote,
-                  { color: theme.dark ? theme.colors.primary : theme.colors.onSecondary },
-                ]}
-              >
-                {labels.expansionVerse}
-              </Text>
-              <Text
-                variant="labelSmall"
-                style={[
-                  styles.heroRef,
-                  {
-                    color: theme.dark ? theme.colors.primary : theme.colors.onSecondary,
-                    opacity: 0.9,
-                  },
-                ]}
-              >
-                — {labels.expansionRef}
-              </Text>
-            </View>
-          </View>
-        </ImageBackground>
+        <Card style={styles.sectionCard} mode="outlined">
+          <Card.Cover source={{ uri: FELLOWSHIP_IMAGES_URLS[0] }} style={styles.heroImage} />
+          <View style={styles.heroQuoteBox}>
+          <Text
+            variant="bodyMedium"
+            style={[
+              styles.heroQuote,
+              { color: theme.dark ? theme.colors.primary : theme.colors.onSecondary },
+            ]}
+          >
+            {labels.expansionVerse}
+          </Text>
+          <Text
+            variant="labelSmall"
+            style={[
+              styles.heroRef,
+              {
+                color: theme.dark ? theme.colors.primary : theme.colors.onSecondary,
+                opacity: 0.9,
+              },
+            ]}
+          >
+            — {labels.expansionRef}
+          </Text>
+        </View>
+        </Card>
 
         {/* Content Body */}
         <View style={styles.body}>
@@ -589,6 +579,13 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  heroImage: { height: 250, width: '100%' },
+  heroQuoteBox: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
   },
   headingDivider: {
     height: 3,

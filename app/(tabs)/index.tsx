@@ -1,4 +1,4 @@
-import { MenuCard } from '@/components/MenuCard';
+import { GridMenuCard } from '@/components/GridMenuCard';
 import {
   CHURCH_BUILDING_IMAGE_URL,
   CHURCH_LATITUDE,
@@ -52,6 +52,8 @@ export default function HomeScreen() {
       bulletin: 'Weekly Bulletin',
       explore: 'Explore',
       give: 'Tithe & Offering',
+      events: 'Upcoming Events',
+      prayer: 'Prayer',
       sabbathStarts: 'Sabbath starts in',
       sabbathEnds: 'Sabbath ends in',
       isSabbath: 'Happy Sabbath!',
@@ -75,6 +77,8 @@ export default function HomeScreen() {
       bulletin: '每週週報',
       explore: '探索',
       give: '奉獻',
+      events: '近期活動',
+      prayer: '禱告',
       sabbathStarts: '距離安息日還有',
       sabbathEnds: '距離安息日結束還有',
       isSabbath: '安息日快樂！',
@@ -98,6 +102,8 @@ export default function HomeScreen() {
       bulletin: '每周周报',
       explore: '探索',
       give: '奉献',
+      events: '近期活动',
+      prayer: '祷告',
       sabbathStarts: '距离安息日还有',
       sabbathEnds: '距离安息日结束还有',
       isSabbath: '安息日快乐！',
@@ -121,6 +127,8 @@ export default function HomeScreen() {
       bulletin: 'Boletín Semanal',
       explore: 'Explorar',
       give: 'Diezmos y Ofrendas',
+      events: 'Próximos Eventos',
+      prayer: 'Oración',
       sabbathStarts: 'El Sábado comienza en',
       sabbathEnds: 'El Sábado termina en',
       isSabbath: '¡Feliz Sábado!',
@@ -556,96 +564,83 @@ export default function HomeScreen() {
             </Card.Content>
           </Card>
 
-          <MenuCard
-            title={labels.livestream}
-            icon="youtube"
-            iconColor={(theme.colors as any).brandYoutube}
-            onPress={openSabbathStream}
-            style={{ marginBottom: 12 }}
-          />
-
-          <MenuCard
-            title={labels.bulletin}
-            icon="file-document-outline"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/bulletin',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-          <MenuCard
-            title={labels.give}
-            icon="gift"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/give',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-
-          <List.Subheader
-            style={[NavigationStyles.subheader, { color: theme.colors.onBackground }]}
-          >
-            {labels.discover}
-          </List.Subheader>
-
-          <MenuCard
-            title={labels.aboutSDA}
-            icon="information"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/about-sda',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-
-          <MenuCard
-            title={labels.aboutHistory}
-            icon="history"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/about-my-church',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-
-          <MenuCard
-            title={labels.meetTeam}
-            icon="account-multiple"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/home/team',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
-
-          <MenuCard
-            title={labels.join}
-            icon="water-outline"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/community/baptism',
-                params: { backTo: '/' },
-              } as any)
-            }
-            style={{ marginBottom: 12 }}
-          />
+          {/* This Week — 2-column pastel grid */}
+          <View style={styles.grid}>
+            <GridMenuCard
+              title={labels.livestream}
+              subtitle={(labels as any).liveNow}
+              icon="youtube"
+              color={theme.colors.cardBgColors.livestream}
+              iconColor={theme.colors.iconColors.livestream}
+              onPress={openSabbathStream}
+              style={styles.gridCell}
+            />
+            <GridMenuCard
+              title={labels.bulletin}
+              icon="file-document-outline"
+              color={theme.colors.cardBgColors.bulletin}
+              iconColor={theme.colors.iconColors.bulletin}
+              onPress={() =>
+                router.push({
+                  pathname: '/home/bulletin',
+                  params: { backTo: '/' },
+                } as any)
+              }
+              style={styles.gridCell}
+            />
+            <GridMenuCard
+              title={labels.give}
+              icon="hand-heart-outline"
+              color={theme.colors.cardBgColors.tithe}
+              iconColor={theme.colors.iconColors.tithe}
+              onPress={() =>
+                router.push({
+                  pathname: '/home/give',
+                  params: { backTo: '/' },
+                } as any)
+              }
+              style={styles.gridCell}
+            />
+            <GridMenuCard
+              title={labels.prayer}
+              icon="hands-pray"
+              color={theme.colors.cardBgColors.prayer}
+              iconColor={theme.colors.iconColors.prayer}
+              onPress={() =>
+                router.push({
+                  pathname: '/home/prayer',
+                  params: { backTo: '/' },
+                } as any)
+              }
+              style={styles.gridCell}
+            />
+            <GridMenuCard
+              title={labels.events}
+              icon="calendar-month"
+              color={theme.colors.cardBgColors.events}
+              iconColor={theme.colors.iconColors.events}
+              onPress={() =>
+                router.push({
+                  pathname: '/home/events',
+                  params: { backTo: '/' },
+                } as any)
+              }
+              style={styles.gridCell}
+            />
+            <GridMenuCard
+              title={labels.discover}
+              icon="compass"
+              color={theme.colors.cardBgColors.discover}
+              iconColor={theme.colors.iconColors.discover}
+              onPress={() =>
+                router.push({
+                  pathname: '/home/discover',
+                  params: { backTo: '/' },
+                } as any)
+              }
+              style={styles.gridCell}
+            />
+          </View>
         </List.Section>
       </ScrollView>
     </>
@@ -662,10 +657,12 @@ const styles = StyleSheet.create({
   timerCard: {
     marginBottom: 16,
     borderRadius: 12,
+    overflow: 'hidden', // Prevents inner elements from clipping past rounded corners
+    backgroundColor: '#FFFFFF', // Ensures a crisp background fill
   },
   timerContentSubtle: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16, // Keeps content comfortably inset from the card border
   },
   timerRow: {
     flexDirection: 'row',
@@ -680,5 +677,16 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
     fontSize: 16,
     fontWeight: '700',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+    borderRadius: 0,
+  },
+  gridCell: {
+    flexBasis: '47.5%',
+    flexGrow: 1,
   },
 });
