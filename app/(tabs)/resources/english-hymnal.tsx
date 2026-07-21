@@ -177,7 +177,7 @@ export default function HymnalScreen() {
                     item.scriptureReference,
                   );
                   router.push({
-                    pathname: '/resources/bible',
+                    pathname: '/bible',
                     params: {
                       translationId: 'BSB',
                       backTo: '/resources/english-hymnal',

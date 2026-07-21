@@ -112,7 +112,7 @@ export default function DiscoverScreen() {
             icon="book-cross"
             color={theme.colors.cardBgColors.bible}
             iconColor={theme.colors.iconColors.bible}
-            onPress={() => router.push({ pathname: '/resources/bible', params: { backTo: '/home/discover' } } as any)}
+            onPress={() => router.push({ pathname: '/bible', params: { backTo: '/home/discover' } } as any)}
             style={styles.gridCell}
           />
         </View>

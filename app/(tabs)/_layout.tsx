@@ -57,25 +57,25 @@ export default function TabLayout() {
   const allLabels = {
     en: {
       home: 'Home',
-      community: 'Community',
+      bible: 'Bible',
       resources: 'Resources',
       you: 'You',
     },
     zh: {
       home: '首頁',
-      community: '教會社群',
+      bible: '聖經',
       resources: '資源庫',
       you: '您',
     },
     'zh-cn': {
       home: '首页',
-      community: '教会社区',
+      bible: '圣经',
       resources: '资源库',
       you: '您',
     },
     es: {
       home: 'Inicio',
-      community: 'Comunidad',
+      bible: 'Biblia',
       resources: 'Recursos',
       you: 'Tú',
     },
@@ -145,18 +145,18 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
-          name="community"
+          name="bible"
           options={{
-            title: labels.community,
+            title: labels.bible,
             headerShown: false, // Internal Stack handles header for consistency
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <TabBarIcon name="account-group" color={color} focused={focused} />
+              <TabBarIcon name="cross" color={color} focused={focused} />
             ),
           }}
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
-              router.navigate('/community');
+              router.navigate('/bible');
             },
           }}
         />

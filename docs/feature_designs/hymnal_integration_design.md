@@ -105,7 +105,7 @@ pre-populated parameters:
 
 ```typescript
 router.push({
-  pathname: '/resources/bible',
+  pathname: '/bible',
   params: {
     translationId: 'BSB',
     backTo: '/resources/english-hymnal',

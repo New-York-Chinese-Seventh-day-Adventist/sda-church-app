@@ -421,7 +421,7 @@ export default function HomeScreen() {
   const navigateToVerse = () => {
     if (!randomVerse) return;
     router.push({
-      pathname: '/resources/bible',
+      pathname: '/bible',
       params: {
         bookId: randomVerse.bookId,
         chapter: randomVerse.chapter.toString(),
