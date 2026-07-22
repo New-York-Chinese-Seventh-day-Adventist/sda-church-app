@@ -10,7 +10,7 @@ import { DESIGN_TOKENS } from '@/constants/Layout';
 import { TEAM_MEMBERS } from '@/constants/TeamData';
 import { useAppTheme } from '@/constants/Themes';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
 import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Text } from 'react-native-paper';
@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MeetOurTeamScreen() {
   const { language } = useContext(LanguageContext);
+  const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
@@ -71,7 +72,7 @@ export default function MeetOurTeamScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: labels.title }} />
+      <Stack.Screen options={{ title: labels.title, backTo } as any} />
       <ScrollView
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={{

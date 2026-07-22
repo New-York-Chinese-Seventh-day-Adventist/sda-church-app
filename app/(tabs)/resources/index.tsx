@@ -121,19 +121,6 @@ export default function ResourcesScreen() {
             {labels.studyLiturgy}
           </List.Subheader>
           <MenuCard
-            title={labels.bible}
-            description={labels.bibleSub}
-            icon="book-cross"
-            iconColor={theme.colors.tertiary}
-            onPress={() =>
-              router.push({
-                pathname: '/resources/bible',
-                params: { backTo: '/resources' },
-              } as any)
-            }
-          />
-
-          <MenuCard
             title={labels.hymnal}
             description={labels.hymnalSub}
             icon="music-note"
