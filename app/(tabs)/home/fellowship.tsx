@@ -30,7 +30,7 @@ const allLabels = {
     elmhurstRef: 'Deuteronomy 6:6-7 (NIV)',
     elmhurstDesc: 'In Elmhurst, we offer vibrant in-person ministries for young adults, providing opportunities for spiritual growth, fellowship, and community engagement. Our young adult’s ministry focuses on nurturing faith through interactive learning and activities, deepening our relationship with God. All services at this location are offered in Chinese and English.',
     elmhurstWorshipTitle: 'Sabbath Worship',
-    elmhurstWorshipDesc: 'Saturday: 10:00 AM - 1:00 PM • 3rd Floor • Join us for song service, Sabbath school, and our weekly main worship service.',
+    elmhurstWorshipDesc: 'Saturday: 10:00 AM - 1:00 PM • Join us for song service, Sabbath school, and our weekly main worship service.',
     viewSchedule: 'Schedule',
     elmhurstEventsTitle: 'Seasonal Events & Activities',
     elmhurstEventsDesc: 'In addition to Bible study and spiritual growth, we host seasonal events for young adults, such as summer & winter camps, skiing trips, camping outings, barbecues, and various other fun activities that foster bonding and personal development.',
@@ -44,7 +44,13 @@ const allLabels = {
     flushingRef: 'Ecclesiastes 3:13 (NIV)',
     flushingDesc: 'In Flushing, we hold a Mandarin-only gathering. This gathering offers a space for fellowship, Bible study, and spiritual growth in a Mandarin-speaking environment.',
     flushingWeeklyTitle: 'Mandarin-Only Gathering',
-    flushingWeeklyDesc: 'Thursday: 6:30 - 8:00 PM • Basement',
+    flushingWeeklyDesc: 'Thursday: 6:30 - 9:00 PM • Basement',
+    flushingMealTitle: 'Fellowship Meal',
+    flushingMealDesc: 'Thursday: 6:30 - 7:30 PM • Basement',
+    flushingTestimonyTitle: 'Testimony & Sharing',
+    flushingTestimonyDesc: 'Thursday: 7:30 - 8:00 PM • Basement',
+    flushingSermonTitle: 'Sermon & Bible Study',
+    flushingSermonDesc: 'Thursday: 8:00 - 9:00 PM • Basement',
     flushingMealsTitle: 'Free Fellowship Meals',
     flushingMealsDesc: 'We provide individual meals free of charge during the gathering, but preregistration is required to ensure we order enough catering for everyone. Please connect with us if you would like to join us or have any questions.',
     contactUs: 'Contact Us',
@@ -64,7 +70,7 @@ const allLabels = {
     elmhurstRef: '申命記 6:6-7 (和合本)',
     elmhurstDesc: '在艾姆赫斯特，我們為年輕人提供充滿活力的實體事工，提供屬靈成長、團契和社區參與的機會。我們的青年事工專注於透過互動學習和活動來培育信仰，深化我們與上帝的關係。該地點的所有服務均提供中文和英文。',
     elmhurstWorshipTitle: '安息日崇拜',
-    elmhurstWorshipDesc: '星期六上午 10:00 - 下午 1:00 • 3 樓 • 歡迎參加我們的讚美詩歌、安息日學與每週的主日崇拜服務。',
+    elmhurstWorshipDesc: '星期六上午 10:00 - 下午 1:00 • 歡迎參加我們的讚美詩歌、安息日學與每週的主日崇拜服務。',
     viewSchedule: '時間表',
     elmhurstEventsTitle: '季節性活動與項目',
     elmhurstEventsDesc: '除了查經和屬靈成長外，我們還為年輕人舉辦季節性活動，例如夏令營和冬令營、滑雪之旅、野營活動、燒烤以及其他各種有助於促進情感聯繫和個人發展的趣味活動。',
@@ -78,7 +84,13 @@ const allLabels = {
     flushingRef: '傳道書 3:13 (和合本)',
     flushingDesc: '在法拉盛，我們舉辦僅限國語的聚會。此聚會在國語環境中為團契、查經和屬靈成長提供空間。',
     flushingWeeklyTitle: '國語聚會',
-    flushingWeeklyDesc: '星期四晚上 6:30 - 8:00 • 地下室',
+    flushingWeeklyDesc: '星期四晚上 6:30 - 9:00 • 地下室',
+    flushingMealTitle: '團契晚餐',
+    flushingMealDesc: '星期四晚上 6:30 - 7:30 • 地下室',
+    flushingTestimonyTitle: '見證分享',
+    flushingTestimonyDesc: '星期四晚上 7:30 - 8:00 • 地下室',
+    flushingSermonTitle: '證道與查經',
+    flushingSermonDesc: '星期四晚上 8:00 - 9:00 • 地下室',
     flushingMealsTitle: '免費團契晚餐',
     flushingMealsDesc: '我們在聚會期間免費提供個人膳食，但需要提前登記，以確保我們為大家訂購足夠的餐飲。如果您想加入我們或有任何疑問，請與我們聯繫。',
     contactUs: '聯繫我們',
@@ -98,12 +110,12 @@ const allLabels = {
     elmhurstRef: '申命记 6:6-7 (和合本)',
     elmhurstDesc: '在艾姆赫斯特，我们为年轻人提供充满活力的实体事工，提供属灵成长、团契 and 社区参与的机会。我们的青年事工专注于通过互动学习和活动来培育信仰，深化我们与上帝的关系。该地点的所有服务均提供中文和英文。',
     elmhurstWorshipTitle: '安息日崇拜',
-    elmhurstWorshipDesc: '星期六上午 10:00 - 下午 1:00 • 3 楼 • 欢迎参加我们的赞美诗歌、安息日学与每周的主日崇拜服务。',
+    elmhurstWorshipDesc: '星期六上午 10:00 - 下午 1:00 • 欢迎参加我们的赞美诗歌、安息日学与每周的主日崇拜服务。',
     viewSchedule: '时间表',
     elmhurstEventsTitle: '季节性活动与项目',
     elmhurstEventsDesc: '除了查经和属灵成长外，我们还为年轻人举办季节性活动，例如夏令营和冬令营、滑雪之旅、野营活动、烧烤以及其他各种有助于促进情感联系和个人发展的趣味活动。',
     elmhurstOnlineTitle: '线上与周间事工',
-    elmhurstOnlineDesc: '在整个星期中，我们通过微信和 Zoom 为成人提供国语线上事工，为无法亲自前来的人提供查经、祷告和社区联结的虚拟空间。',
+    elmhurstOnlineDesc: '在整个星期中，我们通过微信和 Zoom 为成人提供国语线上事工，为无法亲自前来的人提供虚拟空间。',
     elmhurstBaptismTitle: '洗礼班',
     elmhurstBaptismDesc: '我们也为愿意并准备好将生命献给基督的人提供洗礼班，引导您走过信仰与承诺的步骤。',
     elmhurstOutreach: '如果您有任何问题或想参与其中，我们鼓励您与我们联系。我们在这里支持您的属灵旅程。',
@@ -112,9 +124,15 @@ const allLabels = {
     flushingRef: '传道书 3:13 (和合本)',
     flushingDesc: '在法拉盛，我们举办仅限国语的聚会。此聚会在国语环境中为团契、查经和属灵成长提供空间。',
     flushingWeeklyTitle: '国语聚会',
-    flushingWeeklyDesc: '星期四晚上 6:30 - 8:00 • 地下室',
+    flushingWeeklyDesc: '星期四晚上 6:30 - 9:00 • 地下室',
+    flushingMealTitle: '团契晚餐',
+    flushingMealDesc: '星期四晚上 6:30 - 7:30 • 地下室',
+    flushingTestimonyTitle: '见证分享',
+    flushingTestimonyDesc: '星期四晚上 7:30 - 8:00 • 地下室',
+    flushingSermonTitle: '证道与查经',
+    flushingSermonDesc: '星期四晚上 8:00 - 9:00 • 地下室',
     flushingMealsTitle: '免费团契晚餐',
-    flushingMealsDesc: '我们在聚会期间免费提供个人膳食，但需要提前登记，以确保我们为大家订购足够的餐饮。如果您想加入我们或有任何疑问，请与我们联系。',
+    flushingMealsDesc: '我们在聚会期间免费提供个人膳食，但需要提前登记，以确保为大家订购足够的餐饮。如果您想加入我们或有任何疑问，请与我们联系。',
     contactUs: '联系我们',
     partnerWithUs: '成为合作伙伴',
     joinZoom: '加入 Zoom 线上聚会',
@@ -132,7 +150,7 @@ const allLabels = {
     elmhurstRef: 'Deuteronomio 6:6-7 (RVR1960)',
     elmhurstDesc: 'En Elmhurst, ofrecemos ministerios presenciales vibrantes para jóvenes adultos, brindando oportunidades para el crecimiento espiritual, el compañerismo y el compromiso comunitario. Nuestro ministerio de jóvenes adultos se enfoca en nutrir la fe a través del aprendizaje interactivo y actividades, profundizando nuestra relación con Dios. Todos los servicios en esta ubicación se ofrecen en chino e inglés.',
     elmhurstWorshipTitle: 'Adoración Sabática',
-    elmhurstWorshipDesc: 'Sábado: 10:00 AM - 1:00 PM • 3er Piso • Únase a nosotros para el servicio de canto, escuela sabática y nuestro servicio principal de adoración semanal.',
+    elmhurstWorshipDesc: 'Sábado: 10:00 AM - 1:00 PM • Únase a nosotros para el servicio de canto, escuela sabática y nuestro servicio principal de adoración semanal.',
     viewSchedule: 'Horario',
     elmhurstEventsTitle: 'Eventos y Actividades Estacionales',
     elmhurstEventsDesc: 'Además del estudio bíblico y el crecimiento espiritual, organizamos eventos estacionales para jóvenes adultos, como campamentos de verano e invierno, viajes de esquí, salidas de campamento, barbacoas y otras actividades divertidas que fomentan la unión y el desarrollo personal.',
@@ -146,7 +164,13 @@ const allLabels = {
     flushingRef: 'Eclesiastés 3:13 (RVR1960)',
     flushingDesc: 'En Flushing, llevamos a cabo una reunión exclusiva en mandarín. Esta reunión ofrece un espacio para el compañerismo, el estudio de la Biblia y el crecimiento espiritual en un ambiente de habla mandarín.',
     flushingWeeklyTitle: 'Reunión en Mandarín',
-    flushingWeeklyDesc: 'Jueves: 6:30 - 8:00 PM • Sótano',
+    flushingWeeklyDesc: 'Jueves: 6:30 - 9:00 PM • Sótano',
+    flushingMealTitle: 'Comida de Compañerismo',
+    flushingMealDesc: 'Jueves: 6:30 - 7:30 PM • Sótano',
+    flushingTestimonyTitle: 'Testimonio y Compartir',
+    flushingTestimonyDesc: 'Jueves: 7:30 - 8:00 PM • Sótano',
+    flushingSermonTitle: 'Sermón y Estudio Bíblico',
+    flushingSermonDesc: 'Jueves: 8:00 - 9:00 PM • Sótano',
     flushingMealsTitle: 'Comidas Gratuitas de Compañerismo',
     flushingMealsDesc: 'Ofrecemos comidas individuales de forma gratuita durante la reunión, pero se requiere inscripción previa para garantizar que ordenemos suficiente comida para todos. Por favor, comuníquese con nosotros si desea unirse o si tiene alguna pregunta.',
     contactUs: 'Contáctenos',
@@ -281,22 +305,9 @@ export default function FellowshipsAndFoodScreen() {
                       <Text style={[styles.listItemDesc, { color: theme.colors.onSurfaceVariant }]}>
                         {labels.elmhurstWorshipDesc}
                       </Text>
-                      <Button 
-                        mode="contained" 
-                        onPress={() => router.push({
-                          pathname: '/community/worship',
-                          params: { backTo: '/community/fellowship' },
-                        } as any)}
-                        buttonColor={theme.colors.tertiary}
-                        textColor={theme.colors.onSecondary}
-                        style={styles.descriptionButton}
-                        labelStyle={styles.descriptionButtonLabel}
-                      >
-                        {labels.viewSchedule}
-                      </Button>
                     </View>
                   )}
-                  descriptionNumberOfLines={10}
+                  descriptionNumberOfLines={20}
                   left={(props) => <List.Icon {...props} icon="church" color={theme.colors.tertiary} />}
                   onPress={() => router.push({
                     pathname: '/community/worship',
@@ -399,15 +410,30 @@ export default function FellowshipsAndFoodScreen() {
                 {labels.flushingDesc}
               </Text>
 
-              {/* Flushing Weekly Meeting Card */}
-              <MenuCard
-                title={labels.flushingWeeklyTitle}
-                description={labels.flushingWeeklyDesc}
-                icon="silverware-fork-knife"
-                iconColor={theme.colors.tertiary}
-                rightIcon={null}
-                style={{ marginBottom: 16 }}
-              />
+              {/* Flushing Gathering Blocks */}
+              <View style={{ gap: 10, marginBottom: 16 }}>
+                <MenuCard
+                  title={labels.flushingMealTitle}
+                  description={labels.flushingMealDesc}
+                  icon="silverware-fork-knife"
+                  iconColor={theme.colors.tertiary}
+                  rightIcon={null}
+                />
+                <MenuCard
+                  title={labels.flushingTestimonyTitle}
+                  description={labels.flushingTestimonyDesc}
+                  icon="account-group"
+                  iconColor={theme.colors.tertiary}
+                  rightIcon={null}
+                />
+                <MenuCard
+                  title={labels.flushingSermonTitle}
+                  description={labels.flushingSermonDesc}
+                  icon="book-open-page-variant"
+                  iconColor={theme.colors.tertiary}
+                  rightIcon={null}
+                />
+              </View>
 
               <View style={[styles.mealsNotice, { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.outlineVariant }]}>
                 <Text variant="titleMedium" style={{ fontWeight: 'bold', color: theme.colors.onPrimaryContainer, marginBottom: 4 }}>
