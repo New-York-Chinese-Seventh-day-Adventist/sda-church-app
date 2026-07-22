@@ -79,7 +79,7 @@ export const GlobalHeader = (props: any) => {
   // as the smart gateway, hiding individual book entries to prevent redundant results.
   const isBibleRef = !!resolveBibleReference(searchQuery, language);
   const deduplicated = isBibleRef
-    ? filtered.filter((item) => !item.isBibleBook || item.route === '/resources/bible')
+    ? filtered.filter((item) => !item.isBibleBook || item.route === '/bible')
     : filtered;
 
   const results = deduplicated.map((item) => ({

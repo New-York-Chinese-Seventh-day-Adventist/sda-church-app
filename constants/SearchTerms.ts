@@ -106,7 +106,7 @@ export const isSearchMatch = (
     // If this is the main 'Holy Bible' card, we only show it if the reference
     // can actually be resolved to a specific book. This prevents random strings
     // like "fff" from triggering the Bible smart gateway.
-    if (item.route === '/resources/bible') {
+    if (item.route === '/bible') {
       return !!resolveBibleReference(trimmedQ, language);
     }
 
@@ -1193,7 +1193,7 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
     {
       ...labels.bible,
       icon: 'book-cross',
-      route: '/resources/bible',
+      route: '/bible',
       isBibleBook: true,
     },
     {
@@ -1233,7 +1233,7 @@ export const getSearchableItems = (language: string): SearchableItem[] => {
         title: localizedName,
         keywords: [localizedName, id, ...data.short, labels.bible?.title || 'Bible'],
         icon: 'book-cross',
-        route: `/resources/bible?bookId=${id}&translationId=${defaultTransId}`,
+        route: `/bible?bookId=${id}&translationId=${defaultTransId}`,
         isBibleBook: true,
       };
     },

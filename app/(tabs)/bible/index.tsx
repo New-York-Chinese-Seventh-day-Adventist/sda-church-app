@@ -122,7 +122,7 @@ const uiLabels = {
   },
 };
 
-export default function BibleReaderScreen() {
+export default function BibleScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { language } = useContext(LanguageContext);
