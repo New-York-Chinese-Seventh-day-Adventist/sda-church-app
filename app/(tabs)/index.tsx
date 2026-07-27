@@ -3,33 +3,73 @@ import {
   CHURCH_BUILDING_IMAGE_URL,
   CHURCH_LATITUDE,
   CHURCH_LONGITUDE,
-  getSunsetApiUrl,
+  openURL,
   openSabbathStream,
 } from '@/constants/ExternalLinks';
 import { LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
+import { createSabbathCountdownViewModel } from '@/services/SabbathCountdownViewModel';
+import {
+  calculateSabbathWindow,
+  createSunsetRangeRequest,
+  getSunsetApiRangeUrl,
+  isSameSunsetLocation,
+  normalizeSunsetCoordinates,
+  parseSunsetV2Range,
+  selectNextSunsetPair,
+  selectSunsetLocation,
+  SunsetCoordinates,
+  SUNSET_LOCATION_PRIVACY_COPY,
+  SUNSET_PROVIDER_ATTRIBUTION_URL,
+  SUNSET_REQUEST_TIMEOUT_MS,
+  SunsetTimesState,
+} from '@/services/SunsetLocationPolicy';
 import { NavigationStyles } from '@/styles/NavigationStyles';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   ImageBackground,
   Platform,
   ScrollView,
   Share,
   StyleSheet,
+  useWindowDimensions,
   View,
+  ViewStyle,
 } from 'react-native';
-import { Button, Card, List, Text } from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Button,
+  Card,
+  Dialog,
+  List,
+  Portal,
+  Text,
+  TouchableRipple,
+} from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const ELMHURST_SUNSET_COORDINATES: SunsetCoordinates = Object.freeze({
+  lat: CHURCH_LATITUDE,
+  lng: CHURCH_LONGITUDE,
+});
+
+type LocationRequestStatus = 'default' | 'requesting' | 'local' | 'unavailable';
+type SunsetModalState = 'closed' | 'details' | 'location-disclosure';
 
 export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { width, fontScale } = useWindowDimensions();
+  const usesConstrainedTimer = width < 430 || fontScale > 1.2;
+  const interactiveCursorStyle =
+    Platform.OS === 'web' ? ({ cursor: 'pointer' } as ViewStyle) : undefined;
 
   const allLabels = {
     en: {
@@ -47,12 +87,14 @@ export default function HomeScreen() {
       sabbathStarts: 'Sabbath starts in',
       sabbathEnds: 'Sabbath ends in',
       isSabbath: 'Happy Sabbath!',
+      sunsetLoading: 'Loading verified sunset times…',
+      sunsetUnavailable: 'Sunset times are unavailable',
+      locationLocal: 'Your location',
+      locationDefault: 'Elmhurst, NY',
+      openSunsetDetails: 'Opens Sabbath sunset details',
       fullscreenReminder:
         'For full screen, swipe down from the top to open notifications, then swipe back up.',
       dismissReminder: 'Got it',
-      // decided to remove the dynamic location since most people don't like to give away location
-      // instead, each congregation shuold adjust the code to use their own location coordinates
-      locationDefault: 'New York, NY',
     },
     zh: {
       welcome: '歡迎！',
@@ -69,11 +111,13 @@ export default function HomeScreen() {
       sabbathStarts: '距離安息日還有',
       sabbathEnds: '距離安息日結束還有',
       isSabbath: '安息日快樂！',
+      sunsetLoading: '正在載入經驗證的日落時間…',
+      sunsetUnavailable: '目前無法取得日落時間',
+      locationLocal: '您的位置',
+      locationDefault: '紐約艾姆赫斯特',
+      openSunsetDetails: '開啟安息日日落詳情',
       fullscreenReminder: '若要進入全螢幕，請從頂端向下滑開啟通知，再向上滑關閉。',
       dismissReminder: '知道了',
-      // decided to remove the dynamic location since most people don't like to give away location
-      // instead, each congregation shuold adjust the code to use their own location coordinates
-      locationDefault: '紐約',
     },
     'zh-cn': {
       welcome: '欢迎！',
@@ -90,9 +134,13 @@ export default function HomeScreen() {
       sabbathStarts: '距离安息日还有',
       sabbathEnds: '距离安息日结束还有',
       isSabbath: '安息日快乐！',
+      sunsetLoading: '正在加载经验证的日落时间…',
+      sunsetUnavailable: '目前无法获取日落时间',
+      locationLocal: '您的位置',
+      locationDefault: '纽约埃尔姆赫斯特',
+      openSunsetDetails: '打开安息日日落详情',
       fullscreenReminder: '若要进入全屏，请从顶部向下滑打开通知，再向上滑关闭。',
       dismissReminder: '知道了',
-      locationDefault: '纽约',
     },
     es: {
       welcome: '¡Bienvenido!',
@@ -109,12 +157,14 @@ export default function HomeScreen() {
       sabbathStarts: 'El Sábado comienza en',
       sabbathEnds: 'El Sábado termina en',
       isSabbath: '¡Feliz Sábado!',
+      sunsetLoading: 'Cargando horas verificadas del atardecer…',
+      sunsetUnavailable: 'Las horas del atardecer no están disponibles',
+      locationLocal: 'Tu ubicación',
+      locationDefault: 'Elmhurst, NY',
+      openSunsetDetails: 'Abre los detalles del atardecer del sábado',
       fullscreenReminder:
         'Para usar la pantalla completa, desliza hacia abajo para abrir las notificaciones y luego hacia arriba.',
       dismissReminder: 'Entendido',
-      // decided to remove the dynamic location since most people don't like to give away location
-      // instead, each congregation shuold adjust the code to use their own location coordinates
-      locationDefault: 'New York, NY',
     },
   };
 
@@ -132,16 +182,49 @@ export default function HomeScreen() {
   const [isSabbath, setIsSabbath] = useState(false);
   const [showFullscreenReminder, setShowFullscreenReminder] = useState(false);
   const [countdown, setCountdown] = useState('');
-  const [useGps, setUseGps] = useState(false);
   const [targetDate, setTargetDate] = useState<Date | null>(null);
-  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [sunsets, setSunsets] = useState<{ fri: Date | null; sat: Date | null }>({
-    fri: null,
-    sat: null,
-  });
+  const [userCoords, setUserCoords] = useState<SunsetCoordinates | null>(null);
+  const geolocationRequestId = useRef(0);
+  const sunsetRequestId = useRef(0);
+  const expiredSunsetRequestId = useRef<number | null>(null);
+  const [sunsetRefreshNonce, setSunsetRefreshNonce] = useState(0);
+  const [modalState, setModalState] = useState<SunsetModalState>('closed');
+  const [locationStatus, setLocationStatus] =
+    useState<LocationRequestStatus>('default');
+  const [sunsetState, setSunsetState] = useState<SunsetTimesState>(() => ({
+    status: 'loading',
+    requestId: 0,
+    dateKey: '',
+    location: selectSunsetLocation(ELMHURST_SUNSET_COORDINATES, null),
+  }));
 
   const VOTD_CONFIG_KEY = 'votd_selection_config';
   const VOTD_CACHE_KEY = `votd_cache_${language}`;
+
+  const useGps = userCoords !== null;
+  const selectedSunsetLocation = selectSunsetLocation(
+    ELMHURST_SUNSET_COORDINATES,
+    userCoords,
+  );
+  const sunsetRangeRequest = createSunsetRangeRequest(new Date());
+  const sunsetDateKey = `${sunsetRangeRequest.dateStart}:${sunsetRangeRequest.dateEnd}`;
+  const sunsetStateMatchesLocation =
+    isSameSunsetLocation(sunsetState.location, selectedSunsetLocation) &&
+    sunsetState.dateKey === sunsetDateKey;
+  const sunsetTimesReady =
+    sunsetStateMatchesLocation && sunsetState.status === 'ready';
+  const sunsetTimesUnavailable =
+    sunsetStateMatchesLocation && sunsetState.status === 'unavailable';
+  const sunsetCountdownReady =
+    sunsetTimesReady && targetDate !== null && countdown.length > 0;
+  const displayedSunsetTimeZone =
+    sunsetCountdownReady && sunsetState.status === 'ready' ? sunsetState.tzid : null;
+  const displayedSunsetDate =
+    sunsetCountdownReady && sunsetState.status === 'ready'
+      ? isSabbath
+        ? sunsetState.saturdayDate
+        : sunsetState.fridayDate
+      : null;
 
   useEffect(() => {
     if (
@@ -164,70 +247,168 @@ export default function HomeScreen() {
     setShowFullscreenReminder(true);
   }, []);
 
-  // Sabbath Countdown Logic
-  // NOTE: There is nothing wrong with this logic itself, but after user testing it looks like most people turn off
-  // location tracking and there is not much demand. Instead, it may be better to let each congregation
-  // hard code their location coordinates. I've left this code in case people want to use it.
-  // All you need to do is add a local-set of labels and a conditional check on the timer display text below.
-  // useEffect(() => {
-  //   // Detect Location via Web Geolocation API
-  //   if (Platform.OS === 'web' && 'geolocation' in navigator) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         // User allowed location
-  //         setUseGps(true);
-  //         setUserCoords({
-  //           lat: position.coords.latitude,
-  //           lng: position.coords.longitude,
-  //         });
-  //       },
-  //       (error) => {
-  //         // Permission denied or error
-  //         setUseGps(false);
-  //         console.log('Location access denied, falling back to New York.');
-  //       },
-  //       { enableHighAccuracy: false, timeout: 5000, maximumAge: 3600000 },
-  //     );
-  //   } else {
-  //     // Fallback for offline or unsupported browsers
-  //     setUseGps(false);
-  //   }
-  // }, []);
+  useEffect(
+    () => () => {
+      // Browser geolocation has no cancellation handle. Invalidating its generation
+      // makes every pending callback inert after unmount.
+      geolocationRequestId.current += 1;
+    },
+    [],
+  );
+
+  // The browser permission prompt is reachable only after the English disclosure.
+  // Coordinates remain component memory only and are discarded on reload/unmount.
+  const requestCurrentLocation = () => {
+    setModalState('details');
+    const requestId = ++geolocationRequestId.current;
+
+    if (
+      Platform.OS !== 'web' ||
+      typeof navigator === 'undefined' ||
+      !navigator.geolocation
+    ) {
+      setUserCoords(null);
+      setLocationStatus('unavailable');
+      return;
+    }
+
+    setLocationStatus('requesting');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (geolocationRequestId.current !== requestId) return;
+        const coordinates = normalizeSunsetCoordinates(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+        if (!coordinates) {
+          setUserCoords(null);
+          setLocationStatus('unavailable');
+          return;
+        }
+
+        setUserCoords(coordinates);
+        setLocationStatus('local');
+      },
+      () => {
+        if (geolocationRequestId.current !== requestId) return;
+        setUserCoords(null);
+        setLocationStatus('unavailable');
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 3600000 },
+    );
+  };
+
+  const useElmhurstLocation = () => {
+    geolocationRequestId.current += 1;
+    setUserCoords(null);
+    setLocationStatus('default');
+  };
+
+  const retrySunsetData = () => {
+    expiredSunsetRequestId.current = null;
+    setSunsetRefreshNonce((value) => value + 1);
+  };
 
   useEffect(() => {
+    const controller = new AbortController();
+    const requestId = ++sunsetRequestId.current;
+    const location = selectSunsetLocation(
+      ELMHURST_SUNSET_COORDINATES,
+      userCoords,
+    );
+    let didTimeout = false;
+    const timeout = setTimeout(() => {
+      didTimeout = true;
+      controller.abort();
+    }, SUNSET_REQUEST_TIMEOUT_MS);
+
+    setCountdown('');
+    setTargetDate(null);
+    setIsSabbath(false);
+    setSunsetState({
+      status: 'loading',
+      requestId,
+      dateKey: sunsetDateKey,
+      location,
+    });
+
     const fetchSunsets = async () => {
-      const lat = useGps && userCoords ? userCoords.lat : CHURCH_LATITUDE;
-      const lng = useGps && userCoords ? userCoords.lng : CHURCH_LONGITUDE;
-
-      const getDayDate = (d: number) => {
-        const t = new Date();
-        // Normalize to Noon local time to ensure the date is stable across UTC/Local
-        // conversions before we apply our longitude-based shift.
-        t.setDate(t.getDate() + (d - t.getDay()));
-        t.setHours(12, 0, 0, 0);
-        return t.toISOString().split('T')[0];
-      };
-
       try {
-        const [fRes, sRes] = await Promise.all([
-          fetch(getSunsetApiUrl(lat, lng, getDayDate(5))),
-          fetch(getSunsetApiUrl(lat, lng, getDayDate(6))),
-        ]);
-        const fData = await fRes.json();
-        const sData = await sRes.json();
+        const response = await fetch(
+          getSunsetApiRangeUrl(
+            location.coordinates.lat,
+            location.coordinates.lng,
+            sunsetRangeRequest.dateStart,
+            sunsetRangeRequest.dateEnd,
+          ),
+          {
+            signal: controller.signal,
+            ...(location.source === 'device' ? { cache: 'no-store' as const } : {}),
+          },
+        );
+        if (!response.ok) {
+          throw new Error('Sunset provider returned an unsuccessful response.');
+        }
 
-        setSunsets({
-          fri: fData.results?.sunset ? new Date(fData.results.sunset) : null,
-          sat: sData.results?.sunset ? new Date(sData.results.sunset) : null,
+        const payload: unknown = await response.json();
+        const verifiedRange = parseSunsetV2Range(
+          payload,
+          location.coordinates,
+          sunsetRangeRequest.expectedDates,
+        );
+        if (!verifiedRange) {
+          throw new Error('Sunset provider returned an invalid range.');
+        }
+        const pair = selectNextSunsetPair(verifiedRange, new Date());
+        if (!pair) {
+          throw new Error('Sunset provider returned no valid upcoming pair.');
+        }
+        if (controller.signal.aborted) {
+          throw Object.assign(new Error('Sunset request was cancelled.'), {
+            name: 'AbortError',
+          });
+        }
+        if (sunsetRequestId.current !== requestId) return;
+
+        setSunsetState({
+          status: 'ready',
+          requestId,
+          dateKey: sunsetDateKey,
+          location,
+          fri: pair.fri,
+          sat: pair.sat,
+          fridayDate: pair.fridayDate,
+          saturdayDate: pair.saturdayDate,
+          tzid: pair.tzid,
+          range: verifiedRange,
         });
-      } catch (e) {
-        console.warn('Failed to fetch sunset times:', e);
+        expiredSunsetRequestId.current = null;
+      } catch (error) {
+        if (controller.signal.aborted && !didTimeout) return;
+        if (sunsetRequestId.current !== requestId) return;
+        if (didTimeout) console.warn('Sunset request timed out.');
+        else console.warn('Failed to fetch verified sunset times:', error);
+        setSunsetState({
+          status: 'unavailable',
+          requestId,
+          dateKey: sunsetDateKey,
+          location,
+        });
+      } finally {
+        clearTimeout(timeout);
       }
     };
-    fetchSunsets();
-  }, [useGps, userCoords, new Date().toDateString()]);
 
-  const formatDisplayDate = (date: Date) => {
+    void fetchSunsets();
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [userCoords, sunsetDateKey, sunsetRefreshNonce]);
+
+  const formatDisplayDate = (dateKey: string) => {
+    const [year, month, dayOfMonth] = dateKey.split('-').map(Number);
+    const date = new Date(year, month - 1, dayOfMonth, 12, 0, 0);
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       month: 'long',
@@ -256,44 +437,73 @@ export default function HomeScreen() {
     return new Intl.DateTimeFormat(language, options).format(date);
   };
 
+  const formatTargetDateTime = (date: Date, timeZone: string) => {
+    const locale = language === 'zh-cn' ? 'zh-CN' : language === 'zh' ? 'zh-TW' : language;
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone,
+      timeZoneName: 'short',
+    }).format(date);
+  };
+
   useEffect(() => {
-    // If GPS status changes (user clicks "Allow"), the component will re-render
-    // and this timer logic will re-calculate based on the new context.
-    if (countdown) setCountdown(''); // Reset display to trigger immediate refresh
+    setCountdown('');
+    setTargetDate(null);
+    setIsSabbath(false);
+
+    if (!sunsetTimesReady || sunsetState.status !== 'ready') return;
 
     const updateTimer = () => {
       const now = new Date();
-      const day = now.getDay();
+      let window = calculateSabbathWindow(now, sunsetState.fri, sunsetState.sat);
 
-      const getFallback = (d: number) => {
-        const t = new Date(now);
-        t.setDate(now.getDate() + (d - day));
-        t.setHours(18, 0, 0, 0);
-        return t;
-      };
-
-      const friTarget = sunsets.fri || getFallback(5);
-      const satTarget = sunsets.sat || getFallback(6);
-
-      let isSabbathNow = false;
-      let target: Date;
-
-      if (now < friTarget) {
-        isSabbathNow = false;
-        target = friTarget;
-      } else if (now < satTarget) {
-        isSabbathNow = true;
-        target = satTarget;
-      } else {
-        isSabbathNow = false;
-        target = new Date(friTarget);
-        target.setDate(target.getDate() + 7);
+      // The verified range includes the following pair. Advance locally at Saturday
+      // sunset and refresh only after that bounded range is exhausted.
+      if (!window) {
+        const nextPair = selectNextSunsetPair(sunsetState.range, now);
+        if (
+          nextPair &&
+          (nextPair.fridayDate !== sunsetState.fridayDate ||
+            nextPair.saturdayDate !== sunsetState.saturdayDate)
+        ) {
+          window = calculateSabbathWindow(now, nextPair.fri, nextPair.sat);
+          if (window) {
+            setSunsetState((current) =>
+              current.status === 'ready' && current.requestId === sunsetState.requestId
+                ? {
+                    ...current,
+                    fri: nextPair.fri,
+                    sat: nextPair.sat,
+                    fridayDate: nextPair.fridayDate,
+                    saturdayDate: nextPair.saturdayDate,
+                    tzid: nextPair.tzid,
+                  }
+                : current,
+            );
+          }
+        }
       }
 
-      setTargetDate(target);
-      setIsSabbath(isSabbathNow);
+      if (!window) {
+        setCountdown('');
+        setTargetDate(null);
+        setIsSabbath(false);
+        if (expiredSunsetRequestId.current !== sunsetState.requestId) {
+          expiredSunsetRequestId.current = sunsetState.requestId;
+          setSunsetRefreshNonce((value) => value + 1);
+        }
+        return;
+      }
 
-      const diff = Math.max(0, target.getTime() - now.getTime());
+      setTargetDate(window.target);
+      setIsSabbath(window.isSabbath);
+
+      const diff = window.millisecondsRemaining;
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
       const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
       const m = Math.floor((diff / (1000 * 60)) % 60);
@@ -308,7 +518,32 @@ export default function HomeScreen() {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [useGps, sunsets]); // Re-run timer logic if GPS permission or sunset data changes
+  }, [sunsetState, sunsetTimesReady]);
+
+  const countdownStatus = sunsetCountdownReady
+    ? 'ready'
+    : sunsetTimesUnavailable
+      ? 'unavailable'
+      : 'loading';
+  const locationLabel = useGps ? labels.locationLocal : labels.locationDefault;
+  const countdownViewModel = createSabbathCountdownViewModel({
+    status: countdownStatus,
+    isSabbath,
+    countdown,
+    dateLabel: displayedSunsetDate ? formatDisplayDate(displayedSunsetDate) : null,
+    locationLabel,
+    labels: {
+      starts: labels.sabbathStarts,
+      ends: labels.sabbathEnds,
+      loading: labels.sunsetLoading,
+      unavailable: labels.sunsetUnavailable,
+      openDetailsHint: labels.openSunsetDetails,
+    },
+  });
+  const exactTargetDateTime =
+    targetDate && displayedSunsetTimeZone
+      ? formatTargetDateTime(targetDate, displayedSunsetTimeZone)
+      : null;
 
   const loadRandomVerse = async () => {
     try {
@@ -549,39 +784,77 @@ export default function HomeScreen() {
           )}
 
           {/* Sabbath Countdown Widget */}
-          <Card
-            style={[styles.timerCard, { backgroundColor: theme.colors.surface }]}
-            mode="contained"
+          <TouchableRipple
+            accessibilityRole="button"
+            accessibilityLabel={countdownViewModel.accessibilityLabel}
+            accessibilityHint={countdownViewModel.accessibilityHint}
+            onPress={() => setModalState('details')}
+            rippleColor={theme.colors.surfaceVariant}
+            style={[
+              styles.timerCard,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.outlineVariant,
+              },
+              interactiveCursorStyle,
+            ]}
           >
-            <Card.Content style={styles.timerContentSubtle}>
-              <View style={styles.timerRow}>
-                <View style={styles.labelColumn}>
-                  <Text
-                    variant="labelMedium"
-                    style={{
-                      color: isSabbath ? theme.colors.primary : theme.colors.secondary,
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {isSabbath ? labels.isSabbath : labels.sabbathStarts}
-                  </Text>
-                  {targetDate && (
-                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                      {`${formatDisplayDate(targetDate)} — ${labels.locationDefault}`}
-                    </Text>
-                  )}
-                </View>
+            <View
+              accessible={false}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              pointerEvents="none"
+              style={[
+                styles.timerRow,
+                usesConstrainedTimer && styles.timerRowConstrained,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="sun-clock-outline"
+                size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
+                color={theme.colors.tertiary}
+                style={styles.timerIcon}
+              />
+              <View style={styles.labelColumn}>
+                <Text
+                  variant="labelMedium"
+                  style={{ color: theme.colors.onSurface, fontWeight: '700' }}
+                >
+                  {countdownViewModel.title}
+                </Text>
+                <Text
+                  variant="bodySmall"
+                  style={{ color: theme.colors.onSurfaceVariant }}
+                >
+                  {countdownViewModel.secondaryText}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.timerValueCluster,
+                  usesConstrainedTimer && styles.timerValueClusterConstrained,
+                ]}
+              >
                 <Text
                   style={[
                     styles.timerValueSubtle,
-                    { color: isSabbath ? theme.colors.primary : theme.colors.onSurface },
+                    {
+                      color: sunsetTimesUnavailable
+                        ? theme.colors.error
+                        : theme.colors.onSurface,
+                    },
                   ]}
                 >
-                  {countdown || '--:--:--'}
+                  {countdownViewModel.countdownText}
                 </Text>
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
+                  color={theme.colors.onSurfaceVariant}
+                />
               </View>
-            </Card.Content>
-          </Card>
+            </View>
+          </TouchableRipple>
 
           <View style={styles.grid}>
             <GridMenuCard
@@ -661,6 +934,196 @@ export default function HomeScreen() {
           </View>
         </List.Section>
       </ScrollView>
+      <Portal>
+        <Dialog
+          visible={modalState === 'details'}
+          onDismiss={() => setModalState('closed')}
+          style={styles.sunsetDialog}
+        >
+          <Dialog.Icon icon="sun-clock-outline" />
+          <Dialog.Title>
+            {`Sabbath sunset details${language === 'en' ? '' : ' (English)'}`}
+          </Dialog.Title>
+          <Dialog.ScrollArea style={styles.dialogScrollArea}>
+            <ScrollView contentContainerStyle={styles.dialogScrollContent}>
+              {language !== 'en' && (
+                <Text
+                  variant="labelMedium"
+                  style={[styles.englishOnlyNotice, { color: theme.colors.primary }]}
+                >
+                  Sunset details and privacy controls are currently available in English.
+                </Text>
+              )}
+
+              <View style={styles.detailStatusRow}>
+                {countdownStatus === 'loading' && (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                )}
+                <View style={styles.detailStatusText}>
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    variant="titleMedium"
+                    style={{ color: theme.colors.onSurface, fontWeight: '700' }}
+                  >
+                    {countdownViewModel.title}
+                  </Text>
+                  {countdownStatus === 'ready' && (
+                    <Text
+                      variant="headlineSmall"
+                      style={[styles.detailCountdown, { color: theme.colors.onSurface }]}
+                    >
+                      {countdownViewModel.countdownText}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {countdownStatus === 'ready' && exactTargetDateTime && (
+                <View style={styles.detailFields}>
+                  <View style={styles.detailField}>
+                    <Text variant="labelLarge" style={styles.detailFieldLabel}>
+                      Target sunset
+                    </Text>
+                    <Text variant="bodyLarge">{exactTargetDateTime}</Text>
+                  </View>
+                  <View style={styles.detailField}>
+                    <Text variant="labelLarge" style={styles.detailFieldLabel}>
+                      Location
+                    </Text>
+                    <Text variant="bodyLarge">{locationLabel}</Text>
+                  </View>
+                  <View style={styles.detailField}>
+                    <Text variant="labelLarge" style={styles.detailFieldLabel}>
+                      Time zone
+                    </Text>
+                    <Text variant="bodyLarge">{displayedSunsetTimeZone}</Text>
+                  </View>
+                </View>
+              )}
+
+              {sunsetTimesUnavailable && (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  variant="bodyMedium"
+                  style={[styles.detailMessage, { color: theme.colors.error }]}
+                >
+                  Verified sunset data could not be loaded. No estimated Sabbath time is
+                  shown.
+                </Text>
+              )}
+              {locationStatus === 'requesting' && (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  variant="bodyMedium"
+                  style={styles.detailMessage}
+                >
+                  {SUNSET_LOCATION_PRIVACY_COPY.requesting}
+                </Text>
+              )}
+              {locationStatus === 'unavailable' && (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  variant="bodyMedium"
+                  style={[styles.detailMessage, { color: theme.colors.error }]}
+                >
+                  {SUNSET_LOCATION_PRIVACY_COPY.unavailable}
+                </Text>
+              )}
+              {locationStatus === 'local' && (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  variant="bodyMedium"
+                  style={styles.detailMessage}
+                >
+                  {SUNSET_LOCATION_PRIVACY_COPY.localSession}
+                </Text>
+              )}
+
+              <View style={styles.detailActions}>
+                {countdownViewModel.canRetryProvider && (
+                  <Button
+                    mode="outlined"
+                    icon="refresh"
+                    onPress={retrySunsetData}
+                    style={styles.detailAction}
+                  >
+                    Retry sunset data
+                  </Button>
+                )}
+                {Platform.OS === 'web' && (
+                  <Button
+                    mode="outlined"
+                    icon={useGps ? 'map-marker-off-outline' : 'crosshairs-gps'}
+                    disabled={locationStatus === 'requesting'}
+                    onPress={
+                      useGps
+                        ? useElmhurstLocation
+                        : () => setModalState('location-disclosure')
+                    }
+                    style={styles.detailAction}
+                  >
+                    {useGps
+                      ? SUNSET_LOCATION_PRIVACY_COPY.resetAction
+                      : locationStatus === 'unavailable'
+                        ? SUNSET_LOCATION_PRIVACY_COPY.retryAction
+                        : SUNSET_LOCATION_PRIVACY_COPY.action}
+                  </Button>
+                )}
+                <Button
+                  accessibilityRole="link"
+                  mode="text"
+                  icon="open-in-new"
+                  onPress={() =>
+                    openURL(
+                      SUNSET_PROVIDER_ATTRIBUTION_URL,
+                      'Error',
+                      'Could not open Sunrise-Sunset.org.',
+                    )
+                  }
+                  style={styles.detailAction}
+                >
+                  Data: Sunrise-Sunset.org
+                </Button>
+              </View>
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={() => setModalState('closed')}>Close</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        <Dialog
+          visible={modalState === 'location-disclosure'}
+          onDismiss={() => setModalState('details')}
+          style={styles.sunsetDialog}
+        >
+          <Dialog.Icon icon="map-marker-radius-outline" />
+          <Dialog.Title>{SUNSET_LOCATION_PRIVACY_COPY.title}</Dialog.Title>
+          <Dialog.ScrollArea style={styles.dialogScrollArea}>
+            <ScrollView contentContainerStyle={styles.dialogScrollContent}>
+              {language !== 'en' && (
+                <Text
+                  variant="labelMedium"
+                  style={[styles.englishOnlyNotice, { color: theme.colors.primary }]}
+                >
+                  {SUNSET_LOCATION_PRIVACY_COPY.englishOnlyNotice}
+                </Text>
+              )}
+              <Text variant="bodyMedium">
+                {SUNSET_LOCATION_PRIVACY_COPY.disclosure}
+              </Text>
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions style={styles.dialogActions}>
+            <Button onPress={() => setModalState('details')}>
+              {SUNSET_LOCATION_PRIVACY_COPY.keepDefaultAction}
+            </Button>
+            <Button mode="contained" onPress={requestCurrentLocation}>
+              {SUNSET_LOCATION_PRIVACY_COPY.continueAction}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </>
   );
 }
@@ -684,6 +1147,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    minHeight: 64,
   },
   fullscreenReminder: {
     marginBottom: 12,
@@ -700,23 +1165,97 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: -4,
   },
-  timerContentSubtle: {
+  timerRow: {
+    minHeight: 64,
     paddingVertical: 12,
     paddingHorizontal: 16,
-  },
-  timerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+  },
+  timerRowConstrained: {
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+  },
+  timerIcon: {
+    marginRight: 12,
   },
   labelColumn: {
     flex: 1,
+    minWidth: 0,
+  },
+  timerValueCluster: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexShrink: 0,
+    marginLeft: 12,
+  },
+  timerValueClusterConstrained: {
+    justifyContent: 'flex-end',
+    marginLeft: DESIGN_TOKENS.ICON_SIZE_FEATURED + 12,
+    marginTop: 8,
+    width: '100%',
   },
   timerValueSubtle: {
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontVariant: ['tabular-nums'],
     fontSize: 16,
+    lineHeight: 22,
     fontWeight: '700',
+  },
+  sunsetDialog: {
+    alignSelf: 'center',
+    maxHeight: '90%',
+    maxWidth: 560,
+    width: '90%',
+  },
+  dialogScrollArea: {
+    paddingHorizontal: 0,
+  },
+  dialogScrollContent: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+  },
+  englishOnlyNotice: {
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  detailStatusRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  detailStatusText: {
+    flex: 1,
+  },
+  detailCountdown: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontVariant: ['tabular-nums'],
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  detailFields: {
+    gap: 16,
+    marginTop: 20,
+  },
+  detailField: {
+    gap: 2,
+  },
+  detailFieldLabel: {
+    fontWeight: '700',
+  },
+  detailMessage: {
+    marginTop: 16,
+  },
+  detailActions: {
+    gap: 8,
+    marginTop: 20,
+  },
+  detailAction: {
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  dialogActions: {
+    flexWrap: 'wrap',
   },
   grid: {
     flexDirection: 'row',
