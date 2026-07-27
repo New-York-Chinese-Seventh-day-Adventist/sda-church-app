@@ -12,6 +12,7 @@ export default function YouStackLayout() {
       <Stack.Screen name="about" />
       <Stack.Screen name="privacy" />
       <Stack.Screen name="legal" />
+      <Stack.Screen name="backup" />
     </Stack>
   );
 }

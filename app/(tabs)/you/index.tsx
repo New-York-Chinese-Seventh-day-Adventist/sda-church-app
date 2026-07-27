@@ -1,13 +1,15 @@
 import { UpdateContext } from '@/app/_layout';
 import { MenuCard } from '@/components/MenuCard';
+import { PwaInstallDialog } from '@/components/PwaInstallDialog';
 import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { usePwaInstall } from '@/constants/PwaInstallContext';
 import { ThemeContext, useAppTheme } from '@/constants/Themes';
 import packageJson from '@/package.json';
 import { NavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { ImageBackground, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { List, Switch, Text, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -76,8 +78,21 @@ export default function YouScreen() {
   const { language } = useContext(LanguageContext);
   const { toggleTheme } = useContext(ThemeContext);
   const { onManualCheck, updateStatus } = useContext(UpdateContext);
+  const { status: installStatus } = usePwaInstall();
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   const insets = useSafeAreaInsets();
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
+  const englishOnly = language !== 'en';
+  const englishSuffix = englishOnly ? ' (English)' : '';
+  const installDescription = {
+    accepted: 'The browser accepted the request; open for next-step guidance.',
+    dismissed: 'The browser prompt was dismissed; reopen for manual guidance.',
+    'not-applicable': 'Installation guidance is available only in the web app.',
+    'prompt-available': 'A browser-provided install option is ready.',
+    standalone: 'The app is already running as an installed app.',
+    unavailable: 'Open capability-aware manual guidance for this browser.',
+  }[installStatus];
+  const backupTitle = `Backup & Restore${englishSuffix}`;
 
   return (
     <>
@@ -145,6 +160,31 @@ export default function YouScreen() {
                 } as any)
               }
             />
+            {Platform.OS === 'web' ? (
+              <MenuCard
+                title={`App installation${englishSuffix}`}
+                description={`${englishOnly ? 'English guidance. ' : ''}${installDescription}`}
+                icon="download"
+                iconColor={theme.colors.tertiary}
+                onPress={() => setShowInstallGuide(true)}
+              />
+            ) : null}
+            <MenuCard
+              title={backupTitle}
+              description={
+                englishOnly
+                  ? 'English-only local settings backup and restore'
+                  : 'Download, inspect, restore, or delete four local settings'
+              }
+              icon="backup-restore"
+              iconColor={theme.colors.tertiary}
+              onPress={() =>
+                router.push({
+                  pathname: '/you/backup',
+                  params: { backTo: '/you' },
+                } as any)
+              }
+            />
             <MenuCard
               title={labels.privacy}
               description={labels.privacySub}
@@ -187,6 +227,10 @@ export default function YouScreen() {
           </View>
         </View>
       </ScrollView>
+      <PwaInstallDialog
+        visible={showInstallGuide}
+        onDismiss={() => setShowInstallGuide(false)}
+      />
     </>
   );
 }

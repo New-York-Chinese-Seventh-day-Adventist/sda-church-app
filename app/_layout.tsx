@@ -8,6 +8,12 @@ import {
   SupportedLanguage,
 } from '@/constants/LanguageContext';
 import {
+  BeforeInstallPromptEventLike,
+  PwaInstallContext,
+  PwaInstallRequestResult,
+  PwaInstallStatus,
+} from '@/constants/PwaInstallContext';
+import {
   AppTheme,
   getAppTheme,
   SCRIPTURE_FONT_FAMILIES,
@@ -55,14 +61,6 @@ LogBox.ignoreAllLogs();
 export const unstable_settings = {
   // Ensure that reloading on `/language` keeps a back button present.
   initialRouteName: '(tabs)',
-};
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
 };
 
 const isInstalledPwa = () => {
@@ -213,7 +211,9 @@ export default function RootLayout() {
     'idle',
   );
   const [installPrompt, setInstallPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
+    useState<BeforeInstallPromptEventLike | null>(null);
+  const [installOutcome, setInstallOutcome] =
+    useState<'accepted' | 'dismissed' | null>(null);
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const updateCheckInProgress = useRef(false);
   const updateStatusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -250,13 +250,21 @@ export default function RootLayout() {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
     const onBeforeInstallPrompt = (event: Event) => {
-      if (!isAndroidChromeBrowser()) return;
-
+      const candidate = event as BeforeInstallPromptEventLike;
+      if (
+        typeof candidate.prompt !== 'function' ||
+        !candidate.userChoice ||
+        typeof candidate.userChoice.then !== 'function'
+      ) {
+        return;
+      }
       event.preventDefault();
-      setInstallPrompt(event as BeforeInstallPromptEvent);
+      setInstallOutcome(null);
+      setInstallPrompt(candidate);
     };
     const onAppInstalled = () => {
       setInstallPrompt(null);
+      setInstallOutcome('accepted');
       setInstallPromptDismissed(true);
     };
 
@@ -565,6 +573,27 @@ export default function RootLayout() {
     setShowSetup(false);
   };
 
+  const requestInstall = async (): Promise<PwaInstallRequestResult> => {
+    if (Platform.OS !== 'web' || isInstalledPwa()) return 'unavailable';
+
+    const prompt = installPrompt;
+    if (!prompt) return 'unavailable';
+
+    // A deferred beforeinstallprompt event is one-shot. Consume it before awaiting so
+    // repeated taps cannot invoke the same browser prompt twice.
+    setInstallPrompt(null);
+    try {
+      await prompt.prompt();
+      const choice = await prompt.userChoice;
+      setInstallOutcome(choice.outcome);
+      return choice.outcome;
+    } catch (error) {
+      setInstallOutcome(null);
+      console.warn('Unable to show the PWA install prompt', error);
+      return 'error';
+    }
+  };
+
   const handleInstall = async () => {
     setInstallPromptDismissed(true);
 
@@ -573,18 +602,18 @@ export default function RootLayout() {
       return;
     }
 
-    if (!installPrompt || !isAndroidChromeBrowser()) return;
-
-    const prompt = installPrompt;
-    setInstallPrompt(null);
-
-    try {
-      await prompt.prompt();
-      await prompt.userChoice;
-    } catch (error) {
-      console.warn('Unable to show the PWA install prompt', error);
-    }
+    if (!isAndroidChromeBrowser()) return;
+    await requestInstall();
   };
+
+  const installStatus: PwaInstallStatus =
+    Platform.OS !== 'web'
+      ? 'not-applicable'
+      : isInstalledPwa()
+        ? 'standalone'
+        : installPrompt
+          ? 'prompt-available'
+          : installOutcome ?? 'unavailable';
 
   const [loaded, error] = useFonts({
     'PlusJakartaSans-Regular': require('../assets/fonts/PlusJakartaSans-Regular.ttf'),
@@ -624,32 +653,35 @@ export default function RootLayout() {
           setLanguage: handleSetLanguage,
         }}
       >
-        <ThemeContext.Provider value={{ toggleTheme: handleToggleTheme }}>
-          <UpdateContext.Provider
-            value={{
-              updateAvailable,
-              onUpdate: handleUpdate,
-              onManualCheck: handleManualCheck,
-              updateStatus,
-            }}
-          >
-            <RootLayoutNav
-              theme={theme}
-              showSetup={showSetup}
-              onCompleteSetup={onCompleteSetup}
-              installAvailable={
-                !installPromptDismissed &&
-                (installPrompt !== null || isIosSafariBrowser())
-              }
-              onInstall={handleInstall}
-              onDismissInstall={() => setInstallPromptDismissed(true)}
-              updateAvailable={updateAvailable}
-              onUpdate={handleUpdate}
-              updateStatus={updateStatus}
-              onDismissStatus={dismissUpdateStatus}
-            />
-          </UpdateContext.Provider>
-        </ThemeContext.Provider>
+        <PwaInstallContext.Provider value={{ requestInstall, status: installStatus }}>
+          <ThemeContext.Provider value={{ toggleTheme: handleToggleTheme }}>
+            <UpdateContext.Provider
+              value={{
+                updateAvailable,
+                onUpdate: handleUpdate,
+                onManualCheck: handleManualCheck,
+                updateStatus,
+              }}
+            >
+              <RootLayoutNav
+                theme={theme}
+                showSetup={showSetup}
+                onCompleteSetup={onCompleteSetup}
+                installAvailable={
+                  !installPromptDismissed &&
+                  (isIosSafariBrowser() ||
+                    (installPrompt !== null && isAndroidChromeBrowser()))
+                }
+                onInstall={handleInstall}
+                onDismissInstall={() => setInstallPromptDismissed(true)}
+                updateAvailable={updateAvailable}
+                onUpdate={handleUpdate}
+                updateStatus={updateStatus}
+                onDismissStatus={dismissUpdateStatus}
+              />
+            </UpdateContext.Provider>
+          </ThemeContext.Provider>
+        </PwaInstallContext.Provider>
       </LanguageContext.Provider>
     </SafeAreaProvider>
   );
