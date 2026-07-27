@@ -1,5 +1,7 @@
 import { getHeaderBackTarget, hasHeaderBackButton } from '@/constants/BackNavigation';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { useTextSize } from '@/constants/TextSizeContext';
 import {
   ALL_SEARCH_LABELS,
   getSearchableItems,
@@ -51,6 +53,7 @@ export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);
   const segments = useSegments();
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +63,11 @@ export const GlobalHeader = (props: any) => {
   const searchRef = useRef<any>(null);
   const headerRef = useRef<View>(null);
   const insets = useSafeAreaInsets();
-  const { width: windowWidth } = useWindowDimensions();
+  const { fontScale, width: windowWidth } = useWindowDimensions();
+  const effectiveTextScale = Math.max(1, fontScale * textScale);
+  const compactControlScale = Math.min(effectiveTextScale, 1.5);
+  const compactControlHeight = Math.ceil(44 + (compactControlScale - 1) * 24);
+  const appBarHeight = Math.max(64, compactControlHeight + 20);
 
   const { menuAnim } = useContext(UIStateContext);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -221,7 +228,7 @@ export const GlobalHeader = (props: any) => {
   );
   const bibleSearchWidth = searchExpansion.interpolate({
     inputRange: [0, 1],
-    outputRange: [44, expandedBibleSearchWidth],
+    outputRange: [compactControlHeight, expandedBibleSearchWidth],
   });
 
   const renderSearchbar = (isExpandableBible = false) => (
@@ -272,6 +279,7 @@ export const GlobalHeader = (props: any) => {
       style={[
         styles.floatingSearchbar,
         isExpandableBible && styles.expandedBibleSearchbar,
+        { minHeight: compactControlHeight },
         {
           backgroundColor: theme.colors.surface,
           shadowColor: '#000',
@@ -284,7 +292,7 @@ export const GlobalHeader = (props: any) => {
         minHeight: 0,
         paddingBottom: 0,
         paddingTop: 0,
-        fontSize: 16,
+        fontSize: scaleTypographyMetric(16, textScale),
       }}
       iconColor={theme.colors.onSurfaceVariant}
       placeholderTextColor={theme.colors.onSurfaceVariant}
@@ -306,7 +314,7 @@ export const GlobalHeader = (props: any) => {
       <Appbar.Header
         ref={headerRef}
         statusBarHeight={0}
-        style={{ backgroundColor: 'transparent', elevation: 0, height: 64 }}
+        style={{ backgroundColor: 'transparent', elevation: 0, height: appBarHeight }}
         onLayout={(e) => {
           const { height } = e.nativeEvent.layout;
           setHeaderHeight(height + insets.top);
@@ -344,6 +352,7 @@ export const GlobalHeader = (props: any) => {
                 pointerEvents={showTitleChip ? 'auto' : 'none'}
                 style={[
                   styles.floatingTitleChip,
+                  { minHeight: compactControlHeight, maxWidth: windowWidth - 86 },
                   {
                     backgroundColor: 'rgba(255, 255, 255, 0.94)',
                     borderColor: 'rgba(255, 255, 255, 0.72)',
@@ -373,6 +382,7 @@ export const GlobalHeader = (props: any) => {
                     accessibilityLabel={`Translation: ${bibleTranslation}`}
                     style={({ pressed }) => [
                       styles.translationChip,
+                      { minHeight: compactControlHeight },
                       {
                         backgroundColor: theme.colors.surface,
                         opacity: pressed ? 0.75 : 1,
@@ -412,6 +422,7 @@ export const GlobalHeader = (props: any) => {
                     }
                     style={({ pressed }) => [
                       styles.collapsedSearchButton,
+                      { height: compactControlHeight, width: compactControlHeight },
                       {
                         backgroundColor: theme.colors.surface,
                         opacity: pressed ? 0.75 : 1,
@@ -440,6 +451,7 @@ export const GlobalHeader = (props: any) => {
                     accessibilityLabel={searchLabels.searchBiblePlaceholder}
                     style={({ pressed }) => [
                       styles.collapsedSearchButton,
+                      { height: compactControlHeight, width: compactControlHeight },
                       {
                         backgroundColor: theme.colors.surface,
                         opacity: pressed ? 0.75 : 1,
@@ -465,7 +477,7 @@ export const GlobalHeader = (props: any) => {
                     {
                       top: Math.max(
                         headerHeight,
-                        insets.top + 64,
+                        insets.top + appBarHeight,
                       ) + 8,
                       backgroundColor: theme.colors.background,
                     },
@@ -525,7 +537,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   floatingTitleChip: {
-    height: 40,
+    minHeight: 40,
     borderRadius: 20,
     paddingHorizontal: 16,
     alignSelf: 'flex-start',
@@ -542,7 +554,7 @@ const styles = StyleSheet.create({
   floatingSearchbar: {
     elevation: 4,
     borderRadius: 24,
-    height: 44,
+    minHeight: 44,
     marginRight: 12,
     marginLeft: 12,
   },
@@ -558,7 +570,7 @@ const styles = StyleSheet.create({
     minWidth: 68,
     maxWidth: 240,
     flexShrink: 1,
-    height: 44,
+    minHeight: 44,
     borderRadius: 22,
     paddingHorizontal: 12,
     flexDirection: 'row',

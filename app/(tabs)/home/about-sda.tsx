@@ -4,7 +4,7 @@ import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { DocumentStyles } from '@/styles/DocumentStyles';
+import { useDocumentStyles } from '@/styles/DocumentStyles';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
@@ -16,6 +16,7 @@ export default function AboutSDAScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
+  const DocumentStyles = useDocumentStyles();
   const insets = useSafeAreaInsets();
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
 

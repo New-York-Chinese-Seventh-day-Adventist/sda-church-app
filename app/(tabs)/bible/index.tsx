@@ -3,7 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -14,6 +14,7 @@ import {
   Share,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -27,8 +28,13 @@ import {
 } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import {
+  scaleTypographyMetric,
+  type TextScale,
+} from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { SCRIPTURE_FONT_FAMILIES, useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import {
@@ -37,8 +43,8 @@ import {
   SavedVerseReference,
   storeSavedVerses,
 } from '@/services/SavedVersesService';
-import { NavigationStyles } from '@/styles/NavigationStyles';
-import { ReaderStyles } from '@/styles/ReaderStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
+import { createReaderStyles } from '@/styles/ReaderStyles';
 
 // Generalizing dimensions to ensure responsiveness across iPhone/Tablet
 const DOCK_HEIGHT = 60;
@@ -258,6 +264,31 @@ const uiLabels = {
 
 export default function BibleScreen() {
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
+  const { fontScale: osFontScale, width: viewportWidth } = useWindowDimensions();
+  const NavigationStyles = useNavigationStyles();
+  const ReaderStyles = useMemo(() => createReaderStyles(textScale), [textScale]);
+  // Keep fixed-height transport/navigation labels compact; the reader and
+  // modal scripture text continue to honor the full app and OS text scales.
+  const compactDockScaleCap: TextScale =
+    viewportWidth < 360 ? 1.1 : viewportWidth < 420 ? 1.2 : 1.3;
+  const compactDockTextScale = Math.min(
+    textScale,
+    compactDockScaleCap,
+  ) as TextScale;
+  const compactReaderStyles = useMemo(
+    () => createReaderStyles(compactDockTextScale),
+    [compactDockTextScale],
+  );
+  const styles = useMemo(() => createStyles(textScale), [textScale]);
+  const effectiveTextScale = textScale * osFontScale;
+  const useCompactDock = viewportWidth < 420 || effectiveTextScale > 1.35;
+  const compactDockMaxFontSizeMultiplier =
+    viewportWidth < 360 ? 1.1 : viewportWidth < 420 ? 1.15 : 1.2;
+  const selectionBarHeight = Math.max(
+    SELECTION_BAR_HEIGHT,
+    Math.ceil(SELECTION_BAR_HEIGHT * Math.min(effectiveTextScale, 2)),
+  );
   const insets = useSafeAreaInsets();
   const fullscreenEdgeInset =
     Platform.OS === 'web' &&
@@ -1569,7 +1600,7 @@ export default function BibleScreen() {
   const hasChapterAudio = !!audioLinks && Object.keys(audioLinks).length > 0;
   const dockExtraHeight =
     (hasChapterAudio ? AUDIO_DOCK_HEIGHT : 0) +
-    (isSelectionActive ? SELECTION_BAR_HEIGHT : 0);
+    (isSelectionActive ? selectionBarHeight : 0);
   const animatedControlDockHeight = menuAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [
@@ -1662,7 +1693,7 @@ export default function BibleScreen() {
 
         {/* Selection Actions Bar (Integrated) */}
         {isSelectionActive && (
-          <View style={{ height: SELECTION_BAR_HEIGHT }}>
+          <View style={{ height: selectionBarHeight }}>
             <View style={styles.selectionBarInner}>
               <Button onPress={clearSelection}>{labels.cancel}</Button>
               <IconButton
@@ -1707,7 +1738,13 @@ export default function BibleScreen() {
                   { backgroundColor: theme.colors.surfaceVariant },
                 ]}
               >
-                <Text style={{ color: theme.colors.onSurface, fontWeight: '700' }}>
+                <Text
+                  maxFontSizeMultiplier={compactDockMaxFontSizeMultiplier}
+                  style={[
+                    compactReaderStyles.audioControlText,
+                    { color: theme.colors.onSurface },
+                  ]}
+                >
                   {playbackRate}×
                 </Text>
               </TouchableOpacity>
@@ -1773,7 +1810,13 @@ export default function BibleScreen() {
             </View>
 
             <View style={ReaderStyles.audioTimelineRow}>
-              <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text
+                maxFontSizeMultiplier={compactDockMaxFontSizeMultiplier}
+                style={[
+                  compactReaderStyles.audioTimeText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 {formatAudioTime(scrubPositionMillis ?? audioPositionMillis)}
               </Text>
               <View
@@ -1867,8 +1910,11 @@ export default function BibleScreen() {
                 <ActivityIndicator size={12} color={theme.colors.tertiary} />
               ) : (
                 <Text
-                  variant="labelSmall"
-                  style={{ color: theme.colors.onSurfaceVariant }}
+                  maxFontSizeMultiplier={compactDockMaxFontSizeMultiplier}
+                  style={[
+                    compactReaderStyles.audioTimeText,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
                 >
                   {formatAudioTime(audioDurationMillis)}
                 </Text>
@@ -1881,10 +1927,13 @@ export default function BibleScreen() {
         <View
           style={[
             ReaderStyles.dockInner,
+            useCompactDock && styles.compactDockInner,
             fullscreenEdgeInset > 0 && { paddingHorizontal: fullscreenEdgeInset },
           ]}
         >
-          <View style={ReaderStyles.sideSlot}>
+          <View
+            style={[ReaderStyles.sideSlot, useCompactDock && styles.compactSideSlot]}
+          >
             {!isFirstChapter ? (
               <IconButton
                 icon="chevron-left"
@@ -1898,20 +1947,32 @@ export default function BibleScreen() {
             )}
           </View>
 
-          <View style={ReaderStyles.pillsContainer}>
+          <View
+            style={[
+              ReaderStyles.pillsContainer,
+              useCompactDock && styles.compactPillsContainer,
+            ]}
+          >
             <TouchableOpacity
               style={[
                 ReaderStyles.pill,
+                useCompactDock && styles.compactPill,
+                useCompactDock && styles.bookPill,
                 { backgroundColor: theme.colors.surfaceVariant },
               ]}
               onPress={() => setModalType('book')}
             >
-              <Text numberOfLines={1} style={ReaderStyles.pillText}>
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                maxFontSizeMultiplier={compactDockMaxFontSizeMultiplier}
+                style={compactReaderStyles.pillText}
+              >
                 {book?.name || '...'}
               </Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={16}
+                size={useCompactDock ? 14 : 16}
                 color={theme.colors.onSurfaceVariant}
               />
             </TouchableOpacity>
@@ -1919,14 +1980,22 @@ export default function BibleScreen() {
             <TouchableOpacity
               style={[
                 ReaderStyles.pill,
+                useCompactDock && styles.compactPill,
+                useCompactDock && styles.chapterPill,
                 { backgroundColor: theme.colors.surfaceVariant },
               ]}
               onPress={() => setModalType('chapter')}
             >
-              <Text style={ReaderStyles.pillText}>{chapterNum}</Text>
+              <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={compactDockMaxFontSizeMultiplier}
+                style={compactReaderStyles.pillText}
+              >
+                {chapterNum}
+              </Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={16}
+                size={useCompactDock ? 14 : 16}
                 color={theme.colors.onSurfaceVariant}
               />
             </TouchableOpacity>
@@ -1934,24 +2003,33 @@ export default function BibleScreen() {
             <TouchableOpacity
               style={[
                 ReaderStyles.pill,
+                useCompactDock && styles.compactPill,
+                useCompactDock && styles.versePill,
                 { backgroundColor: theme.colors.surfaceVariant },
               ]}
               onPress={() => setModalType('verse')}
               accessibilityRole="button"
               accessibilityLabel={labels.verse}
             >
-              <Text numberOfLines={1} style={ReaderStyles.pillText}>
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                maxFontSizeMultiplier={compactDockMaxFontSizeMultiplier}
+                style={compactReaderStyles.pillText}
+              >
                 {labels.verse}
               </Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={16}
+                size={useCompactDock ? 14 : 16}
                 color={theme.colors.onSurfaceVariant}
               />
             </TouchableOpacity>
           </View>
 
-          <View style={ReaderStyles.sideSlot}>
+          <View
+            style={[ReaderStyles.sideSlot, useCompactDock && styles.compactSideSlot]}
+          >
             {!isLastChapter ? (
               <IconButton
                 icon="chevron-right"
@@ -2379,7 +2457,7 @@ export default function BibleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (textScale: TextScale) => StyleSheet.create({
   verseDetailModalContent: {
     maxHeight: '94%',
     marginTop: 8,
@@ -2392,6 +2470,28 @@ const styles = StyleSheet.create({
     gap: 8,
     height: '100%',
     paddingHorizontal: 12,
+  },
+  compactDockInner: {
+    paddingHorizontal: 2,
+  },
+  compactSideSlot: {
+    width: 44,
+  },
+  compactPillsContainer: {
+    gap: 4,
+  },
+  compactPill: {
+    paddingHorizontal: 6,
+    gap: 2,
+  },
+  bookPill: {
+    flex: 1.35,
+  },
+  chapterPill: {
+    flex: 0.75,
+  },
+  versePill: {
+    flex: 1,
   },
   detailActions: {
     flexDirection: 'row',
@@ -2410,13 +2510,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   originalVerseText: {
-    fontSize: 20,
-    lineHeight: 32,
+    fontSize: scaleTypographyMetric(20, textScale),
+    lineHeight: scaleTypographyMetric(32, textScale),
     marginBottom: 10,
   },
   originalVerseAttribution: {
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: scaleTypographyMetric(11, textScale),
+    lineHeight: scaleTypographyMetric(16, textScale),
   },
   savedEmptyState: {
     minHeight: 180,

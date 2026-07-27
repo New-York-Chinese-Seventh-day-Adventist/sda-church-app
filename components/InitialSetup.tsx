@@ -1,10 +1,16 @@
 import {
+  isTextScale,
+  TEXT_SCALE_OPTIONS,
+  type TextScale,
+} from '@/constants/AppPreferences';
+import {
   LanguageContext,
   SupportedLanguage,
 } from "@/constants/LanguageContext";
+import { useTextSize } from '@/constants/TextSizeContext';
 import { ThemeContext, useAppTheme } from "@/constants/Themes";
-import { useContext } from "react";
-import { StyleSheet, View } from "react-native";
+import { useContext, useRef, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 import {
   Button,
   Modal,
@@ -20,7 +26,12 @@ interface InitialSetupProps {
 export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
   const { language, setLanguage } = useContext(LanguageContext);
   const { toggleTheme } = useContext(ThemeContext);
+  const { setTextScale, textScale } = useTextSize();
   const theme = useAppTheme();
+  const [isSavingTextScale, setIsSavingTextScale] = useState(false);
+  const [failedTextScale, setFailedTextScale] = useState<TextScale | null>(null);
+  const textScaleWritePendingRef = useRef(false);
+  const failedTextScaleRef = useRef<TextScale | null>(null);
 
   const allLabels = {
     en: {
@@ -62,6 +73,35 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
   };
 
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
+  const englishOnly = language !== 'en';
+
+  const persistTextScale = async (nextScale: TextScale) => {
+    if (textScaleWritePendingRef.current) return;
+
+    textScaleWritePendingRef.current = true;
+    setIsSavingTextScale(true);
+    try {
+      await setTextScale(nextScale);
+      failedTextScaleRef.current = null;
+      setFailedTextScale(null);
+    } catch {
+      failedTextScaleRef.current = nextScale;
+      setFailedTextScale(nextScale);
+    } finally {
+      textScaleWritePendingRef.current = false;
+      setIsSavingTextScale(false);
+    }
+  };
+
+  const completeSetup = () => {
+    if (
+      textScaleWritePendingRef.current ||
+      failedTextScaleRef.current !== null
+    ) {
+      return;
+    }
+    onComplete();
+  };
 
   return (
     <Portal>
@@ -73,46 +113,113 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
           { backgroundColor: theme.colors.surface },
         ]}
       >
-        <Text variant="headlineMedium" style={styles.title}>
-          {labels.title}
-        </Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
-          {labels.sub}
-        </Text>
-
-        <View style={styles.section}>
-          <Text variant="labelLarge" style={styles.label}>
-            {labels.lang}
+        <ScrollView contentContainerStyle={styles.modalContent}>
+          <Text variant="headlineMedium" style={styles.title}>
+            {labels.title}
           </Text>
-          <SegmentedButtons
-            value={language}
-            onValueChange={(v) => setLanguage(v as SupportedLanguage)}
-            buttons={[
-              { value: "en", label: "EN" },
-              { value: "zh", label: "繁體" },
-              { value: "zh-cn", label: "简体" },
-              { value: "es", label: "ES" },
-            ]}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text variant="labelLarge" style={styles.label}>
-            {labels.theme}
+          <Text variant="bodyMedium" style={styles.subtitle}>
+            {labels.sub}
           </Text>
-          <SegmentedButtons
-            value={theme.dark ? "dark" : "light"}
-            onValueChange={toggleTheme}
-            buttons={[
-              { value: "light", label: labels.light, icon: "weather-sunny" },
-              { value: "dark", label: labels.dark, icon: "weather-night" },
-            ]}
-          />
-        </View>
 
-        <Button mode="contained" onPress={onComplete} style={styles.button}>
-          {labels.start}
-        </Button>
+          <View style={styles.section}>
+            <Text variant="labelLarge" style={styles.label}>
+              {labels.lang}
+            </Text>
+            <SegmentedButtons
+              value={language}
+              onValueChange={(value) => {
+                if (!textScaleWritePendingRef.current) {
+                  setLanguage(value as SupportedLanguage);
+                }
+              }}
+              buttons={[
+                { value: "en", label: "EN" },
+                { value: "zh", label: "繁體" },
+                { value: "zh-cn", label: "简体" },
+                { value: "es", label: "ES" },
+              ].map((button) => ({ ...button, disabled: isSavingTextScale }))}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text variant="labelLarge" style={styles.label}>
+              {labels.theme}
+            </Text>
+            <SegmentedButtons
+              value={theme.dark ? "dark" : "light"}
+              onValueChange={(value) => {
+                if (!textScaleWritePendingRef.current) toggleTheme(value);
+              }}
+              buttons={[
+                { value: "light", label: labels.light, icon: "weather-sunny" },
+                { value: "dark", label: labels.dark, icon: "weather-night" },
+              ].map((button) => ({ ...button, disabled: isSavingTextScale }))}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text variant="labelLarge" style={styles.label}>
+              {`Text size${englishOnly ? ' (English)' : ''}`}
+            </Text>
+            {englishOnly && (
+              <Text variant="labelSmall" style={styles.englishDisclosure}>
+                This accessibility setting is currently described in English.
+              </Text>
+            )}
+            <SegmentedButtons
+              value={String(textScale)}
+              onValueChange={(value) => {
+                const nextScale = Number(value);
+                if (isTextScale(nextScale)) void persistTextScale(nextScale);
+              }}
+              buttons={TEXT_SCALE_OPTIONS.map((scale) => ({
+                accessibilityLabel: `${Math.round(scale * 100)} percent text size`,
+                disabled: isSavingTextScale,
+                label: `${Math.round(scale * 100)}%`,
+                value: String(scale),
+              }))}
+            />
+            {isSavingTextScale && (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={styles.textScaleStatus}
+                variant="bodyMedium"
+              >
+                Saving text size…
+              </Text>
+            )}
+            {failedTextScale !== null && !isSavingTextScale && (
+              <View style={styles.textScaleError}>
+                <Text
+                  accessibilityLiveRegion="assertive"
+                  role="alert"
+                  style={{ color: theme.colors.error }}
+                  variant="bodyMedium"
+                >
+                  {`${Math.round(failedTextScale * 100)}% text size could not be saved. Retry before continuing.`}
+                </Text>
+                <Button
+                  accessibilityLabel={`Retry saving ${Math.round(failedTextScale * 100)} percent text size`}
+                  compact
+                  mode="outlined"
+                  onPress={() => void persistTextScale(failedTextScale)}
+                  style={styles.retryButton}
+                >
+                  Retry
+                </Button>
+              </View>
+            )}
+          </View>
+
+          <Button
+            disabled={isSavingTextScale || failedTextScale !== null}
+            mode="contained"
+            onPress={completeSetup}
+            style={styles.button}
+          >
+            {labels.start}
+          </Button>
+        </ScrollView>
       </Modal>
     </Portal>
   );
@@ -121,11 +228,14 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
 const styles = StyleSheet.create({
   modal: {
     margin: 20,
-    padding: 24,
     borderRadius: 16,
     maxWidth: 500,
+    maxHeight: '90%',
     alignSelf: "center",
     width: "90%",
+  },
+  modalContent: {
+    padding: 24,
   },
   title: {
     textAlign: "center",
@@ -143,6 +253,21 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 12,
     fontWeight: "600",
+  },
+  englishDisclosure: {
+    marginBottom: 12,
+    opacity: 0.75,
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  textScaleError: {
+    marginTop: 12,
+  },
+  textScaleStatus: {
+    marginTop: 12,
+    opacity: 0.75,
   },
   button: {
     marginTop: 8,

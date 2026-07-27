@@ -16,6 +16,7 @@
 !/public/
 !/scripts/
 !/services/
+!/scripts/
 !/styles/
 
 # 3. Re-include root configuration files

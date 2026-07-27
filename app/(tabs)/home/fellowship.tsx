@@ -1,5 +1,6 @@
 import { MenuCard } from '@/components/MenuCard';
 import { VerseHero } from '@/components/VerseHero';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import {
   CHURCH_EMAIL,
   CHURCH_PHONE,
@@ -11,11 +12,12 @@ import {
   openZoomClass,
 } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useContext } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useContext, useMemo } from 'react';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Card, Divider, List, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -184,6 +186,13 @@ const allLabels = {
 
 export default function FellowshipsAndFoodScreen() {
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
+  const { fontScale } = useWindowDimensions();
+  const useStackedActions = fontScale * textScale >= 1.5;
+  const styles = useMemo(
+    () => createStyles(textScale, useStackedActions),
+    [textScale, useStackedActions],
+  );
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
@@ -423,7 +432,7 @@ export default function FellowshipsAndFoodScreen() {
                 <Text variant="titleMedium" style={{ fontWeight: 'bold', color: theme.colors.onPrimaryContainer, marginBottom: 4 }}>
                   {labels.flushingMealsTitle}
                 </Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, lineHeight: 20 }}>
+                <Text variant="bodyMedium" style={[styles.mealsDescription, { color: theme.colors.onSurfaceVariant }]}>
                   {labels.flushingMealsDesc}
                 </Text>
               </View>
@@ -456,7 +465,10 @@ export default function FellowshipsAndFoodScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+  textScale: Parameters<typeof scaleTypographyMetric>[1],
+  useStackedActions: boolean,
+) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -471,8 +483,8 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontWeight: 'bold',
-    fontSize: 28,
-    lineHeight: 36,
+    fontSize: scaleTypographyMetric(28, textScale),
+    lineHeight: scaleTypographyMetric(36, textScale),
     marginBottom: 8,
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 0, height: 1 },
@@ -486,14 +498,15 @@ const styles = StyleSheet.create({
   },
   heroQuote: {
     fontStyle: 'italic',
-    lineHeight: 20,
-    fontSize: 14,
+    lineHeight: scaleTypographyMetric(20, textScale),
+    fontSize: scaleTypographyMetric(14, textScale),
   },
   heroRef: {
     textAlign: 'right',
     marginTop: 6,
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: scaleTypographyMetric(12, textScale),
+    lineHeight: scaleTypographyMetric(18, textScale),
   },
   body: {
     padding: 16,
@@ -511,12 +524,13 @@ const styles = StyleSheet.create({
   },
   cardSectionTitle: {
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: scaleTypographyMetric(20, textScale),
+    lineHeight: scaleTypographyMetric(28, textScale),
     marginBottom: 8,
   },
   cardDescription: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: scaleTypographyMetric(15, textScale),
+    lineHeight: scaleTypographyMetric(22, textScale),
   },
   verseCard: {
     borderLeftWidth: 4,
@@ -526,7 +540,7 @@ const styles = StyleSheet.create({
   },
   verseText: {
     fontStyle: 'italic',
-    lineHeight: 20,
+    lineHeight: scaleTypographyMetric(20, textScale),
   },
   verseRef: {
     textAlign: 'right',
@@ -535,11 +549,12 @@ const styles = StyleSheet.create({
   },
   listItemTitle: {
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: scaleTypographyMetric(15, textScale),
+    lineHeight: scaleTypographyMetric(21, textScale),
   },
   listItemDesc: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: scaleTypographyMetric(13, textScale),
+    lineHeight: scaleTypographyMetric(18, textScale),
     marginTop: 2,
   },
   listItemDivider: {
@@ -555,13 +570,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   descriptionButtonLabel: {
-    fontSize: 14,
+    fontSize: scaleTypographyMetric(14, textScale),
+    lineHeight: scaleTypographyMetric(20, textScale),
     fontWeight: 'bold',
   },
   outreachText: {
-    fontSize: 15,
+    fontSize: scaleTypographyMetric(15, textScale),
     fontStyle: 'italic',
-    lineHeight: 22,
+    lineHeight: scaleTypographyMetric(22, textScale),
     marginTop: 16,
     fontWeight: '500',
     textAlign: 'center',
@@ -572,13 +588,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 8,
   },
+  mealsDescription: {
+    lineHeight: scaleTypographyMetric(20, textScale),
+  },
   actionsRow: {
+    flexDirection: useStackedActions ? 'column' : 'row',
     justifyContent: 'space-between',
     padding: 12,
     gap: 12,
   },
   actionButton: {
-    flex: 1,
+    flex: useStackedActions ? undefined : 1,
+    width: useStackedActions ? '100%' : undefined,
     borderRadius: 8,
   },
   sectionHeaderContainer: {
@@ -586,7 +607,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionHeading: {
-    fontSize: 22,
+    fontSize: scaleTypographyMetric(22, textScale),
+    lineHeight: scaleTypographyMetric(30, textScale),
     fontWeight: 'bold',
   },
   heroImage: { height: 250, width: '100%' },

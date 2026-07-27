@@ -2,7 +2,7 @@ import { MenuCard } from '@/components/MenuCard';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
@@ -110,6 +110,7 @@ const allLabels = {
 
 export default function WorshipScreen() {
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const insets = useSafeAreaInsets();

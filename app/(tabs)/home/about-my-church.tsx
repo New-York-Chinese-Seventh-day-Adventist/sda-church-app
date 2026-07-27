@@ -9,8 +9,8 @@ import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { DocumentStyles } from '@/styles/DocumentStyles';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useDocumentStyles } from '@/styles/DocumentStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
@@ -22,6 +22,8 @@ export default function AboutChurchHistoryScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
+  const DocumentStyles = useDocumentStyles();
+  const NavigationStyles = useNavigationStyles();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
@@ -477,25 +479,3 @@ export default function AboutChurchHistoryScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  heroHeader: {
-    width: '100%',
-    minHeight: 220,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  heroTitle: {
-    fontWeight: 'bold',
-    fontSize: 26,
-    lineHeight: 34,
-    textAlign: 'left',
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-});

@@ -1,12 +1,14 @@
 import { GlobalHeader, UIStateContext } from '@/components/GlobalHeader';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { DESIGN_TOKENS } from '@/constants/Layout';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
+import { DESIGN_TOKENS, getBottomTabContentHeight } from '@/constants/Layout';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Tabs, router } from 'expo-router';
 import React, { useContext, useRef, useState } from 'react';
-import { Animated, LayoutChangeEvent, Platform, StyleSheet, View } from 'react-native';
+import { Animated, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function TabBarIcon(props: {
@@ -33,6 +35,11 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
+  const { fontScale } = useWindowDimensions();
+  const tabContentHeight = getBottomTabContentHeight(
+    Math.max(1, fontScale * textScale),
+  );
   const { language } = useContext(LanguageContext);
   const insets = useSafeAreaInsets();
   const isFullscreenWeb =
@@ -42,7 +49,7 @@ export default function TabLayout() {
   const fullscreenEdgeInset = isFullscreenWeb ? 12 : 0;
   const bottomTabInset = Math.max(insets.bottom, fullscreenEdgeInset);
   const [tabBarHeight, setTabBarHeight] = useState(
-    DESIGN_TOKENS.TAB_BAR_CONTENT_HEIGHT + bottomTabInset,
+    tabContentHeight + bottomTabInset,
   );
 
   // Reader Mode state shared with child screens
@@ -124,10 +131,18 @@ export default function TabLayout() {
           headerTransparent: true,
           header: (props) => <GlobalHeader {...props} />,
           tabBarLabelStyle: {
-            lineHeight: 14,
+            fontSize: scaleTypographyMetric(
+              DESIGN_TOKENS.BOTTOM_TAB_LABEL_FONT_SIZE,
+              textScale,
+            ),
+            lineHeight: scaleTypographyMetric(
+              DESIGN_TOKENS.BOTTOM_TAB_LABEL_LINE_HEIGHT,
+              textScale,
+            ),
+            paddingBottom: DESIGN_TOKENS.BOTTOM_TAB_LABEL_BOTTOM_PADDING,
           },
           tabBarStyle: {
-            height: DESIGN_TOKENS.TAB_BAR_CONTENT_HEIGHT + bottomTabInset,
+            height: tabContentHeight + bottomTabInset,
             paddingBottom: bottomTabInset,
             paddingHorizontal: fullscreenEdgeInset,
             elevation: 0,

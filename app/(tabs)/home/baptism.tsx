@@ -11,7 +11,7 @@ import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { DocumentStyles } from '@/styles/DocumentStyles';
+import { useDocumentStyles } from '@/styles/DocumentStyles';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -21,6 +21,7 @@ export default function BaptismScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
+  const DocumentStyles = useDocumentStyles();
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
 
   const [expanded, setExpanded] = useState<string | null>(null);

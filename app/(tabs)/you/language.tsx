@@ -2,7 +2,7 @@ import { MenuCard } from "@/components/MenuCard";
 import { LanguageContext } from "@/constants/LanguageContext";
 import { DESIGN_TOKENS } from "@/constants/Layout";
 import { useAppTheme } from "@/constants/Themes";
-import { NavigationStyles } from "@/styles/NavigationStyles";
+import { useNavigationStyles } from "@/styles/NavigationStyles";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useContext } from "react";
 import { ScrollView } from "react-native";
@@ -13,6 +13,7 @@ export default function LanguageScreen() {
   const { language, setLanguage } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
 

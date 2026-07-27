@@ -1,12 +1,14 @@
 import { UpdateContext } from '@/app/_layout';
 import { MenuCard } from '@/components/MenuCard';
 import { PwaInstallDialog } from '@/components/PwaInstallDialog';
+import { TextSizeDialog } from '@/components/TextSizeDialog';
 import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { usePwaInstall } from '@/constants/PwaInstallContext';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { ThemeContext, useAppTheme } from '@/constants/Themes';
 import packageJson from '@/package.json';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { useContext, useState } from 'react';
@@ -75,11 +77,14 @@ const allLabels = {
 
 export default function YouScreen() {
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
   const { language } = useContext(LanguageContext);
   const { toggleTheme } = useContext(ThemeContext);
   const { onManualCheck, updateStatus } = useContext(UpdateContext);
   const { status: installStatus } = usePwaInstall();
+  const { textScale } = useTextSize();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [showTextSize, setShowTextSize] = useState(false);
   const insets = useSafeAreaInsets();
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
   const englishOnly = language !== 'en';
@@ -186,6 +191,13 @@ export default function YouScreen() {
               }
             />
             <MenuCard
+              title={`Text size${englishOnly ? ' (English)' : ''}`}
+              description={`${englishOnly ? 'English-only setting. ' : ''}Current: ${Math.round(textScale * 100)}%`}
+              icon="format-size"
+              iconColor={theme.colors.tertiary}
+              onPress={() => setShowTextSize(true)}
+            />
+            <MenuCard
               title={labels.privacy}
               description={labels.privacySub}
               icon="shield-account"
@@ -230,6 +242,10 @@ export default function YouScreen() {
       <PwaInstallDialog
         visible={showInstallGuide}
         onDismiss={() => setShowInstallGuide(false)}
+      />
+      <TextSizeDialog
+        visible={showTextSize}
+        onDismiss={() => setShowTextSize(false)}
       />
     </>
   );

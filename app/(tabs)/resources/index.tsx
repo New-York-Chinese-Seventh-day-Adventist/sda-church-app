@@ -8,7 +8,7 @@ import {
 } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { useContext } from 'react';
@@ -99,6 +99,7 @@ const allLabels = {
 
 export default function ResourcesScreen() {
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
   const { language } = useContext(LanguageContext);
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 

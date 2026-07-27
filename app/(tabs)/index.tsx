@@ -1,4 +1,5 @@
 import { GridMenuCard } from '@/components/GridMenuCard';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import {
   CHURCH_BUILDING_IMAGE_URL,
   CHURCH_LATITUDE,
@@ -8,6 +9,7 @@ import {
 } from '@/constants/ExternalLinks';
 import { LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
 import { createSabbathCountdownViewModel } from '@/services/SabbathCountdownViewModel';
@@ -26,12 +28,12 @@ import {
   SUNSET_REQUEST_TIMEOUT_MS,
   SunsetTimesState,
 } from '@/services/SunsetLocationPolicy';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { createNavigationStyles } from '@/styles/NavigationStyles';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ImageBackground,
   Platform,
@@ -66,10 +68,24 @@ export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { width, fontScale } = useWindowDimensions();
-  const usesConstrainedTimer = width < 430 || fontScale > 1.2;
+  const { textScale } = useTextSize();
+  const { fontScale, width: windowWidth } = useWindowDimensions();
+  const effectiveTextScale = Math.max(1, fontScale * textScale);
+  // Preserve the upstream two-column phone grid at 100%, then stack only
+  // when the scaled text would leave each card too narrow to wrap cleanly.
+  const useStackedLayout =
+    (windowWidth - 48) / 2 < 145 * effectiveTextScale;
+  const usesConstrainedTimer = windowWidth < 430 || effectiveTextScale > 1.2;
   const interactiveCursorStyle =
     Platform.OS === 'web' ? ({ cursor: 'pointer' } as ViewStyle) : undefined;
+  const styles = useMemo(
+    () => createStyles(textScale, effectiveTextScale, useStackedLayout),
+    [effectiveTextScale, textScale, useStackedLayout],
+  );
+  const navigationStyles = useMemo(
+    () => createNavigationStyles(textScale),
+    [textScale],
+  );
 
   const allLabels = {
     en: {
@@ -678,7 +694,7 @@ export default function HomeScreen() {
   return (
     <>
       <ScrollView
-        style={NavigationStyles.container}
+        style={navigationStyles.container}
         contentContainerStyle={{ paddingTop: 0 }}
       >
         <ImageBackground
@@ -725,21 +741,14 @@ export default function HomeScreen() {
               ? `${randomVerse.text}\n— ${randomVerse.reference}`
               : labels.subtitle}
           </Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              marginTop: 16,
-              gap: 12,
-              width: '100%',
-              paddingHorizontal: 16,
-            }}
-          >
+          <View style={styles.heroActions}>
             <Button
               mode="outlined"
               icon="share-variant"
               onPress={handleShare}
               disabled={!randomVerse}
-              style={{ borderRadius: 20, flex: 1, borderColor: '#FFFFFF' }}
+              style={[styles.heroActionButton, { borderColor: '#FFFFFF' }]}
+              contentStyle={styles.heroActionButtonContent}
               textColor="#FFFFFF"
             >
               {(labels as any).shareVerse}
@@ -749,14 +758,15 @@ export default function HomeScreen() {
               icon="book-open-variant"
               onPress={navigateToVerse}
               disabled={!randomVerse}
-              style={{ borderRadius: 20, flex: 1 }}
+              style={styles.heroActionButton}
+              contentStyle={styles.heroActionButtonContent}
             >
               {(labels as any).readVerse}
             </Button>
           </View>
         </ImageBackground>
 
-        <List.Section style={NavigationStyles.contentContainer}>
+        <List.Section style={navigationStyles.contentContainer}>
           {showFullscreenReminder && (
             <Card
               style={[
@@ -1128,7 +1138,11 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+  textScale: Parameters<typeof scaleTypographyMetric>[1],
+  effectiveTextScale: number,
+  useStackedLayout: boolean,
+) => StyleSheet.create({
   hero: {
     paddingHorizontal: 24,
     alignItems: 'center',
@@ -1141,6 +1155,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
+  },
+  heroActions: {
+    flexDirection: useStackedLayout ? 'column' : 'row',
+    marginTop: 16,
+    gap: 12,
+    width: '100%',
+    paddingHorizontal: 16,
+  },
+  heroActionButton: {
+    borderRadius: 20,
+    flex: useStackedLayout ? undefined : 1,
+    width: useStackedLayout ? '100%' : undefined,
+  },
+  heroActionButtonContent: {
+    minHeight: Math.ceil(40 + Math.max(0, effectiveTextScale - 1) * 24),
   },
   timerCard: {
     marginBottom: 16,
@@ -1158,7 +1187,7 @@ const styles = StyleSheet.create({
     minHeight: 64,
     paddingVertical: 8,
     paddingHorizontal: 8,
-    flexDirection: 'row',
+    flexDirection: useStackedLayout ? 'column' : 'row',
     alignItems: 'center',
   },
   fullscreenReminderText: {
@@ -1198,9 +1227,10 @@ const styles = StyleSheet.create({
   timerValueSubtle: {
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontVariant: ['tabular-nums'],
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: scaleTypographyMetric(16, textScale),
+    lineHeight: scaleTypographyMetric(24, textScale),
     fontWeight: '700',
+    flexShrink: 0,
   },
   sunsetDialog: {
     alignSelf: 'center',
@@ -1265,7 +1295,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   gridCell: {
-    flexBasis: '47.5%',
+    flexBasis: useStackedLayout ? '100%' : '47.5%',
     flexGrow: 1,
   },
 });

@@ -8,7 +8,7 @@ import {
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
 import { ScrollView } from 'react-native';
@@ -63,6 +63,7 @@ const uiLabels = {
 
 export default function HymnalSelectionScreen() {
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;

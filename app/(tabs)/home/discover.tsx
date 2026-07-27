@@ -3,8 +3,8 @@ import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { DocumentStyles } from '@/styles/DocumentStyles';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useDocumentStyles } from '@/styles/DocumentStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { useContext } from 'react';
@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function DiscoverScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useAppTheme();
+  const DocumentStyles = useDocumentStyles();
+  const NavigationStyles = useNavigationStyles();
   const insets = useSafeAreaInsets();
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
 

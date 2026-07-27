@@ -1,7 +1,9 @@
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { scaleTypographyMetric } from "@/constants/AppPreferences";
+import { useTextSize } from "@/constants/TextSizeContext";
 import { useAppTheme } from "@/constants/Themes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Animated,
   StyleSheet,
@@ -36,6 +38,8 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   style,
 }) => {
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
+  const styles = useMemo(() => createStyles(textScale), [textScale]);
   return (
     <AnimatedTouchableOpacity
       style={[
@@ -83,7 +87,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1]) => StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -93,6 +97,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   cardContent: { flex: 1, marginLeft: 16 },
-  cardTitle: { fontSize: 18, fontWeight: "700" },
-  cardSubtitle: { fontSize: 14, marginTop: 2 },
+  cardTitle: {
+    fontSize: scaleTypographyMetric(18, textScale),
+    lineHeight: scaleTypographyMetric(24, textScale),
+    fontWeight: "700",
+    flexShrink: 1,
+  },
+  cardSubtitle: {
+    fontSize: scaleTypographyMetric(14, textScale),
+    lineHeight: scaleTypographyMetric(20, textScale),
+    marginTop: 2,
+    flexShrink: 1,
+  },
 });

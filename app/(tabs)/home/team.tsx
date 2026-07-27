@@ -5,16 +5,18 @@ import {
   openEmail,
   openPhone,
 } from '@/constants/ExternalLinks';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { TEAM_MEMBERS } from '@/constants/TeamData';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useContext } from 'react';
-import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
+import { useContext, useMemo } from 'react';
+import { ImageBackground, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Card, Divider, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,6 +24,14 @@ export default function MeetOurTeamScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
+  const { textScale } = useTextSize();
+  const { fontScale } = useWindowDimensions();
+  const useStackedActions = fontScale * textScale >= 1.5;
+  const styles = useMemo(
+    () => createStyles(textScale, useStackedActions),
+    [textScale, useStackedActions],
+  );
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
@@ -175,7 +185,10 @@ export default function MeetOurTeamScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+  textScale: Parameters<typeof scaleTypographyMetric>[1],
+  useStackedActions: boolean,
+) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -202,23 +215,27 @@ const styles = StyleSheet.create({
   },
   cardSectionTitle: {
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: scaleTypographyMetric(20, textScale),
+    lineHeight: scaleTypographyMetric(28, textScale),
     marginBottom: 4,
   },
   roleSubtitle: {
-    fontSize: 14,
+    fontSize: scaleTypographyMetric(14, textScale),
+    lineHeight: scaleTypographyMetric(20, textScale),
   },
   cardDescription: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: scaleTypographyMetric(15, textScale),
+    lineHeight: scaleTypographyMetric(22, textScale),
   },
   actionsRow: {
+    flexDirection: useStackedActions ? 'column' : 'row',
     justifyContent: 'space-between',
     padding: 12,
     gap: 12,
   },
   actionButton: {
-    flex: 1,
+    flex: useStackedActions ? undefined : 1,
+    width: useStackedActions ? '100%' : undefined,
     borderRadius: 8,
   },
   sectionHeaderContainer: {
@@ -226,7 +243,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionHeading: {
-    fontSize: 22,
+    fontSize: scaleTypographyMetric(22, textScale),
+    lineHeight: scaleTypographyMetric(30, textScale),
     fontWeight: 'bold',
   },
   headingDivider: {

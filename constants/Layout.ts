@@ -23,6 +23,18 @@ export const DESIGN_TOKENS = {
   ICON_SIZE_TAB: 28,
   // Leaves enough vertical room for CJK glyph metrics below the tab icons.
   TAB_BAR_CONTENT_HEIGHT: 56,
+  BOTTOM_TAB_LABEL_FONT_SIZE: 10,
+  BOTTOM_TAB_LABEL_LINE_HEIGHT: 16,
+  BOTTOM_TAB_LABEL_BOTTOM_PADDING: 2,
   // Dimension for timeline markers in the History section
   TIMELINE_CIRCLE_SIZE: 50,
+};
+
+export const getBottomTabContentHeight = (effectiveTextScale: number) => {
+  const safeScale = Number.isFinite(effectiveTextScale)
+    ? Math.max(1, effectiveTextScale)
+    : 1;
+  const labelGrowth =
+    DESIGN_TOKENS.BOTTOM_TAB_LABEL_LINE_HEIGHT * (safeScale - 1);
+  return Math.ceil(DESIGN_TOKENS.TAB_BAR_CONTENT_HEIGHT + labelGrowth);
 };

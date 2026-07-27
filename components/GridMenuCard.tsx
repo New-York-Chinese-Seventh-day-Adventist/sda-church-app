@@ -1,11 +1,14 @@
 import { useAppTheme } from '@/constants/Themes';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   Animated,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
@@ -33,6 +36,12 @@ export const GridMenuCard: React.FC<GridMenuCardProps> = ({
   style,
 }) => {
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
+  const { fontScale } = useWindowDimensions();
+  const styles = useMemo(
+    () => createStyles(textScale, Math.max(1, fontScale * textScale)),
+    [fontScale, textScale],
+  );
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -97,13 +106,13 @@ export const GridMenuCard: React.FC<GridMenuCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1], effectiveScale: number) => StyleSheet.create({
   card: {
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#374151', // crisp dark border
     padding: 18,
-    minHeight: 148,
+    minHeight: 148 + Math.round(Math.max(0, effectiveScale - 1) * 64),
     justifyContent: 'space-between',
     overflow: 'hidden',
   },
@@ -111,14 +120,14 @@ const styles = StyleSheet.create({
     flex: 0,
   },
   title: {
-    fontSize: 15,
+    fontSize: scaleTypographyMetric(15, textScale),
     fontWeight: '700',
     // color will be set via theme (onSurface) in component
-    lineHeight: 20,
+    lineHeight: scaleTypographyMetric(20, textScale),
     maxWidth: '90%',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: scaleTypographyMetric(12, textScale),
     // color will be set via theme (onSurfaceVariant) in component
     marginTop: 3,
   },
