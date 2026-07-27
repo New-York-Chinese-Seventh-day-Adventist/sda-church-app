@@ -75,6 +75,7 @@ export default function HomeScreen() {
   // when the scaled text would leave each card too narrow to wrap cleanly.
   const useStackedLayout =
     (windowWidth - 48) / 2 < 145 * effectiveTextScale;
+  const useCompactHeroLabels = windowWidth < 360 && effectiveTextScale >= 1.75;
   const usesConstrainedTimer = windowWidth < 430 || effectiveTextScale > 1.2;
   const interactiveCursorStyle =
     Platform.OS === 'web' ? ({ cursor: 'pointer' } as ViewStyle) : undefined;
@@ -83,8 +84,12 @@ export default function HomeScreen() {
     [effectiveTextScale, textScale, useStackedLayout],
   );
   const navigationStyles = useMemo(
-    () => createNavigationStyles(textScale),
-    [textScale],
+    () =>
+      createNavigationStyles(textScale, {
+        bottomInset: insets.bottom,
+        fontScale,
+      }),
+    [fontScale, insets.bottom, textScale],
   );
 
   const allLabels = {
@@ -93,7 +98,9 @@ export default function HomeScreen() {
       subtitle: 'Loading daily verse...',
       verseOfDay: 'A word for your unique journey today',
       readVerse: 'Read Verse',
+      readVerseCompact: 'Read',
       shareVerse: 'Share Verse',
+      shareVerseCompact: 'Share',
       livestream: 'Watch Livestream',
       discover: 'Discover',
       bulletin: 'Weekly Bulletin',
@@ -117,7 +124,9 @@ export default function HomeScreen() {
       subtitle: '正在載入經文...',
       verseOfDay: '今日為您預備的話語',
       readVerse: '查閱經文',
+      readVerseCompact: '閱讀',
       shareVerse: '分享經文',
+      shareVerseCompact: '分享',
       livestream: '觀看直播',
       discover: '探索',
       bulletin: '每週週報',
@@ -140,7 +149,9 @@ export default function HomeScreen() {
       subtitle: '正在载入经文...',
       verseOfDay: '今日为您准备的话语',
       readVerse: '查阅经文',
+      readVerseCompact: '阅读',
       shareVerse: '分享经文',
+      shareVerseCompact: '分享',
       livestream: '观看直播',
       discover: '探索',
       bulletin: '每周周报',
@@ -163,7 +174,9 @@ export default function HomeScreen() {
       subtitle: 'Cargando versículo...',
       verseOfDay: 'Una palabra para tu camino hoy',
       readVerse: 'Leer Versículo',
+      readVerseCompact: 'Leer',
       shareVerse: 'Compartir',
+      shareVerseCompact: 'Compartir',
       livestream: 'Ver Transmisión',
       discover: 'Descubrir',
       bulletin: 'Boletín Semanal',
@@ -555,6 +568,10 @@ export default function HomeScreen() {
       unavailable: labels.sunsetUnavailable,
       openDetailsHint: labels.openSunsetDetails,
     },
+    accessibilityLocale:
+      language === 'zh' || language === 'zh-cn' || language === 'es'
+        ? language
+        : 'en',
   });
   const exactTargetDateTime =
     targetDate && displayedSunsetTimeZone
@@ -743,6 +760,7 @@ export default function HomeScreen() {
           </Text>
           <View style={styles.heroActions}>
             <Button
+              accessibilityLabel={labels.shareVerse}
               mode="outlined"
               icon="share-variant"
               onPress={handleShare}
@@ -751,9 +769,10 @@ export default function HomeScreen() {
               contentStyle={styles.heroActionButtonContent}
               textColor="#FFFFFF"
             >
-              {(labels as any).shareVerse}
+              {useCompactHeroLabels ? labels.shareVerseCompact : labels.shareVerse}
             </Button>
             <Button
+              accessibilityLabel={labels.readVerse}
               mode="contained"
               icon="book-open-variant"
               onPress={navigateToVerse}
@@ -761,7 +780,7 @@ export default function HomeScreen() {
               style={styles.heroActionButton}
               contentStyle={styles.heroActionButtonContent}
             >
-              {(labels as any).readVerse}
+              {useCompactHeroLabels ? labels.readVerseCompact : labels.readVerse}
             </Button>
           </View>
         </ImageBackground>
@@ -1219,10 +1238,12 @@ const createStyles = (
     marginLeft: 12,
   },
   timerValueClusterConstrained: {
+    alignSelf: 'stretch',
+    flexBasis: '100%',
     justifyContent: 'flex-end',
-    marginLeft: DESIGN_TOKENS.ICON_SIZE_FEATURED + 12,
+    marginLeft: 0,
     marginTop: 8,
-    width: '100%',
+    paddingLeft: DESIGN_TOKENS.ICON_SIZE_FEATURED + 12,
   },
   timerValueSubtle: {
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',

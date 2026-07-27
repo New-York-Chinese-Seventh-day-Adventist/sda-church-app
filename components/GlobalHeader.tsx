@@ -1,6 +1,7 @@
 import { getHeaderBackTarget, hasHeaderBackButton } from '@/constants/BackNavigation';
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { getGlobalHeaderContentHeight } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import {
   ALL_SEARCH_LABELS,
@@ -52,6 +53,9 @@ export const UIStateContext = createContext<{
 export const GlobalHeader = (props: any) => {
   const { language } = useContext(LanguageContext);
   const segments = useSegments();
+  // Expo typed routes expose segments as a tuple union. Widen it for generic
+  // route membership checks while preserving the runtime values.
+  const routeSegments: readonly string[] = segments;
   const theme = useAppTheme();
   const { textScale } = useTextSize();
 
@@ -66,7 +70,7 @@ export const GlobalHeader = (props: any) => {
   const { fontScale, width: windowWidth } = useWindowDimensions();
   const effectiveTextScale = Math.max(1, fontScale * textScale);
   const compactControlHeight = Math.ceil(44 + (effectiveTextScale - 1) * 24);
-  const appBarHeight = Math.max(64, compactControlHeight + 20);
+  const appBarHeight = getGlobalHeaderContentHeight(effectiveTextScale);
 
   const { menuAnim } = useContext(UIStateContext);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -88,10 +92,10 @@ export const GlobalHeader = (props: any) => {
   // A pillar root is the entry-point for one of our four main tabs (Tenet 5 & 7).
   // We use route segments to identify the root index files of the pillar folders.
   // In Expo Router, the (tabs) group and the tab names form the first 1-2 segments.
-  const isPillarRoot = !hasHeaderBackButton(segments);
+  const isPillarRoot = !hasHeaderBackButton(routeSegments);
 
-  const isBiblePage = segments.includes('bible');
-  const isHymnalPage = segments.includes('english-hymnal');
+  const isBiblePage = routeSegments.includes('bible');
+  const isHymnalPage = routeSegments.includes('english-hymnal');
   const isSubPage = !isPillarRoot;
 
   const title = props.options?.title;
@@ -199,7 +203,7 @@ export const GlobalHeader = (props: any) => {
   };
 
   const handleBackPress = () => {
-    router.replace(getHeaderBackTarget(segments, backTo) as any);
+    router.replace(getHeaderBackTarget(routeSegments, backTo) as any);
   };
 
   const expandBibleSearch = () => {
@@ -351,7 +355,11 @@ export const GlobalHeader = (props: any) => {
                 pointerEvents={showTitleChip ? 'auto' : 'none'}
                 style={[
                   styles.floatingTitleChip,
-                  { minHeight: compactControlHeight, maxWidth: windowWidth - 86 },
+                  {
+                    minHeight: compactControlHeight,
+                    maxWidth: windowWidth - 86,
+                    paddingHorizontal: effectiveTextScale >= 1.75 ? 8 : 16,
+                  },
                   {
                     backgroundColor: 'rgba(255, 255, 255, 0.94)',
                     borderColor: 'rgba(255, 255, 255, 0.72)',
@@ -362,8 +370,14 @@ export const GlobalHeader = (props: any) => {
               >
                 <Text
                   variant="titleMedium"
-                  style={{ color: '#17211F', fontWeight: 'bold' }}
-                  numberOfLines={1}
+                  style={{
+                    color: '#17211F',
+                    fontSize: scaleTypographyMetric(16, textScale),
+                    fontWeight: 'bold',
+                    lineHeight: scaleTypographyMetric(20, textScale),
+                    textAlign: 'center',
+                  }}
+                  numberOfLines={2}
                 >
                   {title}
                 </Text>

@@ -2,6 +2,7 @@ import { GridMenuCard } from '@/components/GridMenuCard';
 import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
 import { useDocumentStyles } from '@/styles/DocumentStyles';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
@@ -10,14 +11,13 @@ import { router, Stack } from 'expo-router';
 import { useContext } from 'react';
 import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function DiscoverScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useAppTheme();
   const DocumentStyles = useDocumentStyles();
   const NavigationStyles = useNavigationStyles();
-  const insets = useSafeAreaInsets();
+  const headerHeight = useGlobalHeaderHeight();
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
 
   const allLabels = {
@@ -73,7 +73,7 @@ export default function DiscoverScreen() {
         {/* Hero */}
         <ImageBackground
           source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
-          style={[NavigationStyles.heroHeader, { paddingTop: insets.top + 70, paddingBottom: 24 }]}
+          style={[NavigationStyles.heroHeader, { paddingTop: headerHeight + 6, paddingBottom: 24 }]}
           resizeMode="cover"
         >
           <LinearGradient

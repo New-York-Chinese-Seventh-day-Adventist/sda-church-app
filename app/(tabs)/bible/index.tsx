@@ -33,9 +33,10 @@ import {
   type TextScale,
 } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { DESIGN_TOKENS, getBottomTabContentHeight } from '@/constants/Layout';
+import { getBottomTabContentHeight } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { SCRIPTURE_FONT_FAMILIES, useAppTheme } from '@/constants/Themes';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import * as BibleService from '@/services/BibleService';
 import {
   getSavedVerseKey,
@@ -322,7 +323,7 @@ export default function BibleScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const versePositions = useRef<Record<number, number>>({});
   const lastScrollY = useRef(0);
-  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+  const headerHeight = useGlobalHeaderHeight();
 
   // Selection state
   const [supportedTranslation, setSupportedTranslation] = useState(() => {

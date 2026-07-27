@@ -7,6 +7,7 @@ import { LanguageContext } from '@/constants/LanguageContext';
 import { usePwaInstall } from '@/constants/PwaInstallContext';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { ThemeContext, useAppTheme } from '@/constants/Themes';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import packageJson from '@/package.json';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,7 +15,6 @@ import { router, Stack } from 'expo-router';
 import { useContext, useState } from 'react';
 import { ImageBackground, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { List, Switch, Text, TouchableRipple } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const allLabels = {
   en: {
@@ -85,13 +85,14 @@ export default function YouScreen() {
   const { textScale } = useTextSize();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [showTextSize, setShowTextSize] = useState(false);
-  const insets = useSafeAreaInsets();
+  const headerHeight = useGlobalHeaderHeight();
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
   const englishOnly = language !== 'en';
   const englishSuffix = englishOnly ? ' (English)' : '';
   const installDescription = {
     accepted: 'The browser accepted the request; open for next-step guidance.',
     dismissed: 'The browser prompt was dismissed; reopen for manual guidance.',
+    error: 'The browser install request failed; reopen for retry and manual guidance.',
     'not-applicable': 'Installation guidance is available only in the web app.',
     'prompt-available': 'A browser-provided install option is ready.',
     standalone: 'The app is already running as an installed app.',
@@ -110,7 +111,7 @@ export default function YouScreen() {
           source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
           style={[
             NavigationStyles.heroHeader,
-            { paddingTop: insets.top + 70, paddingBottom: 24 },
+            { paddingTop: headerHeight + 6, paddingBottom: 24 },
           ]}
           resizeMode="cover"
         >

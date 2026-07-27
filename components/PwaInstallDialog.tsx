@@ -15,6 +15,8 @@ const statusCopy = {
     'The browser accepted the request. Follow any remaining browser or system steps. This app does not track installation completion.',
   dismissed:
     'The browser install request was dismissed. You can close this guide and try again later if the browser offers a new request.',
+  error:
+    'The browser offered an install request, but it could not be completed. Close this guide and try again if the browser offers a new request, or use the manual steps below.',
   'not-applicable': 'Installation guidance is available only in the web app.',
   'prompt-available':
     'Your browser has made an install request available. Installation is handled by the browser and operating system.',

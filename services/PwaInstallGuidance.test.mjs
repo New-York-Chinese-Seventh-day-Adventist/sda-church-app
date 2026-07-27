@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import { resolvePwaInstallGuidance } from './PwaInstallGuidance.mjs';
@@ -72,4 +73,23 @@ test('does not label other Android Chromium browsers as Google Chrome', () => {
   );
   assert.equal(samsung.platform, 'this Android browser');
   assert.match(samsung.steps.join(' '), /only if that action is offered/);
+});
+
+test('install prompt failures remain distinct from prompt unavailability', () => {
+  const contextSource = fs.readFileSync(
+    new URL('../constants/PwaInstallContext.ts', import.meta.url),
+    'utf8',
+  );
+  const layoutSource = fs.readFileSync(
+    new URL('../app/_layout.tsx', import.meta.url),
+    'utf8',
+  );
+  const dialogSource = fs.readFileSync(
+    new URL('../components/PwaInstallDialog.tsx', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(contextSource, /PwaInstallStatus[\s\S]*\| 'error'/);
+  assert.match(layoutSource, /catch \(error\) \{[\s\S]*setInstallOutcome\('error'\)/);
+  assert.match(dialogSource, /error:[\s\S]*could not be completed/);
 });

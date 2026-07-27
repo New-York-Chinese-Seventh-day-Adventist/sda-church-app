@@ -36,5 +36,25 @@ export const getBottomTabContentHeight = (effectiveTextScale: number) => {
     : 1;
   const labelGrowth =
     DESIGN_TOKENS.BOTTOM_TAB_LABEL_LINE_HEIGHT * (safeScale - 1);
-  return Math.ceil(DESIGN_TOKENS.TAB_BAR_CONTENT_HEIGHT + labelGrowth);
+  const wrappedLabelLine =
+    safeScale >= 1.75
+      ? DESIGN_TOKENS.BOTTOM_TAB_LABEL_LINE_HEIGHT * safeScale
+      : 0;
+  return Math.ceil(
+    DESIGN_TOKENS.TAB_BAR_CONTENT_HEIGHT + labelGrowth + wrappedLabelLine,
+  );
+};
+
+export const getGlobalHeaderContentHeight = (effectiveTextScale: number) => {
+  const safeScale = Number.isFinite(effectiveTextScale)
+    ? Math.max(1, effectiveTextScale)
+    : 1;
+  const compactControlHeight = Math.ceil(44 + (safeScale - 1) * 24);
+  const twoLineTitleHeight = Math.ceil(40 * safeScale + 8);
+
+  return Math.max(
+    DESIGN_TOKENS.HEADER_HEIGHT_BASE,
+    compactControlHeight + 20,
+    twoLineTitleHeight,
+  );
 };

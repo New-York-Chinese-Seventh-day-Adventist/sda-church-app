@@ -17,6 +17,7 @@ export type PwaInstallRequestResult =
 export type PwaInstallStatus =
   | 'accepted'
   | 'dismissed'
+  | 'error'
   | 'not-applicable'
   | 'prompt-available'
   | 'standalone'

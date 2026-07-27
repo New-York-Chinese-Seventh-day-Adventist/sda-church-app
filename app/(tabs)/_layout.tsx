@@ -1,6 +1,6 @@
 import { GlobalHeader, UIStateContext } from '@/components/GlobalHeader';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { scaleTypographyMetric } from '@/constants/AppPreferences';
+import { scaleTypographyMetric, type TextScale } from '@/constants/AppPreferences';
 import { DESIGN_TOKENS, getBottomTabContentHeight } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
@@ -8,7 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Tabs, router } from 'expo-router';
 import React, { useContext, useRef, useState } from 'react';
-import { Animated, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, LayoutChangeEvent, Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function TabBarIcon(props: {
@@ -30,6 +30,41 @@ function TabBarIcon(props: {
       style={{ marginBottom: -3 }}
       color={props.color}
     />
+  );
+}
+
+function TabBarLabel(props: {
+  color: string;
+  label: string;
+  textScale: TextScale;
+}) {
+  const breakableLabel =
+    props.label === 'Resources'
+      ? 'Re\u200Bsources'
+      : props.label === 'Recursos'
+        ? 'Re\u200Bcursos'
+        : props.label;
+
+  return (
+    <Text
+      numberOfLines={2}
+      style={{
+        color: props.color,
+        fontSize: scaleTypographyMetric(
+          DESIGN_TOKENS.BOTTOM_TAB_LABEL_FONT_SIZE,
+          props.textScale,
+        ),
+        lineHeight: scaleTypographyMetric(
+          DESIGN_TOKENS.BOTTOM_TAB_LABEL_LINE_HEIGHT,
+          props.textScale,
+        ),
+        paddingBottom: DESIGN_TOKENS.BOTTOM_TAB_LABEL_BOTTOM_PADDING,
+        textAlign: 'center',
+        width: '100%',
+      }}
+    >
+      {breakableLabel}
+    </Text>
   );
 }
 
@@ -130,17 +165,6 @@ export default function TabLayout() {
           tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
           headerTransparent: true,
           header: (props) => <GlobalHeader {...props} />,
-          tabBarLabelStyle: {
-            fontSize: scaleTypographyMetric(
-              DESIGN_TOKENS.BOTTOM_TAB_LABEL_FONT_SIZE,
-              textScale,
-            ),
-            lineHeight: scaleTypographyMetric(
-              DESIGN_TOKENS.BOTTOM_TAB_LABEL_LINE_HEIGHT,
-              textScale,
-            ),
-            paddingBottom: DESIGN_TOKENS.BOTTOM_TAB_LABEL_BOTTOM_PADDING,
-          },
           tabBarStyle: {
             height: tabContentHeight + bottomTabInset,
             paddingBottom: bottomTabInset,
@@ -168,6 +192,9 @@ export default function TabLayout() {
           options={{
             title: labels.home,
             headerShown: true,
+            tabBarLabel: ({ color }) => (
+              <TabBarLabel color={color} label={labels.home} textScale={textScale} />
+            ),
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
               <TabBarIcon name="home" color={color} focused={focused} />
             ),
@@ -188,6 +215,9 @@ export default function TabLayout() {
           options={{
             title: labels.bible,
             headerShown: false, // Internal Stack handles header for consistency
+            tabBarLabel: ({ color }) => (
+              <TabBarLabel color={color} label={labels.bible} textScale={textScale} />
+            ),
             // The Bible reader owns a coordinated bottom dock and already accounts
             // for the tab bar height while its controls animate in and out.
             sceneStyle: { paddingBottom: 0 },
@@ -207,6 +237,9 @@ export default function TabLayout() {
           options={{
             title: labels.resources,
             headerShown: false, // Internal Stack handles header for consistency
+            tabBarLabel: ({ color }) => (
+              <TabBarLabel color={color} label={labels.resources} textScale={textScale} />
+            ),
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
               <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
             ),
@@ -218,6 +251,9 @@ export default function TabLayout() {
             {
               title: labels.you,
               headerShown: false, // Internal Stack handles header for consistency
+              tabBarLabel: ({ color }: { color: string }) => (
+                <TabBarLabel color={color} label={labels.you} textScale={textScale} />
+              ),
               unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
               tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
                 <TabBarIcon name="account-circle" color={color} focused={focused} />

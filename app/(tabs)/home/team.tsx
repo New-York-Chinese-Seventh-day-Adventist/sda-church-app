@@ -7,11 +7,11 @@ import {
 } from '@/constants/ExternalLinks';
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { DESIGN_TOKENS } from '@/constants/Layout';
 import { TEAM_MEMBERS } from '@/constants/TeamData';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -33,7 +33,7 @@ export default function MeetOurTeamScreen() {
     [textScale, useStackedActions],
   );
   const insets = useSafeAreaInsets();
-  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+  const headerHeight = useGlobalHeaderHeight();
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
 
   const allLabels = {
@@ -90,7 +90,7 @@ export default function MeetOurTeamScreen() {
           source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
           style={[
             NavigationStyles.heroHeader,
-            { paddingTop: insets.top + 70, paddingBottom: 24 },
+            { paddingTop: headerHeight + 6, paddingBottom: 24 },
           ]}
           resizeMode="cover"
         >

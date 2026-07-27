@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { SupportedLanguage } from '@/constants/LanguageContext';
+import { parseStoredTextScale } from '@/constants/AppPreferences';
 import {
   LANGUAGE_STORAGE_KEY,
   SETUP_STORAGE_KEY,
@@ -44,18 +45,33 @@ async function sha256Hex(value: string): Promise<string> {
 }
 
 export async function readCurrentBackupSettings(
-  language: SupportedLanguage,
-  isDarkTheme: boolean,
+  fallbackLanguage: SupportedLanguage,
+  fallbackIsDarkTheme: boolean,
 ): Promise<BackupSettings> {
-  const [setupValue, textScaleValue] = await Promise.all([
+  const [languageValue, themeValue, setupValue, textScaleValue] = await Promise.all([
+    AsyncStorage.getItem(LANGUAGE_STORAGE_KEY),
+    AsyncStorage.getItem(THEME_STORAGE_KEY),
     AsyncStorage.getItem(SETUP_STORAGE_KEY),
     AsyncStorage.getItem(TEXT_SCALE_STORAGE_KEY),
   ]);
-  const textScale = textScaleValue === null ? 1 : Number(textScaleValue);
+  const language =
+    languageValue === 'en' ||
+    languageValue === 'zh' ||
+    languageValue === 'zh-cn' ||
+    languageValue === 'es'
+      ? languageValue
+      : fallbackLanguage;
+  const theme =
+    themeValue === 'dark' || themeValue === 'light'
+      ? themeValue
+      : fallbackIsDarkTheme
+        ? 'dark'
+        : 'light';
+  const textScale = parseStoredTextScale(textScaleValue);
 
   return validateBackupSettings({
     language,
-    theme: isDarkTheme ? 'dark' : 'light',
+    theme,
     setupComplete: setupValue === 'true',
     textScale,
   });

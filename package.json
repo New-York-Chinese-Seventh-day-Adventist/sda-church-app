@@ -4,7 +4,7 @@
   "version": "0.24.1",
   "homepage": "https://codesammich.github.io/sda-church-app",
   "scripts": {
-    "build:web": "expo export --platform web --clear",
+    "build:web": "expo export --platform web --clear && node scripts/verify-web-export.mjs",
     "check": "npm run typecheck && npm test && npm run check:text-scale && npm run build:web",
     "check:text-scale": "node scripts/check-text-scale-coverage.mjs",
     "sync-version": "node public/sync-version.js",
@@ -17,7 +17,6 @@
     "@expo/metro-runtime": "~55.0.11",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@react-native-community/slider": "5.1.2",
     "@react-navigation/native": "^7.1.8",
     "expo": "~55.0.23",
     "expo-av": "^16.0.8",

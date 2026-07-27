@@ -1,12 +1,12 @@
 import { useAppTheme } from '@/constants/Themes';
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { useTextSize } from '@/constants/TextSizeContext';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ImageBackground, ImageSourcePropType, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useMemo } from 'react';
 import { Text } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type VerseHeroProps = {
   title: string;
@@ -29,7 +29,7 @@ export function VerseHero({
   verseColors,
 }: VerseHeroProps) {
   const theme = useAppTheme();
-  const insets = useSafeAreaInsets();
+  const headerHeight = useGlobalHeaderHeight();
   const { textScale } = useTextSize();
   const { fontScale } = useWindowDimensions();
   const styles = useMemo(
@@ -46,7 +46,7 @@ export function VerseHero({
             locations={[0, 0.46, 1]}
             style={StyleSheet.absoluteFill}
           />
-          <View style={[styles.titleArea, { paddingTop: insets.top + 70 }]}>
+          <View style={[styles.titleArea, { paddingTop: headerHeight + 6 }]}>
             <Text variant="headlineSmall" style={styles.title}>
               {title}
             </Text>

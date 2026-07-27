@@ -226,7 +226,7 @@ export default function RootLayout() {
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEventLike | null>(null);
   const [installOutcome, setInstallOutcome] =
-    useState<'accepted' | 'dismissed' | null>(null);
+    useState<'accepted' | 'dismissed' | 'error' | null>(null);
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const updateCheckInProgress = useRef(false);
   const updateStatusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -604,13 +604,18 @@ export default function RootLayout() {
     await Promise.all([
       AsyncStorage.setItem('has-completed-setup', 'true'),
       AsyncStorage.setItem('user-language', language),
-      AsyncStorage.setItem(
-        BIBLE_TRANSLATION_STORAGE_KEY,
-        DEFAULT_TRANSLATION_MAP[language] || 'BSB',
-      ),
       AsyncStorage.setItem(THEME_STORAGE_KEY, theme.dark ? THEME_DARK : THEME_LIGHT),
       AsyncStorage.setItem(TEXT_SCALE_STORAGE_KEY, serializeTextScale(textScale)),
     ]);
+    const savedBibleTranslation = await AsyncStorage.getItem(
+      BIBLE_TRANSLATION_STORAGE_KEY,
+    );
+    if (savedBibleTranslation === null) {
+      await AsyncStorage.setItem(
+        BIBLE_TRANSLATION_STORAGE_KEY,
+        DEFAULT_TRANSLATION_MAP[language] || 'BSB',
+      );
+    }
     setShowSetup(false);
   };
 
@@ -629,7 +634,7 @@ export default function RootLayout() {
       setInstallOutcome(choice.outcome);
       return choice.outcome;
     } catch (error) {
-      setInstallOutcome(null);
+      setInstallOutcome('error');
       console.warn('Unable to show the PWA install prompt', error);
       return 'error';
     }

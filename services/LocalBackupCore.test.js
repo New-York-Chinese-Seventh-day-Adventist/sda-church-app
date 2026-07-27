@@ -2,6 +2,8 @@
 
 const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 
 const {
@@ -253,4 +255,27 @@ test('restore and delete transactions leave Bible state, saved verses, and cache
     settingKeys.map((key) => [key, null]),
   );
   assert.deepEqual(Object.fromEntries(storage.values), unrelated);
+});
+
+test('backup integration reads every exported field from storage and preserves Bible settings', () => {
+  const backupSource = fs.readFileSync(
+    path.join(__dirname, 'LocalBackup.ts'),
+    'utf8',
+  );
+  const layoutSource = fs.readFileSync(
+    path.join(__dirname, '..', 'app', '_layout.tsx'),
+    'utf8',
+  );
+
+  assert.match(
+    backupSource,
+    /AsyncStorage\.getItem\(LANGUAGE_STORAGE_KEY\)[\s\S]*AsyncStorage\.getItem\(THEME_STORAGE_KEY\)/,
+  );
+  assert.match(backupSource, /languageValue === 'zh-cn'/);
+  assert.match(backupSource, /themeValue === 'dark' \|\| themeValue === 'light'/);
+  assert.match(backupSource, /parseStoredTextScale\(textScaleValue\)/);
+  assert.match(
+    layoutSource,
+    /AsyncStorage\.getItem\(\s*BIBLE_TRANSLATION_STORAGE_KEY[\s\S]*savedBibleTranslation === null/,
+  );
 });

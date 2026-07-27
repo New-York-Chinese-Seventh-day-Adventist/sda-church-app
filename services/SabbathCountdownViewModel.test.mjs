@@ -78,3 +78,38 @@ test('accessibility formatting rejects malformed values and suppresses seconds',
   assert.equal(formatCountdownForAccessibility('99:00:00'), 'Countdown unavailable');
   assert.equal(formatCountdownForAccessibility('not-a-countdown'), 'Countdown unavailable');
 });
+
+test('accessibility countdown copy follows the selected language', () => {
+  assert.equal(
+    formatCountdownForAccessibility('2d 04:03:59', 'zh'),
+    '剩餘 2 天、4 小時、3 分鐘',
+  );
+  assert.equal(
+    formatCountdownForAccessibility('00:01:59', 'zh-cn'),
+    '剩余 1 分钟',
+  );
+  assert.equal(
+    formatCountdownForAccessibility('02:01:59', 'es'),
+    'Faltan 2 horas, 1 minuto',
+  );
+  assert.equal(
+    formatCountdownForAccessibility('00:00:59', 'es'),
+    'Falta menos de un minuto',
+  );
+});
+
+test('constrained phone countdown stays inside the clipped card', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const source = await readFile(
+    new URL('../app/(tabs)/index.tsx', import.meta.url),
+    'utf8',
+  );
+  const styleBlock = source.match(
+    /timerValueClusterConstrained:\s*\{([\s\S]*?)\n\s*\},/,
+  )?.[1];
+
+  assert.ok(styleBlock);
+  assert.match(styleBlock, /flexBasis:\s*'100%'/);
+  assert.match(styleBlock, /marginLeft:\s*0/);
+  assert.doesNotMatch(styleBlock, /width:\s*'100%'/);
+});

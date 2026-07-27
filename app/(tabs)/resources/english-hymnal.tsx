@@ -17,6 +17,7 @@ import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useAppTheme } from '@/constants/Themes';
 import { useTextSize } from '@/constants/TextSizeContext';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import * as BibleService from '@/services/BibleService';
 import { useDocumentStyles } from '@/styles/DocumentStyles';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
@@ -81,6 +82,7 @@ export default function HymnalScreen() {
     [fontScale, textScale, useStackedActions],
   );
   const insets = useSafeAreaInsets();
+  const headerHeight = useGlobalHeaderHeight();
   const { language } = useContext(LanguageContext);
   const { backTo, refresh, hymnNum, highlight } = useLocalSearchParams<{
     backTo?: string;
@@ -241,7 +243,7 @@ export default function HymnalScreen() {
         {/* Hero */}
         <ImageBackground
           source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
-          style={[NavigationStyles.heroHeader, { paddingTop: insets.top + 70, paddingBottom: 24 }]}
+          style={[NavigationStyles.heroHeader, { paddingTop: headerHeight + 6, paddingBottom: 24 }]}
           resizeMode="cover"
         >
           <LinearGradient

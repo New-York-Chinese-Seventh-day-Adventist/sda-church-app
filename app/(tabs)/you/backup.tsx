@@ -1,8 +1,8 @@
 import { scaleTypographyMetric, type TextScale } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import {
   createLocalBackup,
   deleteBackedUpLocalSettings,
@@ -114,16 +114,19 @@ export default function BackupScreen() {
     fontScale,
   });
   const styles = createStyles(textScale);
-  const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
+  const headerHeight = useGlobalHeaderHeight();
   const [busy, setBusy] = useState<BusyAction>(null);
   const [preview, setPreview] = useState<LocalBackupEnvelope | null>(null);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [reloadNeeded, setReloadNeeded] = useState(false);
   const isWeb = Platform.OS === 'web';
-  const stackDialogActions = width < 480 || fontScale > 1.25;
+  const useCompactActionLabels = width < 480 || fontScale * textScale > 1.25;
+  const stackDialogActions = useCompactActionLabels;
+  const settingsActionsDisabled = busy !== null || reloadNeeded;
 
   const handleExport = async () => {
+    if (reloadNeeded) return;
     setBusy('export');
     setStatus(null);
     try {
@@ -157,6 +160,7 @@ export default function BackupScreen() {
   };
 
   const handleChooseFile = () => {
+    if (reloadNeeded) return;
     setStatus(null);
     try {
       selectJsonFile((file) => void inspectFile(file));
@@ -275,33 +279,35 @@ export default function BackupScreen() {
           <>
             <View style={styles.buttonGroup}>
               <Button
-                disabled={busy !== null}
+                accessibilityLabel="Download backup JSON"
+                disabled={settingsActionsDisabled}
                 icon="download"
                 loading={busy === 'export'}
                 mode="contained"
                 onPress={() => void handleExport()}
               >
-                Download backup JSON
+                {useCompactActionLabels ? 'Export JSON' : 'Download backup JSON'}
               </Button>
               <Button
-                disabled={busy !== null}
+                accessibilityLabel="Choose backup JSON"
+                disabled={settingsActionsDisabled}
                 icon="file-upload-outline"
                 loading={busy === 'import'}
                 mode="outlined"
                 onPress={handleChooseFile}
               >
-                Choose backup JSON
+                {useCompactActionLabels ? 'Import JSON' : 'Choose backup JSON'}
               </Button>
             </View>
 
-            {status ? (
+            {status || reloadNeeded ? (
               <Card
                 mode="outlined"
                 style={[
                   styles.statusCard,
                   {
                     backgroundColor:
-                      status.kind === 'error'
+                      status?.kind === 'error'
                         ? theme.colors.errorContainer
                         : theme.colors.primaryContainer,
                   },
@@ -312,12 +318,12 @@ export default function BackupScreen() {
                     variant="bodyMedium"
                     style={{
                       color:
-                        status.kind === 'error'
+                        status?.kind === 'error'
                           ? theme.colors.onErrorContainer
                           : theme.colors.onPrimaryContainer,
                     }}
                   >
-                    {status.text}
+                    {status?.text ?? 'Reload the app before doing another backup operation.'}
                   </Text>
                   {reloadNeeded ? (
                     <Button icon="reload" mode="text" onPress={reload} style={styles.reloadButton}>
@@ -337,14 +343,15 @@ export default function BackupScreen() {
               browser. Bible settings, saved verses, caches, and downloaded files remain.
             </Text>
             <Button
-              disabled={busy !== null}
+              accessibilityLabel="Delete local settings"
+              disabled={settingsActionsDisabled}
               icon="delete-outline"
               mode="outlined"
               onPress={() => setDeleteDialogVisible(true)}
               style={[styles.deleteButton, { borderColor: theme.colors.error }]}
               textColor={theme.colors.error}
             >
-              Delete local settings
+              {useCompactActionLabels ? 'Delete' : 'Delete local settings'}
             </Button>
           </>
         )}

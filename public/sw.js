@@ -28,6 +28,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const requestUrl = new URL(event.request.url);
+  const bypassCache =
+    event.request.cache === 'no-store' ||
+    requestUrl.hostname === 'api.sunrise-sunset.org';
+
+  // API requests can contain private coordinates, and explicit no-store
+  // requests must never be copied into Cache Storage. Other cross-origin
+  // scripture and media requests retain the app's existing offline behavior.
+  if (bypassCache) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
