@@ -12,7 +12,9 @@
 !/components/
 !/constants/
 !/docs/
+!/hooks/
 !/public/
+!/scripts/
 !/services/
 !/styles/
 
