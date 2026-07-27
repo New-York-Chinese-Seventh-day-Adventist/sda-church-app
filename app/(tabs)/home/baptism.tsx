@@ -11,7 +11,7 @@ import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
-import { DocumentStyles } from '@/styles/DocumentStyles';
+import { useDocumentStyles } from '@/styles/DocumentStyles';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -21,6 +21,7 @@ export default function BaptismScreen() {
   const { language } = useContext(LanguageContext);
   const { backTo } = useLocalSearchParams();
   const theme = useAppTheme();
+  const DocumentStyles = useDocumentStyles();
   const { showHeaderTitle, handleHeroScroll } = useHeroHeaderTitle();
 
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -126,6 +127,7 @@ export default function BaptismScreen() {
             {meaning.points.map((point: any, index: number) => (
               <View key={index}>
                 <List.Item
+                  titleNumberOfLines={0}
                   title={point.title}
                   titleStyle={{ fontWeight: 'bold', color: theme.colors.onSurface }}
                   description={() => (
@@ -151,7 +153,7 @@ export default function BaptismScreen() {
                       icon={point.icon}
                     />
                   )}
-                  descriptionNumberOfLines={10}
+                  descriptionNumberOfLines={0}
                 />
                 {index < meaning.points.length - 1 && (
                   <List.Icon
@@ -367,10 +369,10 @@ export default function BaptismScreen() {
                 >
                   {diet.summaryTitle}
                 </Text>
-                <List.Item title={diet.land} titleNumberOfLines={3} />
-                <List.Item title={diet.water} titleNumberOfLines={3} />
-                <List.Item title={diet.insects} titleNumberOfLines={3} />
-                <List.Item title={diet.birds} titleNumberOfLines={3} />
+                <List.Item title={diet.land} titleNumberOfLines={0} />
+                <List.Item title={diet.water} titleNumberOfLines={0} />
+                <List.Item title={diet.insects} titleNumberOfLines={0} />
+                <List.Item title={diet.birds} titleNumberOfLines={0} />
                 <View
                   style={{
                     marginTop: 8,

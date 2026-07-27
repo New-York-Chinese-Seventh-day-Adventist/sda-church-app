@@ -8,13 +8,13 @@ import {
 } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useAppTheme } from '@/constants/Themes';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
+import { useNavigationStyles } from '@/styles/NavigationStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { useContext } from 'react';
 import { ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import { List, Text } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const allLabels = {
   en: {
@@ -99,10 +99,11 @@ const allLabels = {
 
 export default function ResourcesScreen() {
   const theme = useAppTheme();
+  const NavigationStyles = useNavigationStyles();
   const { language } = useContext(LanguageContext);
   const labels = allLabels[language as keyof typeof allLabels] || allLabels.en;
 
-  const insets = useSafeAreaInsets();
+  const headerHeight = useGlobalHeaderHeight();
 
   return (
     <>
@@ -115,7 +116,7 @@ export default function ResourcesScreen() {
           source={{ uri: CHURCH_BUILDING_IMAGE_URL }}
           style={[
             NavigationStyles.heroHeader,
-            { paddingTop: insets.top + 70, paddingBottom: 24 },
+            { paddingTop: headerHeight + 6, paddingBottom: 24 },
           ]}
           resizeMode="cover"
         >
@@ -137,6 +138,7 @@ export default function ResourcesScreen() {
         <View style={styles.body}>
           <List.Section>
             <List.Subheader
+              numberOfLines={0}
               style={[
                 NavigationStyles.subheader,
                 { color: theme.colors.onBackground },
@@ -177,6 +179,7 @@ export default function ResourcesScreen() {
 
           <List.Section>
             <List.Subheader
+              numberOfLines={0}
               style={[
                 NavigationStyles.subheader,
                 { color: theme.colors.onBackground },

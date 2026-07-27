@@ -1,4 +1,7 @@
 import { GridMenuCard } from '@/components/GridMenuCard';
+import { WrappingActionButton } from '@/components/WrappingActionButton';
+import { WrappingButton as Button } from '@/components/WrappingButton';
+import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import {
   CHURCH_BUILDING_IMAGE_URL,
   CHURCH_LATITUDE,
@@ -7,29 +10,52 @@ import {
   openSabbathStream,
 } from '@/constants/ExternalLinks';
 import { LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
-import { DESIGN_TOKENS } from '@/constants/Layout';
+import { DESIGN_TOKENS, shouldUseStackedHomeLayout } from '@/constants/Layout';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { createNavigationStyles } from '@/styles/NavigationStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import {
   ImageBackground,
   Platform,
   ScrollView,
   Share,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
-import { Button, Card, List, Text } from 'react-native-paper';
+import { Card, List, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { language } = useContext(LanguageContext);
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { textScale } = useTextSize();
+  const { fontScale, width: windowWidth } = useWindowDimensions();
+  const effectiveTextScale = Math.max(1, fontScale * textScale);
+  // Preserve the upstream two-column phone grid at 100%, then stack only
+  // when the scaled text would leave each card too narrow to wrap cleanly.
+  const useStackedLayout = shouldUseStackedHomeLayout(
+    windowWidth,
+    effectiveTextScale,
+  );
+  const styles = useMemo(
+    () => createStyles(textScale, effectiveTextScale, useStackedLayout),
+    [effectiveTextScale, textScale, useStackedLayout],
+  );
+  const navigationStyles = useMemo(
+    () =>
+      createNavigationStyles(textScale, {
+        bottomInset: insets.bottom,
+        fontScale,
+      }),
+    [fontScale, insets.bottom, textScale],
+  );
 
   const allLabels = {
     en: {
@@ -443,7 +469,7 @@ export default function HomeScreen() {
   return (
     <>
       <ScrollView
-        style={NavigationStyles.container}
+        style={navigationStyles.container}
         contentContainerStyle={{ paddingTop: 0 }}
       >
         <ImageBackground
@@ -490,38 +516,30 @@ export default function HomeScreen() {
               ? `${randomVerse.text}\n— ${randomVerse.reference}`
               : labels.subtitle}
           </Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              marginTop: 16,
-              gap: 12,
-              width: '100%',
-              paddingHorizontal: 16,
-            }}
-          >
-            <Button
-              mode="outlined"
+          <View style={styles.heroActions}>
+            <WrappingActionButton
+              borderColor="#FFFFFF"
+              disabled={!randomVerse}
               icon="share-variant"
+              label={(labels as any).shareVerse}
               onPress={handleShare}
-              disabled={!randomVerse}
-              style={{ borderRadius: 20, flex: 1, borderColor: '#FFFFFF' }}
               textColor="#FFFFFF"
-            >
-              {(labels as any).shareVerse}
-            </Button>
-            <Button
-              mode="contained"
-              icon="book-open-variant"
-              onPress={navigateToVerse}
+              style={styles.heroActionButton}
+            />
+            <WrappingActionButton
+              backgroundColor={theme.colors.primary}
+              borderColor={theme.colors.primary}
               disabled={!randomVerse}
-              style={{ borderRadius: 20, flex: 1 }}
-            >
-              {(labels as any).readVerse}
-            </Button>
+              icon="book-open-variant"
+              label={(labels as any).readVerse}
+              onPress={navigateToVerse}
+              textColor={theme.colors.onPrimary}
+              style={styles.heroActionButton}
+            />
           </View>
         </ImageBackground>
 
-        <List.Section style={NavigationStyles.contentContainer}>
+        <List.Section style={navigationStyles.contentContainer}>
           {showFullscreenReminder && (
             <Card
               style={[
@@ -665,7 +683,11 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+  textScale: Parameters<typeof scaleTypographyMetric>[1],
+  effectiveTextScale: number,
+  useStackedLayout: boolean,
+) => StyleSheet.create({
   hero: {
     paddingHorizontal: 24,
     alignItems: 'center',
@@ -678,6 +700,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
+  },
+  heroActions: {
+    flexDirection: useStackedLayout ? 'column' : 'row',
+    marginTop: 16,
+    gap: 12,
+    width: '100%',
+    paddingHorizontal: 16,
+  },
+  heroActionButton: {
+    flex: useStackedLayout ? undefined : 1,
+    width: useStackedLayout ? '100%' : undefined,
   },
   timerCard: {
     marginBottom: 16,
@@ -693,7 +726,7 @@ const styles = StyleSheet.create({
     minHeight: 64,
     paddingVertical: 8,
     paddingHorizontal: 8,
-    flexDirection: 'row',
+    flexDirection: useStackedLayout ? 'column' : 'row',
     alignItems: 'center',
   },
   fullscreenReminderText: {
@@ -705,8 +738,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   timerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: useStackedLayout ? 'column' : 'row',
+    alignItems: useStackedLayout ? 'flex-start' : 'center',
     justifyContent: 'space-between',
   },
   labelColumn: {
@@ -715,8 +748,11 @@ const styles = StyleSheet.create({
   timerValueSubtle: {
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontVariant: ['tabular-nums'],
-    fontSize: 16,
+    fontSize: scaleTypographyMetric(16, textScale),
+    lineHeight: scaleTypographyMetric(24, textScale),
     fontWeight: '700',
+    marginTop: useStackedLayout ? 8 : 0,
+    flexShrink: 0,
   },
   grid: {
     flexDirection: 'row',
@@ -726,7 +762,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   gridCell: {
-    flexBasis: '47.5%',
+    flexBasis: useStackedLayout ? '100%' : '47.5%',
     flexGrow: 1,
   },
 });

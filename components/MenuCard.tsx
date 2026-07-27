@@ -1,9 +1,14 @@
 import { DESIGN_TOKENS } from "@/constants/Layout";
+import { scaleTypographyMetric } from "@/constants/AppPreferences";
+import { useTextSize } from "@/constants/TextSizeContext";
 import { useAppTheme } from "@/constants/Themes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import {
+  AccessibilityRole,
+  AccessibilityState,
   Animated,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,6 +20,8 @@ const AnimatedTouchableOpacity =
   Animated.createAnimatedComponent(TouchableOpacity);
 
 interface MenuCardProps {
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: AccessibilityState;
   title: string;
   description?: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -25,7 +32,56 @@ interface MenuCardProps {
   style?: ViewStyle | any;
 }
 
+interface MenuCardSwitchVisualProps {
+  active: boolean;
+  activeColor: string;
+  inactiveColor: string;
+  thumbColor: string;
+}
+
+const switchVisualStyles = StyleSheet.create({
+  track: {
+    alignItems: "center",
+    borderRadius: 16,
+    flexDirection: "row",
+    height: 32,
+    paddingHorizontal: 3,
+    width: 52,
+  },
+  thumb: {
+    borderRadius: 13,
+    height: 26,
+    width: 26,
+  },
+});
+
+export const MenuCardSwitchVisual = ({
+  active,
+  activeColor,
+  inactiveColor,
+  thumbColor,
+}: MenuCardSwitchVisualProps) => (
+  <View
+    accessible={false}
+    accessibilityElementsHidden
+    importantForAccessibility="no-hide-descendants"
+    pointerEvents="none"
+    testID="menu-card-switch-visual"
+    style={[
+      switchVisualStyles.track,
+      {
+        backgroundColor: active ? activeColor : inactiveColor,
+        justifyContent: active ? "flex-end" : "flex-start",
+      },
+    ]}
+  >
+    <View style={[switchVisualStyles.thumb, { backgroundColor: thumbColor }]} />
+  </View>
+);
+
 export const MenuCard: React.FC<MenuCardProps> = ({
+  accessibilityRole,
+  accessibilityState,
   title,
   description,
   icon,
@@ -36,14 +92,20 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   style,
 }) => {
   const theme = useAppTheme();
+  const { textScale } = useTextSize();
+  const styles = useMemo(() => createStyles(textScale), [textScale]);
   return (
     <AnimatedTouchableOpacity
+      accessibilityLabel={description ? `${title}. ${description}` : title}
+      accessibilityRole={accessibilityRole ?? (onPress ? "button" : undefined)}
+      accessibilityState={accessibilityState}
       style={[
         styles.card,
         {
           backgroundColor: theme.colors.surface,
           borderColor: theme.colors.outlineVariant,
         },
+        onPress && Platform.OS === "web" ? styles.webPressable : null,
         style,
       ]}
       onPress={onPress}
@@ -51,11 +113,12 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       disabled={!onPress}
     >
       <MaterialCommunityIcons
+        pointerEvents="none"
         name={icon}
         size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
         color={iconColor || theme.colors.tertiary}
       />
-      <View style={styles.cardContent}>
+      <View pointerEvents="none" style={styles.cardContent}>
         <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
           {title}
         </Text>
@@ -71,9 +134,10 @@ export const MenuCard: React.FC<MenuCardProps> = ({
         )}
       </View>
       {rightElement
-        ? rightElement()
+        ? <View pointerEvents="none">{rightElement()}</View>
         : rightIcon && (
             <MaterialCommunityIcons
+              pointerEvents="none"
               name={rightIcon}
               size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
               color={theme.colors.onSurfaceVariant}
@@ -83,7 +147,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1]) => StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -92,7 +156,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
   },
-  cardContent: { flex: 1, marginLeft: 16 },
-  cardTitle: { fontSize: 18, fontWeight: "700" },
-  cardSubtitle: { fontSize: 14, marginTop: 2 },
+  webPressable: {
+    cursor: "pointer",
+  },
+  cardContent: { flex: 1, flexShrink: 1, marginLeft: 16, minWidth: 0 },
+  cardTitle: {
+    fontSize: scaleTypographyMetric(18, textScale),
+    lineHeight: scaleTypographyMetric(24, textScale),
+    fontWeight: "700",
+    flexShrink: 1,
+  },
+  cardSubtitle: {
+    fontSize: scaleTypographyMetric(14, textScale),
+    lineHeight: scaleTypographyMetric(20, textScale),
+    marginTop: 2,
+    flexShrink: 1,
+  },
 });
