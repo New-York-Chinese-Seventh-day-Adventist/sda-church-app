@@ -1,5 +1,7 @@
+import { scaleTypographyMetric, type TextScale } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
+import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import {
   createLocalBackup,
@@ -11,7 +13,7 @@ import {
   serializeLocalBackup,
 } from '@/services/LocalBackup';
 import type { LocalBackupEnvelope } from '@/services/LocalBackup';
-import { NavigationStyles } from '@/styles/NavigationStyles';
+import { createNavigationStyles } from '@/styles/NavigationStyles';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
@@ -102,10 +104,16 @@ function selectJsonFile(onSelect: (file: File) => void): void {
 
 export default function BackupScreen() {
   const { language } = useContext(LanguageContext);
+  const { textScale } = useTextSize();
   const theme = useAppTheme();
   const { backTo } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const { fontScale, width } = useWindowDimensions();
+  const NavigationStyles = createNavigationStyles(textScale, {
+    bottomInset: insets.bottom,
+    fontScale,
+  });
+  const styles = createStyles(textScale);
   const headerHeight = insets.top + DESIGN_TOKENS.HEADER_HEIGHT_BASE;
   const [busy, setBusy] = useState<BusyAction>(null);
   const [preview, setPreview] = useState<LocalBackupEnvelope | null>(null);
@@ -207,7 +215,7 @@ export default function BackupScreen() {
         contentContainerStyle={[
           NavigationStyles.contentContainer,
           styles.content,
-          { paddingBottom: insets.bottom + 80, paddingTop: headerHeight + 20 },
+          { paddingTop: headerHeight + 20 },
         ]}
       >
         {language !== 'en' ? (
@@ -433,7 +441,7 @@ export default function BackupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (textScale: TextScale) => StyleSheet.create({
   content: {
     alignSelf: 'center',
     maxWidth: 760,
@@ -444,7 +452,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   intro: {
-    lineHeight: 21,
+    lineHeight: scaleTypographyMetric(21, textScale),
     marginBottom: 16,
   },
   card: {
@@ -455,7 +463,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   paragraph: {
-    lineHeight: 20,
+    lineHeight: scaleTypographyMetric(20, textScale),
     marginTop: 8,
   },
   buttonGroup: {
@@ -505,7 +513,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   previewNotice: {
-    lineHeight: 18,
+    lineHeight: scaleTypographyMetric(18, textScale),
     marginTop: 16,
   },
 });
