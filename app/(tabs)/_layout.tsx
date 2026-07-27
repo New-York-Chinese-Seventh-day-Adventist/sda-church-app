@@ -69,7 +69,7 @@ export default function TabLayout() {
 
   const tabBarTranslateY = menuAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [120, 0],
+    outputRange: [tabContentHeight + bottomTabInset + 16, 0],
   });
 
   const handleTabBarLayout = (event: LayoutChangeEvent) => {

@@ -33,7 +33,7 @@ import {
   type TextScale,
 } from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { DESIGN_TOKENS } from '@/constants/Layout';
+import { DESIGN_TOKENS, getBottomTabContentHeight } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { SCRIPTURE_FONT_FAMILIES, useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
@@ -48,9 +48,7 @@ import { createReaderStyles } from '@/styles/ReaderStyles';
 
 // Generalizing dimensions to ensure responsiveness across iPhone/Tablet
 const DOCK_HEIGHT = 60;
-// Keep the reader controls flush with the shared bottom tab bar.
-const DOCK_BOTTOM_MARGIN = DESIGN_TOKENS.TAB_BAR_CONTENT_HEIGHT;
-const FOOTER_PADDING_OFFSET = 150;
+const FOOTER_PADDING_GUTTER = 34;
 const AUDIO_DOCK_HEIGHT = 84;
 const SELECTION_BAR_HEIGHT = 56;
 
@@ -282,6 +280,7 @@ export default function BibleScreen() {
   );
   const styles = useMemo(() => createStyles(textScale), [textScale]);
   const effectiveTextScale = textScale * osFontScale;
+  const bottomTabContentHeight = getBottomTabContentHeight(effectiveTextScale);
   const useCompactDock = viewportWidth < 420 || effectiveTextScale > 1.35;
   const compactDockMaxFontSizeMultiplier =
     viewportWidth < 360 ? 1.1 : viewportWidth < 420 ? 1.15 : 1.2;
@@ -1605,7 +1604,7 @@ export default function BibleScreen() {
     inputRange: [0, 1],
     outputRange: [
       DOCK_HEIGHT + bottomDockInset + dockExtraHeight,
-      DOCK_HEIGHT + DOCK_BOTTOM_MARGIN + bottomDockInset + dockExtraHeight,
+      DOCK_HEIGHT + bottomTabContentHeight + bottomDockInset + dockExtraHeight,
     ],
   });
 
@@ -1638,11 +1637,10 @@ export default function BibleScreen() {
             paddingTop: headerHeight + 10,
             paddingBottom:
               bottomDockInset +
-              FOOTER_PADDING_OFFSET +
-              (chapterData?.thisChapterAudioLinks &&
-              Object.keys(chapterData.thisChapterAudioLinks).length > 0
-                ? AUDIO_DOCK_HEIGHT
-                : 0),
+              DOCK_HEIGHT +
+              bottomTabContentHeight +
+              FOOTER_PADDING_GUTTER +
+              dockExtraHeight,
           },
         ]}
       >

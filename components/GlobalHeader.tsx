@@ -65,8 +65,7 @@ export const GlobalHeader = (props: any) => {
   const insets = useSafeAreaInsets();
   const { fontScale, width: windowWidth } = useWindowDimensions();
   const effectiveTextScale = Math.max(1, fontScale * textScale);
-  const compactControlScale = Math.min(effectiveTextScale, 1.5);
-  const compactControlHeight = Math.ceil(44 + (compactControlScale - 1) * 24);
+  const compactControlHeight = Math.ceil(44 + (effectiveTextScale - 1) * 24);
   const appBarHeight = Math.max(64, compactControlHeight + 20);
 
   const { menuAnim } = useContext(UIStateContext);
