@@ -3,7 +3,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 import * as ReactNative from 'react-native';
 import { StyleSheet, Text } from 'react-native';
 
-import { GridMenuCard } from '@/components/GridMenuCard';
+import {
+  getGridMenuCardTitleBlockMinHeight,
+  GridMenuCard,
+} from '@/components/GridMenuCard';
 import { MenuCard, MenuCardSwitchVisual } from '@/components/MenuCard';
 import { AppIcon } from '@/components/AppIcon';
 import { TextSizeContext } from '@/constants/TextSizeContext';
@@ -47,6 +50,13 @@ const renderAtScale = (element: React.ReactElement, textScale: 1 | 2) =>
   );
 
 describe('menu card press surfaces', () => {
+  it('reserves the same two-line text region at every effective scale', () => {
+    expect(getGridMenuCardTitleBlockMinHeight(1)).toBe(41);
+    expect(getGridMenuCardTitleBlockMinHeight(1.15)).toBe(48);
+    expect(getGridMenuCardTitleBlockMinHeight(1.25)).toBe(52);
+    expect(getGridMenuCardTitleBlockMinHeight(4)).toBe(164);
+  });
+
   beforeEach(() => {
     jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
       fontScale: 1,

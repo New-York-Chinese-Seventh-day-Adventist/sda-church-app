@@ -27,6 +27,16 @@ interface GridMenuCardProps {
   style?: ViewStyle | any;
 }
 
+export const getGridMenuCardTitleBlockMinHeight = (effectiveScale: number) => {
+  const safeScale = Number.isFinite(effectiveScale)
+    ? Math.max(1, effectiveScale)
+    : 1;
+  // Two title lines (2 x 20) or one title plus its subtitle (20 + 3 + 18).
+  // Reserving this on every card keeps rows equal regardless of which label
+  // happens to wrap on a particular device or in a particular language.
+  return Math.ceil(41 * safeScale);
+};
+
 export const GridMenuCard: React.FC<GridMenuCardProps> = ({
   title,
   subtitle,
@@ -126,6 +136,7 @@ const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1], ef
   },
   titleBlock: {
     flex: 0,
+    minHeight: getGridMenuCardTitleBlockMinHeight(effectiveScale),
   },
   title: {
     fontSize: scaleTypographyMetric(15, textScale),
