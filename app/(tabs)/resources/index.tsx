@@ -18,7 +18,7 @@ import { List, Text } from 'react-native-paper';
 
 const allLabels = {
   en: {
-    title: 'Resources',
+    title: 'Explore',
     sermonsWorship: 'Watch & Listen',
     studyLiturgy: 'Study & Liturgy',
     bible: 'Holy Bible',
@@ -38,7 +38,7 @@ const allLabels = {
     librarySub: 'Devotionals, PDFs and guides',
   },
   zh: {
-    title: '資源庫',
+    title: '探索',
     sermonsWorship: '觀看與收聽',
     studyLiturgy: '研經與禮儀',
     bible: '聖經',
@@ -57,7 +57,7 @@ const allLabels = {
     librarySub: '靈修資料、PDF 與指南',
   },
   'zh-cn': {
-    title: '资源库',
+    title: '探索',
     sermonsWorship: '观看与收听',
     studyLiturgy: '研经与礼仪',
     bible: '圣经',
@@ -76,7 +76,7 @@ const allLabels = {
     librarySub: '灵修资料、PDF 与指南',
   },
   es: {
-    title: 'Recursos',
+    title: 'Explorar',
     sermonsWorship: 'Ver y Escuchar',
     studyLiturgy: 'Estudio y Liturgia',
     bible: 'Santa Biblia',

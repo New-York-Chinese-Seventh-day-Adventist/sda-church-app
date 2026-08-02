@@ -724,7 +724,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     resources: {
-      title: 'Resources',
+      title: 'Explore',
       keywords: [
         'video',
         'preach',
@@ -847,7 +847,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     resources: {
-      title: '資源庫',
+      title: '探索',
       keywords: [
         '視頻',
         '證道',
@@ -958,7 +958,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     resources: {
-      title: '资源库',
+      title: '探索',
       keywords: [
         '视频',
         '证道',
@@ -1072,7 +1072,7 @@ export const ALL_SEARCH_LABELS: Record<string, any> = {
       ],
     },
     resources: {
-      title: 'Recursos',
+      title: 'Explorar',
       keywords: [
         'video',
         'predicación',

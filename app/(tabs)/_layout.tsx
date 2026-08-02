@@ -50,13 +50,6 @@ function TabBarLabel(props: {
     props.textScale,
   );
   const measuredLineHeight = lineHeight * Math.max(1, props.fontScale);
-  const breakableLabel =
-    props.label === 'Resources'
-      ? 'Re\u200Bsources'
-      : props.label === 'Recursos'
-        ? 'Re\u200Bcursos'
-        : props.label;
-
   return (
     <Text
       onLayout={(event) =>
@@ -80,7 +73,7 @@ function TabBarLabel(props: {
         width: '100%',
       }}
     >
-      {breakableLabel}
+      {props.label}
     </Text>
   );
 }
@@ -151,25 +144,25 @@ export default function TabLayout() {
     en: {
       home: 'Home',
       bible: 'Bible',
-      resources: 'Resources',
+      resources: 'Explore',
       you: 'You',
     },
     zh: {
       home: '首頁',
       bible: '聖經',
-      resources: '資源庫',
+      resources: '探索',
       you: '您',
     },
     'zh-cn': {
       home: '首页',
       bible: '圣经',
-      resources: '资源库',
+      resources: '探索',
       you: '您',
     },
     es: {
       home: 'Inicio',
       bible: 'Biblia',
-      resources: 'Recursos',
+      resources: 'Explorar',
       you: 'Tú',
     },
   };
