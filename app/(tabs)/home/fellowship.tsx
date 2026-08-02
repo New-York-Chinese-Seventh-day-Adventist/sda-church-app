@@ -6,7 +6,7 @@ import {
   CHURCH_EMAIL,
   CHURCH_PHONE,
   ELMHURST_SABBATH_URLS,
-  FELLOWSHIP_IMAGES_URLS,
+  FLUSHING_FELLOWSHIP_IMAGE_URL,
   FOOD_BANK_IMAGE_URL,
   openEmail,
   openPhone,
@@ -218,7 +218,7 @@ export default function FellowshipsAndFoodScreen() {
           title={labels.title}
           verse={labels.expansionVerse}
           reference={labels.expansionRef}
-          imageSource={{ uri: FELLOWSHIP_IMAGES_URLS[0] }}
+          imageSource={{ uri: FLUSHING_FELLOWSHIP_IMAGE_URL }}
           verseColors={theme.dark
             ? ['#241C3D', '#38245E', '#44306B']
             : ['#312E81', '#5B21B6', '#7C3AED']}
@@ -392,7 +392,10 @@ export default function FellowshipsAndFoodScreen() {
           </View>
 
           <Card style={[styles.sectionCard, { backgroundColor: theme.colors.surface }]} mode="outlined">
-            <Card.Cover source={{ uri: FELLOWSHIP_IMAGES_URLS[1] }} style={styles.cardCover} />
+            <Card.Cover
+              source={{ uri: FLUSHING_FELLOWSHIP_IMAGE_URL }}
+              style={styles.cardCover}
+            />
             <Card.Content style={styles.cardContent}>
               {/* Verse Card */}
               <View style={[styles.verseCard, { backgroundColor: theme.colors.surfaceVariant, borderLeftColor: theme.colors.tertiary }]}>

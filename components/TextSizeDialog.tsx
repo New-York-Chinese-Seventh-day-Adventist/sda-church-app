@@ -31,7 +31,7 @@ interface TextSizeDialogProps {
 const labelsByLanguage = {
   en: {
     title: 'Text size',
-    description: 'Adjust persistent app text from 100% to 200% in 5% steps.',
+    description: 'Adjust persistent app text from 100% to 200%.',
     current: (percent: number) => `Current selection: ${percent}%`,
     slider: 'Text size',
     percent: (percent: number) => `${percent} percent`,
@@ -39,8 +39,7 @@ const labelsByLanguage = {
     increase: 'Increase text size by five percent',
     previewAt: (percent: number) =>
       `Text size preview at ${percent} percent`,
-    previewLabel: 'Live preview',
-    previewText: 'Welcome to NY Chinese SDA.',
+    previewText: '“I was blind, but now I see.” — John 9:25',
     saveError: 'Text size could not be saved. Please try again.',
     close: 'Close',
     reset: 'Reset to 100%',
@@ -49,15 +48,14 @@ const labelsByLanguage = {
   },
   zh: {
     title: '字體大小',
-    description: '將應用程式文字永久調整為 100% 至 200%，每次 5%。',
+    description: '將應用程式文字永久調整為 100% 至 200%。',
     current: (percent: number) => `目前選擇：${percent}%`,
     slider: '字體大小',
     percent: (percent: number) => `${percent}%`,
     decrease: '將字體大小減少百分之五',
     increase: '將字體大小增加百分之五',
     previewAt: (percent: number) => `${percent}% 字體大小預覽`,
-    previewLabel: '即時預覽',
-    previewText: '歡迎來到紐約華人基督復臨安息日會。',
+    previewText: '「我從前是眼瞎的，如今能看見了。」— 約翰福音 9:25',
     saveError: '無法儲存字體大小。請再試一次。',
     close: '關閉',
     reset: '重設為 100%',
@@ -66,15 +64,14 @@ const labelsByLanguage = {
   },
   'zh-cn': {
     title: '字体大小',
-    description: '将应用文字永久调整为 100% 至 200%，每次 5%。',
+    description: '将应用文字永久调整为 100% 至 200%。',
     current: (percent: number) => `当前选择：${percent}%`,
     slider: '字体大小',
     percent: (percent: number) => `${percent}%`,
     decrease: '将字体大小减少百分之五',
     increase: '将字体大小增加百分之五',
     previewAt: (percent: number) => `${percent}% 字体大小预览`,
-    previewLabel: '实时预览',
-    previewText: '欢迎来到纽约华人基督复临安息日会。',
+    previewText: '“我从前是眼瞎的，如今能看见了。”— 约翰福音 9:25',
     saveError: '无法保存字体大小。请再试一次。',
     close: '关闭',
     reset: '重置为 100%',
@@ -84,7 +81,7 @@ const labelsByLanguage = {
   es: {
     title: 'Tamaño del texto',
     description:
-      'Ajusta de forma permanente el texto de la aplicación del 100% al 200% en pasos del 5%.',
+      'Ajusta de forma permanente el texto de la aplicación del 100% al 200%.',
     current: (percent: number) => `Selección actual: ${percent}%`,
     slider: 'Tamaño del texto',
     percent: (percent: number) => `${percent} por ciento`,
@@ -92,8 +89,7 @@ const labelsByLanguage = {
     increase: 'Aumentar el tamaño del texto en cinco por ciento',
     previewAt: (percent: number) =>
       `Vista previa del texto al ${percent} por ciento`,
-    previewLabel: 'Vista previa en vivo',
-    previewText: 'Bienvenido a la Iglesia Adventista China de Nueva York.',
+    previewText: '“Yo era ciego y ahora veo.” — Juan 9:25',
     saveError: 'No se pudo guardar el tamaño del texto. Inténtalo de nuevo.',
     close: 'Cerrar',
     reset: 'Restablecer al 100%',
@@ -454,9 +450,6 @@ export const TextSizeDialog = ({ onDismiss, visible }: TextSizeDialogProps) => {
                 },
               ]}
             >
-              <Text variant="labelMedium" style={styles.previewLabel}>
-                {labels.previewLabel}
-              </Text>
               <Text
                 style={{
                   color: theme.colors.onSurface,
@@ -514,6 +507,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 8,
     justifyContent: 'flex-end',
     paddingBottom: 16,
     paddingHorizontal: 24,
@@ -618,10 +612,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 20,
     padding: 16,
-  },
-  previewLabel: {
-    marginBottom: 8,
-    opacity: 0.75,
   },
   rangeLabels: {
     flexDirection: 'row',

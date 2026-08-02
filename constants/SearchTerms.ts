@@ -4,12 +4,12 @@ import {
 } from '@/constants/EnglishHymnal';
 import { SupportedLanguage } from '@/constants/LanguageContext';
 import * as BibleService from '@/services/BibleService';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { MaterialCommunityIconName } from '@/components/AppIcon';
 
 export interface SearchableItem {
   title: string;
   keywords: string[];
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialCommunityIconName;
   route: string;
   subtitle?: string;
   isBibleBook?: boolean;

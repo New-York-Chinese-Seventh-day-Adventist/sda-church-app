@@ -2,7 +2,15 @@ export const TEXT_SCALE_STORAGE_KEY = 'user-text-scale';
 export const TEXT_SCALE_MIN = 1;
 export const TEXT_SCALE_MAX = 2;
 export const TEXT_SCALE_STEP = 0.05;
-export const TEXT_SCALE_OPTIONS = [1, 1.25, 1.5] as const;
+export const TEXT_SCALE_OPTIONS = [1, 1.25, 1.5, 2] as const;
+
+/**
+ * Fixed Bible-reader controls share a small mobile viewport with the reading
+ * area. Keep the app's additional control scaling compact while leaving
+ * scripture text and operating-system/browser scaling uncapped.
+ */
+export const BIBLE_READER_UI_TEXT_SCALE_MAX = 1.3;
+export const BOTTOM_TAB_ICON_TEXT_SCALE_MAX = 1.3;
 
 export type TextScale =
   | 1
@@ -102,6 +110,12 @@ export const persistTextScalePreference = async (
 
 export const scaleTypographyMetric = (value: number, scale: TextScale) =>
   Math.round(value * scale * 100) / 100;
+
+export const getBibleReaderUiTextScale = (scale: TextScale): TextScale =>
+  Math.min(scale, BIBLE_READER_UI_TEXT_SCALE_MAX) as TextScale;
+
+export const getBottomTabIconTextScale = (scale: TextScale): TextScale =>
+  Math.min(scale, BOTTOM_TAB_ICON_TEXT_SCALE_MAX) as TextScale;
 
 export const scaleTypographyRecord = <T extends Record<string, TypographyVariant>>(
   variants: T,

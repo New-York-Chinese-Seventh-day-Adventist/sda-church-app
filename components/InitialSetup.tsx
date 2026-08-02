@@ -9,9 +9,15 @@ import {
 } from '@/constants/LanguageContext';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { ThemeContext, useAppTheme } from '@/constants/Themes';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { AppIcon } from '@/components/AppIcon';
 import { useContext, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { Modal, Portal, Text } from 'react-native-paper';
 
 interface InitialSetupProps {
@@ -105,13 +111,18 @@ interface SetupChoiceGroupProps {
   disabled: boolean;
   onValueChange: (value: string) => void;
   options: SetupChoice[];
+  twoColumn?: boolean;
   value: string;
 }
+
+export const shouldUseTwoColumnOnboardingChoices = (viewportWidth: number) =>
+  !Number.isFinite(viewportWidth) || viewportWidth <= 430;
 
 const SetupChoiceGroup = ({
   disabled,
   onValueChange,
   options,
+  twoColumn = false,
   value,
 }: SetupChoiceGroupProps) => {
   const theme = useAppTheme();
@@ -130,6 +141,7 @@ const SetupChoiceGroup = ({
             onPress={() => onValueChange(option.value)}
             style={({ pressed }) => [
               styles.choiceButton,
+              twoColumn && styles.twoColumnChoiceButton,
               {
                 backgroundColor: selected
                   ? theme.colors.secondaryContainer
@@ -142,7 +154,7 @@ const SetupChoiceGroup = ({
             ]}
           >
             {option.icon && (
-              <MaterialCommunityIcons
+              <AppIcon
                 color={
                   selected
                     ? theme.colors.onSecondaryContainer
@@ -231,6 +243,7 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
   const { toggleTheme } = useContext(ThemeContext);
   const { setTextScale, textScale } = useTextSize();
   const theme = useAppTheme();
+  const { width: viewportWidth } = useWindowDimensions();
   const [isSavingTextScale, setIsSavingTextScale] = useState(false);
   const [failedTextScale, setFailedTextScale] = useState<TextScale | null>(null);
   const textScaleWritePendingRef = useRef(false);
@@ -287,6 +300,7 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
             <SetupChoiceGroup
               value={language}
               disabled={isSavingTextScale}
+              twoColumn={shouldUseTwoColumnOnboardingChoices(viewportWidth)}
               onValueChange={(value) => {
                 if (!textScaleWritePendingRef.current) {
                   setLanguage(value as SupportedLanguage);
@@ -328,6 +342,7 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
             <SetupChoiceGroup
               value={String(textScale)}
               disabled={isSavingTextScale}
+              twoColumn={shouldUseTwoColumnOnboardingChoices(viewportWidth)}
               onValueChange={(value) => {
                 const nextScale = Number(value);
                 if (isTextScale(nextScale)) void persistTextScale(nextScale);
@@ -388,7 +403,7 @@ const styles = StyleSheet.create({
   modal: {
     alignSelf: 'center',
     borderRadius: 16,
-    margin: 20,
+    marginVertical: 20,
     maxHeight: '90%',
     maxWidth: 500,
     width: '90%',
@@ -454,6 +469,9 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  twoColumnChoiceButton: {
+    flexBasis: '45%',
   },
   choiceGroup: {
     alignItems: 'stretch',

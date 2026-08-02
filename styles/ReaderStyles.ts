@@ -1,5 +1,6 @@
 import {
   DEFAULT_TEXT_SCALE,
+  getBibleReaderUiTextScale,
   scaleTypographyMetric,
   type TextScale,
 } from '@/constants/AppPreferences';
@@ -26,6 +27,7 @@ type BibleDockViewportLayoutOptions = Readonly<{
   bottomTabHeight: number;
   contentHeight: number;
   headerHeight: number;
+  hiddenContentHeight?: number;
   viewportHeight: number;
 }>;
 
@@ -42,6 +44,7 @@ export const getBibleDockViewportLayout = ({
   bottomTabHeight,
   contentHeight,
   headerHeight,
+  hiddenContentHeight,
   viewportHeight,
 }: BibleDockViewportLayoutOptions): BibleDockViewportLayout => {
   const safeViewportHeight = Math.max(
@@ -57,16 +60,27 @@ export const getBibleDockViewportLayout = ({
     safeHeaderHeight + 12,
   );
   const maxVisibleHeight = safeViewportHeight - headerAndGutter;
-  const hiddenContentHeight = safeContentHeight + safeBottomInset;
-  const visibleContentHeight = hiddenContentHeight + safeBottomTabHeight;
+  const safeHiddenContentHeight = safeNonNegativeMetric(
+    hiddenContentHeight ?? safeContentHeight,
+    safeContentHeight,
+  );
+  const hiddenDockHeight = safeHiddenContentHeight + safeBottomInset;
+  const visibleContentHeight = safeContentHeight + safeBottomInset + safeBottomTabHeight;
 
   return {
-    hiddenHeight: Math.min(hiddenContentHeight, maxVisibleHeight),
-    hiddenNeedsScroll: hiddenContentHeight > maxVisibleHeight,
+    hiddenHeight: Math.min(hiddenDockHeight, maxVisibleHeight),
+    hiddenNeedsScroll: hiddenDockHeight > maxVisibleHeight,
     maxVisibleHeight,
     visibleHeight: Math.min(visibleContentHeight, maxVisibleHeight),
     visibleNeedsScroll: visibleContentHeight > maxVisibleHeight,
   };
+};
+
+export const getCompactBibleAudioDockHeight = (effectiveTextScale: number) => {
+  const safeScale = Number.isFinite(effectiveTextScale)
+    ? Math.max(1, effectiveTextScale)
+    : 1;
+  return Math.max(56, Math.ceil(32 + 20 * safeScale));
 };
 
 /**
@@ -116,7 +130,16 @@ export const getBibleDockLayout = (
 /**
  * Shared styles for the Bible Reader and other immersive reading components.
  */
-export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
+export const createReaderStyles = (textScale: TextScale) => {
+  const uiTextScale = getBibleReaderUiTextScale(textScale);
+  const enlargedReadingLayout = textScale >= 1.75;
+  const scriptureLineHeight = (fontSize: number, defaultLineHeight: number) =>
+    scaleTypographyMetric(
+      enlargedReadingLayout ? fontSize * 1.28 : defaultLineHeight,
+      textScale,
+    );
+
+  return StyleSheet.create({
   readerContainer: { flex: 1 },
   readerHeader: {
     flexDirection: 'row',
@@ -150,14 +173,14 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
   },
   selectorText: {
     fontWeight: '700',
-    fontSize: scaleTypographyMetric(13, textScale),
-    lineHeight: scaleTypographyMetric(18, textScale),
+    fontSize: scaleTypographyMetric(13, uiTextScale),
+    lineHeight: scaleTypographyMetric(18, uiTextScale),
   },
   bibleScroll: { flex: 1 },
   bibleContent: { padding: 20, paddingBottom: 80 },
   verseText: {
     fontSize: scaleTypographyMetric(19, textScale),
-    lineHeight: scaleTypographyMetric(30, textScale),
+    lineHeight: scriptureLineHeight(19, 30),
     marginBottom: 14,
     fontFamily: 'Georgia, "Times New Roman", serif',
   },
@@ -213,11 +236,11 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: enlargedReadingLayout ? 8 : 16,
     paddingVertical: 6,
     borderRadius: 22,
     gap: 4,
-    minHeight: 44,
+    minHeight: 48,
     minWidth: 0,
     flexShrink: 1,
     flexGrow: 1,
@@ -230,26 +253,27 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
     justifyContent: 'center',
   },
   buttonPlaceholder: { width: 44 },
-  navIcon: { margin: 0, width: 44 },
+  navIcon: { margin: 0, minHeight: 48, width: 48 },
   pillText: {
     flexShrink: 1,
-    fontSize: scaleTypographyMetric(15, textScale),
-    lineHeight: scaleTypographyMetric(20, textScale),
+    fontSize: scaleTypographyMetric(15, uiTextScale),
+    lineHeight: scaleTypographyMetric(20, uiTextScale),
     fontWeight: '600',
     textAlign: 'center',
   },
   audioControlText: {
-    fontSize: scaleTypographyMetric(14, textScale),
-    lineHeight: scaleTypographyMetric(20, textScale),
+    fontSize: scaleTypographyMetric(14, uiTextScale),
+    lineHeight: scaleTypographyMetric(20, uiTextScale),
     fontWeight: '700',
   },
   audioTimeText: {
-    fontSize: scaleTypographyMetric(11, textScale),
-    lineHeight: scaleTypographyMetric(16, textScale),
+    fontSize: scaleTypographyMetric(11, uiTextScale),
+    lineHeight: scaleTypographyMetric(16, uiTextScale),
   },
   audioDock: {
     minHeight: 84,
     paddingHorizontal: 12,
+    paddingTop: 8,
   },
   audioControlRow: {
     minHeight: 52,
@@ -266,9 +290,9 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
   audioAction: { margin: 0 },
   audioPlayButton: { marginHorizontal: 2, marginVertical: 0 },
   audioSideControl: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -316,7 +340,7 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
     borderRadius: 7,
     marginLeft: -7,
   },
-  scrollContent: { paddingHorizontal: 20 },
+  scrollContent: { paddingHorizontal: enlargedReadingLayout ? 8 : 20 },
   loader: { marginTop: 50 },
   heading: {
     fontSize: scaleTypographyMetric(20, textScale),
@@ -326,8 +350,18 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
   },
   verseContainer: {
     fontSize: scaleTypographyMetric(18, textScale),
-    lineHeight: scaleTypographyMetric(28, textScale),
+    lineHeight: scriptureLineHeight(18, 28),
     marginBottom: 12,
+  },
+  selahMarker: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: scaleTypographyMetric(18, textScale),
+    fontStyle: 'italic',
+    lineHeight: scriptureLineHeight(18, 28),
+    marginBottom: 2,
+    marginTop: 4,
+    opacity: 0.7,
+    textAlign: 'right',
   },
   hebrewSubtitle: {
     fontSize: scaleTypographyMetric(16, textScale),
@@ -337,7 +371,7 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
   inlineHeading: {
     fontWeight: '700',
     fontSize: scaleTypographyMetric(14, textScale),
-    lineHeight: scaleTypographyMetric(24, textScale),
+    lineHeight: scriptureLineHeight(14, 24),
   },
   footnoteMarker: {
     fontSize: scaleTypographyMetric(12, textScale),
@@ -366,9 +400,10 @@ export const createReaderStyles = (textScale: TextScale) => StyleSheet.create({
     borderBottomWidth: 0.5,
   },
   modalItemText: {
-    fontSize: scaleTypographyMetric(16, textScale),
-    lineHeight: scaleTypographyMetric(22, textScale),
+    fontSize: scaleTypographyMetric(16, uiTextScale),
+    lineHeight: scaleTypographyMetric(22, uiTextScale),
   },
-});
+  });
+};
 
 export const ReaderStyles = createReaderStyles(DEFAULT_TEXT_SCALE);

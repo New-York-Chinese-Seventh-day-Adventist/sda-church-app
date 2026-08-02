@@ -1,7 +1,7 @@
 import { useAppTheme } from '@/constants/Themes';
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { useTextSize } from '@/constants/TextSizeContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AppIcon, type MaterialCommunityIconName } from '@/components/AppIcon';
 import React, { useMemo, useRef } from 'react';
 import {
   Animated,
@@ -18,7 +18,7 @@ interface GridMenuCardProps {
   title: string;
   subtitle?: string;
   /** MaterialCommunityIcons glyph for the decorative illustration area */
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialCommunityIconName;
   /** Pastel background color for the card */
   color: string;
   /** Icon tint — defaults to a semi-transparent dark of the card color */
@@ -90,7 +90,7 @@ export const GridMenuCard: React.FC<GridMenuCardProps> = ({
         {/* Illustration + arrow row — bottom */}
         <View pointerEvents="none" style={styles.bottomRow}>
           <View style={styles.decorIconContainer}>
-            <MaterialCommunityIcons
+            <AppIcon
               name={icon}
               size={68}
               color={resolvedIconColor}
@@ -98,8 +98,8 @@ export const GridMenuCard: React.FC<GridMenuCardProps> = ({
             />
           </View>
           {/* Diagonal arrow affordance */}
-          <View style={styles.arrowBadge}>
-            <MaterialCommunityIcons
+          <View testID="grid-menu-card-arrow-badge" style={styles.arrowBadge}>
+            <AppIcon
               name="arrow-top-right"
               size={14}
               color="#374151"
@@ -160,9 +160,9 @@ const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1], ef
     top: 0,
   },
   arrowBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: scaleTypographyMetric(28, textScale),
+    height: scaleTypographyMetric(28, textScale),
+    borderRadius: scaleTypographyMetric(14, textScale),
     backgroundColor: '#FFFFFF', // solid white
     borderWidth: 1,
     borderColor: '#374151', // crisp dark border

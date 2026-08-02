@@ -1,6 +1,12 @@
 import { GlobalHeader, UIStateContext } from '@/components/GlobalHeader';
+import { AppIcon, type MaterialCommunityIconName } from '@/components/AppIcon';
 import { LanguageContext } from '@/constants/LanguageContext';
-import { scaleTypographyMetric, type TextScale } from '@/constants/AppPreferences';
+import { APP_ICONOGRAPHY } from '@/constants/Iconography';
+import {
+  getBottomTabIconTextScale,
+  scaleTypographyMetric,
+  type TextScale,
+} from '@/constants/AppPreferences';
 import { BottomTabHeightContext } from '@/constants/BottomTabHeightContext';
 import {
   DESIGN_TOKENS,
@@ -9,7 +15,6 @@ import {
 } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Tabs, router } from 'expo-router';
 import React, { useContext, useRef, useState } from 'react';
@@ -17,9 +22,10 @@ import { Animated, LayoutChangeEvent, Platform, StyleSheet, Text, useWindowDimen
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  name: MaterialCommunityIconName;
   color: string;
   focused: boolean;
+  textScale: TextScale;
 }) {
   let iconName = props.name;
 
@@ -29,9 +35,10 @@ function TabBarIcon(props: {
   }
 
   return (
-    <MaterialCommunityIcons
+    <AppIcon
       name={iconName}
       size={DESIGN_TOKENS.ICON_SIZE_TAB}
+      textScale={getBottomTabIconTextScale(props.textScale)}
       style={{ marginBottom: -3 }}
       color={props.color}
     />
@@ -231,7 +238,12 @@ export default function TabLayout() {
               />
             ),
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <TabBarIcon name="home" color={color} focused={focused} />
+              <TabBarIcon
+                name="home"
+                color={color}
+                focused={focused}
+                textScale={textScale}
+              />
             ),
           }}
         />
@@ -265,7 +277,12 @@ export default function TabLayout() {
             // for the tab bar height while its controls animate in and out.
             sceneStyle: { paddingBottom: 0 },
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <TabBarIcon name="cross" color={color} focused={focused} />
+              <TabBarIcon
+                name="cross"
+                color={color}
+                focused={focused}
+                textScale={textScale}
+              />
             ),
           }}
           listeners={{
@@ -292,7 +309,12 @@ export default function TabLayout() {
               />
             ),
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <TabBarIcon name="bookmark-multiple" color={color} focused={focused} />
+              <TabBarIcon
+                name={APP_ICONOGRAPHY.tabs.explore.name}
+                color={color}
+                focused={focused}
+                textScale={textScale}
+              />
             ),
           }}
         />
@@ -315,7 +337,12 @@ export default function TabLayout() {
               ),
               unmountOnBlur: true as any, // Ensures the stack resets when leaving the tab
               tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-                <TabBarIcon name="account-circle" color={color} focused={focused} />
+                <TabBarIcon
+                  name="account-circle"
+                  color={color}
+                  focused={focused}
+                  textScale={textScale}
+                />
               ),
             } as any
           }

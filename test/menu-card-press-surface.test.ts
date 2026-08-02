@@ -5,6 +5,7 @@ import { StyleSheet, Text } from 'react-native';
 
 import { GridMenuCard } from '@/components/GridMenuCard';
 import { MenuCard, MenuCardSwitchVisual } from '@/components/MenuCard';
+import { AppIcon } from '@/components/AppIcon';
 import { TextSizeContext } from '@/constants/TextSizeContext';
 
 jest.mock('@/constants/Themes', () => ({
@@ -26,8 +27,9 @@ jest.mock('@expo/vector-icons', () => {
       ...props,
       testID: `icon-${props.name}`,
     });
+  MockIcon.font = {};
   MockIcon.glyphMap = {};
-  return { MaterialCommunityIcons: MockIcon };
+  return { Ionicons: MockIcon, MaterialCommunityIcons: MockIcon };
 });
 
 const renderAtScale = (element: React.ReactElement, textScale: 1 | 2) =>
@@ -70,6 +72,7 @@ describe('menu card press surfaces', () => {
     expect(view.getAllByRole('button')).toHaveLength(1);
     expect(view.getByText('Prayer').parent?.props.pointerEvents).toBe('none');
     expect(view.getByTestId('icon-hands-pray').props.pointerEvents).toBe('none');
+    expect(view.getByTestId('icon-hands-pray').props.size).toBe(64);
     expect(view.getByText('control').parent?.props.pointerEvents).toBe('none');
 
     const card = view.getByLabelText('Prayer. A private request');
@@ -80,6 +83,19 @@ describe('menu card press surfaces', () => {
     const titleStyle = StyleSheet.flatten(view.getByText('Prayer').props.style);
     expect(titleStyle.fontSize).toBe(36);
     expect(titleStyle.lineHeight).toBe(48);
+  });
+
+  it('allows reader UI icons to use a capped text scale', () => {
+    const view = renderAtScale(
+      React.createElement(AppIcon, {
+        name: 'play',
+        size: 20,
+        textScale: 1.3,
+      }),
+      2,
+    );
+
+    expect(view.getByTestId('icon-play').props.size).toBe(26);
   });
 
   it('announces a switch card description and checked state', () => {
@@ -137,6 +153,11 @@ describe('menu card press surfaces', () => {
     expect(view.getByText('Upcoming Events').parent?.props.pointerEvents).toBe(
       'none',
     );
+    expect(view.getByTestId('icon-arrow-top-right').props.size).toBe(28);
+    expect(
+      StyleSheet.flatten(view.getByTestId('grid-menu-card-arrow-badge').props.style)
+        .width,
+    ).toBe(56);
 
     const card = view.getByLabelText('Upcoming Events. Church calendar');
     expect(card.props.accessibilityLabel).toContain('Church calendar');

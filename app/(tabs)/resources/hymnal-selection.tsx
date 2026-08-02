@@ -6,6 +6,7 @@ import {
   openChineseHymnalIos,
 } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { APP_ICONOGRAPHY } from '@/constants/Iconography';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
@@ -97,7 +98,7 @@ export default function HymnalSelectionScreen() {
           <MenuCard
             title={labels.english}
             description={labels.englishSub}
-            icon="music-note"
+            icon={{ name: 'music-note' }}
             iconColor={theme.colors.tertiary}
             onPress={() =>
               router.push({
@@ -113,18 +114,18 @@ export default function HymnalSelectionScreen() {
           <MenuCard
             title={labels.chineseIos}
             description={labels.chineseIosSub}
-            icon="apple"
+            icon={APP_ICONOGRAPHY.explore.appleAppStore}
             iconColor={theme.colors.tertiary}
-            rightIcon="open-in-new"
+            rightIcon={{ name: 'open-in-new' }}
             onPress={openChineseHymnalIos}
           />
 
           <MenuCard
             title={labels.chineseAndroid}
             description={labels.chineseAndroidSub}
-            icon="google-play"
+            icon={{ name: 'google-play' }}
             iconColor={theme.colors.tertiary}
-            rightIcon="open-in-new"
+            rightIcon={{ name: 'open-in-new' }}
             onPress={openChineseHymnalAndroid}
           />
         </List.Section>

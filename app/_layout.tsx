@@ -629,6 +629,7 @@ export default function RootLayout() {
     'PlusJakartaSans-Bold': require('../assets/fonts/PlusJakartaSans-Bold.ttf'),
     [SCRIPTURE_FONT_FAMILIES.greek]: require('../assets/fonts/Gentium-Regular.ttf'),
     [SCRIPTURE_FONT_FAMILIES.hebrew]: require('../assets/fonts/EzraSIL-Regular.ttf'),
+    ionicons: require('../assets/fonts/Ionicons.ttf'),
     'material-community': require('../assets/fonts/MaterialCommunityIcons.ttf'),
   });
 

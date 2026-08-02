@@ -1,7 +1,7 @@
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { AppIcon, type MaterialCommunityIconName } from '@/components/AppIcon';
 import { type ReactNode, useMemo } from 'react';
 import {
   Platform,
@@ -21,7 +21,7 @@ interface WrappingButtonProps {
   compact?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
-  icon?: string;
+  icon?: MaterialCommunityIconName;
   labelStyle?: StyleProp<TextStyle>;
   mode?: 'contained' | 'contained-tonal' | 'outlined' | 'text';
   onPress?: () => void;
@@ -95,9 +95,9 @@ export const WrappingButton = ({
       ]}
     >
       {icon ? (
-        <MaterialCommunityIcons
+        <AppIcon
           color={resolvedTextColor}
-          name={icon as keyof typeof MaterialCommunityIcons.glyphMap}
+          name={icon}
           pointerEvents="none"
           size={20}
         />

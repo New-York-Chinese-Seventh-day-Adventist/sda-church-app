@@ -1,6 +1,6 @@
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { useTextSize } from '@/constants/TextSizeContext';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { AppIcon, type MaterialCommunityIconName } from '@/components/AppIcon';
 import { useMemo } from 'react';
 import {
   Platform,
@@ -16,7 +16,7 @@ interface WrappingActionButtonProps {
   backgroundColor?: string;
   borderColor: string;
   disabled?: boolean;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialCommunityIconName;
   label: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
@@ -58,7 +58,7 @@ export const WrappingActionButton = ({
         style,
       ]}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={textColor}
         name={icon}
         pointerEvents="none"

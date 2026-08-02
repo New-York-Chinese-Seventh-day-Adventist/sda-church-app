@@ -1,9 +1,11 @@
 import { createDocumentStyles } from '@/styles/DocumentStyles';
+import { getBibleReaderUiTextScale } from '@/constants/AppPreferences';
 import { getGlobalHeaderHeightForScale } from '@/hooks/useGlobalHeaderHeight';
 import { getBottomTabContentHeight } from '@/constants/Layout';
 import { createNavigationStyles } from '@/styles/NavigationStyles';
 import {
   createReaderStyles,
+  getCompactBibleAudioDockHeight,
   getBibleDockLayout,
   getBibleDockViewportLayout,
 } from '@/styles/ReaderStyles';
@@ -16,7 +18,7 @@ describe('Bible reader text scaling', () => {
 
     expect(StyleSheet.flatten(reader.verseText)).toMatchObject({
       fontSize: 38,
-      lineHeight: 60,
+      lineHeight: 48.64,
     });
     expect(StyleSheet.flatten(reader.detailText)).toMatchObject({
       fontSize: 32,
@@ -26,22 +28,46 @@ describe('Bible reader text scaling', () => {
       fontSize: 32,
       lineHeight: 44,
     });
+    expect(StyleSheet.flatten(reader.pillText)).toMatchObject({
+      fontSize: 19.5,
+      lineHeight: 26,
+    });
   });
 
-  it('keeps growing for uncapped operating-system font scales', () => {
-    const atTwoHundredPercent = getBibleDockLayout(800, 2);
-    const atFourHundredPercent = getBibleDockLayout(800, 4);
+  it('uses tighter scripture leading and wider reading space at 200%', () => {
+    const ordinary = createReaderStyles(1);
+    const enlarged = createReaderStyles(2);
 
-    expect(atTwoHundredPercent.stackControls).toBe(true);
-    expect(atFourHundredPercent.stackControls).toBe(true);
-    expect(atFourHundredPercent.controlHeight).toBeGreaterThan(
-      atTwoHundredPercent.controlHeight,
+    expect(StyleSheet.flatten(ordinary.scrollContent).paddingHorizontal).toBe(20);
+    expect(StyleSheet.flatten(enlarged.scrollContent).paddingHorizontal).toBe(8);
+    expect(StyleSheet.flatten(enlarged.verseContainer)).toMatchObject({
+      fontSize: 36,
+      lineHeight: 46.08,
+    });
+    expect(StyleSheet.flatten(enlarged.selahMarker)).toMatchObject({
+      fontSize: 36,
+      lineHeight: 46.08,
+    });
+    expect(StyleSheet.flatten(enlarged.pill).paddingHorizontal).toBe(8);
+  });
+
+  it('keeps Bible controls compact while honoring OS font scaling', () => {
+    const appOnlyScale = getBibleReaderUiTextScale(2);
+    const withTwoHundredPercentOsText = appOnlyScale * 2;
+    const appOnly = getBibleDockLayout(390, appOnlyScale);
+    const withOsText = getBibleDockLayout(390, withTwoHundredPercentOsText);
+
+    expect(appOnlyScale).toBe(1.3);
+    expect(appOnly.stackControls).toBe(false);
+    expect(withOsText.stackControls).toBe(true);
+    expect(withOsText.controlHeight).toBeGreaterThan(
+      appOnly.controlHeight,
     );
-    expect(atFourHundredPercent.dockHeight).toBeGreaterThan(
-      atTwoHundredPercent.dockHeight,
+    expect(withOsText.dockHeight).toBeGreaterThan(
+      appOnly.dockHeight,
     );
-    expect(atFourHundredPercent.audioDockHeight).toBeGreaterThan(
-      atTwoHundredPercent.audioDockHeight,
+    expect(withOsText.audioDockHeight).toBeGreaterThan(
+      appOnly.audioDockHeight,
     );
   });
 
@@ -67,12 +93,14 @@ describe('Bible reader text scaling', () => {
     expect(StyleSheet.flatten(enlarged.subheader).fontSize).toBe(32);
   });
 
-  it('reserves a second header row for enlarged Bible controls', () => {
-    const ordinaryHeader = getGlobalHeaderHeightForScale(2);
-    const bibleHeader = getGlobalHeaderHeightForScale(2, true);
+  it('keeps app-scaled Bible controls on one header row', () => {
+    const appOnlyScale = getBibleReaderUiTextScale(2);
+    const ordinaryHeader = getGlobalHeaderHeightForScale(appOnlyScale);
+    const bibleHeader = getGlobalHeaderHeightForScale(appOnlyScale, false);
+    const withOsText = getGlobalHeaderHeightForScale(appOnlyScale * 2, true);
 
-    expect(bibleHeader).toBeGreaterThan(ordinaryHeader);
-    expect(getGlobalHeaderHeightForScale(4, true)).toBeGreaterThan(bibleHeader);
+    expect(bibleHeader).toBe(ordinaryHeader);
+    expect(withOsText).toBeGreaterThan(bibleHeader);
   });
 
   it.each([
@@ -120,5 +148,32 @@ describe('Bible reader text scaling', () => {
     expect(viewport.visibleHeight).toBe(dock.dockHeight + bottomTabHeight);
     expect(viewport.hiddenNeedsScroll).toBe(false);
     expect(viewport.visibleNeedsScroll).toBe(false);
+  });
+
+  it('collapses a scrolling audio dock to one accessible control row', () => {
+    const effectiveScale = getBibleReaderUiTextScale(2);
+    const dock = getBibleDockLayout(390, effectiveScale);
+    const compactHeight = getCompactBibleAudioDockHeight(effectiveScale);
+    const fullContentHeight = dock.dockHeight + dock.audioDockHeight;
+    const viewport = getBibleDockViewportLayout({
+      bottomInset: 0,
+      bottomTabHeight: getBottomTabContentHeight(effectiveScale),
+      contentHeight: fullContentHeight,
+      headerHeight: getGlobalHeaderHeightForScale(effectiveScale, true),
+      hiddenContentHeight: compactHeight,
+      viewportHeight: 800,
+    });
+
+    expect(compactHeight).toBeGreaterThanOrEqual(56);
+    expect(viewport.hiddenHeight).toBe(compactHeight);
+    expect(viewport.visibleHeight).toBeGreaterThan(viewport.hiddenHeight);
+  });
+
+  it('places the audio dock breathing room above its controls', () => {
+    const reader = createReaderStyles(2);
+    const audioDock = StyleSheet.flatten(reader.audioDock);
+
+    expect(audioDock.paddingTop).toBe(8);
+    expect(audioDock).not.toHaveProperty('paddingBottom');
   });
 });

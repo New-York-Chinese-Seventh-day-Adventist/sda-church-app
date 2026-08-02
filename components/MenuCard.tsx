@@ -2,7 +2,11 @@ import { DESIGN_TOKENS } from "@/constants/Layout";
 import { scaleTypographyMetric } from "@/constants/AppPreferences";
 import { useTextSize } from "@/constants/TextSizeContext";
 import { useAppTheme } from "@/constants/Themes";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  AppIcon,
+  type AppIconProps,
+  type MaterialCommunityIconName,
+} from "@/components/AppIcon";
 import React, { useMemo } from "react";
 import {
   AccessibilityRole,
@@ -24,10 +28,10 @@ interface MenuCardProps {
   accessibilityState?: AccessibilityState;
   title: string;
   description?: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialCommunityIconName | AppIconProps;
   iconColor?: string;
   onPress?: () => void;
-  rightIcon?: keyof typeof MaterialCommunityIcons.glyphMap | null;
+  rightIcon?: MaterialCommunityIconName | AppIconProps | null;
   rightElement?: () => React.ReactNode;
   style?: ViewStyle | any;
 }
@@ -112,9 +116,9 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       activeOpacity={onPress ? 0.7 : 1}
       disabled={!onPress}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         pointerEvents="none"
-        name={icon}
+        {...(typeof icon === "string" ? { name: icon } : icon)}
         size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
         color={iconColor || theme.colors.tertiary}
       />
@@ -136,9 +140,11 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       {rightElement
         ? <View pointerEvents="none">{rightElement()}</View>
         : rightIcon && (
-            <MaterialCommunityIcons
+            <AppIcon
               pointerEvents="none"
-              name={rightIcon}
+              {...(typeof rightIcon === "string"
+                ? { name: rightIcon }
+                : rightIcon)}
               size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
               color={theme.colors.onSurfaceVariant}
             />

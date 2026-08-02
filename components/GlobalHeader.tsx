@@ -1,5 +1,8 @@
 import { getHeaderBackTarget, hasHeaderBackButton } from '@/constants/BackNavigation';
-import { scaleTypographyMetric } from '@/constants/AppPreferences';
+import {
+  getBibleReaderUiTextScale,
+  scaleTypographyMetric,
+} from '@/constants/AppPreferences';
 import { LanguageContext } from '@/constants/LanguageContext';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { getGlobalHeaderHeightForScale } from '@/hooks/useGlobalHeaderHeight';
@@ -11,7 +14,7 @@ import {
   SearchableItem,
 } from '@/constants/SearchTerms';
 import { useAppTheme } from '@/constants/Themes';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { AppIcon } from '@/components/AppIcon';
 import { router, useSegments } from 'expo-router';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -71,7 +74,10 @@ export const GlobalHeader = (props: any) => {
   const insets = useSafeAreaInsets();
   const { fontScale, width: windowWidth } = useWindowDimensions();
   const [measuredHeaderContentHeight, setMeasuredHeaderContentHeight] = useState(0);
-  const effectiveTextScale = Math.max(1, fontScale * textScale);
+  const headerTextScale = isBiblePage
+    ? getBibleReaderUiTextScale(textScale)
+    : textScale;
+  const effectiveTextScale = Math.max(1, fontScale * headerTextScale);
   const compactControlHeight = Math.ceil(44 + (effectiveTextScale - 1) * 24);
   const wrappedControlHeight = Math.max(
     compactControlHeight,
@@ -291,7 +297,12 @@ export const GlobalHeader = (props: any) => {
                 accessibilityLabel="Close search"
                 style={styles.searchCloseButton}
               >
-                <MaterialCommunityIcons name="close" size={21} color={color} />
+                <AppIcon
+                  name="close"
+                  size={21}
+                  textScale={headerTextScale}
+                  color={color}
+                />
               </Pressable>
             )
           : undefined
@@ -312,7 +323,7 @@ export const GlobalHeader = (props: any) => {
         minHeight: 0,
         paddingBottom: 0,
         paddingTop: 0,
-        fontSize: scaleTypographyMetric(16, textScale),
+        fontSize: scaleTypographyMetric(16, headerTextScale),
       }}
       iconColor={theme.colors.onSurfaceVariant}
       placeholderTextColor={theme.colors.onSurfaceVariant}
@@ -358,9 +369,10 @@ export const GlobalHeader = (props: any) => {
             accessibilityRole="button"
             accessibilityLabel="Back"
           >
-            <MaterialCommunityIcons
+            <AppIcon
               name="chevron-left"
               size={26}
+              textScale={headerTextScale}
               color={theme.dark ? '#FFFFFF' : '#17211F'}
             />
           </Pressable>
@@ -434,26 +446,28 @@ export const GlobalHeader = (props: any) => {
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons
+                    <AppIcon
                       name="translate"
                       size={18}
+                      textScale={headerTextScale}
                       color={theme.colors.primary}
                     />
                     <Text
                       style={{
                         color: theme.colors.onSurface,
-                        fontSize: scaleTypographyMetric(14, textScale),
+                        fontSize: scaleTypographyMetric(14, headerTextScale),
                         fontWeight: '700',
-                        lineHeight: scaleTypographyMetric(19, textScale),
+                        lineHeight: scaleTypographyMetric(19, headerTextScale),
                         textAlign: 'center',
                         flexShrink: 1,
                       }}
                     >
                       {bibleTranslation}
                     </Text>
-                    <MaterialCommunityIcons
+                    <AppIcon
                       name="chevron-down"
                       size={17}
+                      textScale={headerTextScale}
                       color={theme.colors.onSurfaceVariant}
                     />
                   </Pressable>
@@ -476,9 +490,10 @@ export const GlobalHeader = (props: any) => {
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons
+                    <AppIcon
                       name={bibleSavedVerseCount > 0 ? 'bookmark' : 'bookmark-outline'}
                       size={23}
+                      textScale={headerTextScale}
                       color={
                         bibleSavedVerseCount > 0
                           ? theme.colors.primary
@@ -505,9 +520,10 @@ export const GlobalHeader = (props: any) => {
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons
+                    <AppIcon
                       name="magnify"
                       size={24}
+                      textScale={headerTextScale}
                       color={theme.colors.onSurfaceVariant}
                     />
                   </Pressable>
@@ -536,8 +552,17 @@ export const GlobalHeader = (props: any) => {
                       key={isBiblePage ? `verse-${(item as any).number}` : index}
                       title={item.title}
                       titleNumberOfLines={0}
+                      titleStyle={{
+                        fontSize: scaleTypographyMetric(16, textScale),
+                        lineHeight: scaleTypographyMetric(22, textScale),
+                        fontWeight: '700',
+                      }}
                       description={item.subtitle}
                       descriptionNumberOfLines={0}
+                      descriptionStyle={{
+                        fontSize: scaleTypographyMetric(14, textScale),
+                        lineHeight: scaleTypographyMetric(20, textScale),
+                      }}
                       left={(p) => (
                         <List.Icon
                           {...p}

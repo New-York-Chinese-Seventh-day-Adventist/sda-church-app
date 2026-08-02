@@ -1,5 +1,8 @@
 import {
+  getBottomTabIconTextScale,
+  BIBLE_READER_UI_TEXT_SCALE_MAX,
   DEFAULT_TEXT_SCALE,
+  getBibleReaderUiTextScale,
   isTextScale,
   normalizeTextScale,
   parseStoredTextScale,
@@ -12,6 +15,18 @@ import {
 } from '@/constants/AppPreferences';
 
 describe('text scale preferences', () => {
+  it('caps only the Bible reader chrome at 130%', () => {
+    expect(getBibleReaderUiTextScale(1.2)).toBe(1.2);
+    expect(getBibleReaderUiTextScale(2)).toBe(
+      BIBLE_READER_UI_TEXT_SCALE_MAX,
+    );
+  });
+
+  it('caps bottom-tab icons while labels keep their full text scale', () => {
+    expect(getBottomTabIconTextScale(1.2)).toBe(1.2);
+    expect(getBottomTabIconTextScale(2)).toBe(1.3);
+  });
+
   it('accepts every 100%-200% value in exact 5% steps', () => {
     for (let index = 0; index <= 20; index += 1) {
       const value = Number(

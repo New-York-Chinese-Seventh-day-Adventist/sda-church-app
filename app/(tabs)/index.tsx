@@ -59,9 +59,8 @@ export default function HomeScreen() {
 
   const allLabels = {
     en: {
-      welcome: 'Welcome!',
       subtitle: 'Loading daily verse...',
-      verseOfDay: 'A word for your unique journey today',
+      verseOfDay: 'Today’s Verse',
       readVerse: 'Read Verse',
       shareVerse: 'Share Verse',
       livestream: 'Watch Livestream',
@@ -81,9 +80,8 @@ export default function HomeScreen() {
       locationDefault: 'New York, NY',
     },
     zh: {
-      welcome: '歡迎！',
       subtitle: '正在載入經文...',
-      verseOfDay: '今日為您預備的話語',
+      verseOfDay: '今日經文',
       readVerse: '查閱經文',
       shareVerse: '分享經文',
       livestream: '觀看直播',
@@ -102,9 +100,8 @@ export default function HomeScreen() {
       locationDefault: '紐約',
     },
     'zh-cn': {
-      welcome: '欢迎！',
       subtitle: '正在载入经文...',
-      verseOfDay: '今日为您准备的话语',
+      verseOfDay: '今日经文',
       readVerse: '查阅经文',
       shareVerse: '分享经文',
       livestream: '观看直播',
@@ -121,9 +118,8 @@ export default function HomeScreen() {
       locationDefault: '纽约',
     },
     es: {
-      welcome: '¡Bienvenido!',
       subtitle: 'Cargando versículo...',
-      verseOfDay: 'Una palabra para tu camino hoy',
+      verseOfDay: 'Versículo de hoy',
       readVerse: 'Leer Versículo',
       shareVerse: 'Compartir',
       livestream: 'Ver Transmisión',
@@ -491,22 +487,13 @@ export default function HomeScreen() {
             variant="headlineMedium"
             style={[styles.welcomeText, { color: '#FFFFFF' }]}
           >
-            {labels.welcome}
-          </Text>
-          <Text
-            variant="labelLarge"
-            style={{
-              color: '#FFFFFF',
-              opacity: 0.8,
-              marginBottom: 4,
-            }}
-          >
-            {(labels as any).verseOfDay}
+            {labels.verseOfDay}
           </Text>
           <Text
             variant="titleMedium"
             style={{
               color: '#FFFFFF',
+              alignSelf: 'stretch',
               textAlign: 'center',
               fontStyle: 'italic',
               marginTop: 4,

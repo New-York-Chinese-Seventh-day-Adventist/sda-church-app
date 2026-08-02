@@ -10,31 +10,39 @@ const languageCases = [
   {
     language: 'en' as const,
     title: 'Text size',
-    description: 'Adjust persistent app text from 100% to 200% in 5% steps.',
+    description: 'Adjust persistent app text from 100% to 200%.',
     current: 'Current selection: 100%',
     increase: 'Increase text size by five percent',
+    removedPreviewLabel: 'Live preview',
+    preview: '“I was blind, but now I see.” — John 9:25',
   },
   {
     language: 'zh' as const,
     title: '字體大小',
-    description: '將應用程式文字永久調整為 100% 至 200%，每次 5%。',
+    description: '將應用程式文字永久調整為 100% 至 200%。',
     current: '目前選擇：100%',
     increase: '將字體大小增加百分之五',
+    removedPreviewLabel: '即時預覽',
+    preview: '「我從前是眼瞎的，如今能看見了。」— 約翰福音 9:25',
   },
   {
     language: 'zh-cn' as const,
     title: '字体大小',
-    description: '将应用文字永久调整为 100% 至 200%，每次 5%。',
+    description: '将应用文字永久调整为 100% 至 200%。',
     current: '当前选择：100%',
     increase: '将字体大小增加百分之五',
+    removedPreviewLabel: '实时预览',
+    preview: '“我从前是眼瞎的，如今能看见了。”— 约翰福音 9:25',
   },
   {
     language: 'es' as const,
     title: 'Tamaño del texto',
     description:
-      'Ajusta de forma permanente el texto de la aplicación del 100% al 200% en pasos del 5%.',
+      'Ajusta de forma permanente el texto de la aplicación del 100% al 200%.',
     current: 'Selección actual: 100%',
     increase: 'Aumentar el tamaño del texto en cinco por ciento',
+    removedPreviewLabel: 'Vista previa en vivo',
+    preview: '“Yo era ciego y ahora veo.” — Juan 9:25',
   },
 ];
 
@@ -47,7 +55,15 @@ describe('TextSizeDialog', () => {
 
   it.each(languageCases)(
     'renders complete localized controls for $language',
-    ({ language, title, description, current, increase }) => {
+    ({
+      language,
+      title,
+      description,
+      current,
+      increase,
+      preview,
+      removedPreviewLabel,
+    }) => {
       const screen = renderWithPreferences(
         createElement(TextSizeDialog, { onDismiss: jest.fn(), visible: true }),
         { language },
@@ -57,6 +73,8 @@ describe('TextSizeDialog', () => {
       expect(screen.getByText(description)).toBeTruthy();
       expect(screen.getByText(current)).toBeTruthy();
       expect(screen.getByLabelText(increase)).toBeTruthy();
+      expect(screen.getByText(preview)).toBeTruthy();
+      expect(screen.queryByText(removedPreviewLabel)).toBeNull();
     },
   );
 

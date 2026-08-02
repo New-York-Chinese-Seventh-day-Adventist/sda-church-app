@@ -2,7 +2,7 @@ import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { AppIcon } from '@/components/AppIcon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo } from 'react';
 import {
@@ -68,7 +68,7 @@ export function VerseHero({
           <View pointerEvents="none" style={styles.glow} />
           <View style={styles.verseLead}>
             <View style={styles.iconDisc}>
-              <MaterialCommunityIcons
+              <AppIcon
                 name="format-quote-open"
                 size={20}
                 color="rgba(255,255,255,0.92)"

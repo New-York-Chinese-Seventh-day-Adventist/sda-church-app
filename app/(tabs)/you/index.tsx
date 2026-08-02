@@ -128,27 +128,6 @@ export default function YouScreen() {
               {labels.settings}
             </List.Subheader>
             <MenuCard
-              accessibilityRole="switch"
-              accessibilityState={{ checked: theme.dark }}
-              title={labels.darkMode}
-              description={labels.darkModeSub}
-              icon="theme-light-dark"
-              iconColor={theme.colors.primary} // Use primary color for dark mode toggle
-              rightElement={() => (
-                <MenuCardSwitchVisual
-                  active={theme.dark}
-                  activeColor={theme.colors.primary}
-                  inactiveColor={theme.colors.surfaceVariant}
-                  thumbColor={
-                    theme.dark
-                      ? theme.colors.onPrimary
-                      : theme.colors.onSurfaceVariant
-                  }
-                />
-              )}
-              onPress={() => toggleTheme()}
-            />
-            <MenuCard
               title={labels.language}
               description={labels.languageSub}
               icon="translate"
@@ -166,6 +145,27 @@ export default function YouScreen() {
               icon="format-size"
               iconColor={theme.colors.tertiary}
               onPress={() => setShowTextSize(true)}
+            />
+            <MenuCard
+              accessibilityRole="switch"
+              accessibilityState={{ checked: theme.dark }}
+              title={labels.darkMode}
+              description={labels.darkModeSub}
+              icon="theme-light-dark"
+              iconColor={theme.colors.primary}
+              rightElement={() => (
+                <MenuCardSwitchVisual
+                  active={theme.dark}
+                  activeColor={theme.colors.primary}
+                  inactiveColor={theme.colors.surfaceVariant}
+                  thumbColor={
+                    theme.dark
+                      ? theme.colors.onPrimary
+                      : theme.colors.onSurfaceVariant
+                  }
+                />
+              )}
+              onPress={() => toggleTheme()}
             />
             <MenuCard
               title={labels.privacy}

@@ -17,6 +17,7 @@ const mockCreateIcon = () => {
 };
 
 jest.mock('@expo/vector-icons', () => ({
+  Ionicons: mockCreateIcon(),
   MaterialCommunityIcons: mockCreateIcon(),
 }));
 

@@ -1,4 +1,5 @@
 import { getGlobalHeaderContentHeight } from '@/constants/Layout';
+import { getBibleReaderUiTextScale } from '@/constants/AppPreferences';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -42,8 +43,10 @@ export const useGlobalHeaderHeight = (stackBibleControls = false) => {
   return (
     insets.top +
     getGlobalHeaderHeightForScale(
-      fontScale * textScale,
-      stackBibleControls && fontScale * textScale >= 1.5,
+      fontScale *
+        (stackBibleControls ? getBibleReaderUiTextScale(textScale) : textScale),
+      stackBibleControls &&
+        fontScale * getBibleReaderUiTextScale(textScale) >= 1.5,
     )
   );
 };

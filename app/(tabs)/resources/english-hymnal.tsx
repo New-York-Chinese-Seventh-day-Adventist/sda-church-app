@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/AppIcon';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import { FlatList, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
@@ -142,7 +142,7 @@ export default function HymnalScreen() {
           style={styles.topSection}
         >
           <View style={styles.cardContent}>
-            <MaterialCommunityIcons
+            <AppIcon
               name="music-clef-treble"
               size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
               color={theme.colors.tertiary}
@@ -153,7 +153,7 @@ export default function HymnalScreen() {
                 {item.number}. {item.title}
               </Text>
             </View>
-            <MaterialCommunityIcons
+            <AppIcon
               name="open-in-new"
               size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
               color={theme.colors.onSurfaceVariant}
@@ -171,7 +171,7 @@ export default function HymnalScreen() {
             style={styles.flexButton}
           >
             <View style={styles.buttonContent}>
-              <MaterialCommunityIcons
+              <AppIcon
                 name="youtube"
                 size={24}
                 color={(theme.colors as any).brandYoutube}
@@ -214,7 +214,7 @@ export default function HymnalScreen() {
                 style={styles.flexButton}
               >
                 <View style={styles.buttonContent}>
-                  <MaterialCommunityIcons
+                  <AppIcon
                     name="book-cross"
                     size={22}
                     color={theme.colors.primary}
@@ -276,7 +276,7 @@ export default function HymnalScreen() {
               variant="bodySmall"
               style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
             >
-              <MaterialCommunityIcons
+              <AppIcon
                 name="music-clef-treble"
                 size={14}
                 color={theme.colors.onSurfaceVariant}

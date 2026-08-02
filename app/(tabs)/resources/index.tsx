@@ -7,6 +7,7 @@ import {
   openZoomClass,
 } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { APP_ICONOGRAPHY } from '@/constants/Iconography';
 import { useAppTheme } from '@/constants/Themes';
 import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
@@ -149,7 +150,7 @@ export default function ResourcesScreen() {
             <MenuCard
               title={labels.hymnal}
               description={labels.hymnalSub}
-              icon="music-note"
+              icon={{ name: 'music-note' }}
               iconColor={theme.colors.tertiary}
               onPress={() =>
                 router.push({
@@ -162,16 +163,16 @@ export default function ResourcesScreen() {
             <MenuCard
               title={labels.sabbathSchool}
               description={labels.sabbathSchoolSub}
-              icon="book-open-variant"
+              icon={APP_ICONOGRAPHY.explore.sabbathSchool}
               iconColor={theme.colors.tertiary}
-              rightIcon="open-in-new"
+              rightIcon={{ name: 'open-in-new' }}
               onPress={() => openSabbathSchool(language)}
             />
 
             <MenuCard
               title={labels.library}
               description={labels.librarySub}
-              icon="bookshelf"
+              icon={APP_ICONOGRAPHY.explore.library}
               iconColor={theme.colors.tertiary}
               onPress={() => {}} // TODO: Implement library page
             />
@@ -190,28 +191,28 @@ export default function ResourcesScreen() {
             <MenuCard
               title={labels.youtube}
               description={labels.youtubeSub}
-              icon="youtube"
+              icon={{ name: 'youtube' }}
               iconColor={(theme.colors as any).brandYoutube}
               onPress={openSermonArchive}
-              rightIcon="open-in-new"
+              rightIcon={{ name: 'open-in-new' }}
             />
 
             <MenuCard
               title={labels.spotify}
               description={labels.spotifySub}
-              icon="spotify"
+              icon={{ name: 'spotify' }}
               iconColor={(theme.colors as any).brandSpotify}
               onPress={openSpotifyPodcast}
-              rightIcon="open-in-new"
+              rightIcon={{ name: 'open-in-new' }}
             />
 
             <MenuCard
               title={labels.zoomClass}
               description={labels.zoomSub}
-              icon="video"
+              icon={{ name: 'video' }}
               iconColor={(theme.colors as any).brandZoom}
               onPress={openZoomClass}
-              rightIcon="open-in-new"
+              rightIcon={{ name: 'open-in-new' }}
             />
           </List.Section>
         </View>

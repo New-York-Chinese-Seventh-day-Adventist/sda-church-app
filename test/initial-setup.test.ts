@@ -1,4 +1,7 @@
-import { InitialSetup } from '@/components/InitialSetup';
+import {
+  InitialSetup,
+  shouldUseTwoColumnOnboardingChoices,
+} from '@/components/InitialSetup';
 import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import { createElement } from 'react';
 import { renderWithPreferences } from './helpers/render-preferences';
@@ -35,6 +38,26 @@ const languageCases = [
 ];
 
 describe('InitialSetup', () => {
+  it('uses two-column choice grids on iPhone-width screens', () => {
+    expect(shouldUseTwoColumnOnboardingChoices(393)).toBe(true);
+    expect(shouldUseTwoColumnOnboardingChoices(430)).toBe(true);
+    expect(shouldUseTwoColumnOnboardingChoices(431)).toBe(false);
+  });
+
+  it('offers and persists the 200% onboarding text-size preset', async () => {
+    const setTextScale = jest.fn().mockResolvedValue(undefined);
+    const screen = renderWithPreferences(
+      createElement(InitialSetup, { onComplete: jest.fn() }),
+      { setTextScale },
+    );
+
+    fireEvent.press(screen.getByLabelText('200 percent text size'));
+
+    await waitFor(() => {
+      expect(setTextScale).toHaveBeenCalledWith(2);
+    });
+  });
+
   it('exposes every wrapping preset as an independent radio control', () => {
     const setLanguage = jest.fn();
     const toggleTheme = jest.fn();
@@ -43,7 +66,7 @@ describe('InitialSetup', () => {
       { setLanguage, toggleTheme },
     );
 
-    expect(screen.getAllByRole('radio')).toHaveLength(9);
+    expect(screen.getAllByRole('radio')).toHaveLength(10);
     expect(screen.getByRole('radio', { name: 'EN' }).props.accessibilityState)
       .toMatchObject({ checked: true, disabled: false });
 
@@ -74,6 +97,7 @@ describe('InitialSetup', () => {
       expect(screen.getByText('100%')).toBeTruthy();
       expect(screen.getByText('125%')).toBeTruthy();
       expect(screen.getByText('150%')).toBeTruthy();
+      expect(screen.getByText('200%')).toBeTruthy();
 
       fireEvent.press(screen.getByLabelText(option));
       expect(screen.getByText(saving)).toBeTruthy();

@@ -7,7 +7,7 @@ import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import { useHeroHeaderTitle } from '@/hooks/useHeroHeaderTitle';
 import { useDocumentStyles } from '@/styles/DocumentStyles';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { AppIcon } from '@/components/AppIcon';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext } from 'react';
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -401,7 +401,7 @@ export default function AboutSDAScreen() {
                 mode="contained"
               >
                 <View style={styles.pillarContent}>
-                  <MaterialCommunityIcons
+                  <AppIcon
                     name={item.icon as any}
                     size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
                     color={theme.colors.tertiary}
@@ -443,7 +443,7 @@ export default function AboutSDAScreen() {
                 mode="contained"
               >
                 <View style={styles.cardHeader}>
-                  <MaterialCommunityIcons
+                  <AppIcon
                     name={item.icon as any}
                     size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
                     color={theme.colors.tertiary}
