@@ -9,6 +9,7 @@
     "check:text-scale": "node scripts/check-text-scale-coverage.mjs",
     "sync-version": "node public/sync-version.js",
     "test": "jest --runInBand",
+    "test:integration:bulletin": "node test/integration/bulletin-api.mjs",
     "typecheck": "tsc --noEmit",
     "web": "expo start --web",
     "deploy": "node public/deploy-web.js $@"
@@ -19,7 +20,8 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.1.8",
     "expo": "~55.0.23",
-    "expo-av": "^16.0.8",
+    "expo-asset": "~55.0.17",
+    "expo-audio": "~55.0.15",
     "expo-blur": "~55.0.14",
     "expo-build-properties": "~55.0.13",
     "expo-constants": "~55.0.16",

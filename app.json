@@ -45,6 +45,14 @@
     "plugins": [
       "expo-router",
       "expo-localization",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true,
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
       "./withAndroidSDKOverride"
     ]
   }

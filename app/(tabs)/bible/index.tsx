@@ -1,7 +1,7 @@
 import { UIStateContext } from '@/components/GlobalHeader';
 import { AppIcon } from '@/components/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Audio } from 'expo-av';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -37,6 +37,10 @@ import { getBottomTabContentHeight } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { SCRIPTURE_FONT_FAMILIES, useAppTheme } from '@/constants/Themes';
 import { useGlobalHeaderHeight } from '@/hooks/useGlobalHeaderHeight';
+import {
+  activateBibleAudioLockScreen,
+  configureBibleAudioPlayback,
+} from '@/services/BibleAudioService';
 import * as BibleService from '@/services/BibleService';
 import {
   getSavedVerseKey,
@@ -47,7 +51,6 @@ import {
 import { useNavigationStyles } from '@/styles/NavigationStyles';
 import {
   createReaderStyles,
-  getCompactBibleAudioDockHeight,
   getBibleDockLayout,
   getBibleDockViewportLayout,
 } from '@/styles/ReaderStyles';
@@ -110,7 +113,6 @@ const uiLabels = {
     savedVersesSubtitle: 'Shown in {translation}',
     noSavedVerses: 'Your saved verses will appear here.',
     audioPlayer: 'Bible audio',
-    showAudioControls: 'Show full Bible audio controls',
     audio: 'Audio',
     audioUnavailable: 'Audio unavailable for this chapter',
     back10: 'Back 10 seconds',
@@ -155,7 +157,6 @@ const uiLabels = {
     savedVersesSubtitle: '以 {translation} 顯示',
     noSavedVerses: '您儲存的經文會顯示在這裡。',
     audioPlayer: '聖經有聲書',
-    showAudioControls: '顯示完整聖經有聲書控制項',
     audio: '有聲書',
     audioUnavailable: '此章節沒有有聲版本',
     back10: '後退 10 秒',
@@ -200,7 +201,6 @@ const uiLabels = {
     savedVersesSubtitle: '以 {translation} 显示',
     noSavedVerses: '您保存的经文会显示在这里。',
     audioPlayer: '圣经有声书',
-    showAudioControls: '显示完整圣经有声书控件',
     audio: '有声书',
     audioUnavailable: '此章节没有有声版本',
     back10: '后退 10 秒',
@@ -245,7 +245,6 @@ const uiLabels = {
     savedVersesSubtitle: 'Mostrados en {translation}',
     noSavedVerses: 'Tus versículos guardados aparecerán aquí.',
     audioPlayer: 'Audio de la Biblia',
-    showAudioControls: 'Mostrar todos los controles de audio bíblico',
     audio: 'Audio',
     audioUnavailable: 'Audio no disponible para este capítulo',
     back10: 'Retroceder 10 segundos',
@@ -302,23 +301,33 @@ export default function BibleScreen() {
       : Math.max(0, measuredBottomTabHeight - bottomDockInset);
   const { language, languageSelectionRevision } = useContext(LanguageContext);
   const { menuAnim, setMenuVisible: setGlobalMenuVisible } = useContext(UIStateContext);
-  const [menuVisible, setMenuVisible] = useState(true);
 
   const {
     bookId: paramBookId,
     chapter: paramChapter,
     translationId: paramTransId,
+    verseStart: paramVerseStart,
+    verseEnd: paramVerseEnd,
+    referenceRequest: paramReferenceRequest,
     backTo: paramBackTo,
   } = useLocalSearchParams<{
     bookId?: string;
     chapter?: string;
     translationId?: string;
+    verseStart?: string;
+    verseEnd?: string;
+    referenceRequest?: string;
     backTo?: string;
   }>();
 
   const labels = uiLabels[language as keyof typeof uiLabels] || uiLabels.en;
   const translationParamSignature = paramTransId
     ? `${paramTransId}:${paramBookId || ''}:${paramChapter || ''}`
+    : null;
+  const scriptureParamSignature = paramBookId && paramChapter
+    ? `${paramTransId || ''}:${paramBookId}:${paramChapter}:${paramVerseStart || ''}:${
+        paramVerseEnd || ''
+      }:${paramReferenceRequest || ''}`
     : null;
   const getTranslationLabel = (
     translation: (typeof BibleService.SUPPORTED_TRANSLATIONS)[number],
@@ -343,6 +352,8 @@ export default function BibleScreen() {
   const initialBookId = useRef<string | null>(null);
   const handledLanguageSelectionRevision = useRef(languageSelectionRevision);
   const handledTranslationParamSignature = useRef<string | null>(null);
+  const handledScriptureParamSignature = useRef<string | null>(null);
+  const pendingScriptureRange = useRef<{ start: number; end: number } | null>(null);
 
   // Data state
   const [books, setBooks] = useState<BibleService.TranslationBook[]>([]);
@@ -383,16 +394,9 @@ export default function BibleScreen() {
   const clearSelection = () => setSelectedVerses(new Set());
   const isSelectionActive = selectedVerses.size > 0;
 
-  const updateMenuVisibility = (visible: boolean) => {
-    setMenuVisible(visible);
-    setGlobalMenuVisible(visible);
-  };
-
   useEffect(() => {
-    if (isSelectionActive && !menuVisible) {
-      updateMenuVisibility(true);
-    }
-  }, [isSelectionActive]);
+    if (isSelectionActive) setGlobalMenuVisible(true);
+  }, [isSelectionActive, setGlobalMenuVisible]);
 
   // Load selection from storage on mount
   useEffect(() => {
@@ -514,6 +518,35 @@ export default function BibleScreen() {
     books,
   ]);
 
+  useEffect(() => {
+    if (
+      !isPersistenceLoaded ||
+      !scriptureParamSignature ||
+      handledScriptureParamSignature.current === scriptureParamSignature
+    ) {
+      return;
+    }
+
+    handledScriptureParamSignature.current = scriptureParamSignature;
+    const start = Number(paramVerseStart);
+    const requestedEnd = Number(paramVerseEnd);
+    if (!Number.isInteger(start) || start < 1) {
+      pendingScriptureRange.current = null;
+      return;
+    }
+
+    pendingScriptureRange.current = {
+      start,
+      end:
+        Number.isInteger(requestedEnd) && requestedEnd >= start ? requestedEnd : start,
+    };
+  }, [
+    isPersistenceLoaded,
+    scriptureParamSignature,
+    paramVerseStart,
+    paramVerseEnd,
+  ]);
+
   // Keep the Bible dock visible at the bottom of the screen at all times.
   // We only animate the height so it "drops" down to the bottom when the tab bar hides.
   const dockTranslateY = 0;
@@ -541,8 +574,9 @@ export default function BibleScreen() {
     useState<SleepTimerSetting>(null);
   const [sleepTimerVisible, setSleepTimerVisible] = useState(false);
   const [scrubPositionMillis, setScrubPositionMillis] = useState<number | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const audioLoadIdRef = useRef(0);
+  const audioPlayer = useAudioPlayer(null, { updateInterval: 250 });
+  const audioStatus = useAudioPlayerStatus(audioPlayer);
+  const loadedAudioUrlRef = useRef<string | null>(null);
   const isScrubbingRef = useRef(false);
   const audioScrubberWidth = useRef(1);
   const sleepTimerSettingRef = useRef<SleepTimerSetting>(null);
@@ -572,7 +606,7 @@ export default function BibleScreen() {
       sleepTimerTimeoutRef.current = setTimeout(async () => {
         setShouldAutoPlay(false);
         try {
-          await soundRef.current?.pauseAsync();
+          audioPlayer.pause();
         } catch (e) {
           console.error('Sleep timer pause error:', e);
         } finally {
@@ -584,24 +618,20 @@ export default function BibleScreen() {
     }
   };
 
-  /**
-   * Handles automatic audio transition when a track finishes.
-   */
-  const onPlaybackStatusUpdate = (status: any) => {
-    if (!status.isLoaded) {
-      if (status.error) setIsAudioLoading(false);
-      return;
-    }
-
-    setIsAudioLoading(!!status.isBuffering);
-    setIsPlaying(status.isPlaying);
-    setAudioDurationMillis(status.durationMillis || 0);
-    setAudioBufferedMillis(status.playableDurationMillis || status.positionMillis || 0);
+  useEffect(() => {
+    const positionMillis = audioStatus.currentTime * 1000;
+    setIsAudioLoading(
+      loadedAudioUrlRef.current !== null &&
+        (!audioStatus.isLoaded || audioStatus.isBuffering),
+    );
+    setIsPlaying(audioStatus.playing);
+    setAudioDurationMillis(audioStatus.duration * 1000);
+    setAudioBufferedMillis(positionMillis);
     if (!isScrubbingRef.current) {
-      setAudioPositionMillis(status.positionMillis || 0);
+      setAudioPositionMillis(positionMillis);
     }
 
-    if (status.didJustFinish) {
+    if (audioStatus.didJustFinish) {
       setIsPlaying(false);
       if (sleepTimerSettingRef.current === 'chapter') {
         clearSleepTimer();
@@ -614,7 +644,7 @@ export default function BibleScreen() {
         navigateToChapter('next');
       }
     }
-  };
+  }, [audioStatus, isLastChapter]);
 
   const toggleAudio = async () => {
     const audioLinks = chapterData?.thisChapterAudioLinks;
@@ -625,32 +655,24 @@ export default function BibleScreen() {
 
     try {
       if (isPlaying) {
-        await soundRef.current?.pauseAsync();
+        audioPlayer.pause();
       } else {
-        if (!soundRef.current) {
+        await configureBibleAudioPlayback();
+        if (loadedAudioUrlRef.current !== audioUrl) {
           setIsAudioLoading(true);
-          const loadId = ++audioLoadIdRef.current;
-          const { sound, status } = await Audio.Sound.createAsync(
-            { uri: audioUrl as string },
-            {
-              shouldPlay: true,
-              rate: playbackRate,
-              shouldCorrectPitch: true,
-              progressUpdateIntervalMillis: 250,
-            },
-            undefined,
-            false,
-          );
-          if (loadId !== audioLoadIdRef.current) {
-            await sound.unloadAsync();
-            return;
-          }
-          soundRef.current = sound;
-          sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-          onPlaybackStatusUpdate(status);
-        } else {
-          await soundRef.current.playAsync();
+          loadedAudioUrlRef.current = audioUrl as string;
+          audioPlayer.replace({
+            uri: audioUrl as string,
+            name: `${book?.name || labels.bible} ${chapterNum}`,
+          });
+          audioPlayer.setPlaybackRate(playbackRate, 'high');
+          activateBibleAudioLockScreen(audioPlayer, {
+            title: `${book?.name || labels.bible} ${chapterNum}`,
+            artist: supportedTranslation.name,
+            albumTitle: labels.audioPlayer,
+          });
         }
+        audioPlayer.play();
       }
     } catch (e) {
       setIsAudioLoading(false);
@@ -682,7 +704,7 @@ export default function BibleScreen() {
     );
     setAudioPositionMillis(clampedPosition);
     try {
-      await soundRef.current?.setPositionAsync(clampedPosition);
+      await audioPlayer.seekTo(clampedPosition / 1000);
     } catch (e) {
       console.error('Audio seek error:', e);
     }
@@ -696,7 +718,7 @@ export default function BibleScreen() {
     const nextRate = playbackRate === 1 ? 1.5 : playbackRate === 1.5 ? 2 : 1;
     setPlaybackRate(nextRate);
     try {
-      await soundRef.current?.setRateAsync(nextRate, true);
+      audioPlayer.setPlaybackRate(nextRate, 'high');
     } catch (e) {
       console.error('Audio playback speed error:', e);
     }
@@ -1113,23 +1135,17 @@ export default function BibleScreen() {
     }
   };
 
-  /**
-   * Scroll handler to toggle Reader Mode (hiding/showing menus)
-   */
+  /** Hides the surrounding app chrome while keeping Bible controls visible. */
   const handleScroll = (event: any) => {
-    if (isSelectionActive) return; // Don't hide menus while selecting
+    if (isSelectionActive) return;
     const currentOffset = event.nativeEvent.contentOffset.y;
-    // Ignore bounces
     if (currentOffset < 0) return;
 
-    // If we've scrolled more than a small threshold, determine direction
     if (Math.abs(currentOffset - lastScrollY.current) > 15) {
       if (currentOffset > lastScrollY.current && currentOffset > 100) {
-        // Scrolling down: Hide menus
-        updateMenuVisibility(false);
+        setGlobalMenuVisible(false);
       } else {
-        // Scrolling up: Show menus
-        updateMenuVisibility(true);
+        setGlobalMenuVisible(true);
       }
       lastScrollY.current = currentOffset;
     }
@@ -1137,8 +1153,8 @@ export default function BibleScreen() {
 
   // Scroll to top when chapter content changes
   useEffect(() => {
-    // Ensure menus are visible on mount or chapter change
-    updateMenuVisibility(true);
+    // Restore the surrounding app chrome on mount or chapter change.
+    setGlobalMenuVisible(true);
 
     if (chapterData) {
       clearSelection();
@@ -1149,11 +1165,10 @@ export default function BibleScreen() {
 
     // Stop and unload audio when the chapter changes or the component unmounts
     return () => {
-      audioLoadIdRef.current += 1;
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
+      audioPlayer.pause();
+      audioPlayer.clearLockScreenControls();
+      audioPlayer.replace(null);
+      loadedAudioUrlRef.current = null;
       isScrubbingRef.current = false;
       setIsPlaying(false);
       setIsAudioLoading(false);
@@ -1162,7 +1177,7 @@ export default function BibleScreen() {
       setAudioBufferedMillis(0);
       setScrubPositionMillis(null);
       // Always restore menus when leaving the reader
-      updateMenuVisibility(true);
+      setGlobalMenuVisible(true);
     };
   }, [chapterData, setGlobalMenuVisible]);
 
@@ -1178,6 +1193,45 @@ export default function BibleScreen() {
     }, 250);
     return () => clearTimeout(timeout);
   }, [chapterData]);
+
+  useEffect(() => {
+    const range = pendingScriptureRange.current;
+    if (
+      !chapterData ||
+      !range ||
+      chapterData.book.id !== paramBookId ||
+      chapterData.chapter.number !== Number(paramChapter) ||
+      chapterData.translation.id !== paramTransId
+    ) {
+      return;
+    }
+
+    const targetVerse = chapterData.chapter.content.find(
+      (content): content is BibleService.ChapterVerse =>
+        content.type === 'verse' && content.number === range.start,
+    );
+
+    if (!targetVerse) {
+      pendingScriptureRange.current = null;
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      const verseY = versePositions.current[targetVerse.number];
+      if (verseY !== undefined) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, verseY - 20), animated: true });
+      }
+      pendingScriptureRange.current = null;
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [
+    chapterData,
+    scriptureParamSignature,
+    paramBookId,
+    paramChapter,
+    paramTransId,
+  ]);
 
   /**
    * Renders individual content items (text, formatted text, footnotes, etc.)
@@ -1596,17 +1650,12 @@ export default function BibleScreen() {
     (hasChapterAudio ? dockLayout.audioDockHeight : 0) +
     (isSelectionActive ? dockLayout.selectionBarHeight : 0);
   const fullDockContentHeight = dockLayout.dockHeight + dockExtraHeight;
-  const compactAudioDockHeight = getCompactBibleAudioDockHeight(effectiveTextScale);
-  const canCompactAudioDock = hasChapterAudio && !isSelectionActive;
-  const isCompactAudioDock = canCompactAudioDock && !menuVisible;
   const dockViewportLayout = getBibleDockViewportLayout({
     bottomInset: bottomDockInset,
     bottomTabHeight: bottomTabContentHeight,
     contentHeight: fullDockContentHeight,
     headerHeight,
-    hiddenContentHeight: canCompactAudioDock
-      ? compactAudioDockHeight
-      : fullDockContentHeight,
+    hiddenContentHeight: fullDockContentHeight,
     viewportHeight,
   });
   const animatedControlDockHeight = menuAnim.interpolate({
@@ -1736,6 +1785,33 @@ export default function BibleScreen() {
     </View>
   );
 
+  const renderChapterNavigationDock = () => (
+    <View
+      style={[
+        ReaderStyles.dockInner,
+        dockLayout.stackControls && styles.stackedDockInner,
+        { height: dockLayout.dockHeight },
+        fullscreenEdgeInset > 0 && { paddingHorizontal: fullscreenEdgeInset },
+      ]}
+    >
+      {dockLayout.stackControls ? (
+        <>
+          {renderChapterSelectors()}
+          <View style={styles.stackedNavigationRow}>
+            <View style={ReaderStyles.sideSlot}>{renderPreviousChapterButton()}</View>
+            <View style={ReaderStyles.sideSlot}>{renderNextChapterButton()}</View>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={ReaderStyles.sideSlot}>{renderPreviousChapterButton()}</View>
+          {renderChapterSelectors()}
+          <View style={ReaderStyles.sideSlot}>{renderNextChapterButton()}</View>
+        </>
+      )}
+    </View>
+  );
+
   return (
     <View style={NavigationStyles.container}>
       <Stack.Screen
@@ -1821,75 +1897,6 @@ export default function BibleScreen() {
           nestedScrollEnabled
           showsVerticalScrollIndicator={dockNeedsVerticalScroll}
         >
-
-        {isCompactAudioDock ? (
-          <View
-            style={[
-              styles.compactAudioDock,
-              { minHeight: compactAudioDockHeight },
-            ]}
-          >
-            <IconButton
-              icon={isPlaying ? 'pause' : 'play'}
-              mode="contained"
-              containerColor={theme.colors.tertiary}
-              iconColor={theme.colors.onPrimary}
-              size={scaleTypographyMetric(24, bibleUiTextScale)}
-              onPress={toggleAudio}
-              disabled={isAudioLoading && !soundRef.current}
-              accessibilityLabel={labels.audioPlayer}
-              style={styles.compactAudioPlayButton}
-            />
-            <View style={styles.compactAudioDetails}>
-              <Text
-                numberOfLines={1}
-                style={[
-                  styles.compactAudioTitle,
-                  { color: theme.colors.onSurface },
-                ]}
-              >
-                {book?.name || labels.bible} {chapterNum}
-              </Text>
-              <View
-                style={[
-                  styles.compactAudioTrack,
-                  { backgroundColor: theme.colors.outlineVariant },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.compactAudioProgress,
-                    {
-                      backgroundColor: theme.colors.tertiary,
-                      width: `${
-                        audioDurationMillis
-                          ? Math.min(
-                              100,
-                              (audioPositionMillis / audioDurationMillis) * 100,
-                            )
-                          : 0
-                      }%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel={labels.showAudioControls}
-              onPress={() => updateMenuVisibility(true)}
-              style={styles.compactAudioExpandButton}
-            >
-              <AppIcon
-                name="chevron-up"
-                size={20}
-                textScale={bibleUiTextScale}
-                color={theme.colors.onSurfaceVariant}
-              />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <>
 
         {/* Selection Actions Bar (Integrated) */}
         {isSelectionActive && (
@@ -2010,7 +2017,7 @@ export default function BibleScreen() {
                   icon="rewind-10"
                   size={scaleTypographyMetric(26, bibleUiTextScale)}
                   onPress={() => skipAudio(-10000)}
-                  disabled={!soundRef.current || !audioDurationMillis}
+                  disabled={!loadedAudioUrlRef.current || !audioDurationMillis}
                   accessibilityLabel={labels.back10}
                   style={ReaderStyles.audioAction}
                 />
@@ -2021,7 +2028,7 @@ export default function BibleScreen() {
                   iconColor={theme.colors.onPrimary}
                   size={scaleTypographyMetric(26, bibleUiTextScale)}
                   onPress={toggleAudio}
-                  disabled={isAudioLoading && !soundRef.current}
+                  disabled={isAudioLoading && !loadedAudioUrlRef.current}
                   accessibilityLabel={labels.audioPlayer}
                   style={ReaderStyles.audioPlayButton}
                 />
@@ -2029,7 +2036,7 @@ export default function BibleScreen() {
                   icon="fast-forward-30"
                   size={scaleTypographyMetric(26, bibleUiTextScale)}
                   onPress={() => skipAudio(30000)}
-                  disabled={!soundRef.current || !audioDurationMillis}
+                  disabled={!loadedAudioUrlRef.current || !audioDurationMillis}
                   accessibilityLabel={labels.forward30}
                   style={ReaderStyles.audioAction}
                 />
@@ -2188,40 +2195,10 @@ export default function BibleScreen() {
                 </Text>
               )}
             </View>
-
           </View>
         )}
 
-        <View
-          style={[
-            ReaderStyles.dockInner,
-            dockLayout.stackControls && styles.stackedDockInner,
-            { height: dockLayout.dockHeight },
-            fullscreenEdgeInset > 0 && { paddingHorizontal: fullscreenEdgeInset },
-          ]}
-        >
-          {dockLayout.stackControls ? (
-            <>
-              {renderChapterSelectors()}
-              <View style={styles.stackedNavigationRow}>
-                <View style={ReaderStyles.sideSlot}>
-                  {renderPreviousChapterButton()}
-                </View>
-                <View style={ReaderStyles.sideSlot}>{renderNextChapterButton()}</View>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={ReaderStyles.sideSlot}>
-                {renderPreviousChapterButton()}
-              </View>
-              {renderChapterSelectors()}
-              <View style={ReaderStyles.sideSlot}>{renderNextChapterButton()}</View>
-            </>
-          )}
-        </View>
-          </>
-        )}
+        {renderChapterNavigationDock()}
         <Animated.View style={{ height: animatedDockBottomClearance }} />
         </ScrollView>
       </Animated.View>
@@ -2756,46 +2733,6 @@ const createStyles = (textScale: TextScale, uiTextScale: TextScale) => StyleShee
   },
   controlDockScrollContent: {
     flexGrow: 1,
-  },
-  compactAudioDock: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  compactAudioPlayButton: {
-    margin: 0,
-    minHeight: 48,
-    minWidth: 48,
-  },
-  compactAudioDetails: {
-    flex: 1,
-    gap: 6,
-    minWidth: 0,
-  },
-  compactAudioTitle: {
-    fontSize: scaleTypographyMetric(14, uiTextScale),
-    fontWeight: '700',
-    lineHeight: scaleTypographyMetric(18, uiTextScale),
-  },
-  compactAudioTrack: {
-    borderRadius: 2,
-    height: 4,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  compactAudioProgress: {
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    top: 0,
-  },
-  compactAudioExpandButton: {
-    alignItems: 'center',
-    height: 48,
-    justifyContent: 'center',
-    width: 48,
   },
   verseDetailModalContent: {
     maxHeight: '94%',
