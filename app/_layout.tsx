@@ -1,5 +1,6 @@
 import { InitialSetup } from '@/components/InitialSetup';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { PwaInstallProvider } from '@/components/PwaInstallProvider';
 import {
   DEFAULT_TEXT_SCALE,
   parseStoredTextScale,
@@ -16,6 +17,7 @@ import {
   SupportedLanguage,
 } from '@/constants/LanguageContext';
 import { getBottomTabContentHeight } from '@/constants/Layout';
+import { usePwaInstall } from '@/constants/PwaInstallContext';
 import { TextSizeContext } from '@/constants/TextSizeContext';
 import {
   AppTheme,
@@ -38,6 +40,7 @@ import {
   PWA_UPDATE_LAST_CHECK_KEY,
   waitForServiceWorkerInstallation,
 } from '@/services/PwaUpdateService';
+import { isFirstRunInstallPromptEligible } from '@/services/PwaInstallGuidance';
 import packageJson from '@/package.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider } from '@react-navigation/native';
@@ -80,14 +83,6 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-};
-
 const isInstalledPwa = () => {
   if (
     Platform.OS !== 'web' ||
@@ -122,49 +117,6 @@ const reloadAfterUpdate = () => {
     return;
   }
   reloadFromCdn();
-};
-
-const isAndroidChromeBrowser = () => {
-  if (
-    Platform.OS !== 'web' ||
-    typeof window === 'undefined' ||
-    typeof navigator === 'undefined' ||
-    isInstalledPwa()
-  ) {
-    return false;
-  }
-
-  const userAgent = navigator.userAgent;
-  const navigatorWithUserAgentData = navigator as Navigator & {
-    userAgentData?: { brands?: { brand: string }[] };
-  };
-  const brands = navigatorWithUserAgentData.userAgentData?.brands;
-  const isGoogleChrome = brands?.length
-    ? brands.some(({ brand }) => brand === 'Google Chrome')
-    : /Chrome\//i.test(userAgent) &&
-      !/(?:EdgA|OPR|SamsungBrowser|YaBrowser|DuckDuckGo)\//i.test(userAgent);
-
-  return /Android/i.test(userAgent) && isGoogleChrome;
-};
-
-const isIosSafariBrowser = () => {
-  if (
-    Platform.OS !== 'web' ||
-    typeof navigator === 'undefined' ||
-    isInstalledPwa()
-  ) {
-    return false;
-  }
-
-  const userAgent = navigator.userAgent;
-  const isIosDevice =
-    /iPad|iPhone|iPod/i.test(userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const isSafari =
-    /Safari\//i.test(userAgent) &&
-    !/(?:CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo)\//i.test(userAgent);
-
-  return isIosDevice && isSafari;
 };
 
 const matchSupportedLanguage = (
@@ -240,6 +192,16 @@ export const UpdateContext = createContext<{
 });
 
 export default function RootLayout() {
+  // Capture one-shot browser installation events immediately, even while
+  // settings and fonts are still loading inside the application shell.
+  return (
+    <PwaInstallProvider>
+      <RootLayoutContent />
+    </PwaInstallProvider>
+  );
+}
+
+function RootLayoutContent() {
   const [language, setLanguage] = useState<SupportedLanguage>(DEFAULT_LANG);
   const [languageSelectionRevision, setLanguageSelectionRevision] = useState(0);
   const colorScheme = useColorScheme();
@@ -252,9 +214,6 @@ export default function RootLayout() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<any>(null);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
-  const [installPrompt, setInstallPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-  const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const updateCheckInProgress = useRef(false);
   const lastUpdateCheckAt = useRef(0);
   const updateStatusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -286,29 +245,6 @@ export default function RootLayout() {
     },
     [],
   );
-
-  useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-
-    const onBeforeInstallPrompt = (event: Event) => {
-      if (!isAndroidChromeBrowser()) return;
-
-      event.preventDefault();
-      setInstallPrompt(event as BeforeInstallPromptEvent);
-    };
-    const onAppInstalled = () => {
-      setInstallPrompt(null);
-      setInstallPromptDismissed(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    window.addEventListener('appinstalled', onAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', onAppInstalled);
-    };
-  }, []);
 
   useEffect(() => {
     if (
@@ -725,27 +661,6 @@ export default function RootLayout() {
     setShowSetup(false);
   };
 
-  const handleInstall = async () => {
-    setInstallPromptDismissed(true);
-
-    if (isIosSafariBrowser()) {
-      await openIosPwaInstallGuide();
-      return;
-    }
-
-    if (!installPrompt || !isAndroidChromeBrowser()) return;
-
-    const prompt = installPrompt;
-    setInstallPrompt(null);
-
-    try {
-      await prompt.prompt();
-      await prompt.userChoice;
-    } catch (error) {
-      console.warn('Unable to show the PWA install prompt', error);
-    }
-  };
-
   const [loaded, error] = useFonts({
     'PlusJakartaSans-Regular': require('../assets/fonts/PlusJakartaSans-Regular.ttf'),
     'PlusJakartaSans-Medium': require('../assets/fonts/PlusJakartaSans-Medium.ttf'),
@@ -802,12 +717,6 @@ export default function RootLayout() {
                 theme={theme}
                 showSetup={showSetup}
                 onCompleteSetup={onCompleteSetup}
-                installAvailable={
-                  !installPromptDismissed &&
-                  (installPrompt !== null || isIosSafariBrowser())
-                }
-                onInstall={handleInstall}
-                onDismissInstall={() => setInstallPromptDismissed(true)}
                 updateAvailable={updateAvailable}
                 onUpdate={handleUpdate}
                 updateStatus={updateStatus}
@@ -825,9 +734,6 @@ function RootLayoutNav({
   theme,
   showSetup,
   onCompleteSetup,
-  installAvailable,
-  onInstall,
-  onDismissInstall,
   updateAvailable,
   onUpdate,
   updateStatus,
@@ -836,9 +742,6 @@ function RootLayoutNav({
   theme: AppTheme;
   showSetup: boolean;
   onCompleteSetup: () => void;
-  installAvailable: boolean;
-  onInstall: () => Promise<void>;
-  onDismissInstall: () => void;
   updateAvailable: boolean;
   onUpdate: () => void;
   updateStatus: UpdateStatus;
@@ -846,6 +749,8 @@ function RootLayoutNav({
 }) {
   const { language } = useContext(LanguageContext);
   const { textScale } = useContext(TextSizeContext);
+  const { platform, requestInstall, status } = usePwaInstall();
+  const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const { fontScale, width: viewportWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
@@ -855,6 +760,22 @@ function RootLayoutNav({
     ? getHeaderBackTarget(segments, globalParams.backTo)
     : '/';
   const routeKey = `${pathname}:${JSON.stringify(globalParams)}`;
+  const installAvailable =
+    !installPromptDismissed &&
+    isFirstRunInstallPromptEligible({ platform, status });
+
+  const handleFirstRunInstall = async () => {
+    setInstallPromptDismissed(true);
+
+    // Issue #137 owns the richer iOS visual walkthrough. Preserve the existing
+    // first-run guide until that focused change is reviewed.
+    if (platform === 'ios-safari' && status !== 'prompt-available') {
+      await openIosPwaInstallGuide(language);
+      return;
+    }
+
+    await requestInstall();
+  };
 
   useEffect(() => {
     if (
@@ -1001,7 +922,10 @@ function RootLayoutNav({
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
         {installAvailable && (
-          <InstallPrompt onInstall={onInstall} onDismiss={onDismissInstall} />
+          <InstallPrompt
+            onInstall={handleFirstRunInstall}
+            onDismiss={() => setInstallPromptDismissed(true)}
+          />
         )}
         {showSetup && !installAvailable && (
           <InitialSetup onComplete={onCompleteSetup} />

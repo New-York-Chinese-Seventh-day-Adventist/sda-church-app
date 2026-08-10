@@ -95,6 +95,30 @@ describe('menu card press surfaces', () => {
     expect(titleStyle.lineHeight).toBe(48);
   });
 
+  it('stacks an opted-in menu card when enlarged text needs the full width', () => {
+    const view = renderAtScale(
+      React.createElement(MenuCard, {
+        description: 'Open the church app quickly from your home screen.',
+        icon: 'download',
+        onPress: jest.fn(),
+        reflowAtLargeText: true,
+        rightElement: () => React.createElement(Text, null, 'chevron'),
+        title: 'Install this app',
+      }),
+      2,
+    );
+
+    const card = view.getByLabelText(
+      'Install this app. Open the church app quickly from your home screen.',
+    );
+    expect(StyleSheet.flatten(card.props.style).flexDirection).toBe('column');
+    expect(
+      StyleSheet.flatten(view.getByText('Install this app').parent?.props.style)
+        .marginLeft,
+    ).toBe(0);
+    expect(view.queryByText('chevron')).toBeNull();
+  });
+
   it('allows reader UI icons to use a capped text scale', () => {
     const view = renderAtScale(
       React.createElement(AppIcon, {

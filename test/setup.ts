@@ -8,6 +8,17 @@ jest.mock('react-native/Libraries/Text/Text', () => ({
   default: 'Text',
 }));
 
+// React Native 0.83.6's published Jest Modal mock extends the same missing
+// prototype shape. Preserve visibility and props with a host modal so tests
+// exercise the component behavior without weakening production focus trapping.
+jest.mock('react-native/Libraries/Modal/Modal', () => {
+  const React = require('react');
+  const MockModal = ({ children, visible, ...props }: Record<string, any>) =>
+    visible === false ? null : React.createElement('Modal', props, children);
+
+  return { __esModule: true, default: MockModal };
+});
+
 const mockCreateIcon = () => {
   const React = require('react');
   const MockIcon = (props: Record<string, unknown>) =>

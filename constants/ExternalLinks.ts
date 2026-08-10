@@ -1,5 +1,5 @@
 import { Alert, Linking } from 'react-native';
-import { SupportedLanguage } from './LanguageContext';
+import type { SupportedLanguage } from './LanguageContext';
 
 /**
  * Church Identity & Branding Constants
@@ -29,6 +29,28 @@ export const ELMHURST_SABBATH_URLS = [
 
 export const IOS_PWA_INSTALL_GUIDE_URL =
   'https://youtu.be/5IwrG8BTylw?si=7FW6G4DWiJmLkz89&t=15';
+
+export const IOS_PWA_INSTALL_GUIDE_ERROR_COPY = {
+  en: {
+    title: 'Unable to open guide',
+    message: 'Could not open the app installation guide.',
+  },
+  zh: {
+    title: '無法開啟說明',
+    message: '無法開啟應用程式安裝說明。',
+  },
+  'zh-cn': {
+    title: '无法打开说明',
+    message: '无法打开应用安装说明。',
+  },
+  es: {
+    title: 'No se pudo abrir la guía',
+    message: 'No se pudo abrir la guía de instalación de la aplicación.',
+  },
+} as const satisfies Record<
+  SupportedLanguage,
+  { message: string; title: string }
+>;
 
 // Hardcoded to 760 41st Ave Elmhurst, NY 11373
 export const CHURCH_LATITUDE = 40.74546;
@@ -137,12 +159,14 @@ export const openYouTubeSearch = (query: string) => {
   );
 };
 
-export const openIosPwaInstallGuide = () =>
-  openURL(
+export const openIosPwaInstallGuide = (language: SupportedLanguage = 'en') => {
+  const errorCopy = IOS_PWA_INSTALL_GUIDE_ERROR_COPY[language];
+  return openURL(
     IOS_PWA_INSTALL_GUIDE_URL,
-    'Error',
-    'Could not open the PWA installation guide.',
+    errorCopy.title,
+    errorCopy.message,
   );
+};
 
 // SABBATH SCHOOL DIGITAL ECOSYSTEM
 // DENOMINATIONAL CORE FRAMEWORK & PUBLIC DATA BACKBONE

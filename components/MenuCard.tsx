@@ -16,6 +16,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from "react-native";
@@ -33,6 +34,7 @@ interface MenuCardProps {
   onPress?: () => void;
   rightIcon?: MaterialCommunityIconName | AppIconProps | null;
   rightElement?: () => React.ReactNode;
+  reflowAtLargeText?: boolean;
   style?: ViewStyle | any;
 }
 
@@ -93,10 +95,14 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   onPress,
   rightIcon = "chevron-right",
   rightElement,
+  reflowAtLargeText = false,
   style,
 }) => {
   const theme = useAppTheme();
   const { textScale } = useTextSize();
+  const { fontScale } = useWindowDimensions();
+  const stacked =
+    reflowAtLargeText && Math.max(1, fontScale * textScale) >= 1.5;
   const styles = useMemo(() => createStyles(textScale), [textScale]);
   return (
     <AnimatedTouchableOpacity
@@ -105,6 +111,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       accessibilityState={accessibilityState}
       style={[
         styles.card,
+        stacked && styles.stackedCard,
         {
           backgroundColor: theme.colors.surface,
           borderColor: theme.colors.outlineVariant,
@@ -122,14 +129,24 @@ export const MenuCard: React.FC<MenuCardProps> = ({
         size={DESIGN_TOKENS.ICON_SIZE_FEATURED}
         color={iconColor || theme.colors.tertiary}
       />
-      <View pointerEvents="none" style={styles.cardContent}>
-        <Text style={[styles.cardTitle, { color: theme.colors.onSurface }]}>
+      <View
+        pointerEvents="none"
+        style={[styles.cardContent, stacked && styles.stackedCardContent]}
+      >
+        <Text
+          style={[
+            styles.cardTitle,
+            stacked && styles.stackedText,
+            { color: theme.colors.onSurface },
+          ]}
+        >
           {title}
         </Text>
         {description && (
           <Text
             style={[
               styles.cardSubtitle,
+              stacked && styles.stackedText,
               { color: theme.colors.onSurfaceVariant },
             ]}
           >
@@ -137,7 +154,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
           </Text>
         )}
       </View>
-      {rightElement
+      {!stacked && (rightElement
         ? <View pointerEvents="none">{rightElement()}</View>
         : rightIcon && (
             <AppIcon
@@ -148,7 +165,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
               size={DESIGN_TOKENS.ICON_SIZE_STANDARD}
               color={theme.colors.onSurfaceVariant}
             />
-          )}
+          ))}
     </AnimatedTouchableOpacity>
   );
 };
@@ -166,6 +183,20 @@ const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1]) =>
     cursor: "pointer",
   },
   cardContent: { flex: 1, flexShrink: 1, marginLeft: 16, minWidth: 0 },
+  stackedCardContent: {
+    alignItems: 'center',
+    flexGrow: 0,
+    marginLeft: 0,
+    marginTop: 12,
+    width: '100%',
+  },
+  stackedCard: {
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  stackedText: {
+    textAlign: 'center',
+  },
   cardTitle: {
     fontSize: scaleTypographyMetric(18, textScale),
     lineHeight: scaleTypographyMetric(24, textScale),

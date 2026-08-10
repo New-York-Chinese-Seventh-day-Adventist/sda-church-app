@@ -1,5 +1,6 @@
 import { UpdateContext } from '@/app/_layout';
 import { MenuCard, MenuCardSwitchVisual } from '@/components/MenuCard';
+import { PwaInstallMenuCard } from '@/components/PwaInstallMenuCard';
 import { TextSizeDialog } from '@/components/TextSizeDialog';
 import { CHURCH_BUILDING_IMAGE_URL } from '@/constants/ExternalLinks';
 import { LanguageContext } from '@/constants/LanguageContext';
@@ -167,6 +168,7 @@ export default function YouScreen() {
               )}
               onPress={() => toggleTheme()}
             />
+            <PwaInstallMenuCard />
             <MenuCard
               title={labels.privacy}
               description={labels.privacySub}

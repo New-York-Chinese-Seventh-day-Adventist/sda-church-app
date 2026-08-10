@@ -1,4 +1,9 @@
 import { customDarkTheme, customLightTheme } from '@/constants/Themes';
+import {
+  PWA_ICON_192_HREF,
+  PWA_ICON_512_HREF,
+  PWA_MANIFEST_HREF,
+} from '@/constants/PwaAssets';
 import { ScrollViewStyleReset } from 'expo-router/html';
 
 // This file is web-only and used to configure the root HTML for every
@@ -32,8 +37,20 @@ export default function Root({ children }: { children: React.ReactNode }) {
           content="black"
         />
         <meta name="apple-mobile-web-app-title" content="NYCCSDA" />
-        <link rel="apple-touch-icon" href="icon-192x192.png" />
-        <link rel="manifest" href="manifest.json" />
+        <link rel="apple-touch-icon" href={PWA_ICON_192_HREF} />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="192x192"
+          href={PWA_ICON_192_HREF}
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="512x512"
+          href={PWA_ICON_512_HREF}
+        />
+        <link rel="manifest" href={PWA_MANIFEST_HREF} />
 
         {/* 
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native. 
