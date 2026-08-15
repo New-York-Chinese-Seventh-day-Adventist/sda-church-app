@@ -49,6 +49,17 @@ to select a different host. The manifest generator extracts only public asset UR
 the WordPress upload HAR; authentication data and other HAR contents must not be checked
 into the repository.
 
+The primary tier is storage-provider agnostic at runtime. The checked-in manifest maps
+canonical chapter filenames to stable public HTTPS URLs; it currently points to the
+church's files on `assets.adventistconnect.org`, the managed asset host used by Adventist
+Connect. A future deployment may use an S3-compatible bucket, CDN, or another
+church-controlled object host without changing the player, provided that it preserves the
+same manifest contract, serves the files as MP3 audio, supports byte-range requests for
+seeking, and does not require listener authentication. Hosting terms, capacity, egress,
+and the church's redistribution permission must be confirmed before changing providers.
+`extract-cuv-adventist-audio-manifest.mjs` is the ingestion adapter for the current
+Adventist Connect deployment, not a runtime dependency or a requirement for future hosts.
+
 `BibleService.parseScriptureReference` converts a single book/chapter reference and an
 optional same-chapter verse range into canonical USFM coordinates. Its localized 66-book
 table accepts and formats English, Traditional Chinese, Simplified Chinese, and Spanish
