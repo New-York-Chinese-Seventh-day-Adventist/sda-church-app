@@ -113,6 +113,52 @@ remains internal to maintain spiritual focus.
 
 ---
 
+## Platform Notes
+
+### Bible background audio in installed PWAs
+
+Release `0.27.0` resolves the iOS/iPadOS background and chapter-transition failures tracked
+in [issue #126](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/126).
+On the tested Android installed PWA, playback now survives backgrounding and advances
+several chapters, but it still pauses after approximately three chapters. Android therefore
+remains partial rather than resolved.
+
+The custom web player keeps one active document-attached audio element, preloads only the
+immediately following chapter in a guarded standby element, and holds up to 24 lightweight
+future chapter descriptors. Later audio files and chapter text are not fetched in advance.
+When the PWA becomes visible, the Bible reader catches up to the chapter already selected
+by the audio engine.
+
+Lock-screen presentation remains controlled by the operating system. Android notification
+privacy/media settings may hide the player on the lock screen even while audio and
+notification-shade controls continue to work. iOS may show the audio host (for example,
+`helloao.org`) as a system-controlled origin even when Media Session metadata supplies the
+chapter, translation, and provider title. The church-hosted Audio Power mirror is labeled
+`NYCCSDAS.org`.
+
+Before the improved Pixel test, Android's **Show media on lock screen** setting was toggled
+off and back on, then left in its original state. That may have reset cached system/Chrome
+media state, so the test cannot prove that the queue changes alone caused the improvement.
+The 24-item descriptor queue is much longer than the observed three-chapter run, making a
+simple queue-length limit unlikely.
+
+Preloading every chapter at launch was rejected because the BSB recordings are roughly
+86 MB per hour at their current bitrate, and downloading more data would add unnecessary
+network and storage cost. The web implementation instead preloads one chapter on demand
+after the user presses Play.
+
+If dependable long-running Android background playback is required, a compiled Expo build
+with a native media queue remains the fallback. Capacitor alone would still require a
+native audio plugin or custom platform implementation and would add native-project
+maintenance, so it is not a simpler fix for this remaining PWA lifecycle limitation.
+
+References:
+
+- [Expo background audio](https://docs.expo.dev/versions/latest/sdk/audio/#playing-audio-in-the-background)
+- [Expo Continuous Native Generation](https://docs.expo.dev/workflow/continuous-native-generation/)
+- [Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API)
+- [Capacitor native plugin model](https://github.com/ionic-team/capacitor#readme)
+
 ## Known Bugs
 
 ### Android PWA may require a notification-shade cycle for fullscreen
