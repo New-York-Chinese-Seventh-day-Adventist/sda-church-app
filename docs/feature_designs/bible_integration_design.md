@@ -32,17 +32,22 @@ HelloAO remains the shared source of translated-edition book names and chapter c
 
 Traditional and simplified CUV chapters use the chapter-level Mandarin recordings
 published by [Audio Power](https://theaudiopower.org/translations/cuv/#nar1). The
-recordings are streamed from Audio Power's host and are not bundled, proxied, or cached by
-this repository. Audio Power credits the recordings to 基督徒团契 (Christian Fellowship);
-its simplified-Chinese filenames are shared by both CUV text variants. Each recording is
-represented as one narrator with ordered hosting sources rather than separate narrator
-choices. The generated Adventist Connect manifest is the primary, church-controlled tier,
-Audio Power is second, and the complete
-[Internet Archive collection](https://archive.org/download/CUV_201911) is third. A source
-that cannot load within the player timeout is skipped without asking the listener to
-select a different host. The manifest generator extracts only public asset URLs from the
-WordPress upload HAR; authentication data and other HAR contents must not be checked into
-the repository.
+recordings are not bundled in the Git repository, but the church downloads and self-hosts
+an authorized copy as the primary playback tier. Audio Power's owner explicitly approved
+the church app's use, download, and self-hosting of the recordings; the permanent project
+record is maintained in
+[issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5274730608).
+Audio Power credits the recordings to 基督徒团契 (Christian Fellowship), and its
+simplified-Chinese filenames are shared by both CUV text variants.
+
+Each recording is represented as one narrator with three ordered hosting sources rather
+than three narrator choices: the generated Adventist Connect manifest supplies the
+primary church-controlled copy, Audio Power's host is the second tier, and the complete
+[Internet Archive collection](https://archive.org/download/CUV_201911) is the third. A
+source that cannot load within the player timeout is skipped without asking the listener
+to select a different host. The manifest generator extracts only public asset URLs from
+the WordPress upload HAR; authentication data and other HAR contents must not be checked
+into the repository.
 
 `BibleService.parseScriptureReference` converts a single book/chapter reference and an
 optional same-chapter verse range into canonical USFM coordinates. Its localized 66-book
