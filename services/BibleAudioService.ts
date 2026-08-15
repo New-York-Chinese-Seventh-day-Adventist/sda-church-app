@@ -4,11 +4,12 @@ import {
   type AudioPlayer,
 } from 'expo-audio';
 
+import type { TranslationBook } from './BibleService';
 import {
   getAudioPowerCuvChapterLinks,
-  type TranslationBook,
+  supportsAudioPowerCuv,
   type TranslationBookChapterAudioLinks,
-} from './BibleService';
+} from './BibleAudioSources';
 import type { BibleAudioQueueItem } from './BibleAudioPlayer.types';
 
 const BSB_AUDIO_READER_PRIORITY = ['souer', 'hays', 'david'] as const;
@@ -192,12 +193,8 @@ export const buildBibleAudioQueue = ({
   ).flatMap(({ book, chapter }) => {
     let queuedUrl: string | undefined;
 
-    if (translationId === 'cmn_cuv' || translationId === 'cmn_cu1') {
-      const links = getAudioPowerCuvChapterLinks(
-        book.id,
-        chapter,
-        book.numberOfChapters,
-      );
+    if (supportsAudioPowerCuv(translationId)) {
+      const links = getAudioPowerCuvChapterLinks(book.id, chapter);
       const source = selectedReader
         ? links[selectedReader]
         : Object.values(links)[0];

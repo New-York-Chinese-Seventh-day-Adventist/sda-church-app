@@ -60,6 +60,14 @@ and the church's redistribution permission must be confirmed before changing pro
 `extract-cuv-adventist-audio-manifest.mjs` is the ingestion adapter for the current
 Adventist Connect deployment, not a runtime dependency or a requirement for future hosts.
 
+Audio responsibilities are split by layer. `BibleAudioSources.ts` owns the pure provider
+catalog, permission context, manifest lookup, and ordered fallback URLs.
+`BibleAudioService.ts` owns playback configuration, narrator/source selection, metadata,
+and queue construction, while `BibleAudioPlayer` supplies the platform-specific player.
+`BibleService.ts` only attaches the resolved links to its chapter response so the reader
+can load text and available audio together; it does not know provider URLs or hosting
+rules.
+
 `BibleService.parseScriptureReference` converts a single book/chapter reference and an
 optional same-chapter verse range into canonical USFM coordinates. Its localized 66-book
 table accepts and formats English, Traditional Chinese, Simplified Chinese, and Spanish

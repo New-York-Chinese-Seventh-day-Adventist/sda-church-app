@@ -1,8 +1,8 @@
+import { fetchChapter } from '@/services/BibleService';
 import {
-  fetchChapter,
   getAudioPowerCuvChapterLinks,
   type TranslationBookChapterAudioLinks,
-} from '@/services/BibleService';
+} from '@/services/BibleAudioSources';
 import { CUV_ADVENTIST_AUDIO_URLS } from '@/constants/CuvAdventistAudioManifest';
 
 const audioUrls = (links: TranslationBookChapterAudioLinks) =>
@@ -12,13 +12,13 @@ const audioPowerUrl = (links: TranslationBookChapterAudioLinks) =>
 
 describe('Audio Power CUV chapter links', () => {
   it('builds an encoded multi-chapter Old Testament URL', () => {
-    expect(audioPowerUrl(getAudioPowerCuvChapterLinks('GEN', 1, 50))).toBe(
+    expect(audioPowerUrl(getAudioPowerCuvChapterLinks('GEN', 1))).toBe(
       'https://theaudiopower.com/CUV/Recordings/%E5%88%9B%E4%B8%96%E8%AE%B0%201.mp3',
     );
   });
 
   it('orders Adventist Connect, Audio Power, then Archive.org', () => {
-    expect(audioUrls(getAudioPowerCuvChapterLinks('GEN', 1, 50))).toEqual([
+    expect(audioUrls(getAudioPowerCuvChapterLinks('GEN', 1))).toEqual([
       'https://assets.adventistconnect.org/newyork2/2026/08/12215730/CUV_B01C001.mp3',
       'https://theaudiopower.com/CUV/Recordings/%E5%88%9B%E4%B8%96%E8%AE%B0%201.mp3',
       'https://archive.org/download/CUV_201911/CUV_B01C001.mp3',
@@ -36,21 +36,21 @@ describe('Audio Power CUV chapter links', () => {
   });
 
   it('builds an encoded New Testament URL', () => {
-    expect(audioPowerUrl(getAudioPowerCuvChapterLinks('mat', 28, 28))).toBe(
+    expect(audioPowerUrl(getAudioPowerCuvChapterLinks('mat', 28))).toBe(
       'https://theaudiopower.com/CUV/Recordings/%E9%A9%AC%E5%A4%AA%E7%A6%8F%E9%9F%B3%2028.mp3',
     );
   });
 
   it('omits the chapter suffix for one-chapter books', () => {
-    expect(audioPowerUrl(getAudioPowerCuvChapterLinks('2JN', 1, 1))).toBe(
+    expect(audioPowerUrl(getAudioPowerCuvChapterLinks('2JN', 1))).toBe(
       'https://theaudiopower.com/CUV/Recordings/%E7%BA%A6%E7%BF%B0%E4%BA%8C%E4%B9%A6.mp3',
     );
   });
 
   it('does not expose a URL for invalid chapter coordinates', () => {
-    expect(getAudioPowerCuvChapterLinks('GEN', 0, 50)).toEqual({});
-    expect(getAudioPowerCuvChapterLinks('GEN', 51, 50)).toEqual({});
-    expect(getAudioPowerCuvChapterLinks('UNKNOWN', 1, 1)).toEqual({});
+    expect(getAudioPowerCuvChapterLinks('GEN', 0)).toEqual({});
+    expect(getAudioPowerCuvChapterLinks('GEN', 51)).toEqual({});
+    expect(getAudioPowerCuvChapterLinks('UNKNOWN', 1)).toEqual({});
   });
 
   it.each(['cmn_cuv', 'cmn_cu1'])(

@@ -1,5 +1,5 @@
 import { CUV_ADVENTIST_AUDIO_URLS } from '@/constants/CuvAdventistAudioManifest';
-import { getAudioPowerCuvChapterLinks } from '@/services/BibleService';
+import { getAudioPowerCuvChapterLinks } from '@/services/BibleAudioSources';
 import { getEnglishHymnUrl, getSortedHymns } from '@/features/hymnal/EnglishHymnal';
 import {
   getChinese505HymnUrl,
@@ -49,7 +49,7 @@ describe('generated external dependency URLs', () => {
   it('generates all 1,189 CUV chapters with three ordered, valid origins', () => {
     const chapters = CUV_BOOKS.flatMap(([book, count]) =>
       Array.from({ length: count }, (_, index) =>
-        urls(getAudioPowerCuvChapterLinks(book, index + 1, count)),
+        urls(getAudioPowerCuvChapterLinks(book, index + 1)),
       ),
     );
 
