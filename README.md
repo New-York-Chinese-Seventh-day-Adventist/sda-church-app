@@ -113,9 +113,9 @@ remains internal to maintain spiritual focus.
 
 ---
 
-## Platform Notes
+## Known Bugs
 
-### Bible background audio in installed PWAs
+### Android PWA background audio may pause after several chapters
 
 Release `0.27.0` resolves the iOS/iPadOS background and chapter-transition failures tracked
 in [issue #126](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/126).
@@ -159,21 +159,18 @@ References:
 - [Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API)
 - [Capacitor native plugin model](https://github.com/ionic-team/capacitor#readme)
 
-## Known Bugs
-
-### Android PWA may require a notification-shade cycle for fullscreen
+### Android PWA may require interaction to restore fullscreen
 
 The installed Android PWA uses `"display": "fullscreen"` in its web app manifest. On
 some Android and Chrome combinations, the app launches in its fullscreen window but does
-not immediately hide the Android status and navigation bars. Pulling down the notification
-shade and closing it causes Android and Chrome to recalculate the window insets and restore
-the expected immersive fullscreen state.
+not immediately hide the Android status and navigation bars.
 
-**User workaround:** Tap anywhere in the installed app after launch. That trusted user
-gesture lets the PWA request the browser Fullscreen API. Chrome may briefly display its
-own fullscreen confirmation; the site cannot reposition or style that browser-owned UI.
-Cycling the notification shade remains a fallback on devices where Chrome does not honor
-the fullscreen request.
+**User workaround:** Tap a blank or otherwise non-interactive area of the installed app
+after launch. That trusted user gesture normally lets the PWA request the browser
+Fullscreen API and restore immersive fullscreen. Chrome may briefly display its own
+fullscreen confirmation; the site cannot reposition or style that browser-owned UI. If
+the tap does not work, pull down and close the notification shade to make Android and
+Chrome recalculate the window insets.
 
 The web app cannot directly control the equivalent native operation. A standard PWA runs
 inside the browser security sandbox and has no access to the Android `Window`,
