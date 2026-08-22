@@ -106,7 +106,7 @@ main (stable)
 - **Purpose**: Prepare the release and validate the version bump
 - **PR validation**:
   - Requires a `Release/x.y.z` PR title and compares it with a `release/x.y.z`
-    destination branch when applicable.
+    destination branch or primary-repository source branch when applicable.
   - After title validation succeeds for a PR whose source is a release branch in the
     primary repository, automatically synchronizes `package.json`, `package-lock.json`,
     `app.json`, and `public/sw.js` on that branch. Fork workflows never perform the sync.
@@ -134,8 +134,8 @@ main (stable)
 
 #### `Release - PR Version Sync` (`.github/workflows/release-validation.yml`)
 
-- **Validate PR title**: Requires `Release/x.y.z` and ensures it matches a
-  `release/x.y.z` destination branch when applicable.
+- **Validate PR title**: Requires `Release/x.y.z` and ensures it matches an applicable
+  `release/x.y.z` destination branch or primary-repository source branch.
 - **Auto-Sync before merge**: After the required title validation succeeds, uses the
   validated version to synchronize `package.json`, `package-lock.json`, `app.json`, and
   `public/sw.js` on a release PR's source branch in the primary repository. It does not

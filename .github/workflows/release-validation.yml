@@ -24,6 +24,9 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
 
@@ -38,6 +41,15 @@ jobs:
             BASE_VERSION="${BASH_REMATCH[1]}"
             if [[ "$VERSION" != "$BASE_VERSION" ]]; then
               echo "::error title=Release version mismatch::PR title version $VERSION must match destination branch release/$BASE_VERSION."
+              exit 1
+            fi
+          fi
+
+          if [[ "$HEAD_REPOSITORY" == "$REPOSITORY" ]] &&
+            [[ "$HEAD_REF" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            HEAD_VERSION="${BASH_REMATCH[1]}"
+            if [[ "$VERSION" != "$HEAD_VERSION" ]]; then
+              echo "::error title=Release version mismatch::PR title version $VERSION must match source branch release/$HEAD_VERSION."
               exit 1
             fi
           fi
