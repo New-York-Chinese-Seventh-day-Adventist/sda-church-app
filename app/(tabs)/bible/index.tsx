@@ -3776,9 +3776,6 @@ export default function BibleScreen() {
                   >
                     {labels.verseHelpSelect}
                   </Text>
-                  <Button mode="contained" onPress={closeModal}>
-                    {labels.closeAction}
-                  </Button>
                 </View>
               </>
             ) : lastActiveType === 'saved' ? (
