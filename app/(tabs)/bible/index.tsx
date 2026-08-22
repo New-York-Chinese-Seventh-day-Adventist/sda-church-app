@@ -2289,6 +2289,18 @@ export default function BibleScreen() {
       supportingTranslation?.id,
     ],
   );
+  const selectedPrimaryVerseText =
+    selectedVerseTexts?.primaryText ||
+    (selectedVerseNum ? getVersePlainText(selectedVerseNum) : '');
+  const showSelectedPrimaryPinyin =
+    showPinyin &&
+    !!selectedPrimaryVerseText &&
+    isChineseBibleTranslation(supportedTranslation.id);
+  const showSelectedSupportingPinyin =
+    showPinyin &&
+    !!selectedVerseTexts?.supportingText &&
+    !!supportingTranslation &&
+    isChineseBibleTranslation(supportingTranslation.id);
 
   const renderStructuralText = (
     content: BibleService.ChapterHeading | BibleService.ChapterHebrewSubtitle,
@@ -3934,10 +3946,24 @@ export default function BibleScreen() {
                         {labels.primaryTranslation}: {getTranslationLabel(supportedTranslation)}
                       </Text>
                     )}
-                    <Text style={[ReaderStyles.detailText, { fontWeight: '500' }]}>
-                      {selectedVerseTexts?.primaryText ||
-                        getVersePlainText(selectedVerseNum || 0)}
-                    </Text>
+                    {showSelectedPrimaryPinyin ? (
+                      <PinyinRubyText
+                        numberColor={theme.colors.onSurface}
+                        pinyinColor={theme.colors.tertiary}
+                        rightAlignedLines={selectedPrimaryVerseText
+                          .split('\n')
+                          .map((line) =>
+                            BibleService.isSelahMarker(supportedTranslation.id, line),
+                          )}
+                        text={selectedPrimaryVerseText}
+                        textColor={theme.colors.onSurface}
+                        textScale={textScale}
+                      />
+                    ) : (
+                      <Text style={[ReaderStyles.detailText, { fontWeight: '500' }]}>
+                        {selectedPrimaryVerseText}
+                      </Text>
+                    )}
                     {supportingTranslation && selectedVerseTexts?.supportingText && (
                       <View style={ReaderStyles.supportingDetailSection}>
                         <Text
@@ -3947,14 +3973,33 @@ export default function BibleScreen() {
                           {labels.supportingTranslation}:{' '}
                           {getTranslationLabel(supportingTranslation)}
                         </Text>
-                        <Text
-                          style={[
-                            ReaderStyles.supportingDetailText,
-                            { color: theme.colors.onSurfaceVariant },
-                          ]}
-                        >
-                          {selectedVerseTexts.supportingText}
-                        </Text>
+                        {showSelectedSupportingPinyin ? (
+                          <PinyinRubyText
+                            numberColor={theme.colors.onSurfaceVariant}
+                            pinyinColor={theme.colors.tertiary}
+                            rightAlignedLines={selectedVerseTexts.supportingText
+                              .split('\n')
+                              .map((line) =>
+                                BibleService.isSelahMarker(
+                                  supportingTranslation.id,
+                                  line,
+                                ),
+                              )}
+                            text={selectedVerseTexts.supportingText}
+                            textColor={theme.colors.onSurfaceVariant}
+                            textScale={textScale}
+                            variant="supporting"
+                          />
+                        ) : (
+                          <Text
+                            style={[
+                              ReaderStyles.supportingDetailText,
+                              { color: theme.colors.onSurfaceVariant },
+                            ]}
+                          >
+                            {selectedVerseTexts.supportingText}
+                          </Text>
+                        )}
                       </View>
                     )}
                   </View>
