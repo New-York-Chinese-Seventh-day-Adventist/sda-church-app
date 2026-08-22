@@ -107,9 +107,9 @@ main (stable)
 - **PR validation**:
   - Requires a `Release/x.y.z` PR title and compares it with a `release/x.y.z`
     destination branch when applicable.
-  - After title validation succeeds and a PR merges into a release branch in the primary
-    repository, automatically synchronizes `package.json`, `package-lock.json`, `app.json`,
-    and `public/sw.js` from the validated PR title. Fork workflows never perform the sync.
+  - After title validation succeeds for a PR whose source is a release branch in the
+    primary repository, automatically synchronizes `package.json`, `package-lock.json`,
+    `app.json`, and `public/sw.js` on that branch. Fork workflows never perform the sync.
 
 #### Feature/Work Branches
 
@@ -136,10 +136,10 @@ main (stable)
 
 - **Validate PR title**: Requires `Release/x.y.z` and ensures it matches a
   `release/x.y.z` destination branch when applicable.
-- **Auto-Sync after merge**: After the required title validation succeeds, uses the
+- **Auto-Sync before merge**: After the required title validation succeeds, uses the
   validated version to synchronize `package.json`, `package-lock.json`, `app.json`, and
-  `public/sw.js` when a PR merges into a release branch in the primary repository. It does
-  not run in forks or for PRs targeting `main`.
+  `public/sw.js` on a release PR's source branch in the primary repository. It does not
+  run for fork source branches.
 
 #### `Issues - Pending Release Label` (`.github/workflows/pending-release-label.yml`)
 

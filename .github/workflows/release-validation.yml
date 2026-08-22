@@ -2,7 +2,7 @@ name: Release - PR Version Sync
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize, closed]
+    types: [opened, edited, reopened, synchronize]
 
 env:
   # Opt into Node.js 24 for all JavaScript actions to resolve deprecation warnings
@@ -48,9 +48,8 @@ jobs:
   sync:
     needs: validate-pr
     if: >-
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      startsWith(github.event.pull_request.base.ref, 'release/') &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
       github.repository == 'New-York-Chinese-Seventh-day-Adventist/sda-church-app'
     runs-on: ubuntu-latest
     permissions:
@@ -60,7 +59,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.base.ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
@@ -81,8 +80,8 @@ jobs:
           git add package.json package-lock.json app.json public/sw.js
 
           if ! git diff --cached --quiet; then
-            git commit -m "chore: sync configuration files to $VERSION [skip ci]"
-            git push origin "HEAD:${{ github.event.pull_request.base.ref }}"
+            git commit -m "chore: sync configuration files to $VERSION"
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
           else
             echo "Files are already in sync with $VERSION."
           fi
