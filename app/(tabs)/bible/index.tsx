@@ -3893,6 +3893,8 @@ export default function BibleScreen() {
                             </Text>
                             {(item.text || savedVersesLoading) && (
                               <Text
+                                ellipsizeMode="tail"
+                                numberOfLines={3}
                                 style={[
                                   styles.savedVerseDescription,
                                   { color: theme.colors.onSurfaceVariant },
