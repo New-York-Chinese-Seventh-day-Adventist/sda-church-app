@@ -33,7 +33,7 @@ and production scope and should remain an explicit decision.
 
 3. Open the feature PR from the fork's feature branch into the primary repository's
    matching `release/x.y.z` branch. Start its title with the matching version in the form
-   `Release x.y.z: Brief description`, complete the PR template, and wait for all checks
+   `Release/x.y.z: Brief description`, complete the PR template, and wait for all checks
    and reviews.
 4. After all planned feature PRs are merged, a code maintainer opens the release PR from
    `release/x.y.z` into `main`. Only maintainers perform this second stage; contributors
@@ -60,7 +60,7 @@ Do not create release branches automatically from dates, issue activity, or feat
 Every feature and release PR must follow `.github/pull_request_template.md`:
 
 - Start the PR title with the exact release version, for example
-  `Release 0.26.0: Add bulletin navigation`. When the destination branch is named
+  `Release/0.26.0: Add bulletin navigation`. When the destination branch is named
   `release/x.y.z`, the title version must match it.
 - Describe the user-visible and technical changes under **Description**.
 - Put issue references under **Related issues**, one per line, using a supported closing
@@ -105,7 +105,7 @@ main (stable)
 - **Naming convention**: `release/*` (e.g., `release/0.8.2` or `release/v1-beta`)
 - **Purpose**: Prepare the release and validate the version bump
 - **PR validation**:
-  - Requires a `Release x.y.z` PR title and compares it with a `release/x.y.z`
+  - Requires a `Release/x.y.z` PR title and compares it with a `release/x.y.z`
     destination branch when applicable.
   - After merge, automatically synchronizes `package.json`, `package-lock.json`,
     `app.json`, and `public/sw.js` from the merged PR title.
@@ -133,7 +133,7 @@ main (stable)
 
 #### `Release - PR Version Sync` (`.github/workflows/release-validation.yml`)
 
-- **Validate PR title**: Requires `Release x.y.z` and ensures it matches a
+- **Validate PR title**: Requires `Release/x.y.z` and ensures it matches a
   `release/x.y.z` destination branch when applicable.
 - **Auto-Sync after merge**: Uses the merged PR title to synchronize `package.json`,
   `package-lock.json`, `app.json`, and `public/sw.js` on the release branch.
@@ -161,5 +161,5 @@ git push -u origin feature/bulletin-navigation
 ```
 
 Then open the feature PR into `upstream/release/0.26.0` with a title beginning
-`Release 0.26.0:`. A maintainer later opens the
+`Release/0.26.0:`. A maintainer later opens the
 separate `release/0.26.0` → `main` PR and repeats its closing issue references there.

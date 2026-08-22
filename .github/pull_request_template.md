@@ -1,5 +1,5 @@
 <!--
-PR title: Release x.y.z: Brief description
+PR title: Release/x.y.z: Brief description
 
 If the destination branch is named release/x.y.z, replace x.y.z with that exact
 version. Otherwise, replace x.y.z with the intended release version. Release CI

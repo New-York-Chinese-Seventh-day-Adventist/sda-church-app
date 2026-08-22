@@ -28,10 +28,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ "$PR_TITLE" =~ ^Release[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+)(:|[[:space:]]|$) ]]; then
+          if [[ "$PR_TITLE" =~ ^Release/([0-9]+\.[0-9]+\.[0-9]+)(:|[[:space:]]|$) ]]; then
             VERSION="${BASH_REMATCH[1]}"
           else
-            echo "::error title=Invalid PR title::PR title must use Release <major.minor.patch> number (for example: Release 1.2.3: Describe the changes)."
+            echo "::error title=Invalid PR title::PR title must use Release/<major.minor.patch> (for example: Release/1.2.3: Describe the changes)."
             exit 1
           fi
 
@@ -73,8 +73,8 @@ jobs:
           PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
             --jq 'map(select(.merged_at != null)) | first | .title // empty')
 
-          if [[ ! "$PR_TITLE" =~ ^Release[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+)(:|[[:space:]]|$) ]]; then
-            echo "::error title=Invalid PR title::PR title must use Release <major.minor.patch> number (for example: Release 1.2.3: Describe the changes)."
+          if [[ ! "$PR_TITLE" =~ ^Release/([0-9]+\.[0-9]+\.[0-9]+)(:|[[:space:]]|$) ]]; then
+            echo "::error title=Invalid PR title::PR title must use Release/<major.minor.patch> (for example: Release/1.2.3: Describe the changes)."
             exit 1
           fi
           VERSION="${BASH_REMATCH[1]}"
