@@ -1,10 +1,10 @@
-import { AppIcon } from '@/components/AppIcon';
 import { EgwEditionDialog } from '@/components/EgwEditionDialog';
 import {
   LibraryBookCard,
   shouldUseLibraryListLayout,
 } from '@/components/LibraryBookCard';
 import { VerseHero } from '@/components/VerseHero';
+import { SourceNoticePanel } from '@/components/SourceNoticePanel';
 import { scaleTypographyMetric } from '@/constants/AppPreferences';
 import {
   CHURCH_BUILDING_IMAGE_URL,
@@ -22,7 +22,6 @@ import {
   type ImageSourcePropType,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -197,92 +196,24 @@ export default function LibraryScreen() {
         />
 
         <View style={styles.content}>
-          <View
-            style={[
-              styles.sourcePanel,
+          <SourceNoticePanel
+            items={[
+              { icon: 'bookshelf', text: labels.egwSource },
               {
-                backgroundColor: theme.colors.surfaceVariant,
-                borderColor: theme.colors.outlineVariant,
+                icon: 'book-open-variant',
+                text: labels.publicDomainSource,
               },
             ]}
-          >
-            <Text
-              style={[styles.sourceTitle, { color: theme.colors.onSurface }]}
-            >
-              {labels.sourceTitle}
-            </Text>
-            <View style={styles.sourceRows}>
-              <View style={styles.sourceRow}>
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.sourceIcon,
-                    { backgroundColor: theme.colors.surface },
-                  ]}
-                >
-                  <AppIcon
-                    color={theme.colors.tertiary}
-                    name="bookshelf"
-                    size={20}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.sourceText,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {labels.egwSource}
-                </Text>
-              </View>
-              <View style={styles.sourceRow}>
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.sourceIcon,
-                    { backgroundColor: theme.colors.surface },
-                  ]}
-                >
-                  <AppIcon
-                    color={theme.colors.tertiary}
-                    name="book-open-variant"
-                    size={20}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.sourceText,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {labels.publicDomainSource}
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              accessibilityLabel={labels.legalLink}
-              accessibilityRole="link"
-              onPress={() =>
-                router.push({
-                  pathname: '/you/legal',
-                  params: { backTo: '/resources/library' },
-                } as any)
-              }
-              style={[
-                styles.legalLink,
-                { borderTopColor: theme.colors.outlineVariant },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.legalLinkText,
-                  { color: theme.colors.primary },
-                ]}
-              >
-                {labels.legalLink}
-              </Text>
-            </TouchableOpacity>
-          </View>
+            legalLabel={labels.legalLink}
+            onLegalPress={() =>
+              router.push({
+                pathname: '/you/legal',
+                params: { backTo: '/resources/library' },
+              } as any)
+            }
+            style={styles.sourcePanel}
+            title={labels.sourceTitle}
+          />
 
           <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             {labels.adventistWritings}
@@ -334,54 +265,7 @@ const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1]) =>
       paddingTop: 12,
     },
     sourcePanel: {
-      borderRadius: 16,
-      borderWidth: 1,
       marginBottom: 22,
-      overflow: 'hidden',
-    },
-    sourceTitle: {
-      fontSize: scaleTypographyMetric(17, textScale),
-      fontWeight: '700',
-      lineHeight: scaleTypographyMetric(24, textScale),
-      paddingHorizontal: 16,
-      paddingTop: 16,
-    },
-    sourceRows: {
-      gap: 14,
-      padding: 16,
-    },
-    sourceRow: {
-      alignItems: 'flex-start',
-      flexDirection: 'row',
-      gap: 12,
-    },
-    sourceIcon: {
-      alignItems: 'center',
-      borderRadius: 18,
-      flexShrink: 0,
-      height: 36,
-      justifyContent: 'center',
-      width: 36,
-    },
-    sourceText: {
-      flex: 1,
-      fontSize: scaleTypographyMetric(14, textScale),
-      lineHeight: scaleTypographyMetric(21, textScale),
-      minWidth: 0,
-    },
-    legalLink: {
-      alignItems: 'center',
-      alignSelf: 'stretch',
-      borderTopWidth: 1,
-      justifyContent: 'center',
-      minHeight: 44,
-      paddingHorizontal: 16,
-    },
-    legalLinkText: {
-      fontSize: scaleTypographyMetric(13, textScale),
-      fontWeight: '700',
-      lineHeight: scaleTypographyMetric(19, textScale),
-      textAlign: 'center',
     },
     sectionTitle: {
       fontSize: scaleTypographyMetric(20, textScale),
