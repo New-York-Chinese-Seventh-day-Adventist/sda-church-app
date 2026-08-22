@@ -2,10 +2,7 @@ name: Release - PR Version Sync
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
-  push:
-    branches:
-      - "release/**"
+    types: [opened, edited, reopened, synchronize, closed]
 
 env:
   # Opt into Node.js 24 for all JavaScript actions to resolve deprecation warnings
@@ -18,10 +15,12 @@ concurrency:
 
 jobs:
   validate-pr:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release-version.outputs.version }}
     steps:
       - name: Validate PR release version
+        id: release-version
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -44,9 +43,15 @@ jobs:
           fi
 
           echo "Validated release version $VERSION from PR title."
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   sync:
-    if: github.event_name == 'push'
+    needs: validate-pr
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.base.ref, 'release/') &&
+      github.repository == 'New-York-Chinese-Seventh-day-Adventist/sda-church-app'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -55,6 +60,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
@@ -62,37 +68,9 @@ jobs:
         with:
           node-version: "lts/*"
 
-      - name: Read and validate merged PR version
-        id: release-version
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_REF: ${{ github.ref_name }}
-        run: |
-          set -euo pipefail
-
-          PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
-            --jq 'map(select(.merged_at != null)) | first | .title // empty')
-
-          if [[ ! "$PR_TITLE" =~ ^Release/([0-9]+\.[0-9]+\.[0-9]+)(:|[[:space:]]|$) ]]; then
-            echo "::error title=Invalid PR title::PR title must use Release/<major.minor.patch> (for example: Release/1.2.3: Describe the changes)."
-            exit 1
-          fi
-          VERSION="${BASH_REMATCH[1]}"
-
-          if [[ "$BASE_REF" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            BASE_VERSION="${BASH_REMATCH[1]}"
-            if [[ "$VERSION" != "$BASE_VERSION" ]]; then
-              echo "::error title=Release version mismatch::PR title version $VERSION must match destination branch release/$BASE_VERSION."
-              exit 1
-            fi
-          fi
-
-          echo "Using release version $VERSION from merged PR title: $PR_TITLE"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Sync release version
         env:
-          VERSION: ${{ steps.release-version.outputs.version }}
+          VERSION: ${{ needs.validate-pr.outputs.version }}
         run: |
           set -euo pipefail
 
@@ -104,7 +82,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: sync configuration files to $VERSION [skip ci]"
-            git push origin "HEAD:$GITHUB_REF_NAME"
+            git push origin "HEAD:${{ github.event.pull_request.base.ref }}"
           else
             echo "Files are already in sync with $VERSION."
           fi
