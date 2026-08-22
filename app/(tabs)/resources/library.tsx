@@ -34,7 +34,6 @@ const allLabels = {
     verse:
       '“So they read from the Book of the Law of God, explaining it and giving insight, so that the people could understand what was being read.”',
     verseRef: 'Nehemiah 8:8 (BSB)',
-    egwTitle: 'Ellen G. White',
     egwAuthor: 'Ellen G. White',
     sourceTitle: 'Reading sources',
     egwSource:
@@ -46,7 +45,7 @@ const allLabels = {
     egwOpenError: 'Could not open this EGW Writings book.',
     legalLink: 'Legal Disclaimer',
     close: 'Close',
-    pioneers: 'Adventist pioneers',
+    adventistWritings: 'Adventist writings',
     classics: 'Christian classics',
     chooseBook: 'Choose this book and its language edition',
     opensGutenberg: 'Opens externally on Project Gutenberg',
@@ -56,7 +55,6 @@ const allLabels = {
     title: '圖書館',
     verse: '「他們清清楚楚地念神的律法書，講明意思，使百姓明白所念的。」',
     verseRef: '尼希米記 8:8（和合本）',
-    egwTitle: '懷愛倫著作',
     egwAuthor: '懷愛倫',
     sourceTitle: '閱讀來源',
     egwSource:
@@ -68,7 +66,7 @@ const allLabels = {
     egwOpenError: '無法開啟這本懷愛倫著作。',
     legalLink: '法律聲明',
     close: '關閉',
-    pioneers: '復臨先賢著作',
+    adventistWritings: '復臨著作',
     classics: '基督教經典',
     chooseBook: '選擇此書及語言版本',
     opensGutenberg: '在 Project Gutenberg 外部網站開啟',
@@ -78,7 +76,6 @@ const allLabels = {
     title: '图书馆',
     verse: '“他们清清楚楚地念神的律法书，讲明意思，使百姓明白所念的。”',
     verseRef: '尼希米记 8:8（和合本）',
-    egwTitle: '怀爱伦著作',
     egwAuthor: '怀爱伦',
     sourceTitle: '阅读来源',
     egwSource:
@@ -90,7 +87,7 @@ const allLabels = {
     egwOpenError: '无法打开这本怀爱伦著作。',
     legalLink: '法律声明',
     close: '关闭',
-    pioneers: '复临先驱著作',
+    adventistWritings: '复临著作',
     classics: '基督教经典',
     chooseBook: '选择此书及语言版本',
     opensGutenberg: '在 Project Gutenberg 外部网站打开',
@@ -101,7 +98,6 @@ const allLabels = {
     verse:
       '“Leían en el libro de la ley de Dios claramente, y ponían el sentido, de modo que entendiesen la lectura.”',
     verseRef: 'Nehemías 8:8 (RVR1909)',
-    egwTitle: 'Elena G. de White',
     egwAuthor: 'Elena G. de White',
     sourceTitle: 'Fuentes de lectura',
     egwSource:
@@ -113,7 +109,7 @@ const allLabels = {
     egwOpenError: 'No se pudo abrir este libro de EGW Writings.',
     legalLink: 'Aviso legal',
     close: 'Cerrar',
-    pioneers: 'Pioneros adventistas',
+    adventistWritings: 'Escritos adventistas',
     classics: 'Clásicos cristianos',
     chooseBook: 'Elige este libro y una edición por idioma',
     opensGutenberg: 'Se abre externamente en Project Gutenberg',
@@ -162,23 +158,20 @@ export default function LibraryScreen() {
     ({ collection }) => collection === 'christian-classics',
   );
 
-  const renderPublicDomainBooks = (
+  const renderPublicDomainBookCards = (
     books: typeof catalog.publicDomainWorks,
-  ) => (
-    <View style={[styles.bookGrid, useListLayout && styles.bookList]}>
-      {books.map((item) => (
-        <LibraryBookCard
-          key={item.id}
-          accessibilityHint={labels.opensGutenberg}
-          author={item.author}
-          coverSource={BOOK_COVERS[item.id]}
-          listLayout={useListLayout}
-          onPress={() => openURL(item.sourceUrl, labels.title, labels.openError)}
-          title={item.title}
-        />
-      ))}
-    </View>
-  );
+  ) =>
+    books.map((item) => (
+      <LibraryBookCard
+        key={item.id}
+        accessibilityHint={labels.opensGutenberg}
+        author={item.author}
+        coverSource={BOOK_COVERS[item.id]}
+        listLayout={useListLayout}
+        onPress={() => openURL(item.sourceUrl, labels.title, labels.openError)}
+        title={item.title}
+      />
+    ));
 
   return (
     <>
@@ -292,7 +285,7 @@ export default function LibraryScreen() {
           </View>
 
           <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-            {labels.egwTitle}
+            {labels.adventistWritings}
           </Text>
           <View style={[styles.bookGrid, useListLayout && styles.bookList]}>
             {EGW_BOOKS.map((work) => (
@@ -306,17 +299,15 @@ export default function LibraryScreen() {
                 title={work.workTitle[language]}
               />
             ))}
+            {renderPublicDomainBookCards(pioneerWorks)}
           </View>
-
-          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-            {labels.pioneers}
-          </Text>
-          {renderPublicDomainBooks(pioneerWorks)}
 
           <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             {labels.classics}
           </Text>
-          {renderPublicDomainBooks(christianClassics)}
+          <View style={[styles.bookGrid, useListLayout && styles.bookList]}>
+            {renderPublicDomainBookCards(christianClassics)}
+          </View>
         </View>
       </ScrollView>
 
