@@ -1,5 +1,6 @@
 import {
   getParallelStructuralContent,
+  getParallelVerseTexts,
   getSupportingBibleTranslation,
   indexChapterVerses,
 } from '@/services/BibleDualLanguage';
@@ -27,6 +28,26 @@ describe('dual-language Bible reader', () => {
 
     expect(verses.get(2)?.content).toEqual(['Second verse']);
     expect(verses.has(1)).toBe(false);
+  });
+
+  it('provides both aligned editions to verse-detail surfaces', () => {
+    const primary = {
+      chapter: {
+        content: [{ type: 'verse', number: 3, content: ['God is love.'] }],
+      },
+    } as any;
+    const supporting = {
+      chapter: {
+        content: [{ type: 'verse', number: 3, content: ['神就是愛。'] }],
+      },
+    } as any;
+
+    expect(
+      getParallelVerseTexts(primary, 'BSB', supporting, 'cmn_cuv', 3),
+    ).toEqual({
+      primaryText: 'God is love.',
+      supportingText: '神就是愛。',
+    });
   });
 
   it('pairs Psalm superscriptions even when sources classify them differently', () => {

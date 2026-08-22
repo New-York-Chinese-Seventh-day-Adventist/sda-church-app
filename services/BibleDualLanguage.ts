@@ -2,6 +2,7 @@ import type { SupportedLanguage } from '@/constants/LanguageContext';
 
 import {
   DEFAULT_TRANSLATION_MAP,
+  renderVerseToPlainText,
   SUPPORTED_TRANSLATIONS,
   type ChapterHeading,
   type ChapterHebrewSubtitle,
@@ -37,6 +38,30 @@ export const indexChapterVerses = (chapter: TranslationBookChapter | null) =>
       .filter((content): content is ChapterVerse => content.type === 'verse')
       .map((verse) => [verse.number, verse]),
   );
+
+/** Returns the aligned primary/supporting text shown in verse-detail surfaces. */
+export const getParallelVerseTexts = (
+  primaryChapter: TranslationBookChapter | null,
+  primaryTranslationId: string,
+  supportingChapter: TranslationBookChapter | null,
+  supportingTranslationId: string | null,
+  verseNumber: number,
+) => {
+  const primaryVerse = indexChapterVerses(primaryChapter).get(verseNumber);
+  if (!primaryVerse) return null;
+
+  const supportingVerse = supportingTranslationId
+    ? indexChapterVerses(supportingChapter).get(verseNumber)
+    : null;
+
+  return {
+    primaryText: renderVerseToPlainText(primaryTranslationId, primaryVerse),
+    supportingText:
+      supportingVerse && supportingTranslationId
+        ? renderVerseToPlainText(supportingTranslationId, supportingVerse)
+        : null,
+  };
+};
 
 type StructuralChapterContent = ChapterHeading | ChapterHebrewSubtitle;
 

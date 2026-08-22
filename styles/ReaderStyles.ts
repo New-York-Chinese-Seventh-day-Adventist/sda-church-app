@@ -471,6 +471,13 @@ export const createReaderStyles = (textScale: TextScale) => {
     fontSize: scaleTypographyMetric(16, textScale),
     lineHeight: scaleTypographyMetric(24, textScale),
   },
+  supportingDetailSection: {
+    marginTop: scaleTypographyMetric(12, textScale),
+  },
+  supportingDetailText: {
+    fontSize: scaleTypographyMetric(15, textScale),
+    lineHeight: scaleTypographyMetric(22, textScale),
+  },
   modalContent: { margin: 20, borderRadius: 12, maxHeight: '80%', overflow: 'hidden' },
   audioSettingsContent: {
     marginHorizontal: 12,

@@ -56,6 +56,7 @@ import {
 import { loadBibleChapterWithRetry } from '@/services/BibleChapterLoader';
 import {
   getParallelStructuralContent,
+  getParallelVerseTexts,
   indexChapterVerses,
 } from '@/services/BibleDualLanguage';
 import {
@@ -69,9 +70,12 @@ import {
 } from '@/services/AndroidBackgroundAudioGuidance';
 import * as BibleService from '@/services/BibleService';
 import {
+  groupSavedVerses,
   getSavedVerseKey,
   loadSavedVerses,
+  SavedVerseGroup,
   SavedVerseReference,
+  SavedVerseSort,
   storeSavedVerses,
 } from '@/services/SavedVersesService';
 import { useNavigationStyles } from '@/styles/NavigationStyles';
@@ -105,10 +109,17 @@ const getAudioReaderLabel = (reader: string) =>
     .map((part) => part.charAt(0).toLocaleUpperCase() + part.slice(1))
     .join(' ');
 
-type SavedVerseDisplay = SavedVerseReference & {
+type SavedVerseDisplay = SavedVerseGroup & {
   bookName: string;
   text?: string;
 };
+
+const getSavedVerseRangeLabel = (
+  verse: Pick<SavedVerseGroup, 'verseStart' | 'verseEnd'>,
+) =>
+  verse.verseStart === verse.verseEnd
+    ? String(verse.verseStart)
+    : `${verse.verseStart}-${verse.verseEnd}`;
 
 const savedChapterCache = new Map<
   string,
@@ -155,6 +166,8 @@ const uiLabels = {
     savedVerses: 'Saved Verses',
     savedVersesSubtitle: 'Shown in {translation}',
     noSavedVerses: 'Your saved verses will appear here.',
+    sortRecentlySaved: 'Recently saved',
+    sortBibleOrder: 'Bible order',
     selectedVersesLabel: (count: number) =>
       count === 1 ? '1 verse selected' : `${count} verses selected`,
     verseInteractionHint: 'Tap a verse for details • Press and hold to select',
@@ -234,6 +247,8 @@ const uiLabels = {
     savedVerses: '已儲存經文',
     savedVersesSubtitle: '以 {translation} 顯示',
     noSavedVerses: '您儲存的經文會顯示在這裡。',
+    sortRecentlySaved: '最近儲存',
+    sortBibleOrder: '聖經順序',
     selectedVersesLabel: (count: number) => `已選取 ${count} 節經文`,
     verseInteractionHint: '點按經文查看詳情 • 長按以選取',
     verseHelpTitle: '經文操作',
@@ -311,6 +326,8 @@ const uiLabels = {
     savedVerses: '已保存经文',
     savedVersesSubtitle: '以 {translation} 显示',
     noSavedVerses: '您保存的经文会显示在这里。',
+    sortRecentlySaved: '最近保存',
+    sortBibleOrder: '圣经顺序',
     selectedVersesLabel: (count: number) => `已选择 ${count} 节经文`,
     verseInteractionHint: '点击经文查看详情 • 长按以选择',
     verseHelpTitle: '经文操作',
@@ -388,6 +405,8 @@ const uiLabels = {
     savedVerses: 'Versículos guardados',
     savedVersesSubtitle: 'Mostrados en {translation}',
     noSavedVerses: 'Tus versículos guardados aparecerán aquí.',
+    sortRecentlySaved: 'Guardados recientemente',
+    sortBibleOrder: 'Orden bíblico',
     selectedVersesLabel: (count: number) =>
       count === 1
         ? '1 versículo seleccionado'
@@ -589,6 +608,7 @@ export default function BibleScreen() {
   const chapterLoadAttemptRef = useRef(0);
   const [savedVerses, setSavedVerses] = useState<SavedVerseReference[]>([]);
   const [savedVerseDisplays, setSavedVerseDisplays] = useState<SavedVerseDisplay[]>([]);
+  const [savedVerseSort, setSavedVerseSort] = useState<SavedVerseSort>('recent');
   const [savedVersesLoading, setSavedVersesLoading] = useState(false);
   const [originalVerse, setOriginalVerse] =
     useState<BibleService.OriginalLanguageVerse | null>(null);
@@ -1606,40 +1626,46 @@ export default function BibleScreen() {
     if (modalType !== 'saved') return;
 
     let cancelled = false;
-    const orderedVerses = [...savedVerses].sort((a, b) => b.savedAt - a.savedAt);
-    const initialDisplays = orderedVerses.map((verse) => ({
-      ...verse,
-      bookName: books.find((item) => item.id === verse.bookId)?.name || verse.bookId,
+    const groupedVerses = groupSavedVerses(
+      savedVerses,
+      books.map((item) => item.id),
+      savedVerseSort,
+    );
+    const initialDisplays = groupedVerses.map((group) => ({
+      ...group,
+      bookName: books.find((item) => item.id === group.bookId)?.name || group.bookId,
     }));
     setSavedVerseDisplays(initialDisplays);
 
-    if (orderedVerses.length === 0) {
+    if (groupedVerses.length === 0) {
       setSavedVersesLoading(false);
       return;
     }
 
     setSavedVersesLoading(true);
     Promise.all(
-      initialDisplays.map(async (savedVerse) => {
+      initialDisplays.map(async (savedGroup) => {
         try {
           const savedChapter = await getSavedChapter(
             supportedTranslation.id,
-            savedVerse.bookId,
-            savedVerse.chapter,
+            savedGroup.bookId,
+            savedGroup.chapter,
           );
-          const verse = savedChapter.chapter.content.find(
-            (item): item is BibleService.ChapterVerse =>
-              item.type === 'verse' && item.number === savedVerse.verse,
-          );
+          const chapterVerses = indexChapterVerses(savedChapter);
+          const text = savedGroup.verses
+            .map((savedVerse) => chapterVerses.get(savedVerse.verse))
+            .filter((verse): verse is BibleService.ChapterVerse => !!verse)
+            .map((verse) =>
+              BibleService.renderVerseToPlainText(supportedTranslation.id, verse),
+            )
+            .join(' ');
           return {
-            ...savedVerse,
-            text: verse
-              ? BibleService.renderVerseToPlainText(supportedTranslation.id, verse)
-              : undefined,
+            ...savedGroup,
+            text: text || undefined,
           };
         } catch (error) {
           console.error('Failed to load a saved Bible verse:', error);
-          return savedVerse;
+          return savedGroup;
         }
       }),
     ).then((displays) => {
@@ -1652,7 +1678,7 @@ export default function BibleScreen() {
     return () => {
       cancelled = true;
     };
-  }, [modalType, savedVerses, supportedTranslation.id, books]);
+  }, [modalType, savedVerses, savedVerseSort, supportedTranslation.id, books]);
 
   const getVersePlainText = (verseNum: number) => {
     if (!chapterData) return '';
@@ -1708,11 +1734,11 @@ export default function BibleScreen() {
     }
   };
 
-  const removeSavedVerse = async (savedVerse: SavedVerseReference) => {
+  const removeSavedVerseGroup = async (savedGroup: SavedVerseGroup) => {
     const previousVerses = savedVerses;
-    const targetKey = getSavedVerseKey(savedVerse);
+    const targetKeys = new Set(savedGroup.verses.map(getSavedVerseKey));
     const nextVerses = savedVerses.filter(
-      (verse) => getSavedVerseKey(verse) !== targetKey,
+      (verse) => !targetKeys.has(getSavedVerseKey(verse)),
     );
     setSavedVerses(nextVerses);
     try {
@@ -1723,19 +1749,19 @@ export default function BibleScreen() {
     }
   };
 
-  const openSavedVerse = (savedVerse: SavedVerseReference) => {
-    const matchingBook = books.find((item) => item.id === savedVerse.bookId);
+  const openSavedVerse = (savedGroup: SavedVerseGroup) => {
+    const matchingBook = books.find((item) => item.id === savedGroup.bookId);
     if (!matchingBook) return;
 
     const isCurrentChapter =
-      book?.id === savedVerse.bookId && chapterNum === savedVerse.chapter;
-    pendingSavedVerseScroll.current = isCurrentChapter ? null : savedVerse.verse;
+      book?.id === savedGroup.bookId && chapterNum === savedGroup.chapter;
+    pendingSavedVerseScroll.current = isCurrentChapter ? null : savedGroup.verseStart;
     setBook(matchingBook);
-    setChapterNum(savedVerse.chapter);
+    setChapterNum(savedGroup.chapter);
     closeModal();
     if (isCurrentChapter) {
       setTimeout(() => {
-        const verseY = versePositions.current[savedVerse.verse];
+        const verseY = versePositions.current[savedGroup.verseStart];
         if (verseY !== undefined) {
           scrollRef.current?.scrollTo({ y: Math.max(0, verseY - 20), animated: true });
         }
@@ -2243,6 +2269,25 @@ export default function BibleScreen() {
   const supportingVerses = useMemo(
     () => indexChapterVerses(supportingChapterData),
     [supportingChapterData],
+  );
+  const selectedVerseTexts = useMemo(
+    () =>
+      selectedVerseNum
+        ? getParallelVerseTexts(
+            chapterData,
+            supportedTranslation.id,
+            supportingChapterData,
+            supportingTranslation?.id || null,
+            selectedVerseNum,
+          )
+        : null,
+    [
+      chapterData,
+      selectedVerseNum,
+      supportedTranslation.id,
+      supportingChapterData,
+      supportingTranslation?.id,
+    ],
   );
 
   const renderStructuralText = (
@@ -3747,6 +3792,48 @@ export default function BibleScreen() {
                   )}
                 </Text>
                 <Divider />
+                <View style={styles.savedSortRow}>
+                  {(
+                    [
+                      { value: 'recent', label: labels.sortRecentlySaved },
+                      { value: 'bible', label: labels.sortBibleOrder },
+                    ] as const
+                  ).map((option) => {
+                    const selected = savedVerseSort === option.value;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        onPress={() => setSavedVerseSort(option.value)}
+                        style={[
+                          styles.savedSortButton,
+                          {
+                            backgroundColor: selected
+                              ? theme.colors.secondaryContainer
+                              : theme.colors.surface,
+                            borderColor: selected
+                              ? theme.colors.primary
+                              : theme.colors.outlineVariant,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.savedSortText,
+                            {
+                              color: selected
+                                ? theme.colors.onSecondaryContainer
+                                : theme.colors.onSurfaceVariant,
+                            },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
                 {savedVerseDisplays.length === 0 ? (
                   <View style={styles.savedEmptyState}>
                     {savedVersesLoading ? (
@@ -3773,13 +3860,15 @@ export default function BibleScreen() {
                 ) : (
                   <FlatList
                     data={savedVerseDisplays}
-                    keyExtractor={getSavedVerseKey}
+                    keyExtractor={(item) =>
+                      `${item.bookId}:${item.chapter}:${item.verseStart}-${item.verseEnd}`
+                    }
                     contentContainerStyle={{ paddingVertical: 4 }}
                     renderItem={({ item }) => (
                       <View style={styles.savedVerseRow}>
                         <TouchableOpacity
                           accessibilityRole="button"
-                          accessibilityLabel={`${item.bookName} ${item.chapter}:${item.verse}`}
+                          accessibilityLabel={`${item.bookName} ${item.chapter}:${getSavedVerseRangeLabel(item)}`}
                           onPress={() => openSavedVerse(item)}
                           style={styles.savedVerseMainAction}
                         >
@@ -3800,7 +3889,7 @@ export default function BibleScreen() {
                                 },
                               ]}
                             >
-                              {item.bookName} {item.chapter}:{item.verse}
+                              {item.bookName} {item.chapter}:{getSavedVerseRangeLabel(item)}
                             </Text>
                             {(item.text || savedVersesLoading) && (
                               <Text
@@ -3816,8 +3905,8 @@ export default function BibleScreen() {
                         </TouchableOpacity>
                         <IconButton
                           icon="bookmark-remove-outline"
-                          accessibilityLabel={`${labels.removeAction}: ${item.bookName} ${item.chapter}:${item.verse}`}
-                          onPress={() => removeSavedVerse(item)}
+                          accessibilityLabel={`${labels.removeAction}: ${item.bookName} ${item.chapter}:${getSavedVerseRangeLabel(item)}`}
+                          onPress={() => removeSavedVerseGroup(item)}
                         />
                       </View>
                     )}
@@ -3835,9 +3924,37 @@ export default function BibleScreen() {
                 <Divider />
                 <ScrollView style={ReaderStyles.modalScroll}>
                   <View style={ReaderStyles.detailSection}>
+                    {supportingTranslation && selectedVerseTexts?.supportingText && (
+                      <Text
+                        variant="labelSmall"
+                        style={{ color: theme.colors.primary, marginBottom: 4 }}
+                      >
+                        {labels.primaryTranslation}: {getTranslationLabel(supportedTranslation)}
+                      </Text>
+                    )}
                     <Text style={[ReaderStyles.detailText, { fontWeight: '500' }]}>
-                      {getVersePlainText(selectedVerseNum || 0)}
+                      {selectedVerseTexts?.primaryText ||
+                        getVersePlainText(selectedVerseNum || 0)}
                     </Text>
+                    {supportingTranslation && selectedVerseTexts?.supportingText && (
+                      <View style={ReaderStyles.supportingDetailSection}>
+                        <Text
+                          variant="labelSmall"
+                          style={{ color: theme.colors.tertiary, marginBottom: 4 }}
+                        >
+                          {labels.supportingTranslation}:{' '}
+                          {getTranslationLabel(supportingTranslation)}
+                        </Text>
+                        <Text
+                          style={[
+                            ReaderStyles.supportingDetailText,
+                            { color: theme.colors.onSurfaceVariant },
+                          ]}
+                        >
+                          {selectedVerseTexts.supportingText}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <Divider style={{ marginBottom: 16 }} />
                   {originalVerseLoading ? (
@@ -4577,6 +4694,30 @@ const createStyles = (textScale: TextScale, uiTextScale: TextScale) => StyleShee
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  savedSortRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  savedSortButton: {
+    borderRadius: 999,
+    borderWidth: 1,
+    flexGrow: 1,
+    minHeight: 44,
+    minWidth: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  savedSortText: {
+    fontSize: scaleTypographyMetric(14, uiTextScale),
+    lineHeight: scaleTypographyMetric(20, uiTextScale),
+    fontWeight: '700',
+    textAlign: 'center',
   },
   savedVerseMainAction: {
     flex: 1,

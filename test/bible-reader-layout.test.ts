@@ -33,6 +33,10 @@ describe('Bible reader text scaling', () => {
       fontSize: 32,
       lineHeight: 48,
     });
+    expect(StyleSheet.flatten(reader.supportingDetailText)).toMatchObject({
+      fontSize: 30,
+      lineHeight: 44,
+    });
     expect(StyleSheet.flatten(document.description)).toMatchObject({
       fontSize: 32,
       lineHeight: 44,
