@@ -1,6 +1,7 @@
 import {
   BulletinLocation,
   fetchBulletin,
+  getInvocationAssignee,
   getNextBulletinRolloverAt,
   getUpcomingSabbathDates,
   hasBulletinValue,
@@ -68,6 +69,14 @@ describe('bulletin service', () => {
     const location = emptyLocation();
     location.sabbathSchool = 'Jordan F.';
     expect(isBulletinLocationEmpty(location)).toBe(false);
+  });
+
+  it('assigns Invocation to the sermon speaker, not the Sabbath School prayer', () => {
+    const location = emptyLocation();
+    location.sermon = 'Sermon Speaker';
+    location.ssOpeningPrayer = 'Sabbath School Prayer';
+
+    expect(getInvocationAssignee(location)).toBe('Sermon Speaker');
   });
 
   it('treats only blank and TBD values as absent optional bulletin data', () => {

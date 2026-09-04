@@ -21,7 +21,7 @@ export type BulletinLocation = {
   specialMusic?: string;
   pianist?: string;
   ssChair?: string;
-  openingPrayer?: string;
+  ssOpeningPrayer?: string;
   closingPrayer?: string;
   sabbathSchool?: string;
 };
@@ -84,6 +84,9 @@ export const hasBulletinValue = (value: string | undefined) => {
   return Boolean(normalized && normalized.toUpperCase() !== 'TBD');
 };
 
+export const getInvocationAssignee = (location: BulletinLocation) =>
+  location.sermon;
+
 export const isBulletinLocationEmpty = (location: BulletinLocation) =>
   ![
     location.hymnOfPraise.english,
@@ -103,7 +106,7 @@ export const isBulletinLocationEmpty = (location: BulletinLocation) =>
     location.specialMusic,
     location.pianist,
     location.ssChair,
-    location.openingPrayer,
+    location.ssOpeningPrayer,
     location.closingPrayer,
     location.sabbathSchool,
   ].some(hasBulletinValue);

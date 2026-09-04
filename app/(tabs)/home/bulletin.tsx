@@ -29,6 +29,7 @@ import {
   BulletinLocation,
   fetchBulletin,
   getCachedBulletin,
+  getInvocationAssignee,
   getNextBulletinRolloverAt,
   getRefreshAvailableAt,
   getUpcomingSabbathDates,
@@ -109,7 +110,7 @@ const LABELS = {
       offeringPrayer: 'Offering Prayer',
       pianist: 'Pianist',
       ssChair: 'Sabbath School Chair',
-      openingPrayer: 'Opening Prayer',
+      ssOpeningPrayer: 'Sabbath School Opening Prayer',
       closingPrayer: 'Closing Prayer',
       sabbathSchool: 'Sabbath School',
     },
@@ -172,7 +173,7 @@ const LABELS = {
       offeringPrayer: '奉獻禱告',
       pianist: '司琴',
       ssChair: '安息日學主席',
-      openingPrayer: '開會禱告',
+      ssOpeningPrayer: '安息日學開始禱告',
       closingPrayer: '閉會禱告',
       sabbathSchool: '安息日學',
     },
@@ -235,7 +236,7 @@ const LABELS = {
       offeringPrayer: '奉献祷告',
       pianist: '司琴',
       ssChair: '安息日学主席',
-      openingPrayer: '开会祷告',
+      ssOpeningPrayer: '安息日学开始祷告',
       closingPrayer: '闭会祷告',
       sabbathSchool: '安息日学',
     },
@@ -298,7 +299,7 @@ const LABELS = {
       offeringPrayer: 'Oración de Ofrenda',
       pianist: 'Pianista',
       ssChair: 'Dirección de Escuela Sabática',
-      openingPrayer: 'Oración Inicial',
+      ssOpeningPrayer: 'Oración inicial de Escuela Sabática',
       closingPrayer: 'Oración Final',
       sabbathSchool: 'Escuela Sabática',
     },
@@ -718,7 +719,7 @@ export default function WeeklyBulletinScreen() {
         {isQueens && (
           <DataRow
             label={labels.program.invocation}
-            value={getRosterValue(location.openingPrayer, labels)}
+            value={getRosterValue(getInvocationAssignee(location), labels)}
             emptyText={labels.notAssigned}
           />
         )}
@@ -828,6 +829,7 @@ export default function WeeklyBulletinScreen() {
           [labels.roles.childrenTeacher, location.childrenTeacher],
           [labels.roles.pianist, location.pianist],
           [labels.roles.ssChair, location.ssChair],
+          [labels.roles.ssOpeningPrayer, location.ssOpeningPrayer],
         ]
       : [
           [labels.roles.chairPastoralPrayer, location.chairPastoralPrayer],
