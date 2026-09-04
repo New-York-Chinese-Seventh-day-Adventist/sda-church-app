@@ -40,7 +40,7 @@
     "opencc-js": "^1.4.1",
     "pinyin-pro": "^3.29.3",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react-dom": "19.2.8",
     "react-native": "0.83.6",
     "react-native-paper": "^5.15.1",
     "react-native-reanimated": "4.2.1",
