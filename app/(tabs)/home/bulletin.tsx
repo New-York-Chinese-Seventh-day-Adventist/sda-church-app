@@ -29,7 +29,6 @@ import {
   BulletinLocation,
   fetchBulletin,
   getCachedBulletin,
-  getInvocationAssignee,
   getNextBulletinRolloverAt,
   getRefreshAvailableAt,
   getUpcomingSabbathDates,
@@ -719,7 +718,7 @@ export default function WeeklyBulletinScreen() {
         {isQueens && (
           <DataRow
             label={labels.program.invocation}
-            value={getRosterValue(getInvocationAssignee(location), labels)}
+            value={getRosterValue(location.sermon, labels)}
             emptyText={labels.notAssigned}
           />
         )}

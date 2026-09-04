@@ -84,9 +84,6 @@ export const hasBulletinValue = (value: string | undefined) => {
   return Boolean(normalized && normalized.toUpperCase() !== 'TBD');
 };
 
-export const getInvocationAssignee = (location: BulletinLocation) =>
-  location.sermon;
-
 export const isBulletinLocationEmpty = (location: BulletinLocation) =>
   ![
     location.hymnOfPraise.english,
