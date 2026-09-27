@@ -56,6 +56,14 @@ const renderDiagram = async (sourceName, tempDir, configPath) => {
     svg = svg.replaceAll(`href="${url}"`, `href="data:image/svg+xml;base64,${logo}"`);
   }
 
+  // Mermaid writes an inline dash pattern on every edge to leave room for the
+  // arrowhead, and sometimes computes one long dash for a dotted edge, which
+  // then looks solid. Reset dotted edges to a plain dotted pattern.
+  svg = svg.replace(
+    /(<path[^>]*class="[^"]*edge-pattern-dotted[^"]*"[^>]*style=")stroke-dasharray:[^;"]*;?/g,
+    '$1stroke-dasharray: 2 2;',
+  );
+
   if (/<image[^>]+href="https?:/.test(svg)) {
     throw new Error(`${sourceName} still references an external image; add its host to LOGO_URL_PATTERN.`);
   }

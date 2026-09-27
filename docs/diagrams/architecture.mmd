@@ -37,7 +37,8 @@ flowchart TB
   deps["🌐 Media and third-party services<br/>church media on Adventist Connect,<br/>Bible text and audio, Sabbath School,<br/>hymnals, library, worship media, giving<br/>(see App dependencies)"]
 
   members -. scans QR code .-> site
-  site -. store link for the phone .-> play & appstore
+  site -. Android link .-> play
+  site -. iPhone link .-> appstore
   play --> android
   appstore --> ios
 
@@ -55,7 +56,8 @@ flowchart TB
   release -- release PR --> main
   main --> actions
   actions --> binaries
-  binaries -. admins download and upload .-> play & appstore
+  binaries -. admin uploads AAB in Play Console .-> play
+  binaries -. admin uploads IPA in App Store Connect .-> appstore
   admins -. if Drive QR files are compromised .-> qr
   qr -. regenerates .-> assets
 
