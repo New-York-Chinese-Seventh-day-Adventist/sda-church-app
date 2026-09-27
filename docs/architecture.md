@@ -129,7 +129,8 @@ and may not be possible, so protect them above everything else.
   - native iOS and Android builds after each merge to `main`;
   - Android preview APKs for pull requests into `main`;
   - the [website](#website-appnyccsdaorg) deploy to GitHub Pages;
-  - Apps Script deploys through `clasp`;
+  - bulletin Apps Script deploys, using [`clasp`](https://github.com/google/clasp),
+    Google's command-line tool for uploading Apps Script code;
   - bulletin QR code generation into Google Drive;
   - a daily [external dependency monitor](operations/admin-runbook.md#external-dependency-monitor-alerts).
 - Publishing to the stores through [fastlane](https://fastlane.tools/) is planned
@@ -151,8 +152,11 @@ and may not be possible, so protect them above everything else.
     them in the Apple Developer account and update these secrets, or iOS builds
     fail. The iOS workflow expects these, but they haven't been added yet; they
     arrive with the 0.39.0 store certificate setup.
-  - **Apps Script:** the `clasp` login and the project and deployment IDs
-    (`CLASPRC_JSON`, `APPS_SCRIPT_PROJECT_ID`, `APPS_SCRIPT_DEPLOYMENT_ID`).
+  - **Google account login:** a saved login for a church Google account
+    (`CLASPRC_JSON`), created by signing in with `clasp`. It uploads the bulletin
+    Apps Script code and also the QR codes and preview APKs to Google Drive. The
+    Apps Script project and deployment IDs (`APPS_SCRIPT_PROJECT_ID`,
+    `APPS_SCRIPT_DEPLOYMENT_ID`) say which script to update.
 
 The [Admin Runbook](operations/admin-runbook.md) covers approving production runs
 and rotating the credentials these workflows use.
@@ -231,7 +235,8 @@ These are generated per organization and can't be copied from anyone else.
 - **Apple distribution certificate** (`.p12`) and **App Store provisioning
   profile** (`.mobileprovision`), renewed every 12 months. Not added to GitHub
   Secrets yet.
-- **Google `clasp` credentials** (`CLASPRC_JSON`) and the Apps Script project and
+- **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool) and
+  the Apps Script project and
   deployment IDs.
 
 Where each secret goes and how to rotate it is covered in
