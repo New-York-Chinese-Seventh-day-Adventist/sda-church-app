@@ -27,7 +27,7 @@ does and what still needs a person.
 | Role | Who | Can |
 | --- | --- | --- |
 | Repository admin | Organization and repository admins | Run manual workflows, create `release/*` branches, merge to `main` (the ruleset lets admins merge without a second approval) |
-| `release-approvers` team | Members of the GitHub team | Approve jobs that use the `production` Environment |
+| `release-approvers` team | Members of the GitHub team | Approve jobs that use the `production` Environment; review every pull request (requested automatically through `.github/CODEOWNERS`) |
 | Contributor | Anyone with a fork | Open pull requests into a `release/*` branch |
 
 The `production` Environment holds every credential: Google (`CLASPRC_JSON`), Apple
@@ -36,6 +36,22 @@ each run waits for a `release-approvers` member to approve it. Admins can also b
 that approval. To require approval even from admins, turn off **Allow administrators
 to bypass configured protection rules** under **Settings → Environments →
 production**.
+
+### Getting notified only when action is needed
+
+Every item that needs a person is addressed to someone, so maintainers don't have to
+watch the repository to see it:
+
+| Needs action | How it reaches you |
+| --- | --- |
+| A pull request to review | `.github/CODEOWNERS` requests a review from `release-approvers` on every PR. The team needs **Write** access under **Settings → Collaborators and teams**, or GitHub requests no one. |
+| A production deploy to approve | The `production` Environment waits for a `release-approvers` member. |
+| A monitor alert (external dependencies, store toolchain) | The alert issue is assigned to the usernames in the `MONITOR_ALERT_ASSIGNEES` Actions variable (comma-separated) under **Settings → Secrets and variables → Actions → Variables**. If it is empty, the alert @mentions whoever triggered the run. |
+
+With that in place, a maintainer can set **Watching** notifications to **on GitHub**
+only, keep email for **Participating, @mentions and custom**, and choose **No
+additional events** under **Customize email updates**. Email then arrives only for
+review requests, deploy approvals, assignments, and @mentions.
 
 ## Approving a production deployment
 
@@ -215,7 +231,9 @@ package updates.
 manually.
 
 It opens or updates an issue when an outside service the app depends on fails, and
-closes the issue when the service recovers. See
+closes the issue when the service recovers. A new alert is assigned to the users in
+`MONITOR_ALERT_ASSIGNEES`; see
+[Getting notified only when action is needed](#getting-notified-only-when-action-is-needed). See
 [External dependency monitor](external-dependency-monitor.md).
 
 ## Credentials that need attention
