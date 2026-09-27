@@ -11,7 +11,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const SOURCES = Object.freeze({
-  androidTargetApi: 'https://developer.android.com/google/play/requirements/target-sdk',
+  // hl=en: without it, developer.android.com sometimes serves another
+  // language (Indonesian was seen), which the English patterns can't read.
+  androidTargetApi: 'https://developer.android.com/google/play/requirements/target-sdk?hl=en',
   appleUpcoming: 'https://developer.apple.com/news/upcoming-requirements/',
   appleSubmitting: 'https://developer.apple.com/app-store/submitting/',
 });
@@ -113,7 +115,9 @@ const formatDate = (date) => date.toISOString().slice(0, 10);
  * has kind 'requirement' when the app falls short, which the workflow labels
  * critical, or 'unreadable' when the page could not be parsed.
  */
-const evaluateRequirement = ({ requirements, today, meets, describe, name, source }) => {
+const getDaysUntil = (date, today) => Math.ceil((date - today) / 86400000);
+
+const evaluateRequirement = ({ requirements, today, meets, describe, name, store, fix, source }) => {
   if (!requirements.length) {
     return {
       name,
@@ -135,6 +139,10 @@ const evaluateRequirement = ({ requirements, today, meets, describe, name, sourc
       name,
       status: 'failed',
       kind: 'requirement',
+      store,
+      fix,
+      deadline: formatDate(inForce.effective),
+      daysLeft: getDaysUntil(inForce.effective, today),
       detail: `Below the requirement in force since ${formatDate(inForce.effective)}: ${describe(inForce)}. Store uploads will be rejected.`,
     };
   }
@@ -143,6 +151,10 @@ const evaluateRequirement = ({ requirements, today, meets, describe, name, sourc
       name,
       status: 'failed',
       kind: 'requirement',
+      store,
+      fix,
+      deadline: formatDate(upcoming.effective),
+      daysLeft: getDaysUntil(upcoming.effective, today),
       detail: `A new requirement starts ${formatDate(upcoming.effective)}: ${describe(upcoming)}. Update before then.`,
     };
   }
@@ -160,6 +172,8 @@ const evaluateStoreToolchain = ({ app, androidRequirements, appleRequirements, l
   const checks = [
     evaluateRequirement({
       name: `Google Play target API (app targets ${app.androidTargetApi})`,
+      store: 'Google Play',
+      fix: 'the Android target API is raised',
       source: SOURCES.androidTargetApi,
       requirements: androidRequirements,
       today,
@@ -168,6 +182,8 @@ const evaluateStoreToolchain = ({ app, androidRequirements, appleRequirements, l
     }),
     evaluateRequirement({
       name: `App Store Xcode (iOS build uses Xcode ${app.xcodeVersion})`,
+      store: 'App Store Connect',
+      fix: 'the iOS build moves to the required Xcode',
       source: SOURCES.appleUpcoming,
       requirements: appleRequirements,
       today,
@@ -192,7 +208,10 @@ const evaluateStoreToolchain = ({ app, androidRequirements, appleRequirements, l
 
 const fetchText = async (url) => {
   const response = await fetch(url, {
-    headers: { 'User-Agent': 'sda-church-app store toolchain monitor' },
+    headers: {
+      'Accept-Language': 'en-US,en;q=0.9',
+      'User-Agent': 'sda-church-app store toolchain monitor',
+    },
     signal: AbortSignal.timeout(30000),
   });
   if (!response.ok) {
@@ -201,10 +220,25 @@ const fetchText = async (url) => {
   return htmlToText(await response.text());
 };
 
+/**
+ * One line per store whose requirement the app misses, earliest deadline
+ * first, saying when uploads start being rejected (or that they already are).
+ */
+const formatDeadlines = (checks) =>
+  checks
+    .filter((check) => check.kind === 'requirement')
+    .sort((a, b) => a.daysLeft - b.daysLeft)
+    .map((check) =>
+      check.daysLeft <= 0
+        ? `**Deadline passed on ${check.deadline}:** ${check.store} is rejecting uploads now, until ${check.fix}.`
+        : `**Deadline: ${check.deadline} (${check.daysLeft} day${check.daysLeft === 1 ? '' : 's'} left):** after that, ${check.store} rejects uploads until ${check.fix}.`,
+    );
+
 const formatReport = ({ checks, notes }) =>
   [
     '### Store toolchain requirements',
     '',
+    ...formatDeadlines(checks).flatMap((line) => [line, '']),
     ...checks.map(
       (check) => `- ${check.status === 'passed' ? '✅' : '❌'} **${check.name}**: ${check.detail}`,
     ),
@@ -242,7 +276,10 @@ const main = async () => {
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   }
   if (reportPath) {
-    fs.writeFileSync(reportPath, `${JSON.stringify({ ...result, markdown }, null, 2)}\n`);
+    fs.writeFileSync(
+      reportPath,
+      `${JSON.stringify({ ...result, deadlines: formatDeadlines(result.checks), markdown }, null, 2)}\n`,
+    );
   }
   if (result.checks.some((check) => check.status === 'failed')) {
     process.exitCode = 1;
@@ -260,6 +297,7 @@ module.exports = {
   LEAD_DAYS,
   SOURCES,
   evaluateStoreToolchain,
+  formatDeadlines,
   formatReport,
   htmlToText,
   parseAndroidTargetRequirements,

@@ -1,5 +1,7 @@
 const {
   evaluateStoreToolchain,
+  formatDeadlines,
+  formatReport,
   htmlToText,
   parseAndroidTargetRequirements,
   parseAppleLatestXcode,
@@ -100,6 +102,38 @@ describe('store toolchain evaluation', () => {
     });
 
     expect(checks[1].status).toBe('passed');
+  });
+
+  it('leads the report with each missed deadline, earliest first', () => {
+    const result = evaluate({
+      app: { ...app, androidTargetApi: 35 },
+      appleRequirements: [
+        ...parseAppleXcodeRequirements(APPLE_TEXT),
+        { effective: day('2026-12-01'), xcodeMajor: 27, iosSdk: 27 },
+      ],
+    });
+
+    expect(result.checks[1]).toMatchObject({ deadline: '2026-12-01', daysLeft: 65 });
+    expect(formatDeadlines(result.checks)).toEqual([
+      '**Deadline passed on 2026-08-31:** Google Play is rejecting uploads now, until the Android target API is raised.',
+      '**Deadline: 2026-12-01 (65 days left):** after that, App Store Connect rejects uploads until the iOS build moves to the required Xcode.',
+    ]);
+    expect(formatReport(result)).toMatch(/^### Store toolchain requirements\n\n\*\*Deadline passed on 2026-08-31/);
+  });
+
+  it('says "1 day left" on the day before a deadline', () => {
+    const result = evaluate({
+      today: day('2026-11-30'),
+      appleRequirements: [{ effective: day('2026-12-01'), xcodeMajor: 27, iosSdk: 27 }],
+    });
+
+    expect(formatDeadlines(result.checks)[0]).toContain('(1 day left)');
+  });
+
+  it('gives no deadline for a page that could not be read', () => {
+    const result = evaluate({ androidRequirements: [] });
+
+    expect(formatDeadlines(result.checks)).toEqual([]);
   });
 
   it('fails instead of passing when a page can no longer be read', () => {
