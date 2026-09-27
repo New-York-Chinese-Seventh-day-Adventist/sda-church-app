@@ -95,6 +95,25 @@ export default function LibraryHubScreen() {
           title={labels.title}
         />
         <View style={styles.content}>
+        {/* Topics come first so visitors meet the general Christian shelves before
+            the Adventist pioneers. */}
+        <List.Section>
+          <Text
+            variant="titleLarge"
+            style={[
+              documentStyles.sectionTitle,
+              {
+                color: theme.colors.onSurface,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {labels.topics}
+          </Text>
+          <MenuCard title={labels.classics} description={labels.classicsSub} icon="book-cross" onPress={() => open('classics')} />
+          <MenuCard title={labels.ministry} description={labels.ministrySub} icon="hand-heart" onPress={() => open('ministry')} />
+          <MenuCard title={labels.family} description={labels.familySub} icon="home-heart" onPress={() => open('family')} />
+        </List.Section>
         <List.Section>
           <Text
             variant="titleLarge"
@@ -128,23 +147,6 @@ export default function LibraryHubScreen() {
           </Text>
           <MenuCard title={labels.youth} description={labels.youthSub} icon="account-group" onPress={() => open('youth')} />
           <MenuCard title={labels.children} description={labels.childrenSub} icon="account-child" onPress={() => open('children')} />
-        </List.Section>
-        <List.Section>
-          <Text
-            variant="titleLarge"
-            style={[
-              documentStyles.sectionTitle,
-              {
-                color: theme.colors.onSurface,
-                borderBottomColor: theme.colors.outlineVariant,
-              },
-            ]}
-          >
-            {labels.topics}
-          </Text>
-          <MenuCard title={labels.ministry} description={labels.ministrySub} icon="hand-heart" onPress={() => open('ministry')} />
-          <MenuCard title={labels.family} description={labels.familySub} icon="home-heart" onPress={() => open('family')} />
-          <MenuCard title={labels.classics} description={labels.classicsSub} icon="book-cross" onPress={() => open('classics')} />
         </List.Section>
         </View>
       </ScrollView>

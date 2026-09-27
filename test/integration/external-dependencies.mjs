@@ -266,7 +266,7 @@ await record('daily English hymn page sample', 'Hymns for Worship', async () => 
 
 const libraryCatalogSource = await readFile('features/library/LibraryCatalog.ts', 'utf8');
 const gutenbergBooks = [...libraryCatalogSource.matchAll(
-  /sourceUrl:\s*'(https:\/\/www\.gutenberg\.org\/ebooks\/(\d+))'/g,
+  /sourceUrl:\s*'(https:\/\/(?:www\.)?gutenberg\.org\/ebooks\/(\d+))'/g,
 )].map(([, url, ebookId]) => ({ url, ebookId }));
 
 const archiveBooks = [...libraryCatalogSource.matchAll(
@@ -323,7 +323,8 @@ await record('public-domain scans stay openly downloadable', 'Internet Archive',
     if (lending.length) {
       throw new Error(`${identifier} is now in lending collection ${lending.join(', ')}`);
     }
-    const year = Number(String(metadata.year || metadata.date || '').slice(0, 4));
+    // Catalog dates come as 1838, [1914], c1897, 1909?, or 01-22-1926.
+    const year = Number(String(metadata.year || metadata.date || '').match(/(?<!\d)(1[5-9]\d\d|20\d\d)(?!\d)/)?.[1]);
     if (!(year > 0 && year < 1928)) {
       throw new Error(`${identifier} records an edition year of ${year || 'unknown'}`);
     }

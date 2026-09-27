@@ -71,6 +71,16 @@ describe('library catalog', () => {
     });
   });
 
+  it('ships a cover for every book, so none shows the blank placeholder', () => {
+    for (const work of [
+      ...LIBRARY_CATALOG.publicDomainWorks,
+      ...LIBRARY_CATALOG.officialCollections,
+      ...LIBRARY_CATALOG.churchDocuments,
+    ]) {
+      expect(existsSync(join(process.cwd(), 'assets/images/library', `${work.id}.png`))).toBe(true);
+    }
+  });
+
   it('serves each church document from the web app and ships its file', () => {
     expect(LIBRARY_CATALOG.churchDocuments.length).toBeGreaterThan(0);
     for (const work of LIBRARY_CATALOG.churchDocuments) {

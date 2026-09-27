@@ -175,6 +175,12 @@ Each source falls back to the app's own original, text-free cover art if its
 thumbnail can't load. That art was generated for this app without using the official
 covers as input or reference.
 
+The covers of the other library books are the app's own designs too. *The Pilgrim's
+Progress* and *The Story of Jesus* use illustrations generated for the app. The rest
+are typographic covers in the style of old cloth bindings, drawn from scratch by
+[`scripts/generate-library-covers.py`](../scripts/generate-library-covers.py) with fonts
+under the SIL Open Font License; none reproduces a publisher's cover.
+
 ### Internet Archive sources
 
 The Internet Archive holds both public-domain scans, which anyone can download, and

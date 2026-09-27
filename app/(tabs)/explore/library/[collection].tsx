@@ -23,8 +23,10 @@ import {
   type ChineseLibraryCoverUrls,
 } from '@/features/library/ChineseLibrary';
 import {
+  getLibraryItemDisplayText,
   getLibraryItemShelf,
   getLibraryItemsForLanguage,
+  type LibraryItem,
 } from '@/features/library/LibraryCatalog';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useEffect, useMemo, useState } from 'react';
@@ -105,6 +107,14 @@ const BOOK_COVERS: Readonly<Record<string, ImageSourcePropType>> = {
   'andrews-history-sabbath': require('../../../../assets/images/library/andrews-history-sabbath.png'),
   'bunyan-pilgrims-progress': require('../../../../assets/images/library/bunyan-pilgrims-progress.png'),
   'story-of-jesus': require('../../../../assets/images/library/story-of-jesus.png'),
+  // Typographic covers drawn for the app by scripts/generate-library-covers.py.
+  'smith-state-dead-destiny-wicked': require('../../../../assets/images/library/smith-state-dead-destiny-wicked.png'),
+  'smith-daniel-revelation': require('../../../../assets/images/library/smith-daniel-revelation.png'),
+  'murray-humility': require('../../../../assets/images/library/murray-humility.png'),
+  'murray-abide-in-christ': require('../../../../assets/images/library/murray-abide-in-christ.png'),
+  'foxe-book-of-martyrs': require('../../../../assets/images/library/foxe-book-of-martyrs.png'),
+  'sibbes-bruised-reed': require('../../../../assets/images/library/sibbes-bruised-reed.png'),
+  'sabbath-encouragement': require('../../../../assets/images/library/sabbath-encouragement.png'),
 };
 
 const EGW_COVERS: Readonly<Record<string, ImageSourcePropType>> = {
@@ -177,18 +187,20 @@ export default function LibraryScreen() {
     (item) => getLibraryItemShelf(item) === collection,
   );
   const normalizedQuery = (q || '').trim().toLocaleLowerCase();
+  // Match both the text shown in this language and the catalog's own text, so
+  // a hub search result in either language finds its book on the shelf.
+  const matchesLibraryQuery = (work: LibraryItem) => {
+    const text = getLibraryItemDisplayText(work, language);
+    return `${text.title} ${text.author} ${work.title} ${work.author}`
+      .toLocaleLowerCase()
+      .includes(normalizedQuery);
+  };
   const egwWorks = unfilteredEgwWorks.filter((work) =>
     `${work.workTitle[language]} ${labels.egwAuthor}`.toLocaleLowerCase().includes(normalizedQuery),
   );
-  const publicWorks = unfilteredPublicWorks.filter((work) =>
-    `${work.title} ${work.author}`.toLocaleLowerCase().includes(normalizedQuery),
-  );
-  const officialWorks = unfilteredOfficialWorks.filter((work) =>
-    `${work.title} ${work.author}`.toLocaleLowerCase().includes(normalizedQuery),
-  );
-  const churchDocuments = unfilteredChurchDocuments.filter((work) =>
-    `${work.title} ${work.author}`.toLocaleLowerCase().includes(normalizedQuery),
-  );
+  const publicWorks = unfilteredPublicWorks.filter(matchesLibraryQuery);
+  const officialWorks = unfilteredOfficialWorks.filter(matchesLibraryQuery);
+  const churchDocuments = unfilteredChurchDocuments.filter(matchesLibraryQuery);
 
   useEffect(() => {
     if (!shouldLoadChineseLibraryCovers(language) || !hasEgwWorks) {
@@ -208,25 +220,28 @@ export default function LibraryScreen() {
   const renderLibraryBookCards = (
     books: typeof catalog.publicDomainWorks,
   ) =>
-    books.map((item) => (
-      <LibraryBookCard
-        key={item.id}
-        accessibilityHint={
-          item.rights === 'official-external'
-            ? labels.opensOfficial
-            : item.rights === 'church-hosted'
-              ? labels.opensPdf
-              : item.sourceName === 'Internet Archive'
-                ? labels.opensInternetArchive
-                : labels.opensGutenberg
-        }
-        author={item.author}
-        coverSource={BOOK_COVERS[item.id]}
-        listLayout={useListLayout}
-        onPress={() => openURL(item.sourceUrl, labels.title, labels.openError)}
-        title={item.title}
-      />
-    ));
+    books.map((item) => {
+      const text = getLibraryItemDisplayText(item, language);
+      return (
+        <LibraryBookCard
+          key={item.id}
+          accessibilityHint={
+            item.rights === 'official-external'
+              ? labels.opensOfficial
+              : item.rights === 'church-hosted'
+                ? labels.opensPdf
+                : item.sourceName === 'Internet Archive'
+                  ? labels.opensInternetArchive
+                  : labels.opensGutenberg
+          }
+          author={text.author}
+          coverSource={BOOK_COVERS[item.id]}
+          listLayout={useListLayout}
+          onPress={() => openURL(item.sourceUrl, labels.title, labels.openError)}
+          title={text.title}
+        />
+      );
+    });
 
   return (
     <>
@@ -247,9 +262,9 @@ export default function LibraryScreen() {
         <View style={styles.content}>
           {collection === 'topics' ? (
             <List.Section>
+              <MenuCard title={COLLECTION_TITLES.classics[language]} description="Enduring Christian devotional literature" icon="book-cross" onPress={() => router.push('/explore/library/classics')} />
               <MenuCard title={COLLECTION_TITLES.ministry[language]} description="Pastoral service, health, and mission" icon="hand-heart" onPress={() => router.push('/explore/library/ministry')} />
               <MenuCard title={COLLECTION_TITLES.family[language]} description="Home, character, and Christian education" icon="home-heart" onPress={() => router.push('/explore/library/family')} />
-              <MenuCard title={COLLECTION_TITLES.classics[language]} description="Enduring Christian devotional literature" icon="book-cross" onPress={() => router.push('/explore/library/classics')} />
             </List.Section>
           ) : (
           <>
