@@ -1,70 +1,30 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getSunTimes, toLocalIsoDate } from '@/services/SunTimesService';
+import { CHURCH_LATITUDE, CHURCH_LONGITUDE } from '@/constants/ExternalLinks';
+import { getSunTimes } from '@/services/SunTimesService';
 
-const okResponse = (date: string) =>
-  ({
-    json: async () => ({
-      status: 'OK',
-      results: {
-        sunrise: `${date}T10:52:01+00:00`,
-        sunset: `${date}T22:37:37+00:00`,
-      },
-    }),
-  }) as Response;
+// U.S. Naval Observatory sunsets for the church, in UTC, to the minute.
+const USNO_SUNSETS: [Date, string][] = [
+  [new Date(2026, 0, 2), '2026-01-02T21:40:00Z'],
+  [new Date(2026, 5, 19), '2026-06-20T00:30:00Z'],
+  [new Date(2026, 9, 2), '2026-10-02T22:36:00Z'],
+];
 
 describe('sun times service', () => {
-  beforeEach(async () => {
-    await AsyncStorage.clear();
+  it.each(USNO_SUNSETS)('matches the USNO sunset for %s within a minute', (date, usno) => {
+    const times = getSunTimes(CHURCH_LATITUDE, CHURCH_LONGITUDE, date);
+
+    expect(times).not.toBeNull();
+    expect(Math.abs(times!.sunset.getTime() - Date.parse(usno))).toBeLessThanOrEqual(60_000);
   });
 
-  it('formats the local calendar date', () => {
-    expect(toLocalIsoDate(new Date(2026, 9, 2, 23, 30))).toBe('2026-10-02');
+  it('uses the calendar date, not the time of day', () => {
+    const morning = getSunTimes(CHURCH_LATITUDE, CHURCH_LONGITUDE, new Date(2026, 9, 2, 0, 5));
+    const night = getSunTimes(CHURCH_LATITUDE, CHURCH_LONGITUDE, new Date(2026, 9, 2, 23, 55));
+
+    expect(night?.sunset.getTime()).toBe(morning?.sunset.getTime());
+    expect(morning!.sunrise.getTime()).toBeLessThan(morning!.sunset.getTime());
   });
 
-  it('fetches a date once, then answers from the device cache', async () => {
-    const fetchMock = jest
-      .spyOn(global, 'fetch')
-      .mockResolvedValue(okResponse('2026-10-02'));
-
-    const first = await getSunTimes(40.7, -73.8, '2026-10-02', new Date(2026, 9, 1));
-    const second = await getSunTimes(40.7, -73.8, '2026-10-02', new Date(2026, 9, 1));
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(first?.sunset.toISOString()).toBe('2026-10-02T22:37:37.000Z');
-    expect(second?.sunrise.toISOString()).toBe('2026-10-02T10:52:01.000Z');
-  });
-
-  it('shares one request between simultaneous callers', async () => {
-    const fetchMock = jest
-      .spyOn(global, 'fetch')
-      .mockResolvedValue(okResponse('2026-10-03'));
-
-    await Promise.all([
-      getSunTimes(40.7, -73.8, '2026-10-03'),
-      getSunTimes(40.7, -73.8, '2026-10-03'),
-    ]);
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not cache an unusable response', async () => {
-    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
-      json: async () => ({ status: 'INVALID_REQUEST' }),
-    } as Response);
-
-    expect(await getSunTimes(40.7, -73.8, '2026-10-04')).toBeNull();
-    expect(await getSunTimes(40.7, -73.8, '2026-10-04')).toBeNull();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-  });
-
-  it('prunes dates older than two weeks', async () => {
-    await AsyncStorage.setItem('sun-times-v1:40.7,-73.8:2026-09-01', '{}');
-    jest.spyOn(global, 'fetch').mockResolvedValue(okResponse('2026-10-02'));
-
-    await getSunTimes(40.7, -73.8, '2026-10-02', new Date(2026, 9, 1));
-
-    expect(await AsyncStorage.getAllKeys()).toEqual([
-      'sun-times-v1:40.7,-73.8:2026-10-02',
-    ]);
+  it('returns null when the sun does not set', () => {
+    expect(getSunTimes(80, 0, new Date(2026, 5, 21))).toBeNull();
   });
 });

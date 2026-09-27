@@ -122,7 +122,7 @@ also requires disclosure of third-party partners’ practices.
 
 Before publishing Data safety/App Privacy answers, confirm the actual retention and
 logging practices of the bulletin endpoint, hosting/CDN, Bible services, cover
-services, audio hosts, sunset service, and donation provider. The app sends no GPS
+services, audio hosts, and donation provider. The app sends no GPS
 coordinates from the device, but external services can still receive ordinary request
 metadata such as IP address, user agent, request path, and time.
 

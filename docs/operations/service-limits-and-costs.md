@@ -39,7 +39,7 @@ whole system is the domain.
 | [Adventech](#adventech-sabbath-school) | Children's Sabbath School catalog | Free | None published | Unknown | Low: CDN |
 | [Chinese Union Mission library](#chinese-union-mission-library) | Chinese EGW cover thumbnails | Free | None published | Unknown | Low: cached on the device for a day |
 | [EGW Writings covers](#egw-writings-covers) | Library thumbnails | Free | None published | Unknown | Low: Cloudflare |
-| [Sunrise-Sunset](#sunrise-sunset) | Sabbath sunset times | Free, **attribution required** | "Reasonable" volume; `429` + `Retry-After` | Throttled | Low: cached on the device per date |
+| [Sunrise-Sunset](#sunrise-sunset) | Sunset times on the printed Queens bulletin | Free, **attribution required** | "Reasonable" volume; `429` + `Retry-After` | Throttled | None: one request per printed bulletin; the app no longer calls it |
 | [GitHub Actions](#github-actions) | Tests, builds, deploys | Free (public repo) | Fair use, concurrency | Queued jobs | None |
 | [GitHub Pages](#github-pages) | `app.nyccsda.org` | Free | 1 GB site, 100 GB/month soft | `429` or a GitHub email | None |
 | [Google Workspace](#google-workspace-and-drive) | Roster, Drive, Apps Script | Free (nonprofit) | 100 TB pooled storage | Quota errors | None |
@@ -70,7 +70,6 @@ Per-use costs, *measured*:
 | Bulletin API | < 1 KB to a few KB | 5.7 s cold, 1.5 s warm |
 | Chinese library catalog | ~40 KB | 1.1 s; at most once a day per device |
 | Adventech quarterly index | ~124 KB | CDN-cached |
-| Sunrise-Sunset | ~0.2 KB | Once per date per device |
 
 The conclusion: **text APIs are negligible at every scenario, and audio is the only
 real load.** Adventist Connect carries it, and the fallback chain decides who carries
@@ -214,14 +213,16 @@ itself opens in the browser.
 
 ### Sunrise-Sunset
 
-`api.sunrise-sunset.org`, used for the Sabbath start and end times on the home
-screen and the sunset theme. [Free](https://sunrise-sunset.org/api) "for reasonable
-request volumes", with throttling (`429` and a `Retry-After` header) for too many
-requests. Its terms **require a visible link to sunrise-sunset.org** wherever the
-data is shown, and ask users to cache results because "the times for a given date
-never change". The home screen's Sabbath card links to sunrise-sunset.org, and the
-app caches each date's times on the device, so each phone asks for a date once. The
-API has no date-range request, so dates are fetched one at a time.
+The app no longer uses `api.sunrise-sunset.org`. It calculates sunrise and sunset on
+the device with the [`suncalc`](https://github.com/mourner/suncalc) library
+(BSD-2-Clause), which matches the U.S. Naval Observatory's published times to the
+minute (*measured*; the API ran 1 to 1.5 minutes later). That removed a network
+dependency and the API's attribution requirement from the app.
+
+The printed Queens bulletin's Apps Script still calls the API, once per bulletin, for
+the sunset times it prints. Its [terms](https://sunrise-sunset.org/api) ask for "a
+visible link to sunrise-sunset.org in the app or page where you show the data", so
+that script should either credit it or calculate the times itself.
 
 ## Build, hosting, and admin services
 
@@ -282,10 +283,9 @@ in [Architecture](../architecture.md#third-party-apis-and-websites).
 Found while writing this page and resolved in
 [#264](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/264):
 
-- **Sunrise-Sunset attribution.** Fixed: the Sabbath card on the home screen links to
-  sunrise-sunset.org.
-- **Sunrise-Sunset caching.** Fixed: each date's times are cached on the device, and
-  the home screen and sunset theme share one request.
+- **Sunrise-Sunset attribution and caching.** Fixed by no longer calling the API from
+  the app: sunrise and sunset are calculated on the device. The printed Queens
+  bulletin's Apps Script still uses the API; see [Sunrise-Sunset](#sunrise-sunset).
 - **Chinese library catalog caching.** Fixed: the cover list is cached on the device
   and refreshed at most daily, keeping the cached copy if a refresh fails.
 - **Audio Power absorbing every listener if Adventist Connect fails.** Fixed: the

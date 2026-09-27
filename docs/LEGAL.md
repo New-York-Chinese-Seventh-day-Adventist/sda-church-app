@@ -338,10 +338,10 @@ system's app settings.
 
 ### 4. Hosting and Traffic Services
 
-This app requests Bible text, Bible-audio metadata or files, sunset times, cover images,
-and privacy-filtered bulletin data from external services over HTTPS. GitHub Pages,
-Cloudflare, Google Workspace/Apps Script, HelloAO, fetch(bible), Audio Power, Adventist
-Connect, the Chinese Union Mission services, and the sunrise-sunset service may process
+This app requests Bible text, Bible-audio metadata or files, cover images, and
+privacy-filtered bulletin data from external services over HTTPS. GitHub Pages,
+Cloudflare, Google Workspace/Apps Script, HelloAO, fetch(bible), Adventist Connect, the
+Internet Archive, Audio Power, and the Chinese Union Mission services may process
 ordinary connection metadata such as an IP address, user agent, request path, and request
 time for delivery, security, or service operations. The app does not receive or store
 those providers' server logs. Each provider handles information under its own applicable

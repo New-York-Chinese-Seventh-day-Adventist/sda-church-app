@@ -50,7 +50,7 @@ import {
   PWA_UPDATE_LAST_CHECK_KEY,
   waitForServiceWorkerInstallation,
 } from '@/services/PwaUpdateService';
-import { getSunTimes, toLocalIsoDate } from '@/services/SunTimesService';
+import { getSunTimes } from '@/services/SunTimesService';
 import packageJson from '@/package.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider } from 'expo-router/react-navigation';
@@ -696,25 +696,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!isReady || themeMode !== THEME_SUNSET) return;
-    let cancelled = false;
-    const loadSunTimes = async () => {
-      try {
-        const times = await getSunTimes(
-          CHURCH_LATITUDE,
-          CHURCH_LONGITUDE,
-          toLocalIsoDate(new Date()),
-        );
-        if (!cancelled && times) setSunTimes(times);
-      } catch (error) {
-        console.warn('Failed to load sunset theme times:', error);
-      }
-    };
-    loadSunTimes();
-    const timer = setInterval(loadSunTimes, 60 * 60 * 1000);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
+    // Recalculated hourly so the times move to the new day after midnight.
+    const updateSunTimes = () =>
+      setSunTimes(getSunTimes(CHURCH_LATITUDE, CHURCH_LONGITUDE, new Date()));
+    updateSunTimes();
+    const timer = setInterval(updateSunTimes, 60 * 60 * 1000);
+    return () => clearInterval(timer);
   }, [isReady, themeMode]);
 
   useEffect(() => {
