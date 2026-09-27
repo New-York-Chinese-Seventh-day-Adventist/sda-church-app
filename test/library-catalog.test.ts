@@ -45,7 +45,7 @@ describe('library catalog', () => {
       LIBRARY_CATALOG.publicDomainWorks.filter(
         ({ collection }) => collection === 'christian-classics',
       ),
-    ).toHaveLength(4);
+    ).toHaveLength(5);
   });
 
   it('puts every book on a shelf the library screens can open', () => {
@@ -64,6 +64,7 @@ describe('library catalog', () => {
       'smith-state-dead-destiny-wicked': 'smith',
       'smith-daniel-revelation': 'smith',
       'murray-humility': 'classics',
+      'murray-abide-in-christ': 'classics',
       'sibbes-bruised-reed': 'classics',
       'story-of-jesus': 'children',
       'sabbath-encouragement': 'egw',

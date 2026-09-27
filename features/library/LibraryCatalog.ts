@@ -96,6 +96,25 @@ const publicDomainWorks: readonly LibraryItem[] = [
     publicationYear: 1895,
   },
   {
+    // Not on Project Gutenberg. This scan is the 1895 Revell edition (Chicago,
+    // New York, Toronto), microfilmed from the National Library of Canada's
+    // copy; it adds only the publisher's 1895 list of Murray's other books.
+    // Don't use archive.org's abideinchristtho0000murr: it is a 2013 reprint
+    // catalogued as 1880. Checked against the rules in docs/LEGAL.md.
+    id: 'murray-abide-in-christ',
+    title: 'Abide in Christ',
+    author: 'Andrew Murray',
+    collection: 'christian-classics',
+    description:
+      "Thirty-one daily meditations on Jesus's call in John 15 to abide in Him.",
+    language: 'en',
+    rights: 'public-domain-us',
+    sourceName: 'Internet Archive',
+    sourceUrl: 'https://archive.org/details/cihm_11323',
+    publicationYear: 1882,
+    editionYear: 1895,
+  },
+  {
     // Gutenberg's only Foxe record is an abridged nineteenth-century American
     // edition, not Foxe's full text, so the description says so.
     id: 'foxe-book-of-martyrs',
