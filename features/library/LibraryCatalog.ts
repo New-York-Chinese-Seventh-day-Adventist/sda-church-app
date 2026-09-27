@@ -111,19 +111,6 @@ const publicDomainWorks: readonly LibraryItem[] = [
     publicationYear: 1563,
   },
   {
-    id: 'chiniquy-fifty-years-church-rome',
-    title: 'Fifty Years in the Church of Rome',
-    author: 'Charles Chiniquy',
-    collection: 'christian-classics',
-    description:
-      'The 1886 memoir of a former Roman Catholic priest in Quebec and Illinois, written as a Protestant critique of the Catholic Church.',
-    language: 'en',
-    rights: 'public-domain-us',
-    sourceName: 'Project Gutenberg',
-    sourceUrl: 'https://www.gutenberg.org/ebooks/51634',
-    publicationYear: 1886,
-  },
-  {
     // Not on Project Gutenberg. This scan is the 1838 Pickering edition, which
     // also contains A Fountain Sealed and A Description of Christ; its only
     // later addition is the 1838 editor's preface. Checked against the rules in

@@ -45,7 +45,7 @@ describe('library catalog', () => {
       LIBRARY_CATALOG.publicDomainWorks.filter(
         ({ collection }) => collection === 'christian-classics',
       ),
-    ).toHaveLength(5);
+    ).toHaveLength(4);
   });
 
   it('puts every book on a shelf the library screens can open', () => {
