@@ -816,6 +816,44 @@ describe('printed bulletin Apps Script helpers', () => {
     expect(renderWorshipEnding(false)).toEqual(['table']);
   });
 
+  it('keeps the giving text in from the sheet edge without padding the QR cells', () => {
+    const makeCell = () => {
+      const cell = {
+        padding: {} as Record<string, number>,
+        clear: () => undefined,
+        setVerticalAlignment: () => undefined,
+        setPaddingTop: (value: number) => (cell.padding.top = value),
+        setPaddingBottom: (value: number) => (cell.padding.bottom = value),
+        setPaddingLeft: (value: number) => (cell.padding.left = value),
+        setPaddingRight: (value: number) => (cell.padding.right = value),
+      };
+      return cell;
+    };
+    const cells = Array.from({ length: 5 }, makeCell);
+    const container = {
+      appendHorizontalRule: () => ({ getParent: () => null }),
+      appendTable: () => ({
+        setBorderWidth: () => undefined,
+        setColumnWidth: () => undefined,
+        getCell: (_row: number, column: number) => cells[column],
+      }),
+    };
+    const context = loadAppsScript({
+      DocumentApp: { VerticalAlignment: { TOP: 'TOP' }, ElementType: { PARAGRAPH: 'PARAGRAPH' } },
+    });
+
+    runInContext(
+      `appendBookletFooter_(testContainer, function () {}, { qrColumns: true, qrCount: 3 })`,
+      Object.assign(context, { testContainer: container }),
+    );
+
+    const [left, gutter, ...qr] = cells;
+    expect(left.padding).toEqual({ top: 0, bottom: 0, left: 6, right: 6 });
+    for (const cell of [gutter, ...qr]) {
+      expect(cell.padding).toEqual({ top: 0, bottom: 0, left: 0, right: 0 });
+    }
+  });
+
   it('gives the Queens and Brooklyn giving dividers the same top spacing', () => {
     const footerOptions: Record<string, unknown> = {};
     const context = loadAppsScript({});

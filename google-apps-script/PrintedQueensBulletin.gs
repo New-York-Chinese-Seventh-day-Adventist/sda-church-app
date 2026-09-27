@@ -2445,6 +2445,11 @@ function appendBookletFooter_(container, footerRenderer, footerOptions) {
       footerCell.setPaddingLeft(0);
       footerCell.setPaddingRight(0);
     });
+  // The giving text's longest lines fill the whole panel, which put them only
+  // about 15pt (5mm) from the sheet edge. Many printers can't print the outer
+  // 4–5mm, so keep them about 20pt in, like the rest of the page.
+  footerLeftCell.setPaddingLeft(6);
+  footerLeftCell.setPaddingRight(6);
   footerLeftCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
   if (footerRightCell) {
     footerRightCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
