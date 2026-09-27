@@ -777,6 +777,23 @@ describe('printed bulletin Apps Script helpers', () => {
     ]);
   });
 
+  it('reuses the empty leading paragraph in both Queens footer cells', () => {
+    const calls: Array<[string, unknown]> = [];
+    const context = loadAppsScript({});
+    Object.assign(context, {
+      appendGivingText_: (_cell: unknown, options: unknown) => calls.push(['text', options]),
+      appendGivingQrPlaceholders_: (_cell: unknown, options: unknown) =>
+        calls.push(['qr', options]),
+    });
+
+    runInContext(`appendGivingFooter_({}, {}, 'queens')`, context);
+
+    expect(calls).toEqual([
+      ['text', { reuseLeadingParagraph: true }],
+      ['qr', { compact: true, location: 'queens', reuseLeadingParagraph: true }],
+    ]);
+  });
+
   it('routes Queens regular, Communion, and Brooklyn output through separate renderers', () => {
     const calls: string[] = [];
     const body = {

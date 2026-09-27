@@ -2673,12 +2673,14 @@ function getFirstPrintedAnnouncementSentenceLength_(text) {
 }
 
 function appendGivingFooter_(leftCell, rightCell, location) {
-  appendGivingText_(leftCell);
-  // Keep the bottom giving block together on the same page instead of
-  // allowing the QR captions to spill onto a new page.
+  // clear() leaves an empty default-size paragraph in each footer cell. Reuse
+  // it, as the Brooklyn footer does, so it doesn't open a gap under the
+  // divider and push the QR captions onto a new page.
+  appendGivingText_(leftCell, { reuseLeadingParagraph: true });
   appendGivingQrPlaceholders_(rightCell, {
     compact: true,
     location: location || 'queens',
+    reuseLeadingParagraph: true,
   });
 }
 
