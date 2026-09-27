@@ -1362,8 +1362,9 @@ function renderBrooklynPrintedBulletinDocument_(body, bulletin, nextBulletin, fo
       },
       // Keep three physical QR positions so the future Mobile App asset stays
       // in slot 1, ACH/card remains in slot 2, and Brooklyn's unused slot 3
-      // stays empty because Brooklyn has no Zelle QR code.
-      { qrColumns: true, qrCount: 3 },
+      // stays empty because Brooklyn has no Zelle QR code. The divider spacing
+      // matches the Queens regular footer.
+      { ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 },
     );
     appendBrooklynEncouragementPage_(body, bulletin);
   } else {
@@ -1487,6 +1488,9 @@ function appendBrooklynWorshipPanel_(cell, bulletin, includeClosingRows) {
   appendBrooklynProgramTable_(cell, worshipRowsAfterSermon);
   if (includeClosingRows) {
     appendSilentPrayerHeading_(cell, 'Silent Prayer', '請默禱之後散會');
+    // Match the Queens worship panel's room above the giving divider.
+    appendSpacer_(cell);
+    appendSpacer_(cell);
   }
 }
 

@@ -777,7 +777,10 @@ describe('printed bulletin Apps Script helpers', () => {
     ]);
   });
 
-  it('leaves room under the Queens silent prayer for the giving footer divider', () => {
+  it.each([
+    ['Queens', 'appendWorshipPanel_'],
+    ['Brooklyn', 'appendBrooklynWorshipPanel_'],
+  ])('leaves room under the %s silent prayer for the giving footer divider', (_name, panel) => {
     const renderWorshipEnding = (includeClosingRows: boolean) => {
       const calls: string[] = [];
       const context = loadAppsScript({});
@@ -787,26 +790,58 @@ describe('printed bulletin Apps Script helpers', () => {
       Object.assign(context, {
         appendPanelHeading_: record('heading'),
         appendCenteredText_: record('text'),
+        appendHalfSpacer_: record('half spacer'),
+        appendCompactItalicCenteredText_: record('italic text'),
         appendProgramTable_: record('table'),
+        appendBrooklynProgramTable_: record('table'),
         appendSermonRow_: record('sermon'),
         appendSilentPrayerHeading_: record('silent prayer'),
         appendSpacer_: record('spacer'),
         printValue_: () => '',
+        printBrooklynPerson_: () => '',
         formatHymnForPrint_: () => '',
         formatBibleReferenceForPrint_: () => '',
         formatPhysicalOfferingValue_: () => '',
         formatSermonTitleForPrint_: () => '',
       });
       runInContext(
-        `appendWorshipPanel_({}, { queens: {} }, ${includeClosingRows})`,
+        `${panel}({}, { queens: {}, brooklyn: {} }, ${includeClosingRows})`,
         context,
       );
       return calls.slice(calls.lastIndexOf('table'));
     };
 
     expect(renderWorshipEnding(true)).toEqual(['table', 'silent prayer', 'spacer', 'spacer']);
-    // The Communion worship panel has no closing rows and keeps its layout.
+    // Communion worship panels have no closing rows and keep their layout.
     expect(renderWorshipEnding(false)).toEqual(['table']);
+  });
+
+  it('gives the Queens and Brooklyn giving dividers the same top spacing', () => {
+    const footerOptions: Record<string, unknown> = {};
+    const context = loadAppsScript({});
+    Object.assign(context, {
+      appendBookletPage_: (
+        _body: unknown,
+        _left: unknown,
+        _right: unknown,
+        _isFirstPage: boolean,
+        footerRenderer?: unknown,
+        options?: { ruleSpacingBefore?: number },
+      ) => {
+        if (footerRenderer) footerOptions[context.currentLocation as string] = options;
+      },
+      appendBrooklynEncouragementPage_: () => undefined,
+    });
+
+    Object.assign(context, { currentLocation: 'queens' });
+    runInContext(`renderQueensRegularPrintedBulletinDocument_({}, {}, {}, 'regular')`, context);
+    Object.assign(context, { currentLocation: 'brooklyn' });
+    runInContext(`renderBrooklynPrintedBulletinDocument_({}, {}, {}, 'regular')`, context);
+
+    expect(footerOptions).toEqual({
+      queens: { ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 },
+      brooklyn: { ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 },
+    });
   });
 
   it('puts each Queens QR code in its own footer column and reuses leading paragraphs', () => {
