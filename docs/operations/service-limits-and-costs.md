@@ -270,7 +270,8 @@ in [Architecture](../architecture.md#third-party-apis-and-websites).
 
 ## Known gaps
 
-Found while writing this page. None costs money, but each is worth fixing:
+Found while writing this page. None costs money, but each is worth fixing. They are
+tracked in [#264](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/264):
 
 - **Sunrise-Sunset attribution is missing.** Its terms require a visible link to
   sunrise-sunset.org where the times are shown, and the app has none. This is a
