@@ -269,14 +269,22 @@ const gutenbergBooks = [...libraryCatalogSource.matchAll(
   /sourceUrl:\s*'(https:\/\/www\.gutenberg\.org\/ebooks\/(\d+))'/g,
 )].map(([, url, ebookId]) => ({ url, ebookId }));
 
-await record('catalog contains three unique public-domain book links', 'Project Gutenberg', async () => {
-  if (gutenbergBooks.length !== 3) {
-    throw new Error(`found ${gutenbergBooks.length} Project Gutenberg links`);
+// Every public-domain entry links to Gutenberg, so a count mismatch means the
+// link pattern above stopped matching the catalog's format.
+const publicDomainEntryCount = [
+  ...libraryCatalogSource.matchAll(/rights:\s*'public-domain-us'/g),
+].length;
+
+await record('catalog has one unique link per public-domain book', 'Project Gutenberg', async () => {
+  if (!gutenbergBooks.length || gutenbergBooks.length !== publicDomainEntryCount) {
+    throw new Error(
+      `found ${gutenbergBooks.length} Project Gutenberg links for ${publicDomainEntryCount} public-domain books`,
+    );
   }
   if (new Set(gutenbergBooks.map(({ url }) => url)).size !== gutenbergBooks.length) {
     throw new Error('catalog contains duplicate Project Gutenberg links');
   }
-  return '3 unique ebook records';
+  return `${gutenbergBooks.length} unique ebook records`;
 });
 
 await record('daily public-domain book sample', 'Project Gutenberg', () => {

@@ -1,4 +1,10 @@
-import { getLibraryItemsForLanguage, LIBRARY_CATALOG } from '@/features/library/LibraryCatalog';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  getLibraryItemShelf,
+  getLibraryItemsForLanguage,
+  LIBRARY_CATALOG,
+} from '@/features/library/LibraryCatalog';
 
 describe('library catalog', () => {
   it('keeps native-eligible public-domain works tied to explicit Gutenberg records', () => {
@@ -12,11 +18,10 @@ describe('library catalog', () => {
     }
   });
 
-  it('uses official reading links for the children starter shelf', () => {
-    expect(LIBRARY_CATALOG.officialCollections).toHaveLength(1);
+  it('uses EGW Writings reading links for books not on Project Gutenberg', () => {
     expect(
       LIBRARY_CATALOG.officialCollections.map(({ collection }) => collection).sort(),
-    ).toEqual(['children']);
+    ).toEqual(['adventist-pioneers', 'children']);
     for (const work of LIBRARY_CATALOG.officialCollections) {
       expect(work.rights).toBe('official-external');
       expect(work.sourceName).toBe('EGW Writings');
@@ -29,12 +34,44 @@ describe('library catalog', () => {
       LIBRARY_CATALOG.publicDomainWorks.filter(
         ({ collection }) => collection === 'adventist-pioneers',
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(3);
     expect(
       LIBRARY_CATALOG.publicDomainWorks.filter(
         ({ collection }) => collection === 'christian-classics',
       ),
-    ).toHaveLength(1);
+    ).toHaveLength(4);
+  });
+
+  it('puts every book on a shelf the library screens can open', () => {
+    const shelves = [
+      ...LIBRARY_CATALOG.publicDomainWorks,
+      ...LIBRARY_CATALOG.officialCollections,
+      ...LIBRARY_CATALOG.churchDocuments,
+    ].map((work) => [work.id, getLibraryItemShelf(work)]);
+
+    for (const [, shelf] of shelves) {
+      expect(['egw', 'bates', 'andrews', 'smith', 'classics', 'children']).toContain(shelf);
+    }
+    expect(Object.fromEntries(shelves)).toMatchObject({
+      'bates-seventh-day-sabbath': 'bates',
+      'andrews-history-sabbath': 'andrews',
+      'smith-state-dead-destiny-wicked': 'smith',
+      'smith-daniel-revelation': 'smith',
+      'murray-humility': 'classics',
+      'story-of-jesus': 'children',
+      'sabbath-encouragement': 'egw',
+    });
+  });
+
+  it('serves each church document from the web app and ships its file', () => {
+    expect(LIBRARY_CATALOG.churchDocuments.length).toBeGreaterThan(0);
+    for (const work of LIBRARY_CATALOG.churchDocuments) {
+      const url = new URL(work.sourceUrl);
+      expect(work.rights).toBe('church-hosted');
+      expect(url.origin).toBe('https://app.nyccsda.org');
+      // Files in public/ deploy at the web app's root.
+      expect(existsSync(join(process.cwd(), 'public', url.pathname))).toBe(true);
+    }
   });
 
   it('prioritizes Chinese sources for Chinese readers without hiding English works', () => {

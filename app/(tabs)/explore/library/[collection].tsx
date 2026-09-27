@@ -22,7 +22,10 @@ import {
   shouldLoadChineseLibraryCovers,
   type ChineseLibraryCoverUrls,
 } from '@/features/library/ChineseLibrary';
-import { getLibraryItemsForLanguage } from '@/features/library/LibraryCatalog';
+import {
+  getLibraryItemShelf,
+  getLibraryItemsForLanguage,
+} from '@/features/library/LibraryCatalog';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import {
@@ -46,6 +49,7 @@ const allLabels = {
     classics: 'Christian classics',
     chooseBook: 'Choose this book and its language edition',
     opensGutenberg: 'Opens externally on Project Gutenberg',
+    opensPdf: 'Opens the PDF',
     openError: 'Could not open this library source.',
   },
   zh: {
@@ -59,6 +63,7 @@ const allLabels = {
     classics: '基督教經典',
     chooseBook: '選擇此書及語言版本',
     opensGutenberg: '在 Project Gutenberg 外部網站開啟',
+    opensPdf: '開啟 PDF 文件',
     openError: '無法開啟此圖書來源。',
   },
   'zh-cn': {
@@ -72,6 +77,7 @@ const allLabels = {
     classics: '基督教经典',
     chooseBook: '选择此书及语言版本',
     opensGutenberg: '在 Project Gutenberg 外部网站打开',
+    opensPdf: '打开 PDF 文件',
     openError: '无法打开此图书来源。',
   },
   es: {
@@ -85,6 +91,7 @@ const allLabels = {
     classics: 'Clásicos cristianos',
     chooseBook: 'Elige este libro y una edición por idioma',
     opensGutenberg: 'Se abre externamente en Project Gutenberg',
+    opensPdf: 'Abre el PDF',
     openError: 'No se pudo abrir esta fuente de la biblioteca.',
   },
 };
@@ -114,6 +121,7 @@ const COLLECTION_TITLES: Readonly<Record<string, Readonly<Record<SupportedLangua
   egw: { en: 'Ellen G. White', zh: '懷愛倫', 'zh-cn': '怀爱伦', es: 'Elena G. de White' },
   bates: { en: 'Joseph Bates', zh: '約瑟·貝茨', 'zh-cn': '约瑟·贝茨', es: 'Joseph Bates' },
   andrews: { en: 'J. N. Andrews', zh: '約翰·安德烈斯', 'zh-cn': '约翰·安德烈斯', es: 'J. N. Andrews' },
+  smith: { en: 'Uriah Smith', zh: '烏利亞·史密斯', 'zh-cn': '乌利亚·史密斯', es: 'Uriah Smith' },
   youth: { en: 'Youth / Young Adults', zh: '青年／青年成人', 'zh-cn': '青年／青年成人', es: 'Jóvenes / Adultos jóvenes' },
   children: { en: 'Children', zh: '兒童', 'zh-cn': '儿童', es: 'Niños' },
   topics: { en: 'Topics', zh: '主題', 'zh-cn': '主题', es: 'Temas' },
@@ -155,13 +163,14 @@ export default function LibraryScreen() {
     ? EGW_BOOKS
     : EGW_BOOKS.filter(({ id }) => EGW_IDS_BY_COLLECTION[collection]?.includes(id));
   const hasEgwWorks = unfilteredEgwWorks.length > 0;
-  const unfilteredPublicWorks = catalog.publicDomainWorks.filter(({ id, collection: itemCollection }) =>
-    (collection === 'bates' && id === 'bates-seventh-day-sabbath') ||
-    (collection === 'andrews' && id === 'andrews-history-sabbath') ||
-    (collection === 'classics' && itemCollection === 'christian-classics'),
+  const unfilteredPublicWorks = catalog.publicDomainWorks.filter(
+    (item) => getLibraryItemShelf(item) === collection,
   );
   const unfilteredOfficialWorks = catalog.officialCollections.filter(
-    ({ collection: itemCollection }) => itemCollection === collection,
+    (item) => getLibraryItemShelf(item) === collection,
+  );
+  const unfilteredChurchDocuments = catalog.churchDocuments.filter(
+    (item) => getLibraryItemShelf(item) === collection,
   );
   const normalizedQuery = (q || '').trim().toLocaleLowerCase();
   const egwWorks = unfilteredEgwWorks.filter((work) =>
@@ -171,6 +180,9 @@ export default function LibraryScreen() {
     `${work.title} ${work.author}`.toLocaleLowerCase().includes(normalizedQuery),
   );
   const officialWorks = unfilteredOfficialWorks.filter((work) =>
+    `${work.title} ${work.author}`.toLocaleLowerCase().includes(normalizedQuery),
+  );
+  const churchDocuments = unfilteredChurchDocuments.filter((work) =>
     `${work.title} ${work.author}`.toLocaleLowerCase().includes(normalizedQuery),
   );
 
@@ -198,7 +210,9 @@ export default function LibraryScreen() {
         accessibilityHint={
           item.rights === 'official-external'
             ? labels.opensOfficial
-            : labels.opensGutenberg
+            : item.rights === 'church-hosted'
+              ? labels.opensPdf
+              : labels.opensGutenberg
         }
         author={item.author}
         coverSource={BOOK_COVERS[item.id]}
@@ -252,6 +266,7 @@ export default function LibraryScreen() {
             ))}
             {renderLibraryBookCards(publicWorks)}
             {renderLibraryBookCards(officialWorks)}
+            {renderLibraryBookCards(churchDocuments)}
           </View>
           </>
           )}

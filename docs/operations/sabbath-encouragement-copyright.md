@@ -8,7 +8,14 @@ material, and other attributed or unattributed source text. Preserve the origina
 volume or edition, and page citation wherever an Ellen White quotation is printed, and do not
 attribute the entire page to her. The Chinese source snapshot is `sabbath_encouragement.pdf`,
 stored in the church's Google Drive and mapped in `SabbathEncouragement.gs` so that page 20
-corresponds to the Sabbath of 2026-08-22.
+corresponds to the Sabbath of 2026-08-22. A backup copy is kept in
+[`public/library/`](../../public/library/sabbath_encouragement.pdf), where the app's library also
+offers it to readers. Its author metadata was removed before it was added to this public
+repository.
+
+The pastor confirmed that the Chinese version carries no copyright restriction: churches in China
+edited it and shared it freely
+([#248](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/248#issuecomment-5852167793)).
 
 This material is included solely for the **non-commercial ministry use of New York Chinese
 Seventh-day Adventist Church** in its printed bulletins and companion mobile app. It is not
