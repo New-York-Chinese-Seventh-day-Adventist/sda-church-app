@@ -235,9 +235,9 @@ These are generated per organization and can't be copied from anyone else.
 - **Apple distribution certificate** (`.p12`) and **App Store provisioning
   profile** (`.mobileprovision`), renewed every 12 months. Not added to GitHub
   Secrets yet.
-- **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool) and
-  the Apps Script project and
-  deployment IDs.
+- **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool),
+  which uploads the bulletin Apps Script code and Drive files, plus the Apps Script
+  project and deployment IDs.
 
 Where each secret goes and how to rotate it is covered in
 [Native Builds](operations/native-builds.md) and the
