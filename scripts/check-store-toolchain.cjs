@@ -39,8 +39,10 @@ const htmlToText = (html) =>
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&#39;|&rsquo;/g, "'")
+    // Decode &amp; last, so "&amp;#39;" stays "&#39;" instead of being
+    // decoded twice into "'".
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim();
 

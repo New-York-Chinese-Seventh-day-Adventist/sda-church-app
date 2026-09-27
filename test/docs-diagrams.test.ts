@@ -12,7 +12,8 @@ describe.each(sources)('docs/diagrams/%s', (sourceName) => {
     // Matches the stamp written by scripts/render-docs-diagrams.mjs.
     const source = readFileSync(path.join(diagramsDir, sourceName), 'utf8').replace(/\r\n/g, '\n');
     const svg = readFileSync(svgPath, 'utf8');
-    const stampPattern = new RegExp(`^<!-- ${sourceName.replace(/\./g, '\\.')} sha256:([0-9a-f]{64}) -->\\n`);
+    const escapedName = sourceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const stampPattern = new RegExp(`^<!-- ${escapedName} sha256:([0-9a-f]{64}) -->\\n`);
 
     const renderedHash = svg.match(stampPattern)?.[1];
     const sourceHash = createHash('sha256').update(source).digest('hex');
