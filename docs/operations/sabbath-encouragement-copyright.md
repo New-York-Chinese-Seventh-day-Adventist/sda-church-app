@@ -15,9 +15,15 @@ repository.
 
 **Provenance.** The Chinese compilation was edited by churches in China and has been passed
 freely from church to church there. The pastor reports that those churches checked it for copyright
-and treat it as free to share, so this church may reproduce it
+and treat it as free to share
 ([#248](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/248#issuecomment-5852167793)). This is secondhand information: it comes through
 the pastor, not from the compilers directly.
+
+That covers the compilation itself: its selection, arrangement, and headings. The Ellen G. White
+quotations in it are Chinese translations of her books, and the rights to those translations may
+belong to their publishers rather than to the compilers. The church's use of those excerpts is
+non-commercial ministry use, weighed under the fair use factors below. If a rights holder objects,
+remove `public/library/sabbath_encouragement.pdf` and its library entry.
 
 **What this means for an English translation.** A direct English translation would add only the
 translation itself. Its quotations would come from Ellen G. White's original English and from the
