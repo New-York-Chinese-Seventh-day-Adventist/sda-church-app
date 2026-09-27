@@ -345,7 +345,7 @@ checks nearly all of them daily.
 | Bulletin | Church Apps Script | `script.google.com` | Digital bulletin JSON | In app |
 | Sabbath School | Adventech | `sabbath-school.adventech.io` | Children's lesson catalog and PDFs (API); adult lessons (reader) | In app and link |
 | Sabbath School | Alive in Jesus | `aliveinjesus.info` | Children's Sabbath School | Link |
-| Library | Chinese Union Mission | `api.sdabible.org`, `cms.sdabible.site` | Chinese Ellen G. White catalog and books | In app |
+| Library | Chinese Union Mission | `api.sdabible.org`, `cms.sdabible.site` | Cover thumbnails for the Chinese Ellen G. White editions (the books open on EGW Writings) | In app |
 | Library | EGW Writings | `a.egwwritings.org`, `text.egwwritings.org` | Book covers (in app); reading (link) | In app and link |
 | Library | Project Gutenberg | `gutenberg.org` | Public-domain Christian classics | Link |
 | Hymns | zgaxr | `m.zgaxr.com` | Chinese 505, 506, and 707 hymnal sheet music | Link |

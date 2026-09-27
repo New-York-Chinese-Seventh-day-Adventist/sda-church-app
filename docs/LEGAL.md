@@ -10,6 +10,7 @@ terms, ownership, or permissions will remain unchanged.
 ## Contents
 
 - [Bible Sources and Licensing](#bible-sources-and-licensing)
+- [Library Sources and Licensing](#library-sources-and-licensing)
 - [English Hymnal Integration and Link Safety](#english-hymnal-integration-and-link-safety)
 - [Chinese Hymnal Source and Link Safety](#chinese-hymnal-source-and-link-safety-rationale)
 - [Branding & Trademarks](#branding--trademarks)
@@ -147,6 +148,55 @@ evidence that a replacement work may be redistributed.
 The licenses for the bundled Greek and Hebrew fonts are separate from the
 licenses for the biblical text. Font sources and exact terms are documented in
 [assets/fonts/README.md](../assets/fonts/README.md).
+
+---
+
+## Library Sources and Licensing
+
+The Library is a curated catalog, not a web search. It links to each book's source;
+the app doesn't bundle or host any book text today. The content policy, catalog, and
+research queue are in [Christian Library](feature_designs/christian_library.md). A
+work may be copied into the app only when the exact edition, including any
+translation, is public domain where the app is distributed, a stable source records
+its rights status, and the required attribution can be kept. When in doubt, the work
+is linked, not copied.
+
+| Source | What the app uses | Rights basis |
+| --- | --- | --- |
+| **Ellen G. White writings** (EGW Writings, `egwwritings.org`) | Links that open each book's official English, Chinese, or Spanish edition, and small cover thumbnails from `a.egwwritings.org` | The Ellen G. White Estate holds the rights to its editions, translations, website, and app content. The app only links to the official reader and never copies the text. Using the thumbnails to identify books that lead to their official editions is a fair-use assessment, not an express license. |
+| **Chinese Union Mission** (`api.sdabible.org`, `cms.sdabible.site`) | Cover thumbnails for the Chinese EGW editions only, loaded from its public catalog. The books themselves open on EGW Writings. | Same limited navigational use as the EGW covers. Image URLs are checked against the Mission's storage host. |
+| **Project Gutenberg** (`gutenberg.org`) | Links to three works: Joseph Bates, *The Seventh Day Sabbath, a Perpetual Sign* (1847); J. N. Andrews, *History of the Sabbath and First Day of the Week* (1873); John Bunyan, *The Pilgrim's Progress* (1678) | Each record is explicitly marked public domain in the U.S. |
+
+Each source falls back to the app's own original, text-free cover art if its
+thumbnail can't load. That art was generated for this app without using the official
+covers as input or reference.
+
+### Before copying any book into the app
+
+Linking is the current design. Copying text into an in-app reader, or storing it for
+offline reading, needs more care:
+
+- **Project Gutenberg texts.** The underlying works are public domain in the U.S., but
+  Project Gutenberg's files carry its trademark and license. Either keep the Project
+  Gutenberg license header and follow its terms, or remove every reference to Project
+  Gutenberg and treat the result as a plain public-domain text. Decide which before
+  building the reader. Tracked in
+  [#166](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/166)
+  and [#238](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/238).
+- **Ellen G. White texts.** Although many original English works are old, the White
+  Estate's editions and every translation are its own. Don't copy or cache EGW text,
+  including the Chinese and Spanish editions, without the Estate's permission. Keep
+  linking to the official reader.
+- **Modern books.** Works such as C. S. Lewis's and other 20th-century authors' are
+  likely still under copyright and need permission or an official link. Candidates
+  are tracked in
+  [#171](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/171)
+  (C. S. Lewis) and
+  [#149](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/149)
+  (marriage preparation resources).
+- **Chinese Adventist authors.** Only pre-1928 editions with a verified record are
+  candidates for copying; later works need the publisher's or estate's permission.
+  See the research queue in [Christian Library](feature_designs/christian_library.md).
 
 ---
 

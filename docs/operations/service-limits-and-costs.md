@@ -37,7 +37,7 @@ whole system is the domain.
 | [fetch(bible)](#fetchbible) | Original-language, CUV, RV1909 text | Free | "No limits from us" | n/a | Low: CDN |
 | [Bulletin API (Apps Script)](#bulletin-api-apps-script) | Digital bulletin | Free (Workspace for Nonprofits) | 30 simultaneous executions per user | Requests fail with an error | **Medium at scale**: one account's ceiling |
 | [Adventech](#adventech-sabbath-school) | Children's Sabbath School catalog | Free | None published | Unknown | Low: CDN |
-| [Chinese Union Mission library](#chinese-union-mission-library) | Chinese EGW catalog and books | Free | None published | Unknown | **Medium**: small uncached origin |
+| [Chinese Union Mission library](#chinese-union-mission-library) | Chinese EGW cover thumbnails | Free | None published | Unknown | **Medium**: small uncached origin |
 | [EGW Writings covers](#egw-writings-covers) | Library thumbnails | Free | None published | Unknown | Low: Cloudflare |
 | [Sunrise-Sunset](#sunrise-sunset) | Sabbath sunset times | Free, **attribution required** | "Reasonable" volume; `429` + `Retry-After` | Throttled | Low, but uncached (see [Known gaps](#known-gaps)) |
 | [GitHub Actions](#github-actions) | Tests, builds, deploys | Free (public repo) | Fair use, concurrency | Queued jobs | None |
@@ -193,9 +193,10 @@ cache (*measured*). Free, no key, no published limits.
 
 ### Chinese Union Mission library
 
-`api.sdabible.org` (catalog) and `cms.sdabible.site` (book files). The catalog is
-about 40 KB and took 1.1 s from a plain Apache server with no CDN or cache headers
-(*measured*). Free, no key, no published limits.
+`api.sdabible.org` (catalog) and `cms.sdabible.site` (cover images), used only for
+the cover thumbnails of the Chinese EGW editions; the books open on EGW Writings. The
+catalog is about 40 KB and took 1.1 s from a plain Apache server with no CDN or cache
+headers (*measured*). Free, no key, no published limits.
 
 **Load concern:** the app downloads the whole catalog every time the Chinese library
 opens, with no device cache (see [Known gaps](#known-gaps)). This is the smallest
