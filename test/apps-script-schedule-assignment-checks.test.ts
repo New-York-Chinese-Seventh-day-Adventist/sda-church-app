@@ -227,9 +227,17 @@ describe('Sabbath Calendar conflict notes', () => {
     edit(2, 21, 'John Chen');
 
     expect(schedule.notes[1][QUEENS_SERMON - 1]).toBe(
-      'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist, Brooklyn Chair/Pastoral Prayer. / ' +
-        '本安息日亦安排於：Pianist, Brooklyn Chair/Pastoral Prayer。',
+      'Duplicate / 重複: Pianist, Brooklyn Chair/Pastoral Prayer',
     );
+  });
+
+  it('rewrites notes left in the earlier "Roster check" wording', () => {
+    const { schedule, edit } = setup([scheduleRow('2026-10-03', { [QUEENS_SERMON]: 'Mary Lin' })]);
+    schedule.notes[1][QUEENS_SERMON - 1] = 'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist.';
+
+    edit(2, PIANIST, 'Mary Lin');
+
+    expect(schedule.notes[1][QUEENS_SERMON - 1]).toBe('Duplicate / 重複: Pianist');
   });
 
   it('keeps a planner\'s own note while still coloring the cell', () => {
@@ -365,3 +373,47 @@ describe('unknown-name dialog trigger installation', () => {
     expect(secondAdmin.created).toEqual([]);
   });
 });
+
+describe('Sabbath Calendar English-only input', () => {
+  it('clears typed Chinese and explains why in a popup', () => {
+    const { schedule, alerts, edit } = setup([scheduleRow('2026-10-03', {})]);
+
+    edit(2, PIANIST, '陳約翰');
+
+    expect(schedule.values[1][PIANIST - 1]).toBe('');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]).toContain('Chinese characters are not allowed');
+  });
+
+  it('installs the validation rule without help text so it never covers selected cells', () => {
+    const calls: [string, unknown][] = [];
+    const builder: Record<string, (...args: unknown[]) => unknown> = {};
+    ['requireFormulaSatisfied', 'setAllowInvalid', 'setHelpText'].forEach((name) => {
+      builder[name] = (value: unknown) => {
+        calls.push([name, value]);
+        return builder;
+      };
+    });
+    builder.build = () => 'rule';
+    const { context } = setup([], undefined, {});
+    (context as { SpreadsheetApp: Record<string, unknown> }).SpreadsheetApp.newDataValidation = () => builder;
+    let applied: unknown;
+    const sheet = {
+      getMaxRows: () => 100,
+      getRange: () => ({
+        setDataValidation: (rule: unknown) => {
+          applied = rule;
+        },
+        getA1Notation: () => 'A2:Y100',
+      }),
+    };
+    (context as { testSheet: unknown }).testSheet = sheet;
+
+    runInContext('applySabbathCalendarEnglishValidation_(testSheet)', context);
+
+    expect(applied).toBe('rule');
+    expect(calls).toContainEqual(['setAllowInvalid', true]);
+    expect(calls.map(([name]) => name)).not.toContain('setHelpText');
+  });
+});
+
