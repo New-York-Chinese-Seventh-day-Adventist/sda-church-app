@@ -17,6 +17,7 @@ The Sabbath Encouragement attribution and copyright review is maintained at:
 
 - `BulletinApi.gs` — public API, sheet contracts, joins, privacy filtering, and metadata translations.
 - `BulletinScheduleMaintenance.gs` — automatic validation, protection, visibility, and quarter maintenance.
+- `ScheduleAssignmentChecks.gs` — same-day roster conflict highlights and unknown-name warnings.
 - `PrintedQueensBulletin.gs` — shared helpers and Queens Regular rendering.
 - `PrintedQueensCommunionBulletin.gs` — Queens Holy Communion rendering and fixed ceremony readings.
 - `PrintedBrooklynBulletin.gs` — Brooklyn printed layout and Sabbath Encouragement integration.
@@ -33,7 +34,7 @@ From the repository root, after installing dependencies and configuring the
 existing Apps Script project/deployment IDs:
 
 ```bash
-npm test -- --runInBand test/apps-script-physical-bulletin.test.ts test/apps-script-bulletin-merge.test.ts
+npm test -- --runInBand test/apps-script-physical-bulletin.test.ts test/apps-script-bulletin-merge.test.ts test/apps-script-schedule-assignment-checks.test.ts
 npm run apps-script:push
 npm run apps-script:deploy
 ```

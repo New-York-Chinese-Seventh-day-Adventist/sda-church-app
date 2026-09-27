@@ -317,6 +317,9 @@ function onOpen() {
  * Printed Bulletin menu after reloading the spreadsheet.
  */
 function createPrintedBulletinFromPrompt() {
+  // Menu clicks run with full authorization, unlike onOpen, so this is where
+  // the unknown-name dialog trigger can install itself.
+  ensureScheduleNameCheckTrigger_();
   var defaultDate = getDefaultPrintedBulletinDate_();
   var output = HtmlService.createHtmlOutput(
     buildPrintedBulletinPromptHtml_(defaultDate),
