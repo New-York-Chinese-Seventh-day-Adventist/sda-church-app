@@ -82,12 +82,33 @@ church-website platform.
   The Internet Archive comes second so that an outage here doesn't move every
   listener onto Audio Power's single small server.
 - If a source fails, the app moves on to the next one without asking the
-  listener. The web player switches as soon as the browser reports a load error.
-  On iOS and Android, the Bible screen switches only if a source still hasn't
-  started after 45 seconds (`AUDIO_SOURCE_LOAD_TIMEOUT_MS` in
-  [`app/(tabs)/bible/index.tsx`](../../app/(tabs)/bible/index.tsx)), so a failed
-  primary means a long wait before audio starts. Shortening this is tracked in
-  [#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262).
+  listener ([`BibleAudioFailover.ts`](../../services/BibleAudioFailover.ts)):
+  - **A source that fails outright** (an HTTP error such as `404` or `403`, a web
+    page instead of audio, or a DNS failure) is skipped as soon as the player
+    reports the error. Android's player retries a failed request a few times
+    before reporting it, so there a missing file costs about 5 to 10 seconds and
+    an unreachable host about 3. On Android this also covers a chapter the
+    playlist moves on to by itself.
+  - **A source that is only slow** gets 15 seconds to start. After the last
+    source, the app tries them all again from the first, with 30 and then 45
+    seconds each, after pauses of 5 and 20 seconds. Slow connections, such as a
+    subway dead zone, still get a fair chance, and an offline phone doesn't loop
+    through the hosts as fast as they fail. If every source fails on every pass,
+    for example with no connection at all, playback stops after about a minute.
+    Pressing Play again starts over, from where the chapter stopped.
+  - **Once audio has started**, the app never switches that chapter to another
+    source because it is slow. If the connection drops mid-chapter and the player
+    gives up, the app reloads the same source where it stopped. If that reload
+    fails too, the other sources are tried from the same place, with the same
+    retry passes as a first load.
+  - **On Android with the screen off**, JavaScript timers pause, so the 15-second
+    timeout and the pauses between passes wait until the phone is unlocked. Errors
+    are still handled right away, so a host that fails outright is skipped even
+    with the screen off.
+  - On the web, the player switches a queued chapter's source as soon as the
+    browser reports a load error. A chapter you start playing uses the timeouts
+    above.
+
   Listeners can also choose a source themselves in the audio settings.
 - An Adventist Connect outage therefore shifts load to the Internet Archive rather
   than stopping playback. Audio Power is reached only if that fails too.
@@ -190,8 +211,10 @@ Watch for:
 
 - The dependency monitor reporting `Adventist Connect` failures, especially `403`,
   `429`, or an HTML response where an MP3 was expected.
-- Reports that audio takes about 45 seconds to start on phones: the native
-  fallback delay, which suggests the primary source is failing.
+- Reports that audio takes several seconds to start, or that the lock screen or
+  notification shows `(Internet Archive)` or `(Audio Power)` after the chapter
+  title: the app is falling back, which suggests the primary source is failing.
+  The audio settings don't show this; they show the source the listener chose.
 - Listening growing towards the "wide adoption" row, for example from app store
   install counts.
 
