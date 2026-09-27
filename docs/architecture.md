@@ -39,7 +39,7 @@ printed bulletins, and IT administrators develop, release, and maintain it.
 How code reaches the stores, the bulletin backend, and the website, which secrets
 each step uses, and how the domain ties the accounts together.
 
-![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment to publish to Google Play and the Apple App Store, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace, and Google Search Console verifies the domain for Google Play](diagrams/operations.svg)
+![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment to publish to Google Play and the Apple App Store, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace and holds the TXT record that verifies the domain in Google Search Console, which Google Play uses to verify the organization's website](diagrams/operations.svg)
 
 ### App dependencies
 
@@ -75,10 +75,11 @@ and may not be possible, so protect them above everything else.
   can be registered up to 10 years at a time. Keep an active payment method on
   file for renewal. Renewal notices go to the Super Administrators.
 - **DNS** points `app.nyccsda.org` at GitHub Pages and the domain's email at
-  Google Workspace, and holds the record that verifies the domain in **Google
-  Search Console**. Google Play required that verification for the church's
-  organization developer account. Search Console is a Google tool, not an app
-  store; the administrators have access to it through their church accounts.
+  Google Workspace. It also holds the DNS TXT record that proves the church owns
+  `nyccsda.org` in **Google Search Console**, where the domain is registered as a
+  Domain property; Google only verifies those with a DNS record. Search Console is
+  a Google tool, not an app store; the administrators have access to it through
+  their church accounts.
 - Administrators sign in to Cloudflare with Google.
 
 ### Google Workspace for Nonprofits
@@ -150,8 +151,7 @@ and may not be possible, so protect them above everything else.
     `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`, `IOS_PROVISIONING_PROFILE_BASE64`,
     `IOS_TEAM_ID`). The certificate and profile **expire every 12 months**; renew
     them in the Apple Developer account and update these secrets, or iOS builds
-    fail. The iOS workflow expects these, but they haven't been added yet; they
-    arrive with the 0.39.0 store certificate setup.
+    fail.
   - **Google account login:** a saved login for a church Google account
     (`CLASPRC_JSON`), created by signing in with `clasp`. It uploads the bulletin
     Apps Script code and also the QR codes and preview APKs to Google Drive. The
@@ -233,8 +233,7 @@ These are generated per organization and can't be copied from anyone else.
   Play. The church generates it; Play Console only holds its certificate. Keep an
   encrypted backup, because it can't be downloaded again.
 - **Apple distribution certificate** (`.p12`) and **App Store provisioning
-  profile** (`.mobileprovision`), renewed every 12 months. Not added to GitHub
-  Secrets yet.
+  profile** (`.mobileprovision`), renewed every 12 months.
 - **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool),
   which uploads the bulletin Apps Script code and Drive files, plus the Apps Script
   project and deployment IDs.
@@ -306,8 +305,10 @@ submitted for review before they appear on the App Store.
   cost.
 - Each IT administrator signs in to Play Console with their **own individual
   `nyccsda.org` church account**, added as a user of that organization account.
-- Verifying the organization required verifying `nyccsda.org` in Google Search
-  Console; see [Cloudflare](#cloudflare).
+- Google Play requires organization accounts to verify their website. The website
+  must first be registered in Google Search Console, where `nyccsda.org` is verified
+  by a DNS TXT record (see [Cloudflare](#cloudflare)); verification is then
+  requested from Play Console.
 - Nothing needs renewing beyond keeping the app updated to meet Play's target API
   level requirements.
 

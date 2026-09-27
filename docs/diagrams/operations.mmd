@@ -26,7 +26,7 @@ flowchart TB
 
   subgraph Domain
     dns@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/cloudflare-icon.svg", label: "nyccsda.org<br/>Cloudflare registrar + DNS", pos: "b", w: 64, h: 30, constraint: "on" }
-    gsc@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/google-search-console.svg", label: "Google Search Console<br/>domain verification for Play", pos: "b", w: 44, h: 44, constraint: "on" }
+    gsc@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/google-search-console.svg", label: "Google Search Console<br/>nyccsda.org Domain property", pos: "b", w: 44, h: 44, constraint: "on" }
   end
 
   admins -- sign in with church accounts --> group
@@ -42,8 +42,8 @@ flowchart TB
   abm -.-> appstore
   dns -.-> pages
   dns -.-> Google
-  dns -.-> gsc
-  gsc -.-> play
+  dns -. DNS TXT record proves ownership .-> gsc
+  gsc -. website verification for the organization account .-> play
 
   classDef logo fill:#ffffff,stroke:#d0d7de
   class repo,actions,pages,play,appstore,abm,group,script,drive,dns,gsc logo
