@@ -330,8 +330,8 @@ source-data retention is governed by the church's administrative practices.
 ### 3. Temporary Caching and Device Storage
 
 Google Apps Script temporarily caches privacy-filtered bulletin responses to reduce Sheet
-reads. The app may store settings, saved verse references, cached Bible selections, and
-the same filtered bulletin data in device-local storage. This data is not synced to a
+reads. The app may store settings, saved verse references, cached Bible selections,
+library cover links, and the same filtered bulletin data in device-local storage. This data is not synced to a
 church account. Web users can remove the device copy by clearing this site's browser
 data; native users can uninstall the app or clear its storage using the operating
 system's app settings.
