@@ -1,6 +1,0 @@
-# Requests a review from the release approvers on every pull request, so the
-# people who must approve get a review-request notification instead of relying
-# on watching the repository. This only routes the request; code-owner
-# approval is not required by the rulesets. The team needs Write access to the
-# repository for GitHub to request its review.
-* @New-York-Chinese-Seventh-day-Adventist/release-approvers

@@ -28,7 +28,7 @@ does and what still needs a person.
 | Role | Who | Can |
 | --- | --- | --- |
 | Repository admin | Organization and repository admins | Run manual workflows, create `release/*` branches, merge to `main` (the ruleset lets admins merge without a second approval) |
-| `release-approvers` team | Members of the GitHub team | Approve jobs that use the `production` Environment; review every pull request (requested automatically through `.github/CODEOWNERS`) |
+| `release-approvers` team | Members of the GitHub team | Approve jobs that use the `production` Environment |
 | Contributor | Anyone with a fork | Open pull requests into a `release/*` branch |
 
 The `production` Environment holds every credential: Google (`CLASPRC_JSON`), Apple
@@ -40,12 +40,11 @@ production**.
 
 ### Getting notified only when action is needed
 
-Every item that needs a person is addressed to someone, so maintainers don't have to
-watch the repository to see it:
+Each kind of item that needs a person reaches a maintainer as follows:
 
 | Needs action | How it reaches you |
 | --- | --- |
-| A pull request to review | `.github/CODEOWNERS` requests a review from `release-approvers` on every PR. The team needs **Write** access under **Settings → Collaborators and teams**, or GitHub requests no one. |
+| A pull request to review | Watch the repository with **Watch → Custom → Pull requests** (and **Issues** for new issues). With **No additional events**, that emails each new PR or issue but not its comments or pushes. |
 | A production deploy to approve | The `production` Environment waits for a `release-approvers` member. |
 | A monitor alert (external dependencies, store toolchain) | The alert issue is assigned to the usernames in the `MONITOR_ALERT_ASSIGNEES` Actions variable (comma-separated) under **Settings → Secrets and variables → Actions → Variables**. If it is empty, the alert @mentions whoever triggered the run. |
 
@@ -55,10 +54,10 @@ permissions. That's why alerts use `MONITOR_ALERT_ASSIGNEES` instead. When the t
 members change, update the variable to match. An assignee must have access to the
 repository, directly or through a team.
 
-With that in place, a maintainer can set **Watching** notifications to **on GitHub**
-only, keep email for **Participating, @mentions and custom**, and choose **No
-additional events** under **Customize email updates**. Email then arrives only for
-review requests, deploy approvals, assignments, and @mentions.
+With that in place, a maintainer can keep email for **Watching** and **Participating,
+@mentions and custom**, and choose **No additional events** under **Customize email
+updates**. Email then arrives for new PRs and issues in watched repositories, deploy
+approvals, assignments, and @mentions, but not for comments, pushes, or reviews.
 
 ## Approving a production deployment
 
