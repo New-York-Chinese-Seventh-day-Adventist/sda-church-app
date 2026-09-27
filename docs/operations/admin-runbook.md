@@ -49,6 +49,12 @@ watch the repository to see it:
 | A production deploy to approve | The `production` Environment waits for a `release-approvers` member. |
 | A monitor alert (external dependencies, store toolchain) | The alert issue is assigned to the usernames in the `MONITOR_ALERT_ASSIGNEES` Actions variable (comma-separated) under **Settings → Secrets and variables → Actions → Variables**. If it is empty, the alert @mentions whoever triggered the run. |
 
+The monitors can't read `release-approvers` membership or reliably @mention the
+team: they run with the built-in Actions token, which has no organization
+permissions. That's why alerts use `MONITOR_ALERT_ASSIGNEES` instead. When the team's
+members change, update the variable to match. An assignee must have access to the
+repository, directly or through a team.
+
 With that in place, a maintainer can set **Watching** notifications to **on GitHub**
 only, keep email for **Participating, @mentions and custom**, and choose **No
 additional events** under **Customize email updates**. Email then arrives only for
