@@ -264,6 +264,8 @@ labeled **critical / launch blocking**. An unreadable page alone does not add th
 label, because it usually means the page wording changed, not that uploads will be
 rejected.
 
+A new alert is assigned to the users in `MONITOR_ALERT_ASSIGNEES`; see
+[Getting notified only when action is needed](#getting-notified-only-when-action-is-needed).
 The issue closes itself on the next passing run. The job summary also notes when
 Apple recommends a newer Xcode than the build uses; that note alone does not open an
 issue. What to update and test is under
