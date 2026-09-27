@@ -227,49 +227,72 @@ for a future quarter, the script does not delete or rewrite them.
 ### Roster conflict highlights and unknown names
 
 `ScheduleAssignmentChecks.gs` helps planners catch two roster mistakes in the
-person columns (`Queens Sermon` through `Sabbath School`, F:Y):
+person columns (`Queens Sermon` through `Sabbath School`, F:Y). Row 1 and
+columns A:E are never checked or changed.
 
-- **Same person twice on one Sabbath.** When a person appears in more than one
-  cell of the same row, every cell holding them turns pale red (`#ea9999`).
-  Hovering over a red cell shows a note listing the person's other roles that
-  Sabbath.
-  Queens and Brooklyn columns are compared together, because one person cannot
-  serve both locations at once. Cells with several names (`Mary Lin / John
-  Chen`) are compared name by name, and placeholders such as `TBD` and `Choir`
-  are ignored. Spelling differences in case or spacing do not hide a conflict,
-  and a pinyin spelling derived from the Name Dictionary counts as the same
-  person as its English entry.
-- **Name not in the Name Dictionary.** Editing a person cell to a name the
-  dictionary does not know shows a popup with close dictionary spellings
-  (typos, swapped name order, or a first name typed alone). The value is kept,
-  and the cell is not colored.
+#### Same person twice on one Sabbath (automatic red)
 
-The highlight is a warning, not a block: the value is kept. Every edit, every
-Name Dictionary change, and every `onOpen` maintenance run rescans every data
-row, including hidden past rows and newly appended quarter rows. The script
-only clears cells that are exactly the conflict color, and only replaces
-notes it wrote itself. Row 1, columns A:E, other cell colors, and planners' own
-notes are never changed. Do not use `#ea9999` for manual
-highlighting in F:Y; the script treats that color as its own.
+If a name appears in more than one F:Y cell of the same row, every cell holding
+it turns pale red (`#ea9999`, the Sheets "light red 2" color). No click or
+setup is needed.
 
-The simple `onEdit` trigger cannot open HTML dialogs, and simple triggers are
-not allowed to create the installable trigger that can. So the interactive
-dialog, where the editor can apply a suggested spelling or add the name and its
-Chinese name to the Name Dictionary, turns itself on the first time an account
-listed in `PHYSICAL_BULLETIN_ADMIN_EMAILS` uses **Printed Bulletin → Create
-Google Doc + PDF…**. That click installs an `onEdit` trigger for
-`onScheduleNameCheckEdit`, owned by that admin, and records it in the
-`SCHEDULE_NAME_CHECK_TRIGGER` script property. After that the plain alert stops,
-and no other admin installs a duplicate. Until then, editors get a plain alert
-with the same suggestions.
+- Queens and Brooklyn columns are compared together, so the main case caught is
+  one person scheduled at both locations.
+- The rule is deliberately simple: any repeat is red. Some repeats are fine
+  (for example Offering Prayer and Special Music at one service), and the
+  planner decides whether to leave those. The value is never changed.
+- Each red cell has a note, shown by the small black triangle in its top-right
+  corner. Hovering over the cell shows the person's other roles that Sabbath,
+  for example `Also scheduled this Sabbath as: Pianist, Brooklyn Chair/Pastoral
+  Prayer`. Repeated headers are named by location.
+- Cells with several names (`Mary Lin / John Chen`) are compared name by name.
+  Placeholders such as `TBD` and `Choir` are ignored. Case and spacing
+  differences do not hide a repeat, and a pinyin spelling derived from a Name
+  Dictionary entry counts as the same person as its English name.
+
+The whole sheet is rescanned after every Sabbath Calendar edit, every Name
+Dictionary edit, and every `onOpen` maintenance run. That includes hidden past
+rows, and the scan runs after new quarter rows are appended, so highlights
+copied into new rows are cleared. Expect the color to appear a few seconds
+after an edit.
+
+The script only clears cells that are exactly `#ea9999`, and only replaces or
+clears notes that start with `Roster check / 名單檢查`. Other cell colors and
+planners' own notes are left alone; a cell with a planner's note still turns
+red but keeps that note. Do not use `#ea9999` for manual highlighting in F:Y.
+
+#### Name not in the Name Dictionary (popup)
+
+When an editor types or pastes a name the Name Dictionary does not know, a
+popup lists it with close dictionary spellings: typos, swapped name order, or a
+first name typed alone. The value is kept and the cell is not colored. Names
+already in the sheet are not re-checked; only edited cells are.
+
+There are two versions of the popup:
+
+- **Plain alert (default).** The simple `onEdit` trigger shows a text alert
+  with the suggestions. Editors fix the cell or add the name to the Name
+  Dictionary tab themselves.
+- **Interactive dialog.** Each unknown name gets its suggestions as buttons
+  that fix the cell, plus English and optional Chinese name boxes with an
+  **Add** button that appends them to the Name Dictionary.
+
+Google does not let simple triggers open HTML dialogs or create the
+installable trigger that can. So the dialog turns itself on the first time an
+account listed in `PHYSICAL_BULLETIN_ADMIN_EMAILS` uses **Printed Bulletin →
+Create Google Doc + PDF…**, because that click runs with full authorization.
+It installs an `onEdit` trigger for `onScheduleNameCheckEdit`, owned by that
+admin, and sets the `SCHEDULE_NAME_CHECK_TRIGGER` script property. After that,
+the plain alert stops, so an edit never shows two popups, and no other admin
+installs a duplicate.
 
 If the owning admin's account is removed, its trigger stops. To recover,
 delete the `SCHEDULE_NAME_CHECK_TRIGGER` script property. The next admin menu
 click reinstalls the trigger, or you can run `installScheduleNameCheckTrigger`
-from the Apps Script editor. The dialog's add and replace buttons run as the
-editor, so an editor who has not authorized the script sees an authorization
-error there. The **Open Name Dictionary tab** link and manual editing still
-work.
+from the Apps Script editor. The dialog's **Add** and suggestion buttons run
+as the editor, so an editor who has never authorized the script sees an
+authorization error there. The **Open Name Dictionary tab** button and editing
+the tab by hand still work.
 
 ## Data precedence and fallback behavior
 
@@ -585,8 +608,9 @@ changes the URL and requires a coordinated mobile-app update.
 | API returns schedule-not-found | Missing `YYYY Sabbath` tab or row | Restore the exact tab name and a matching Date row |
 | A field moved to the wrong location | Header renamed/reordered or repeated header occurrence changed | Restore the exact header contract and deploy matching code |
 | Header says contract violation | A protected header was changed | Update Apps Script/tests/app first; technology group restores the header |
-| A roster cell is pale red | The same person is in another F:Y cell of that row | Reassign one of the roles; the color clears on the next edit |
+| A roster cell is pale red | The same name is in another F:Y cell of that row | Hover over the cell to see the other roles; reassign one, or leave it if intended. The color clears on the next edit |
 | No unknown-name dialog, only an alert | No bulletin admin has used the Printed Bulletin menu yet, or the trigger owner's account was removed | Have an admin open **Printed Bulletin → Create Google Doc + PDF…**; if the owner was removed, delete the `SCHEDULE_NAME_CHECK_TRIGGER` script property first |
+| A red cell shows no hover note | The cell already had a planner's own note, which the script keeps | Read the row to find the other role, or delete the planner's note so the script can add its own |
 | Chinese text appears in Sabbath Calendar | Typed or pasted into A:X | The validation/onEdit guard should reject/clear it; use Name Dictionary for approved English names |
 | New quarter rows lack validation | Maintenance did not run or append failed | Open the workbook as an editor, inspect Apps Script logs, and rerun maintenance; do not manually limit the rule to X53 |
 | Old rows disappeared | They were hidden, not deleted | Unhide rows when historical planning is needed; maintenance is non-destructive |
