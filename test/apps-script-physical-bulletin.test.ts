@@ -830,6 +830,78 @@ describe('printed bulletin Apps Script helpers', () => {
     expect(calls).toEqual(['queens-regular', 'communion', 'brooklyn']);
   });
 
+  describe('page breaks between booklet spreads', () => {
+    const documentApp = {
+      ElementType: { PARAGRAPH: 'PARAGRAPH', TABLE: 'TABLE' },
+      Attribute: {
+        FONT_SIZE: 'FONT_SIZE',
+        LINE_SPACING: 'LINE_SPACING',
+        SPACING_BEFORE: 'SPACING_BEFORE',
+        SPACING_AFTER: 'SPACING_AFTER',
+      },
+    };
+    const compactAttributes = {
+      FONT_SIZE: 1,
+      LINE_SPACING: 1,
+      SPACING_BEFORE: 0,
+      SPACING_AFTER: 0,
+    };
+    const makeParagraph = (text: string, calls: string[], name: string) => {
+      const paragraph = {
+        getType: () => 'PARAGRAPH',
+        getText: () => text,
+        asParagraph: () => paragraph,
+        attributes: undefined as unknown,
+        appendPageBreak: () => {
+          calls.push(`break in ${name}`);
+          return { getParent: () => paragraph };
+        },
+        setAttributes: (attributes: unknown) => {
+          paragraph.attributes = attributes;
+        },
+      };
+      return paragraph;
+    };
+
+    it('puts the break in the empty paragraph after the last table and shrinks it', () => {
+      const calls: string[] = [];
+      const trailing = makeParagraph('', calls, 'trailing paragraph');
+      const body = {
+        getNumChildren: () => 2,
+        getChild: (index: number) =>
+          index === 1 ? trailing : { getType: () => 'TABLE' },
+        appendPageBreak: () => {
+          throw new Error('A trailing empty paragraph must be reused.');
+        },
+      };
+      const context = loadAppsScript({ DocumentApp: documentApp });
+
+      runInContext('appendCompactPageBreak_(testBody)', Object.assign(context, { testBody: body }));
+
+      expect(calls).toEqual(['break in trailing paragraph']);
+      expect(trailing.attributes).toEqual(compactAttributes);
+    });
+
+    it('appends a compact break paragraph when the body ends with text', () => {
+      const calls: string[] = [];
+      const appended = makeParagraph('', calls, 'appended paragraph');
+      const body = {
+        getNumChildren: () => 1,
+        getChild: () => makeParagraph('Closing text', calls, 'text'),
+        appendPageBreak: () => {
+          calls.push('appended break');
+          return { getParent: () => appended };
+        },
+      };
+      const context = loadAppsScript({ DocumentApp: documentApp });
+
+      runInContext('appendCompactPageBreak_(testBody)', Object.assign(context, { testBody: body }));
+
+      expect(calls).toEqual(['appended break']);
+      expect(appended.attributes).toEqual(compactAttributes);
+    });
+  });
+
   it('preserves full-width booklet panels beside the explicit fold gutter', () => {
     const columnWidths: Array<[number, number]> = [];
     const makeCell = () => ({

@@ -2335,7 +2335,7 @@ function createOrReplacePrintedBulletinPdf_(documentId, title, propertyKey, loca
 
 function appendBookletPage_(body, leftRenderer, rightRenderer, isFirstPage, footerRenderer, footerOptions) {
   if (!isFirstPage) {
-    body.appendPageBreak();
+    appendCompactPageBreak_(body);
   }
 
   appendBookletContentTable_(body, leftRenderer, rightRenderer);
@@ -2343,6 +2343,30 @@ function appendBookletPage_(body, leftRenderer, rightRenderer, isFirstPage, foot
   if (footerRenderer) {
     appendBookletFooter_(body, footerRenderer, footerOptions);
   }
+}
+
+/**
+ * A page break sits in its own paragraph. At the default 11pt that paragraph
+ * doesn't fit under a spread that fills the page, so Docs moves it to a new
+ * page and the break then leaves that page blank. Put the break in the empty
+ * paragraph Docs keeps after the last table, and shrink it to fit.
+ */
+function appendCompactPageBreak_(body) {
+  var lastIndex = body.getNumChildren() - 1;
+  var last = lastIndex >= 0 ? body.getChild(lastIndex) : null;
+  var paragraph =
+    last &&
+    last.getType() === DocumentApp.ElementType.PARAGRAPH &&
+    last.asParagraph().getText() === ''
+      ? last.asParagraph()
+      : null;
+  var pageBreak = paragraph ? paragraph.appendPageBreak() : body.appendPageBreak();
+  var attributes = {};
+  attributes[DocumentApp.Attribute.FONT_SIZE] = 1;
+  attributes[DocumentApp.Attribute.LINE_SPACING] = 1;
+  attributes[DocumentApp.Attribute.SPACING_BEFORE] = 0;
+  attributes[DocumentApp.Attribute.SPACING_AFTER] = 0;
+  pageBreak.getParent().setAttributes(attributes);
 }
 
 function appendBookletContentTable_(container, leftRenderer, rightRenderer) {
