@@ -72,15 +72,21 @@ requested. Still open:
   even when the Bible text is public domain.
 - The church's application for FCBH API access is pending.
 
-### Bible Brain API license (Faith Comes By Hearing)
+### Bible Brain API license (Faith Comes By Hearing): planned, not in use
 
-Using FCBH audio through its Bible Brain API (the Digital Bible Platform, DBP) means
-agreeing to the [API License Agreement](https://www.faithcomesbyhearing.com/bible-brain/license)
-(last modified April 15, 2021), which the key application requires. The app doesn't
-use Bible Brain yet; the church's application is pending. Its terms that affect this
-project, quoted from the agreement (not legal advice):
+> [!NOTE]
+> **Work in progress.** The app does **not** use Bible Brain or any Faith Comes By
+> Hearing content today. The church has applied for API access and is waiting for a
+> reply. This section records the license terms ahead of time so the integration
+> ([#241](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/241))
+> is designed to follow them.
 
-| Topic | The agreement says | What it means here |
+Using FCBH audio through its Bible Brain API (the Digital Bible Platform, DBP) would
+mean agreeing to the [API License Agreement](https://www.faithcomesbyhearing.com/bible-brain/license)
+(last modified April 15, 2021), which the key application requires. Its terms that
+would affect this project, quoted from the agreement (not legal advice):
+
+| Topic | The agreement says | What it would mean here |
 | --- | --- | --- |
 | Downloading and offline use | "No DBP Content may be downloaded or made available for offline use by any person or outside of DBP except for DBP Content that is accessible via the /download endpoint." | No hosting FCBH audio or text on church storage, no caching it in a proxy, and offline listening only for content offered through `/download`, unless FCBH grants specific permission. |
 | Proxies | "You do not create a proxy distribution network for DBP Content (for instance, enabling other developers to use DBP Content or metadata via your servers or API instead of ours)." | A key-hiding proxy must serve only this app: forward only the specific requests the app needs, and never act as an open relay others could use. Whether even a private proxy is acceptable has been asked of FCBH. |
@@ -96,7 +102,9 @@ It must follow the proxy and caching terms above, and it must stay on Cloudflare
 Workers Free plan, which returns errors at its limits instead of billing.
 
 Before the app uses or hosts any of these, get written confirmation from the
-recording's rights holder and record it in #134 and in this section. Audio Power can
+recording's rights holder and record it in #134 and in this section. Adding Spanish
+and KJV audio, and the other routes to it, is tracked in
+[#142](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/142). Audio Power can
 be reached at info@theaudiopower.com, the contact address on its website.
 
 ### “Free to access” does not mean “public domain”
