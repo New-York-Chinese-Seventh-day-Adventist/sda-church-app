@@ -20,6 +20,7 @@ does and what still needs a person.
 - [Android PR preview APKs](#android-pr-preview-apks)
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
+- [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
 - [Credentials that need attention](#credentials-that-need-attention)
 
 ## Who can do what
@@ -36,6 +37,27 @@ each run waits for a `release-approvers` member to approve it. Admins can also b
 that approval. To require approval even from admins, turn off **Allow administrators
 to bypass configured protection rules** under **Settings → Environments →
 production**.
+
+### Getting notified only when action is needed
+
+Each kind of item that needs a person reaches a maintainer as follows:
+
+| Needs action | How it reaches you |
+| --- | --- |
+| A pull request to review | Watch the repository with **Watch → Custom → Pull requests** (and **Issues** for new issues). With **No additional events**, that emails each new PR or issue but not its comments or pushes. |
+| A production deploy to approve | The `production` Environment waits for a `release-approvers` member. |
+| A monitor alert (external dependencies, store toolchain) | The alert issue is assigned to the usernames in the `MONITOR_ALERT_ASSIGNEES` Actions variable (comma-separated) under **Settings → Secrets and variables → Actions → Variables**. If it is empty, the alert @mentions whoever triggered the run. Both monitors share this handling in `scripts/monitor-alert-issue.cjs`, covered by `test/monitor-alert-issue.test.ts`. |
+
+The monitors can't read `release-approvers` membership or reliably @mention the
+team: they run with the built-in Actions token, which has no organization
+permissions. That's why alerts use `MONITOR_ALERT_ASSIGNEES` instead. When the team's
+members change, update the variable to match. An assignee must have access to the
+repository, directly or through a team.
+
+With that in place, a maintainer can keep email for **Watching** and **Participating,
+@mentions and custom**, and choose **No additional events** under **Customize email
+updates**. Email then arrives for new PRs and issues in watched repositories, deploy
+approvals, assignments, and @mentions, but not for comments, pushes, or reviews.
 
 ## Approving a production deployment
 
@@ -232,8 +254,44 @@ package updates.
 manually.
 
 It opens or updates an issue when an outside service the app depends on fails, and
-closes the issue when the service recovers. See
+closes the issue when the service recovers. A new alert is assigned to the users in
+`MONITOR_ALERT_ASSIGNEES`; see
+[Getting notified only when action is needed](#getting-notified-only-when-action-is-needed). See
 [External dependency monitor](external-dependency-monitor.md).
+
+## Store toolchain monitor alerts
+
+**Workflow:** **Store Toolchain Monitor**, which runs every Monday and can be run
+manually.
+
+It reads Google Play's [target API
+requirement](https://developer.android.com/google/play/requirements/target-sdk) and
+Apple's [upcoming requirements](https://developer.apple.com/news/upcoming-requirements/)
+and compares them with the app:
+
+- `targetSdkVersion` in `app.json` (the `expo-build-properties` plugin), and
+- the Xcode version selected in `.github/workflows/native-ios-build.yml`.
+
+It opens or updates the issue **[monitor] Store toolchain requirements need
+attention** in three cases:
+
+- the app is below a requirement already in force;
+- a new requirement starts within 120 days; or
+- it can no longer read either page, which usually means the wording changed. Then
+  check the page by hand and update the patterns in
+  `scripts/check-store-toolchain.cjs`.
+
+When the app is below a requirement or one starts within 120 days, the issue is
+labeled **critical / launch blocking**. An unreadable page alone does not add the
+label, because it usually means the page wording changed, not that uploads will be
+rejected.
+
+A new alert is assigned to the users in `MONITOR_ALERT_ASSIGNEES`; see
+[Getting notified only when action is needed](#getting-notified-only-when-action-is-needed).
+The issue closes itself on the next passing run. The job summary also notes when
+Apple recommends a newer Xcode than the build uses; that note alone does not open an
+issue. What to update and test is under
+[Store toolchain requirements](#store-toolchain-requirements).
 
 ## Credentials that need attention
 
