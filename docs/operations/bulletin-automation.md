@@ -189,17 +189,26 @@ app before adding, removing, renaming, or reordering a contract column.
 
 ### English-only Sabbath Calendar input
 
-The script automatically installs the data-validation rule on the editable
-`Sabbath Calendar` range and expands it after automatic quarter rows are added.
-The rule rejects CJK characters and displays bilingual help text explaining that
-the mobile app redacts last names for anonymity and that editors should use the
-`Name Dictionary` tab for approved English names.
+Chinese characters in the `Sabbath Calendar` are handled by a narrowly scoped
+`onEdit` guard, whether they are typed or pasted. It clears the cell and shows a
+bilingual popup explaining that the mobile app redacts last names for anonymity
+and that editors should use the `Name Dictionary` tab for approved English names.
+The popup comes from the script, so it appears a second or two after the edit.
 
-Data validation alone is not sufficient against copy/paste: pasting a cell can
-replace validation metadata. Therefore the script also has a narrowly scoped
-`onEdit` guard:
+The script also installs a data-validation rule on the editable range, and
+expands it after automatic quarter rows are added. The rule deliberately has no
+help text and allows invalid input:
 
-- it applies only to `Sabbath Calendar` columns A:X and data rows beginning at row 2;
+- Sheets shows a rule's help text on *every* selected cell, not only on invalid
+  input, so a long explanation there covered every cell a planner clicked.
+- Allowing invalid input lets typed Chinese reach the `onEdit` guard and its
+  popup, instead of Sheets' own rejection dialog.
+- If the guard ever fails to run, a cell with Chinese still shows the rule's red
+  warning corner.
+
+The guard:
+
+- it applies only to `Sabbath Calendar` columns A:Y and data rows beginning at row 2;
 - it clears edited or pasted cells containing CJK Han characters;
 - it does not alter other tabs or columns; and
 - it does not delete rows or rewrite unrelated content.
@@ -611,7 +620,7 @@ changes the URL and requires a coordinated mobile-app update.
 | A roster cell is pale red | The same name is in another F:Y cell of that row | Hover over the cell to see the other roles; reassign one, or leave it if intended. The color clears on the next edit |
 | No unknown-name dialog, only an alert | No bulletin admin has used the Printed Bulletin menu yet, or the trigger owner's account was removed | Have an admin open **Printed Bulletin → Create Google Doc + PDF…**; if the owner was removed, delete the `SCHEDULE_NAME_CHECK_TRIGGER` script property first |
 | A red cell shows no hover note | The cell already had a planner's own note, which the script keeps | Read the row to find the other role, or delete the planner's note so the script can add its own |
-| Chinese text appears in Sabbath Calendar | Typed or pasted into A:X | The validation/onEdit guard should reject/clear it; use Name Dictionary for approved English names |
+| Chinese text appears in Sabbath Calendar | Typed or pasted into A:Y | The onEdit guard should clear it with a popup; if it stays with a red corner, check **Extensions → Apps Script → Executions** for errors. Use Name Dictionary for approved English names |
 | New quarter rows lack validation | Maintenance did not run or append failed | Open the workbook as an editor, inspect Apps Script logs, and rerun maintenance; do not manually limit the rule to X53 |
 | Old rows disappeared | They were hidden, not deleted | Unhide rows when historical planning is needed; maintenance is non-destructive |
 | Google Doc is in Trash or not updated | Saved ID points to a trashed/deleted file | Run generation again; the script treats it as missing and creates a new Doc in the configured folder |
