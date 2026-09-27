@@ -55,6 +55,7 @@ the church's Workspace terms during annual maintenance.
 | --- | --- |
 | `google-apps-script/BulletinApi.gs` | Public API, sheet contracts, data joins, privacy filtering, and metadata translations |
 | `google-apps-script/BulletinScheduleMaintenance.gs` | Background `onOpen` maintenance, header protection, validation, hiding, and quarter expansion |
+| `google-apps-script/ScheduleAssignmentChecks.gs` | Same-day roster conflict highlights and Name Dictionary unknown-name warnings |
 | `google-apps-script/PrintedQueensBulletin.gs` | Shared data preparation, Queens Regular renderer, common Docs helpers, hymn/Bible/QR helpers |
 | `google-apps-script/PrintedQueensCommunionBulletin.gs` | Queens Communion page order and fixed Communion/Foot Washing readings |
 | `google-apps-script/PrintedBrooklynBulletin.gs` | Brooklyn cover, Zoom, Sabbath School, worship, and location-specific printed layout |
@@ -64,6 +65,7 @@ the church's Workspace terms during annual maintenance.
 | `app/(tabs)/home/bulletin.tsx` | Digital bulletin sections, labels, privacy-safe names, translations, and staff link |
 | `test/apps-script-physical-bulletin.test.ts` | Physical layout, contract, privacy, lookup, QR, and maintenance regression tests |
 | `test/apps-script-bulletin-merge.test.ts` | Intake mapping and precedence regression tests |
+| `test/apps-script-schedule-assignment-checks.test.ts` | Roster conflict highlighting and unknown-name warning tests |
 | `test/integration/bulletin-api.mjs` | Opt-in read-only production API contract check |
 
 ## The three mandatory sheets
@@ -178,8 +180,9 @@ On open, the script:
    `technology@nyccsda.org`;
 4. protects `Sabbath Calendar!A:B` for the technology group;
 5. appends missing Saturdays for the next quarter when the current quarter is in
-   its final 21 days; and
-6. hides old schedule rows without deleting them.
+   its final 21 days;
+6. hides old schedule rows without deleting them; and
+7. repaints the conflict highlights described below across every schedule row.
 
 The header validation message tells editors to update Apps Script and the mobile
 app before adding, removing, renaming, or reordering a contract column.
@@ -220,6 +223,41 @@ The schedule-maintenance behavior is intentionally non-destructive:
 The operation is idempotent. It compares existing dates before appending, so
 opening the sheet repeatedly does not create duplicates. If rows already exist
 for a future quarter, the script does not delete or rewrite them.
+
+### Roster conflict highlights and unknown names
+
+`ScheduleAssignmentChecks.gs` helps planners catch two roster mistakes in the
+person columns (`Queens Sermon` through `Sabbath School`, F:Y):
+
+- **Same person twice on one Sabbath.** When a person appears in more than one
+  cell of the same row, every cell holding them turns pale red (`#ea9999`).
+  Queens and Brooklyn columns are compared together, because one person cannot
+  serve both locations at once. Cells with several names (`Mary Lin / John
+  Chen`) are compared name by name, and placeholders such as `TBD` and `Choir`
+  are ignored. Spelling differences in case or spacing do not hide a conflict,
+  and a pinyin spelling derived from the Name Dictionary counts as the same
+  person as its English entry.
+- **Name not in the Name Dictionary.** Editing a person cell to a name the
+  dictionary does not know shows a warning with close dictionary spellings
+  (typos, swapped name order, or a first name typed alone).
+
+The highlight is a warning, not a block: the value is kept. Every edit, every
+Name Dictionary change, and every `onOpen` maintenance run rescans every data
+row, including hidden past rows and newly appended quarter rows. The script
+only clears cells that are exactly the conflict color, so row 1, columns A:E,
+and any other cell colors are never changed. Do not use `#ea9999` for manual
+highlighting in F:Y; the script treats that color as its own.
+
+The simple `onEdit` trigger cannot open HTML dialogs, so by default the unknown
+name warning is a plain alert. To get the interactive dialog, where the editor
+can apply a suggested spelling or add the name and its Chinese name to the Name
+Dictionary, a technology team member runs `installScheduleNameCheckTrigger`
+once from the Apps Script editor. It installs an `onEdit` trigger for
+`onScheduleNameCheckEdit` and records that in the `SCHEDULE_NAME_CHECK_TRIGGER`
+script property, so the plain alert stops. Running it again is safe. The
+dialog's add and replace buttons run as the editor, so an editor who has not
+authorized the script sees an authorization error there. The **Open Name
+Dictionary tab** link and manual editing still work.
 
 ## Data precedence and fallback behavior
 
@@ -474,7 +512,7 @@ Apps Script deployment ID so the production `/exec` URL does not change:
 
 ```bash
 npm install
-npm test -- --runInBand test/apps-script-physical-bulletin.test.ts test/apps-script-bulletin-merge.test.ts
+npm test -- --runInBand test/apps-script-physical-bulletin.test.ts test/apps-script-bulletin-merge.test.ts test/apps-script-schedule-assignment-checks.test.ts
 npm run apps-script:push       # upload source only
 npm run apps-script:deploy     # upload and create a new version of the existing deployment
 ```
@@ -535,6 +573,8 @@ changes the URL and requires a coordinated mobile-app update.
 | API returns schedule-not-found | Missing `YYYY Sabbath` tab or row | Restore the exact tab name and a matching Date row |
 | A field moved to the wrong location | Header renamed/reordered or repeated header occurrence changed | Restore the exact header contract and deploy matching code |
 | Header says contract violation | A protected header was changed | Update Apps Script/tests/app first; technology group restores the header |
+| A roster cell is pale red | The same person is in another F:Y cell of that row | Reassign one of the roles; the color clears on the next edit |
+| No unknown-name dialog, only an alert | The installable trigger is not installed | Run `installScheduleNameCheckTrigger` once from the Apps Script editor |
 | Chinese text appears in Sabbath Calendar | Typed or pasted into A:X | The validation/onEdit guard should reject/clear it; use Name Dictionary for approved English names |
 | New quarter rows lack validation | Maintenance did not run or append failed | Open the workbook as an editor, inspect Apps Script logs, and rerun maintenance; do not manually limit the rule to X53 |
 | Old rows disappeared | They were hidden, not deleted | Unhide rows when historical planning is needed; maintenance is non-destructive |

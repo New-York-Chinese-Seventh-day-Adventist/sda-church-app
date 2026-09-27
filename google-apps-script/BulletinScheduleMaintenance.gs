@@ -73,6 +73,15 @@ function onEdit(e) {
   var range = e.range;
   var sheet = range.getSheet();
   if (
+    sheet &&
+    sheet.getName() === SCHEDULE_ASSIGNMENT_CHECK_CONFIG.nameDictionarySheetName
+  ) {
+    // Dictionary edits can merge or split pinyin aliases, which changes
+    // which roster cells count as the same person.
+    refreshScheduleConflictHighlightsSafely_();
+    return;
+  }
+  if (
     !sheet ||
     sheet.getName() !== BULLETIN_SCHEDULE_MAINTENANCE_CONFIG.scheduleSheetName
   ) {
@@ -101,6 +110,25 @@ function onEdit(e) {
 
   if (invalidCount) {
     showSabbathCalendarEnglishValidationNotice_();
+  }
+
+  var lookup = null;
+  try {
+    lookup = loadScheduleNameLookup_();
+  } catch (error) {
+    if (typeof Logger !== 'undefined') {
+      Logger.log('Name Dictionary lookup skipped: ' + error);
+    }
+  }
+  refreshScheduleConflictHighlightsSafely_(sheet, lookup);
+
+  // The installable trigger shows the interactive dialog instead; showing
+  // this alert as well would stack two warnings for one edit.
+  if (!invalidCount && !isScheduleNameCheckTriggerInstalled_()) {
+    var unknown = findUnknownScheduleNames_(range, lookup);
+    if (unknown.length) {
+      showUnknownScheduleNamesNotice_(unknown);
+    }
   }
 }
 
@@ -150,8 +178,15 @@ function runBulletinScheduleMaintenance_() {
       );
     }
     var hidden = hideOldBulletinScheduleRows_(sheet);
+    // Runs after quarter rows are appended so the scan covers every row.
+    var conflicts = refreshScheduleConflictHighlightsSafely_(sheet);
     SpreadsheetApp.flush();
-    return { populated: populated, hidden: hidden, validation: validation };
+    return {
+      populated: populated,
+      hidden: hidden,
+      conflicts: conflicts,
+      validation: validation,
+    };
   } finally {
     lock.releaseLock();
   }
