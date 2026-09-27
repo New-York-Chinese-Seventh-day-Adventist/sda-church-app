@@ -221,7 +221,7 @@ has to supply their own.
 | Output folders (all, Queens, Brooklyn) | Where generated bulletin Docs and PDFs are saved | Folder IDs in `PRINTED_BULLETIN_CONFIG`, or the `PHYSICAL_BULLETIN_*_FOLDER_ID` properties |
 
 The IDs and property names are in
-[`PrintedQueensBulletin.gs`](../google-apps-script/PrintedQueensBulletin.gs). A new
+[`PrintedBulletin.gs`](../google-apps-script/PrintedBulletin.gs). A new
 installation should upload its own files and set the script properties rather than
 edit the IDs in code. The QR codes are matched by name across all of Drive, so keep
 exactly one file with each name. When replacing one by hand, rename the old copy
