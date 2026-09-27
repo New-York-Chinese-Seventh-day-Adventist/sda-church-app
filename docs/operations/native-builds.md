@@ -221,7 +221,9 @@ before relying on a quota.
 The automatic native workflow can run two signed Android jobs on a `main` push: Android
 AAB and Android APK. The iOS workflow is separate and runs only on a trusted `main`
 push or a manual dispatch from `main`; it never runs as a pull-request build. PR native
-previews are unsigned Android debug APKs for ARM and Intel, not signed release builds. A rough
+previews are unsigned Android debug APKs for ARM and Intel, not signed release builds.
+The unsigned **iOS Simulator build** adds two macOS jobs, Apple Silicon and Intel, to
+each release PR into `main`; see [iOS Simulator builds](#ios-simulator-builds-unsigned). A rough
 private-repository estimate for the automatic Android workflow is:
 
 ```text
@@ -796,6 +798,56 @@ authentication.
 GitHub compilation uses GitHub runner minutes/storage.
 No selection performs no builds. Native failures do not block the web/PWA preview
 deployment.
+
+### iOS Simulator builds (unsigned)
+
+A Simulator build runs the app on a simulated iPhone on a Mac. It needs no Apple
+signing, certificate, developer account, or iPhone, but it can't be installed on a
+real iPhone; use the signed **Native iOS build** and TestFlight for that. Only GitHub
+Actions and a local Mac are used; no other build service.
+
+**On a Mac.** Install Xcode 26 and CocoaPods, then:
+
+```sh
+npm install --force
+npm run ios:simulator                          # Release build, JavaScript bundled in
+npm run ios:simulator -- --debug               # Debug build that loads JavaScript from Metro
+npm run ios:simulator -- --device "iPhone 16"  # Choose the simulated iPhone
+npm run ios:simulator -- --prebuild            # Regenerate ios/ after native config changes
+```
+
+`scripts/build-ios-simulator.mjs` generates the ignored `ios/` project with the same
+Expo template as the other native builds (a test keeps the versions in step). It then
+runs `expo run:ios`, which installs CocoaPods, builds, installs the app on the
+Simulator, and opens it. Xcode builds for the Mac's own processor, so the same command
+works on Intel and Apple Silicon Macs. On Windows or Linux, the command explains that it
+needs a Mac.
+
+**In GitHub Actions.** The **iOS Simulator build** workflow builds every pull request
+into `main` (a release PR) without signing, on an Apple Silicon runner (`macos-15`,
+arm64) and an Intel runner (`macos-15-intel`, x86_64), with the same Xcode as the
+signed iOS build. Each job installs the app on a simulated iPhone and fails if it
+isn't still running 45 seconds after launch. Each also uploads the app and a
+screenshot of its first screen (14-day retention):
+
+- `nyccsda-ios-simulator-arm64.zip` and `nyccsda-ios-simulator-x86_64.zip`: the app;
+- `first-screen-arm64.png` and `first-screen-x86_64.png`: the screenshots.
+
+A pull request into a `release/*` branch runs the builds only when it changes the
+workflow or `scripts/build-ios-simulator.mjs`. The workflow reads no secrets, so it is
+safe on pull requests. Once it is on `main`, it can also be started by hand from the
+Actions tab.
+
+**Install a downloaded build on a Mac.** From the run's Artifacts section, download
+`ios-simulator-x86_64` for an Intel Mac or `ios-simulator-arm64` for Apple Silicon, and
+unzip the download and then the `.zip` inside it to get the `.app`. Open the Simulator
+(Xcode > Open Developer Tool > Simulator) and drag the `.app` onto the simulated
+iPhone, or run:
+
+```sh
+xcrun simctl install booted /path/to/the.app
+xcrun simctl launch booted org.nyccsda.app
+```
 
 ## Upload separately
 
