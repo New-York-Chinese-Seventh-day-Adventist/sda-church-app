@@ -27,7 +27,10 @@ var SCHEDULE_ASSIGNMENT_CHECK_CONFIG = Object.freeze({
   firstPersonHeader: 'Queens Sermon',
   // Google Sheets palette "light red 2".
   conflictColor: '#ea9999',
-  notePrefix: 'Roster check / 名單檢查',
+  notePrefix: 'Duplicate / 重複:',
+  // Earlier wording of the note. Still recognized as the script's own, so
+  // those notes are rewritten instead of being kept as planner notes.
+  legacyNotePrefixes: ['Roster check / 名單檢查'],
   maxSuggestions: 3,
   nameCheckTriggerHandler: 'onScheduleNameCheckEdit',
   nameCheckTriggerProperty: 'SCHEDULE_NAME_CHECK_TRIGGER',
@@ -171,34 +174,26 @@ function getSchedulePersonColumnLabel_(columnNumber) {
   return (columnNumber >= brooklynStart ? 'Brooklyn ' : 'Queens ') + header;
 }
 
-function getScheduleColumnLetter_(columnNumber) {
-  var letters = '';
-  for (var n = columnNumber; n > 0; n = Math.floor((n - 1) / 26)) {
-    letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
-  }
-  return letters;
-}
-
 /**
- * Lists the person's other roles that Sabbath with the cell holding each, for
- * example "Brooklyn Sermon (T14)", so the planner can jump straight to it.
+ * Names the person's other roles that Sabbath by column header, for example
+ * "Duplicate / 重複: English Teacher".
  */
-function buildScheduleConflictNote_(rowNumber, otherColumnNumbers) {
+function buildScheduleConflictNote_(otherColumnNumbers) {
   if (!otherColumnNumbers.length) {
     return '';
   }
-  var roles = otherColumnNumbers
-    .map(function (columnNumber) {
-      return (
-        getSchedulePersonColumnLabel_(columnNumber) +
-        ' (' + getScheduleColumnLetter_(columnNumber) + rowNumber + ')'
-      );
-    })
-    .join(', ');
   return (
     SCHEDULE_ASSIGNMENT_CHECK_CONFIG.notePrefix +
-    '\n• Also scheduled this Sabbath as: ' + roles + '. / 本安息日亦安排於：' + roles + '。'
+    ' ' +
+    otherColumnNumbers.map(getSchedulePersonColumnLabel_).join(', ')
   );
+}
+
+function isScheduleConflictNote_(note) {
+  var config = SCHEDULE_ASSIGNMENT_CHECK_CONFIG;
+  return [config.notePrefix].concat(config.legacyNotePrefixes).some(function (prefix) {
+    return note.indexOf(prefix) === 0;
+  });
 }
 
 /**
@@ -240,11 +235,10 @@ function refreshScheduleRosterChecks_(sheet, lookup) {
       }
 
       var currentNote = String(notes[rowIndex][columnIndex] || '');
-      if (currentNote && currentNote.indexOf(config.notePrefix) !== 0) {
+      if (currentNote && !isScheduleConflictNote_(currentNote)) {
         return;
       }
       var wantedNote = buildScheduleConflictNote_(
-        rowIndex + 2,
         others.map(function (otherIndex) {
           return bounds.first + otherIndex;
         }),

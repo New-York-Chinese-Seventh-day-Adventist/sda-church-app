@@ -227,9 +227,17 @@ describe('Sabbath Calendar conflict notes', () => {
     edit(2, 21, 'John Chen');
 
     expect(schedule.notes[1][QUEENS_SERMON - 1]).toBe(
-      'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist (O2), Brooklyn Chair/Pastoral Prayer (U2). / ' +
-        '本安息日亦安排於：Pianist (O2), Brooklyn Chair/Pastoral Prayer (U2)。',
+      'Duplicate / 重複: Pianist, Brooklyn Chair/Pastoral Prayer',
     );
+  });
+
+  it('rewrites notes left in the earlier "Roster check" wording', () => {
+    const { schedule, edit } = setup([scheduleRow('2026-10-03', { [QUEENS_SERMON]: 'Mary Lin' })]);
+    schedule.notes[1][QUEENS_SERMON - 1] = 'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist.';
+
+    edit(2, PIANIST, 'Mary Lin');
+
+    expect(schedule.notes[1][QUEENS_SERMON - 1]).toBe('Duplicate / 重複: Pianist');
   });
 
   it('keeps a planner\'s own note while still coloring the cell', () => {

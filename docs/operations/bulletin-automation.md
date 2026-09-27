@@ -251,9 +251,9 @@ setup is needed.
   (for example Offering Prayer and Special Music at one service), and the
   planner decides whether to leave those. The value is never changed.
 - Each red cell has a note, shown by the small black triangle in its top-right
-  corner. Hovering over the cell shows the person's other roles that Sabbath,
-  with the cell holding each, for example `Also scheduled this Sabbath as:
-  Pianist (O14), Brooklyn Chair/Pastoral Prayer (U14)`. Repeated headers are named by location.
+  corner. Hovering over the cell lists the person's other roles that Sabbath by
+  column header, for example `Duplicate / 重複: English Teacher`. The repeated
+  Chair/Pastoral Prayer and Offering Prayer headers are named by location.
 - Cells with several names (`Mary Lin / John Chen`) are compared name by name.
   Placeholders such as `TBD` and `Choir` are ignored. Case and spacing
   differences do not hide a repeat, and a pinyin spelling derived from a Name
@@ -266,7 +266,8 @@ copied into new rows are cleared. Expect the color to appear a few seconds
 after an edit.
 
 The script only clears cells that are exactly `#ea9999`, and only replaces or
-clears notes that start with `Roster check / 名單檢查`. Other cell colors and
+clears notes that start with `Duplicate / 重複:` (or the earlier `Roster check /
+名單檢查` wording). Other cell colors and
 planners' own notes are left alone; a cell with a planner's note still turns
 red but keeps that note. Do not use `#ea9999` for manual highlighting in F:Y.
 
