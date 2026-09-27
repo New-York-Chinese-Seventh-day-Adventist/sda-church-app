@@ -80,8 +80,8 @@ The admin-only steps are:
    `Release/x.y.z:` or `Release/x.y.x:`.
 3. **Open the release pull request** from `release/x.y.z` into `main`, titled
    `Release/x.y.z: …`. Copy the `Closes #…` lines from the included feature pull
-   requests into its **Related issues** section. Use `Part of #…` for issues that
-   should stay open.
+   requests into its description. Use `Part of #…` or `Related to #…` for issues
+   that should stay open. The **PR Linked Issue** check fails if the description has neither.
 4. **Merge it.** The version files must already say `x.y.z`
    (`npm run sync-version -- --version x.y.z` in the release branch).
 
@@ -204,6 +204,23 @@ Uploads are manual; nothing publishes to a store automatically.
 
 Store listings, review, and the production release are finished in each console. See
 [Upload separately](native-builds.md#upload-separately).
+
+### Store toolchain requirements
+
+Google and Apple raise their minimum SDK requirements over time, and a build that
+falls behind is rejected at upload. Before each store upload, and whenever either
+store announces a change, check that:
+
+- Android's target API level meets the current [Google Play target API
+  requirement](https://developer.android.com/google/play/requirements/target-sdk),
+  and the compile SDK, build tools, AGP, Gradle, JDK, and NDK still work with the
+  pinned Expo/React Native versions. See the [Android platform
+  releases](https://developer.android.com/tools/releases/platforms).
+- The iOS build uses an Xcode and iOS SDK that App Store Connect currently accepts. See
+  the [App Store submission requirements](https://developer.apple.com/app-store/submitting/)
+  and [Xcode system requirements](https://developer.apple.com/xcode/system-requirements/).
+- Any intentional lag behind the newest versions is written down in
+  [native-builds.md](native-builds.md).
 
 ## Android PR preview APKs
 
