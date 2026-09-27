@@ -36,7 +36,7 @@ CUV), `cmn_cus` (simplified CUV), and `spa_rv` (Reina-Valera 1909) editions.
 Chinese Union Version audio is streamed chapter by chapter from
 [Audio Power](https://theaudiopower.org/translations/cuv/#nar1), which credits the
 recordings to 基督徒团契 (Christian Fellowship). The app links directly to the
-church's copies on Adventist Connect, with Audio Power and Internet Archive copies as
+church's copies on Adventist Connect, with Internet Archive and Audio Power copies as
 playback fallbacks; the repository does not bundle the recordings. Audio Power's owner,
 Phil, explicitly approved the church app's use, download, and self-hosting of these recordings in
 [issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5274730608).

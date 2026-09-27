@@ -41,6 +41,9 @@ export const CHURCH_LONGITUDE = -73.88914;
 export const getSunsetApiUrl = (lat: number, lng: number, date: string) =>
   `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&date=${date}&formatted=0`;
 
+/** The API terms require a visible link here wherever its times are shown. */
+export const SUNRISE_SUNSET_ATTRIBUTION_URL = 'https://sunrise-sunset.org/';
+
 /**
  * Production bulletin API. The public PWA sends only a Sabbath date; Apps
  * Script joins the yearly schedule with Queens/Brooklyn worship responses and

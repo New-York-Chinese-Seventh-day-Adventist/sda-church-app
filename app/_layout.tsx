@@ -17,7 +17,6 @@ import {
 import {
   CHURCH_LATITUDE,
   CHURCH_LONGITUDE,
-  getSunsetApiUrl,
   openIosPwaInstallGuide,
 } from '@/constants/ExternalLinks';
 import {
@@ -51,6 +50,7 @@ import {
   PWA_UPDATE_LAST_CHECK_KEY,
   waitForServiceWorkerInstallation,
 } from '@/services/PwaUpdateService';
+import { getSunTimes, toLocalIsoDate } from '@/services/SunTimesService';
 import packageJson from '@/package.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider } from 'expo-router/react-navigation';
@@ -699,17 +699,12 @@ export default function RootLayout() {
     let cancelled = false;
     const loadSunTimes = async () => {
       try {
-        const date = new Date().toISOString().slice(0, 10);
-        const response = await fetch(
-          getSunsetApiUrl(CHURCH_LATITUDE, CHURCH_LONGITUDE, date),
+        const times = await getSunTimes(
+          CHURCH_LATITUDE,
+          CHURCH_LONGITUDE,
+          toLocalIsoDate(new Date()),
         );
-        const data = await response.json();
-        if (!cancelled && data.status === 'OK') {
-          setSunTimes({
-            sunrise: new Date(data.results.sunrise),
-            sunset: new Date(data.results.sunset),
-          });
-        }
+        if (!cancelled && times) setSunTimes(times);
       } catch (error) {
         console.warn('Failed to load sunset theme times:', error);
       }

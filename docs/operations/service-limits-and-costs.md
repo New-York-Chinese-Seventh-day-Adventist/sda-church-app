@@ -31,15 +31,15 @@ whole system is the domain.
 | Service | Used for | Cost | Published limit | At the limit | Load concern |
 | --- | --- | --- | --- | --- | --- |
 | [Adventist Connect](#adventist-connect-media-library) | Photos, CUV Bible audio (primary) | Free (NAD platform) | None published; Cloudflare CDN terms apply to NAD's account | Unknown; no agreement | **Medium**: most of the app's bytes |
-| [Audio Power](#audio-power) | CUV audio, 2nd source | Free (permission) | None published | Unknown | **High if Adventist Connect fails**: single small server |
-| [Internet Archive](#internet-archive) | CUV audio, 3rd source | Free | None published | Throttling possible | Low (rarely reached) |
+| [Internet Archive](#internet-archive) | CUV audio, 2nd source | Free | None published | Throttling possible | Low: built for bulk downloads |
+| [Audio Power](#audio-power) | CUV audio, 3rd source | Free (permission) | None published | Unknown | Low: reached only if two sources fail |
 | [HelloAO](#helloao) | Bible text, English BSB audio | Free | "No usage limits" | n/a | Low: CDN |
 | [fetch(bible)](#fetchbible) | Original-language, CUV, RV1909 text | Free | "No limits from us" | n/a | Low: CDN |
 | [Bulletin API (Apps Script)](#bulletin-api-apps-script) | Digital bulletin | Free (Workspace for Nonprofits) | 30 simultaneous executions per user | Requests fail with an error | **Medium at scale**: one account's ceiling |
 | [Adventech](#adventech-sabbath-school) | Children's Sabbath School catalog | Free | None published | Unknown | Low: CDN |
-| [Chinese Union Mission library](#chinese-union-mission-library) | Chinese EGW cover thumbnails | Free | None published | Unknown | **Medium**: small uncached origin |
+| [Chinese Union Mission library](#chinese-union-mission-library) | Chinese EGW cover thumbnails | Free | None published | Unknown | Low: cached on the device for a day |
 | [EGW Writings covers](#egw-writings-covers) | Library thumbnails | Free | None published | Unknown | Low: Cloudflare |
-| [Sunrise-Sunset](#sunrise-sunset) | Sabbath sunset times | Free, **attribution required** | "Reasonable" volume; `429` + `Retry-After` | Throttled | Low, but uncached (see [Known gaps](#known-gaps)) |
+| [Sunrise-Sunset](#sunrise-sunset) | Sabbath sunset times | Free, **attribution required** | "Reasonable" volume; `429` + `Retry-After` | Throttled | Low: cached on the device per date |
 | [GitHub Actions](#github-actions) | Tests, builds, deploys | Free (public repo) | Fair use, concurrency | Queued jobs | None |
 | [GitHub Pages](#github-pages) | `app.nyccsda.org` | Free | 1 GB site, 100 GB/month soft | `429` or a GitHub email | None |
 | [Google Workspace](#google-workspace-and-drive) | Roster, Drive, Apps Script | Free (nonprofit) | 100 TB pooled storage | Quota errors | None |
@@ -68,13 +68,13 @@ Per-use costs, *measured*:
 | HelloAO translation list | ~150 KB | Once per app session |
 | fetch(bible) book | ~30 KB (CUV John) | One request per book, kept in memory for the session |
 | Bulletin API | < 1 KB to a few KB | 5.7 s cold, 1.5 s warm |
-| Chinese library catalog | ~40 KB | 1.1 s; every time the library opens |
+| Chinese library catalog | ~40 KB | 1.1 s; at most once a day per device |
 | Adventech quarterly index | ~124 KB | CDN-cached |
-| Sunrise-Sunset | ~0.2 KB | Two per home-screen load |
+| Sunrise-Sunset | ~0.2 KB | Once per date per device |
 
 The conclusion: **text APIs are negligible at every scenario, and audio is the only
 real load.** Adventist Connect carries it, and the fallback chain decides who carries
-it when Adventist Connect can't. See [Audio Power](#audio-power).
+it when Adventist Connect can't. See [Internet Archive](#internet-archive).
 
 ## Deliberate architecture choices
 
@@ -93,8 +93,8 @@ These choices exist to keep the app free and within every provider's limits:
   instead of the Google Sheets API.
 - **The church hosts its own copy of the CUV audio.** Audio Power's owner allowed
   self-hosting ([#134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5274730608)),
-  so the church's copy on Adventist Connect is tried first and Audio Power's small
-  server only serves listeners when that fails. Audio is streamed on demand, with
+  so the church's copy on Adventist Connect is tried first, then the Internet
+  Archive, and Audio Power's small server only serves listeners when both fail. Audio is streamed on demand, with
   only the next chapter preloaded on web, instead of downloading whole books.
 - **Caching at every layer of the bulletin.** The Apps Script caches each response
   for 2 minutes, the app caches each Sabbath's bulletin on the device, and manual
@@ -119,28 +119,29 @@ it carries about 22 GB of audio a month, which is ordinary traffic for that plat
 at wide adoption, terabytes a month could draw attention under Cloudflare's CDN
 terms.
 
+### Internet Archive
+
+`archive.org`, the second source for CUV audio, redirecting to its storage servers
+(*measured*). Free, nonprofit, and built for large public downloads, though it
+publishes no guaranteed rate and can slow heavy users. It is second so that an
+Adventist Connect failure moves listeners here rather than onto Audio Power's server;
+the daily [dependency monitor](external-dependency-monitor.md) checks that its
+collection still holds every chapter.
+
 ### Audio Power
 
-`theaudiopower.com`, the second source for CUV audio. A single nginx server with no
-CDN (*measured*), run by a small ministry that gave the church permission to use and
-self-host its Chinese recordings (see
+`theaudiopower.com`, the third and last source for CUV audio. A single nginx server
+with no CDN (*measured*), run by a small ministry that gave the church permission to
+use and self-host its Chinese recordings (see
 [Audio Power permission scope](../LEGAL.md#audio-power-permission-scope); its Spanish
 and English recordings are not covered). It publishes no limits and nothing is cached
 in front of it.
 
-**Load concern:** the app only reaches it when the Adventist Connect copy fails, but
-then *all* listeners move to it at once. At congregation scale that is modest; at
-heavy use or wide adoption it could cost the ministry real bandwidth or take its site
-down. If Adventist Connect has a long outage, consider temporarily reordering the
-sources so the Internet Archive is second. Fallback timing is tracked in
+**Load:** until 0.39 it was the second source, so an Adventist Connect failure would
+have moved every listener onto it at once. It is now tried only when both Adventist
+Connect and the Internet Archive fail for a chapter, which keeps that load off the
+ministry's server. Fallback timing is tracked in
 [#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262).
-
-### Internet Archive
-
-`archive.org`, the third source for CUV audio, redirecting to its storage servers
-(*measured*). Free, nonprofit, and built for large public downloads, though it
-publishes no guaranteed rate and can slow heavy users. Rarely reached, because two
-sources come before it.
 
 ### HelloAO
 
@@ -180,8 +181,11 @@ real traffic far below that: the 2-minute server cache, the per-Sabbath device c
 and the manual-refresh cooldown mean each phone asks about once per Sabbath. At
 congregation and heavy-use scale this is well under 1 request a second. Wide
 adoption, with thousands opening the bulletin in the same few minutes, is the one
-case that could approach the ceiling. Phones with a cached copy keep showing it, and
-the rest see a failed load until traffic drops.
+case that could approach the ceiling. When a request fails, the app shows the last
+copy it stored for that Sabbath, even an outdated one, with the error and a retry
+button; only phones that never loaded that Sabbath see a failed load until traffic
+drops. The daily [dependency monitor](external-dependency-monitor.md) checks the
+public bulletin response.
 
 Translation (`LanguageApp`) only runs on a cache miss, so its quota isn't a concern.
 
@@ -198,10 +202,9 @@ the cover thumbnails of the Chinese EGW editions; the books open on EGW Writings
 catalog is about 40 KB and took 1.1 s from a plain Apache server with no CDN or cache
 headers (*measured*). Free, no key, no published limits.
 
-**Load concern:** the app downloads the whole catalog every time the Chinese library
-opens, with no device cache (see [Known gaps](#known-gaps)). This is the smallest
-server the app talks to regularly, so it is the most likely to struggle if usage
-grows.
+**Load:** this is the smallest server the app talks to regularly, so the app keeps
+the cover list from the catalog on the device and refreshes it at most once a day.
+If a refresh fails, the cached covers stay in place.
 
 ### EGW Writings covers
 
@@ -216,7 +219,9 @@ screen and the sunset theme. [Free](https://sunrise-sunset.org/api) "for reasona
 request volumes", with throttling (`429` and a `Retry-After` header) for too many
 requests. Its terms **require a visible link to sunrise-sunset.org** wherever the
 data is shown, and ask users to cache results because "the times for a given date
-never change". The app currently does neither; see [Known gaps](#known-gaps).
+never change". The home screen's Sabbath card links to sunrise-sunset.org, and the
+app caches each date's times on the device, so each phone asks for a date once. The
+API has no date-range request, so dates are fetched one at a time.
 
 ## Build, hosting, and admin services
 
@@ -274,20 +279,20 @@ in [Architecture](../architecture.md#third-party-apis-and-websites).
 
 ## Known gaps
 
-Found while writing this page. None costs money, but each is worth fixing. They are
-tracked in [#264](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/264):
+Found while writing this page and resolved in
+[#264](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/264):
 
-- **Sunrise-Sunset attribution is missing.** Its terms require a visible link to
-  sunrise-sunset.org where the times are shown, and the app has none. This is a
-  terms-of-use issue, not a load issue, and should be fixed first.
-- **Sunrise-Sunset responses aren't cached.** The home screen fetches Friday's and
-  Saturday's times on every load. Caching them per date, as the provider asks, would
-  remove almost all of these requests.
-- **The Chinese library catalog isn't cached.** It is fetched from a small server on
-  every library open. A device cache with a daily refresh would cut this to about
-  one request per phone per day.
-- **Audio Power absorbs every listener if Adventist Connect fails.** See
-  [Audio Power](#audio-power) and
+- **Sunrise-Sunset attribution.** Fixed: the Sabbath card on the home screen links to
+  sunrise-sunset.org.
+- **Sunrise-Sunset caching.** Fixed: each date's times are cached on the device, and
+  the home screen and sunset theme share one request.
+- **Chinese library catalog caching.** Fixed: the cover list is cached on the device
+  and refreshed at most daily, keeping the cached copy if a refresh fails.
+- **Audio Power absorbing every listener if Adventist Connect fails.** Fixed: the
+  Internet Archive is now the second source and Audio Power the last. Fallback timing
+  is still tracked in
   [#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262).
-- **The bulletin API has one account's execution ceiling.** Fine today; revisit if
-  the app reaches thousands of simultaneous Sabbath-morning users.
+- **The bulletin API's execution ceiling.** Accepted: caching keeps real traffic well
+  under 1 request a second, against a ceiling of about 20. The dependency monitor
+  checks the API daily, and a failed request now falls back to the last stored copy.
+  Revisit if the app reaches thousands of simultaneous Sabbath-morning users.

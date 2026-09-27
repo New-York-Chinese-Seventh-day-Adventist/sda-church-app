@@ -9,14 +9,16 @@ import {
   CHURCH_BUILDING_IMAGE_URL,
   CHURCH_LATITUDE,
   CHURCH_LONGITUDE,
-  getSunsetApiUrl,
+  openInSystemBrowser,
   openSabbathStream,
+  SUNRISE_SUNSET_ATTRIBUTION_URL,
 } from '@/constants/ExternalLinks';
 import { LanguageContext, SupportedLanguage } from '@/constants/LanguageContext';
 import { DESIGN_TOKENS } from '@/constants/Layout';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
 import * as BibleService from '@/services/BibleService';
+import { getSunTimes, toLocalIsoDate } from '@/services/SunTimesService';
 import { createNavigationStyles } from '@/styles/NavigationStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -74,6 +76,7 @@ export default function HomeScreen() {
       // decided to remove the dynamic location since most people don't like to give away location
       // instead, each congregation shuold adjust the code to use their own location coordinates
       locationDefault: 'New York, NY',
+      sunTimesSource: 'Sunset times from ',
     },
     zh: {
       subtitle: '正在載入經文...',
@@ -92,6 +95,7 @@ export default function HomeScreen() {
       // decided to remove the dynamic location since most people don't like to give away location
       // instead, each congregation shuold adjust the code to use their own location coordinates
       locationDefault: '紐約',
+      sunTimesSource: '日落時間來源：',
     },
     'zh-cn': {
       subtitle: '正在载入经文...',
@@ -108,6 +112,7 @@ export default function HomeScreen() {
       sabbathEnds: '距离安息日结束还有',
       isSabbath: '安息日快乐！',
       locationDefault: '纽约',
+      sunTimesSource: '日落时间来源：',
     },
     es: {
       subtitle: 'Cargando versículo...',
@@ -126,6 +131,7 @@ export default function HomeScreen() {
       // decided to remove the dynamic location since most people don't like to give away location
       // instead, each congregation shuold adjust the code to use their own location coordinates
       locationDefault: 'New York, NY',
+      sunTimesSource: 'Horarios de puesta del sol: ',
     },
   };
 
@@ -190,25 +196,17 @@ export default function HomeScreen() {
 
       const getDayDate = (d: number) => {
         const t = new Date();
-        // Normalize to Noon local time to ensure the date is stable across UTC/Local
-        // conversions before we apply our longitude-based shift.
         t.setDate(t.getDate() + (d - t.getDay()));
-        t.setHours(12, 0, 0, 0);
-        return t.toISOString().split('T')[0];
+        return toLocalIsoDate(t);
       };
 
       try {
-        const [fRes, sRes] = await Promise.all([
-          fetch(getSunsetApiUrl(lat, lng, getDayDate(5))),
-          fetch(getSunsetApiUrl(lat, lng, getDayDate(6))),
+        const [fri, sat] = await Promise.all([
+          getSunTimes(lat, lng, getDayDate(5)),
+          getSunTimes(lat, lng, getDayDate(6)),
         ]);
-        const fData = await fRes.json();
-        const sData = await sRes.json();
 
-        setSunsets({
-          fri: fData.results?.sunset ? new Date(fData.results.sunset) : null,
-          sat: sData.results?.sunset ? new Date(sData.results.sunset) : null,
-        });
+        setSunsets({ fri: fri?.sunset ?? null, sat: sat?.sunset ?? null });
       } catch (e) {
         console.warn('Failed to fetch sunset times:', e);
       }
@@ -538,6 +536,19 @@ export default function HomeScreen() {
                   {countdown || '--:--:--'}
                 </Text>
               </View>
+              <Text
+                variant="bodySmall"
+                style={[styles.sunTimesSource, { color: theme.colors.onSurfaceVariant }]}
+              >
+                {labels.sunTimesSource}
+                <Text
+                  accessibilityRole="link"
+                  onPress={() => void openInSystemBrowser(SUNRISE_SUNSET_ATTRIBUTION_URL)}
+                  style={[styles.sunTimesSourceLink, { color: theme.colors.primary }]}
+                >
+                  sunrise-sunset.org
+                </Text>
+              </Text>
             </Card.Content>
           </Card>
 
@@ -695,6 +706,12 @@ const createStyles = (
     fontWeight: '700',
     marginTop: useStackedLayout ? 8 : 0,
     flexShrink: 0,
+  },
+  sunTimesSource: {
+    marginTop: 8,
+  },
+  sunTimesSourceLink: {
+    textDecorationLine: 'underline',
   },
   grid: {
     flexDirection: 'row',

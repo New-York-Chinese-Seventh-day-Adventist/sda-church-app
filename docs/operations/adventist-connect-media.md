@@ -48,8 +48,8 @@ flowchart LR
   subgraph primary["1. Primary: church's copy on Adventist Connect (NAD)"]
     cdn[assets.adventistconnect.org<br/>NAD's Cloudflare CDN] -- cache miss only --> wasabi[(Wasabi object storage<br/>us-east-2, N. Virginia)]
   end
-  primary -. "if it fails" .-> ap["2. Audio Power"]
-  ap -. "if it also fails" .-> ia["3. Internet Archive"]
+  primary -. "if it fails" .-> ia["2. Internet Archive"]
+  ia -. "if it also fails" .-> ap["3. Audio Power"]
 ```
 
 The app tries the sources in order and uses only one at a time; the fallbacks
@@ -78,7 +78,9 @@ church-website platform.
 
 - [`BibleAudioSources.ts`](../../services/BibleAudioSources.ts) looks up each
   chapter's Adventist Connect URL in the checked-in manifest and returns it first,
-  followed by Audio Power and the Internet Archive copies of the same recording.
+  followed by the Internet Archive and Audio Power copies of the same recording.
+  The Internet Archive comes second so that an outage here doesn't move every
+  listener onto Audio Power's single small server.
 - If a source fails, the app moves on to the next one without asking the
   listener. The web player switches as soon as the browser reports a load error.
   On iOS and Android, the Bible screen switches only if a source still hasn't
@@ -87,8 +89,8 @@ church-website platform.
   primary means a long wait before audio starts. Shortening this is tracked in
   [#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262).
   Listeners can also choose a source themselves in the audio settings.
-- An Adventist Connect outage therefore shifts load to Audio Power rather than
-  stopping playback.
+- An Adventist Connect outage therefore shifts load to the Internet Archive rather
+  than stopping playback. Audio Power is reached only if that fails too.
 - The player streams with byte-range requests; it does not download chapters for
   offline use.
 - The web player preloads only the next chapter. On native, the app queues up to 24
@@ -179,8 +181,8 @@ not capacity:
 - The church can't see traffic figures, so a problem would first show up as failed
   requests, not as a warning.
 
-The Audio Power and Internet Archive fallbacks cover all of these for listeners, at
-the cost of sending the load to Audio Power.
+The Internet Archive and Audio Power fallbacks cover all of these for listeners, with
+the load going to the Internet Archive first.
 
 ## Warning signs and fallback plan
 

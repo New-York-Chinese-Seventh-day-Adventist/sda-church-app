@@ -18,7 +18,7 @@ import {
   getEgwCoverUrlsForLanguage,
 } from '@/features/library/EgwBookCatalog';
 import {
-  fetchChineseLibraryCoverUrls,
+  loadChineseLibraryCoverUrls,
   shouldLoadChineseLibraryCovers,
   type ChineseLibraryCoverUrls,
 } from '@/features/library/ChineseLibrary';
@@ -181,12 +181,10 @@ export default function LibraryScreen() {
     }
 
     const controller = new AbortController();
-    fetchChineseLibraryCoverUrls(controller.signal)
-      .then(setChineseCoverUrls)
-      .catch((error) => {
-        if (error instanceof Error && error.name === 'AbortError') return;
-        console.warn('Could not refresh Chinese library covers:', error);
-      });
+    loadChineseLibraryCoverUrls(setChineseCoverUrls, controller.signal).catch((error) => {
+      if (error instanceof Error && error.name === 'AbortError') return;
+      console.warn('Could not refresh Chinese library covers:', error);
+    });
 
     return () => controller.abort();
   }, [hasEgwWorks, language]);
