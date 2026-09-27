@@ -1312,10 +1312,13 @@ function renderQueensRegularPrintedBulletinDocument_(body, bulletin, nextBulleti
       appendWorshipPanel_(cell, bulletin, true);
     },
     true,
-    function (leftCell, rightCell) {
-      appendGivingFooter_(leftCell, rightCell, 'queens');
+    function (leftCell, rightCell, qrCells) {
+      appendGivingFooter_(leftCell, qrCells, 'queens');
     },
-    { ruleSpacingBefore: 4 },
+    // Put each QR code in its own footer column, as Brooklyn does. A table
+    // nested in a cell keeps a blank line above it, which pushed the QR
+    // captions onto a new page.
+    { ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 },
   );
   appendBookletPage_(
     body,
@@ -1359,8 +1362,9 @@ function renderBrooklynPrintedBulletinDocument_(body, bulletin, nextBulletin, fo
       },
       // Keep three physical QR positions so the future Mobile App asset stays
       // in slot 1, ACH/card remains in slot 2, and Brooklyn's unused slot 3
-      // stays empty because Brooklyn has no Zelle QR code.
-      { qrColumns: true, qrCount: 3 },
+      // stays empty because Brooklyn has no Zelle QR code. The divider spacing
+      // matches the Queens regular footer.
+      { ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 },
     );
     appendBrooklynEncouragementPage_(body, bulletin);
   } else {
@@ -1484,6 +1488,9 @@ function appendBrooklynWorshipPanel_(cell, bulletin, includeClosingRows) {
   appendBrooklynProgramTable_(cell, worshipRowsAfterSermon);
   if (includeClosingRows) {
     appendSilentPrayerHeading_(cell, 'Silent Prayer', '請默禱之後散會');
+    // Match the Queens worship panel's room above the giving divider.
+    appendSpacer_(cell);
+    appendSpacer_(cell);
   }
 }
 
@@ -2335,7 +2342,7 @@ function createOrReplacePrintedBulletinPdf_(documentId, title, propertyKey, loca
 
 function appendBookletPage_(body, leftRenderer, rightRenderer, isFirstPage, footerRenderer, footerOptions) {
   if (!isFirstPage) {
-    body.appendPageBreak();
+    appendCompactPageBreak_(body);
   }
 
   appendBookletContentTable_(body, leftRenderer, rightRenderer);
@@ -2343,6 +2350,30 @@ function appendBookletPage_(body, leftRenderer, rightRenderer, isFirstPage, foot
   if (footerRenderer) {
     appendBookletFooter_(body, footerRenderer, footerOptions);
   }
+}
+
+/**
+ * A page break sits in its own paragraph. At the default 11pt that paragraph
+ * doesn't fit under a spread that fills the page, so Docs moves it to a new
+ * page and the break then leaves that page blank. Put the break in the empty
+ * paragraph Docs keeps after the last table, and shrink it to fit.
+ */
+function appendCompactPageBreak_(body) {
+  var lastIndex = body.getNumChildren() - 1;
+  var last = lastIndex >= 0 ? body.getChild(lastIndex) : null;
+  var paragraph =
+    last &&
+    last.getType() === DocumentApp.ElementType.PARAGRAPH &&
+    last.asParagraph().getText() === ''
+      ? last.asParagraph()
+      : null;
+  var pageBreak = paragraph ? paragraph.appendPageBreak() : body.appendPageBreak();
+  var attributes = {};
+  attributes[DocumentApp.Attribute.FONT_SIZE] = 1;
+  attributes[DocumentApp.Attribute.LINE_SPACING] = 1;
+  attributes[DocumentApp.Attribute.SPACING_BEFORE] = 0;
+  attributes[DocumentApp.Attribute.SPACING_AFTER] = 0;
+  pageBreak.getParent().setAttributes(attributes);
 }
 
 function appendBookletContentTable_(container, leftRenderer, rightRenderer) {
@@ -2414,6 +2445,11 @@ function appendBookletFooter_(container, footerRenderer, footerOptions) {
       footerCell.setPaddingLeft(0);
       footerCell.setPaddingRight(0);
     });
+  // The giving text's longest lines fill the whole panel, which put them only
+  // about 15pt (5mm) from the sheet edge. Many printers can't print the outer
+  // 4–5mm, so keep them about 20pt in, like the rest of the page.
+  footerLeftCell.setPaddingLeft(6);
+  footerLeftCell.setPaddingRight(6);
   footerLeftCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
   if (footerRightCell) {
     footerRightCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
@@ -2672,13 +2708,15 @@ function getFirstPrintedAnnouncementSentenceLength_(text) {
   return match ? match[0].length : value.length;
 }
 
-function appendGivingFooter_(leftCell, rightCell, location) {
-  appendGivingText_(leftCell);
-  // Keep the bottom giving block together on the same page instead of
-  // allowing the QR captions to spill onto a new page.
-  appendGivingQrPlaceholders_(rightCell, {
+function appendGivingFooter_(leftCell, qrCells, location) {
+  // clear() leaves an empty default-size paragraph in each footer cell. Reuse
+  // it, as the Brooklyn footer does, so it doesn't open a gap under the
+  // divider and push the QR captions onto a new page.
+  appendGivingText_(leftCell, { reuseLeadingParagraph: true });
+  appendGivingQrPlaceholderCells_(qrCells, {
     compact: true,
     location: location || 'queens',
+    reuseLeadingParagraph: true,
   });
 }
 
@@ -3078,6 +3116,11 @@ function appendWorshipPanel_(cell, bulletin, includeClosingRows) {
   appendProgramTable_(cell, worshipRowsAfterSermon);
   if (includeClosingRows) {
     appendSilentPrayerHeading_(cell, 'Silent Prayer', '請默禱之後散會');
+    // When this column is taller than the study column, the giving footer's
+    // divider sits right under the prayer. These spacers only add height in
+    // that case; a taller study column already leaves room.
+    appendSpacer_(cell);
+    appendSpacer_(cell);
   }
 }
 
