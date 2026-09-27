@@ -72,6 +72,29 @@ requested. Still open:
   even when the Bible text is public domain.
 - The church's application for FCBH API access is pending.
 
+### Bible Brain API license (Faith Comes By Hearing)
+
+Using FCBH audio through its Bible Brain API (the Digital Bible Platform, DBP) means
+agreeing to the [API License Agreement](https://www.faithcomesbyhearing.com/bible-brain/license)
+(last modified April 15, 2021), which the key application requires. The app doesn't
+use Bible Brain yet; the church's application is pending. Its terms that affect this
+project, quoted from the agreement (not legal advice):
+
+| Topic | The agreement says | What it means here |
+| --- | --- | --- |
+| Downloading and offline use | "No DBP Content may be downloaded or made available for offline use by any person or outside of DBP except for DBP Content that is accessible via the /download endpoint." | No hosting FCBH audio or text on church storage, no caching it in a proxy, and offline listening only for content offered through `/download`, unless FCBH grants specific permission. |
+| Proxies | "You do not create a proxy distribution network for DBP Content (for instance, enabling other developers to use DBP Content or metadata via your servers or API instead of ours)." | A key-hiding proxy must serve only this app: forward only the specific requests the app needs, and never act as an open relay others could use. Whether even a private proxy is acceptable has been asked of FCBH. |
+| The API key | "You may not share your API Key with any other person and may only use the API through your assigned API Key." | The key must never ship in the app or the repository. Keep it as a server-side secret. |
+| Cost to users | "You enable your End Users to access DBP Content completely free of charge." | Matches the app, which must stay free anyway (see the [App stores](architecture.md#app-stores) rule). |
+| Attribution | You must "conspicuously post all proprietary rights notices on all DBP Content and FCBH Marks that is/are made available through Your Application." | The app must display FCBH's copyright notice wherever it plays or shows FCBH content. |
+| Copying by users | "Your Application shall not allow End Users to reproduce, copy, or replicate any DBP Content", apart from `/download` content. | No share-audio-file or export features for FCBH content. |
+| Termination | FCBH "may immediately terminate or suspend this Agreement … at any time and for any reason". | FCBH audio must never be the only source for a feature; keep a fallback, as the CUV audio has. |
+
+The planned Cloudflare Worker proxy for the key is tracked in
+[#241](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/241).
+It must follow the proxy and caching terms above, and it must stay on Cloudflare's
+Workers Free plan, which returns errors at its limits instead of billing.
+
 Before the app uses or hosts any of these, get written confirmation from the
 recording's rights holder and record it in #134 and in this section. Audio Power can
 be reached at info@theaudiopower.com, the contact address on its website.
