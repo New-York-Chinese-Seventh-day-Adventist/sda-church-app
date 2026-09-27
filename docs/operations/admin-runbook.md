@@ -19,7 +19,7 @@ does and what still needs a person.
 - [Deploying the bulletin Apps Script](#deploying-the-bulletin-apps-script)
 - [Native app binaries](#native-app-binaries)
 - [Android PR preview APKs](#android-pr-preview-apks)
-- [iOS Simulator builds](#ios-simulator-builds)
+- [iOS PR preview builds](#ios-pr-preview-builds)
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
 - [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
@@ -92,7 +92,7 @@ Review rules for both pull-request rulesets:
 | `ensure_pr_to_main_from_release_branch` | `main-release-source-gate.yml` | `main` |
 | `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
 | `Build ARM debug APK` | `android-pr-preview.yml` | `main` |
-| `iOS Simulator (Apple Silicon)`, `iOS Simulator (Intel)` | `ios-simulator-build.yml` | `main` |
+| `Build Apple Silicon Simulator app`, `Build Intel Simulator app` | `ios-pr-preview.yml` | `main` |
 
 A skipped check counts as passed; for example, `sync` usually shows as skipped.
 
@@ -103,7 +103,7 @@ A skipped check counts as passed; for example, `sync` usually shows as skipped.
   workflow must first be in the open `release/*` branch, because that branch is the head
   of the release PR.
 - **A check's name is its job's `name`,** or the job ID when there is no name. A matrix
-  job's name includes the matrix values, such as `iOS Simulator (Intel)`.
+  job's name includes the matrix values, such as `Build Intel Simulator app`.
 - **Renaming or removing a job needs a matching ruleset change** in the same release;
   otherwise merges block on the old name.
 
@@ -280,16 +280,16 @@ to Google Drive as `sda-church-app-pr-<number>-<run>-arm-debug.apk`, and the run
 summary links to it. Fork pull requests are skipped. See
 [Android PR preview and Drive upload](native-builds.md#android-pr-preview-and-drive-upload).
 
-## iOS Simulator builds
+## iOS PR preview builds
 
-**Workflow:** **iOS Simulator build**, which runs automatically on pull requests into
+**Workflow:** **iOS PR preview**, which runs automatically on pull requests into
 `main`.
 
 It builds the app without signing for an Apple Silicon Mac and an Intel Mac, launches it
 on a simulated iPhone, and uploads the app and a screenshot of its first screen. It
 needs no approval, because it reads no secrets. Download the build for your Mac from the
 run's Artifacts section to test the release on a Mac before merging; you don't need an
-iPhone. See [iOS Simulator builds](native-builds.md#ios-simulator-builds-unsigned).
+iPhone. See [iOS PR preview](native-builds.md#ios-pr-preview-unsigned-simulator-builds).
 
 ## Dependabot pull requests
 

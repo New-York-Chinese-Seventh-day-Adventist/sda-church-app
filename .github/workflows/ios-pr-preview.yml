@@ -1,7 +1,8 @@
-name: iOS Simulator build
+name: iOS PR preview
 
-# Unsigned iOS Simulator builds of a release before it merges into main, on an
-# Apple Silicon Mac and an Intel Mac. A Simulator build needs no Apple signing,
+# The iOS counterpart of android-pr-preview.yml: unsigned iOS Simulator builds
+# of a release before it merges into main, for an Apple Silicon Mac and an
+# Intel Mac. A Simulator build needs no Apple signing,
 # so this workflow reads no secrets and can safely run on pull requests.
 # Download the app from the run's artifacts to test it in the Simulator on a
 # Mac; docs/operations/native-builds.md explains how.
@@ -19,7 +20,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
-  group: ios-simulator-${{ github.event.pull_request.number || github.ref }}
+  group: ios-pr-preview-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +29,7 @@ jobs:
     # only when it changes this workflow or the local Simulator script, so
     # those changes are proven before they land, without a Mac build on every
     # feature PR.
-    name: Decide whether to build for iOS Simulator
+    name: Decide whether to build the iOS preview
     runs-on: ubuntu-24.04
     outputs:
       build: ${{ steps.scope.outputs.build }}
@@ -50,7 +51,7 @@ jobs:
           fi
           # Capture first: with pipefail, grep -q exiting early can fail the pipe.
           CHANGED_FILES="$(git diff --name-only "origin/$BASE_REF...HEAD")"
-          if grep -qxE '\.github/workflows/ios-simulator-build\.yml|scripts/build-ios-simulator\.mjs' \
+          if grep -qxE '\.github/workflows/ios-pr-preview\.yml|scripts/build-ios-simulator\.mjs' \
             <<<"$CHANGED_FILES"; then
             echo 'build=true' >> "$GITHUB_OUTPUT"
           else
@@ -60,7 +61,7 @@ jobs:
   simulator:
     needs: scope
     if: needs.scope.outputs.build == 'true'
-    name: iOS Simulator (${{ matrix.mac }})
+    name: Build ${{ matrix.mac }} Simulator app
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     strategy:
@@ -70,10 +71,10 @@ jobs:
           # The Simulator runs apps built for the Mac's own processor, so each
           # kind of Mac gets its own build, checked on a runner of that kind.
           - mac: Apple Silicon
-            runner: macos-15
+            runner: macos-26
             arch: arm64
           - mac: Intel
-            runner: macos-15-intel
+            runner: macos-26-intel
             arch: x86_64
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -86,7 +87,7 @@ jobs:
         run: |
           set -euo pipefail
           # Keep this in step with native-ios-build.yml.
-          XCODE_DEVELOPER_DIR='/Applications/Xcode_26.2.app/Contents/Developer'
+          XCODE_DEVELOPER_DIR='/Applications/Xcode_26.6.app/Contents/Developer'
           test -d "$XCODE_DEVELOPER_DIR" || {
             echo "Expected Xcode at $XCODE_DEVELOPER_DIR; update this workflow when the runner image changes." >&2
             exit 1
@@ -134,6 +135,8 @@ jobs:
       - name: Launch on a simulated iPhone
         env:
           ARCH: ${{ matrix.arch }}
+          # Named like the Android preview's sda-church-app-pr-<number>-<run>-arm-debug.apk.
+          PREVIEW_NAME: sda-church-app-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || 'manual' }}-${{ github.run_id }}-${{ matrix.arch }}
         run: |
           set -euo pipefail
           APP_PATH="$(find "$RUNNER_TEMP/ios-simulator/Build/Products/Release-iphonesimulator" \
@@ -169,11 +172,11 @@ jobs:
 
           # Give the bundled JavaScript time to load and draw the first screen.
           sleep 45
-          ARTIFACT_DIR="$RUNNER_TEMP/ios-simulator-artifact"
+          ARTIFACT_DIR="$RUNNER_TEMP/ios-pr-preview"
           mkdir -p "$ARTIFACT_DIR"
-          xcrun simctl io "$DEVICE_ID" screenshot "$ARTIFACT_DIR/first-screen-$ARCH.png"
+          xcrun simctl io "$DEVICE_ID" screenshot "$ARTIFACT_DIR/$PREVIEW_NAME-first-screen.png"
           (cd "$(dirname "$APP_PATH")" &&
-            ditto -c -k --keepParent "$(basename "$APP_PATH")" "$ARTIFACT_DIR/nyccsda-ios-simulator-$ARCH.zip")
+            ditto -c -k --keepParent "$(basename "$APP_PATH")" "$ARTIFACT_DIR/$PREVIEW_NAME-simulator.zip")
           RUNNING_SERVICES="$(xcrun simctl spawn "$DEVICE_ID" launchctl list)"
           grep -q "UIKitApplication:$BUNDLE_ID" <<<"$RUNNING_SERVICES" || {
             echo 'The app is not running 45 seconds after launch; it probably crashed on start.' >&2
@@ -184,7 +187,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: ios-simulator-${{ matrix.arch }}
-          path: ${{ runner.temp }}/ios-simulator-artifact/
+          name: ios-pr-preview-${{ github.event.pull_request.number || 'manual' }}-${{ github.run_id }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/ios-pr-preview/
           if-no-files-found: warn
           retention-days: 14

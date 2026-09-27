@@ -60,8 +60,8 @@ describe('native Android build safety gates', () => {
 
 const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
-describe('iOS Simulator builds', () => {
-  const workflow = readRepoFile('.github/workflows/ios-simulator-build.yml');
+describe('iOS PR preview', () => {
+  const workflow = readRepoFile('.github/workflows/ios-pr-preview.yml');
 
   it('builds unsigned and never reads secrets, so pull requests can run it', () => {
     expect(workflow).toContain('CODE_SIGNING_ALLOWED=NO');
@@ -71,8 +71,8 @@ describe('iOS Simulator builds', () => {
   });
 
   it('builds for both Apple Silicon and Intel Macs', () => {
-    expect(workflow).toMatch(/runner: macos-15\s+arch: arm64/);
-    expect(workflow).toMatch(/runner: macos-15-intel\s+arch: x86_64/);
+    expect(workflow).toMatch(/runner: macos-26\s+arch: arm64/);
+    expect(workflow).toMatch(/runner: macos-26-intel\s+arch: x86_64/);
   });
 
   it('uses the same Xcode as the signed iOS build', () => {
@@ -104,7 +104,7 @@ describe('Expo template pin', () => {
       'scripts/build-android-native.mjs',
       'scripts/build-ios-simulator.mjs',
       '.github/workflows/native-ios-build.yml',
-      '.github/workflows/ios-simulator-build.yml',
+      '.github/workflows/ios-pr-preview.yml',
       'docs/operations/native-builds.md',
     ];
     const versions = new Set(
