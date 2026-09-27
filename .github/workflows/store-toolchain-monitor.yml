@@ -22,10 +22,6 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  ALERT_TITLE: "[monitor] Store toolchain requirements need attention"
-  # Applied only when the app misses a store requirement, not when a page just
-  # can't be read, so the label keeps meaning "uploads will be rejected".
-  CRITICAL_LABEL: "critical / launch blocking"
 
 jobs:
   check-store-toolchain:
@@ -48,6 +44,8 @@ jobs:
         continue-on-error: true
         run: node scripts/check-store-toolchain.cjs --report store-toolchain-report.json
 
+      # The issue handling lives in scripts/monitor-alert-issue.cjs and the
+      # alert text in scripts/check-store-toolchain.cjs, both unit tested.
       - name: Open or update the alert issue
         if: steps.toolchain-check.outcome == 'failure'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
@@ -57,111 +55,33 @@ jobs:
           ALERT_ASSIGNEES: ${{ vars.MONITOR_ALERT_ASSIGNEES }}
         with:
           script: |
-            const fs = require('node:fs');
-            const assignees = (process.env.ALERT_ASSIGNEES || '')
-              .split(',')
-              .map((login) => login.trim().replace(/^@/, ''))
-              .filter(Boolean);
-            const title = process.env.ALERT_TITLE;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            let report = '- The monitor exited before producing a readable report.';
-            let critical = false;
-            try {
-              const result = JSON.parse(fs.readFileSync('store-toolchain-report.json', 'utf8'));
-              report = result.markdown;
-              critical = result.checks.some((check) => check.kind === 'requirement');
-            } catch (error) {
-              core.warning(`Could not read the toolchain report: ${error.message}`);
-            }
-            const body = [
-              // Without configured assignees, mention the run's actor so the
-              // alert still reaches someone.
-              ...(assignees.length ? [] : [`@${context.actor}`, '']),
-              'The weekly store toolchain check needs attention. Google Play or App Store Connect uploads may be rejected if the Android target API or Xcode version is not updated.',
-              '',
-              report,
-              '',
-              'See **Store toolchain requirements** in `docs/operations/admin-runbook.md` for what to update and test.',
-              '',
-              `Run: ${runUrl}`,
-            ].join('\n');
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              per_page: 100,
+            const alerts = require(`${process.env.GITHUB_WORKSPACE}/scripts/monitor-alert-issue.cjs`);
+            const { buildStoreToolchainAlert } = require(`${process.env.GITHUB_WORKSPACE}/scripts/check-store-toolchain.cjs`);
+            const report = alerts.readReport('store-toolchain-report.json', core);
+            const alert = buildStoreToolchainAlert(report, alerts.getRunUrl(context));
+            const result = await alerts.openOrUpdateAlert({
+              github,
+              context,
+              core,
+              ...alert,
+              assignees: alerts.parseAssignees(process.env.ALERT_ASSIGNEES),
             });
-            const labels = critical ? [process.env.CRITICAL_LABEL] : [];
-            const existing = issues.find((issue) => issue.title === title);
-            if (existing) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                body,
-              });
-              // An alert that started as an unreadable page can turn into a
-              // real shortfall; never remove a label a person added.
-              if (labels.length) {
-                await github.rest.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: existing.number,
-                  labels,
-                });
-              }
-            } else {
-              try {
-                await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title,
-                  body,
-                  labels,
-                  assignees,
-                });
-              } catch (error) {
-                // An assignee without repository access makes the whole request
-                // fail; never lose the alert over it.
-                core.warning(`Could not assign ${assignees.join(', ')}: ${error.message}`);
-                await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title,
-                  body: [`@${context.actor}`, '', body].join('\n'),
-                  labels,
-                });
-              }
-            }
+            core.info(`Alert issue ${result.action}: #${result.number}`);
 
       - name: Close the alert issue after recovery
         if: steps.toolchain-check.outcome == 'success'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const title = process.env.ALERT_TITLE;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              per_page: 100,
+            const alerts = require(`${process.env.GITHUB_WORKSPACE}/scripts/monitor-alert-issue.cjs`);
+            const { ALERT_TITLE } = require(`${process.env.GITHUB_WORKSPACE}/scripts/check-store-toolchain.cjs`);
+            const result = await alerts.closeAlert({
+              github,
+              context,
+              title: ALERT_TITLE,
+              body: `Requirements met again in ${alerts.getRunUrl(context)}.`,
             });
-            const existing = issues.find((issue) => issue.title === title);
-            if (existing) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                body: `Requirements met again in ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}.`,
-              });
-              await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                state: 'closed',
-                state_reason: 'completed',
-              });
-            }
+            core.info(`Alert issue: ${result.action}`);
 
       - name: Mark the workflow unhealthy
         if: steps.toolchain-check.outcome == 'failure'

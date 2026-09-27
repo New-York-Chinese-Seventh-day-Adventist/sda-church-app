@@ -18,6 +18,11 @@ const SOURCES = Object.freeze({
   appleSubmitting: 'https://developer.apple.com/app-store/submitting/',
 });
 
+const ALERT_TITLE = '[monitor] Store toolchain requirements need attention';
+// Applied only when the app misses a store requirement, not when a page just
+// can't be read, so the label keeps meaning "uploads will be rejected".
+const CRITICAL_LABEL = 'critical / launch blocking';
+
 // Requirements taking effect within this many days count as needing action
 // now, so there is time to update and test before the store deadline.
 const LEAD_DAYS = 120;
@@ -245,6 +250,29 @@ const formatReport = ({ checks, notes }) =>
     ...(notes.length ? ['', '#### Notes', '', ...notes.map((note) => `- ${note}`)] : []),
   ].join('\n');
 
+/**
+ * Builds the alert issue text and labels from the --report JSON, or from null
+ * when the report is missing. Used by the Store Toolchain Monitor workflow.
+ */
+const buildStoreToolchainAlert = (report, runUrl) => {
+  const critical = Boolean(
+    report && report.checks.some((check) => check.kind === 'requirement'),
+  );
+  return {
+    title: ALERT_TITLE,
+    labels: critical ? [CRITICAL_LABEL] : [],
+    body: [
+      'The weekly store toolchain check needs attention. Google Play or App Store Connect uploads may be rejected if the Android target API or Xcode version is not updated.',
+      '',
+      report ? report.markdown : '- The monitor exited before producing a readable report.',
+      '',
+      'See **Store toolchain requirements** in `docs/operations/admin-runbook.md` for what to update and test.',
+      '',
+      `Run: ${runUrl}`,
+    ].join('\n'),
+  };
+};
+
 const main = async () => {
   const reportIndex = process.argv.indexOf('--report');
   const reportPath = reportIndex === -1 ? null : process.argv[reportIndex + 1];
@@ -294,7 +322,10 @@ if (require.main === module) {
 }
 
 module.exports = {
+  ALERT_TITLE,
+  CRITICAL_LABEL,
   LEAD_DAYS,
+  buildStoreToolchainAlert,
   SOURCES,
   evaluateStoreToolchain,
   formatDeadlines,
