@@ -1,0 +1,58 @@
+flowchart TB
+  apps["📱 iOS and Android apps"]
+
+  subgraph Runtime["Loaded inside the app"]
+    direction LR
+    subgraph Bible["Bible"]
+      direction TB
+      helloao["HelloAO<br/>bible.helloao.org<br/>Bible text, translations"]
+      fetchbible["fetch(bible)<br/>v1.fetch.bible<br/>original-language texts"]
+      subgraph Audio["Bible audio · tried in order"]
+        direction TB
+        ac@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/wordpress-icon.svg", label: "① Adventist Connect<br/>church's copy", pos: "b", w: 32, h: 32, constraint: "on" }
+        ap["② Audio Power<br/>theaudiopower.com"]
+        ia@{ img: "https://cdn.jsdelivr.net/npm/simple-icons@16.32.0/icons/internetarchive.svg", label: "③ Internet Archive<br/>archive.org", pos: "b", w: 32, h: 32, constraint: "on" }
+        ac -. if it fails .-> ap
+        ap -. if it also fails .-> ia
+      end
+    end
+    subgraph Church["Church-run"]
+      direction TB
+      bulletinapi@{ img: "https://cdn.jsdelivr.net/npm/simple-icons@16.32.0/icons/googleappsscript.svg", label: "Bulletin API<br/>Apps Script", pos: "b", w: 32, h: 32, constraint: "on" }
+      photos@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/wordpress-icon.svg", label: "Adventist Connect<br/>photos, hymnal charts", pos: "b", w: 32, h: 32, constraint: "on" }
+    end
+    subgraph OtherApis["Other APIs"]
+      direction TB
+      adventechApi["Adventech Sabbath School API<br/>sabbath-school.adventech.io<br/>children's lesson catalog"]
+      cum["Chinese Union Mission library<br/>api.sdabible.org<br/>cms.sdabible.site"]
+      egwCovers["EGW Writings<br/>a.egwwritings.org<br/>book covers"]
+      sunset["Sunrise-Sunset API<br/>api.sunrise-sunset.org<br/>sunset times"]
+    end
+  end
+
+  subgraph Links["Opened in the browser"]
+    direction LR
+    subgraph Worship["Worship media"]
+      direction TB
+      youtube@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/youtube-icon.svg", label: "YouTube<br/>livestream, sermons", pos: "b", w: 40, h: 28, constraint: "on" }
+      spotify@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/spotify-icon.svg", label: "Spotify<br/>audio archive", pos: "b", w: 32, h: 32, constraint: "on" }
+      zoom@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/zoom-icon.svg", label: "Zoom<br/>online class", pos: "b", w: 32, h: 32, constraint: "on" }
+    end
+    subgraph Study["Hymns, study, reading"]
+      direction TB
+      hymns["Hymns<br/>m.zgaxr.com: Chinese 505 · 506 · 707<br/>hymnsforworship.org: English SDAH"]
+      ss["Sabbath School readers<br/>sabbath-school.adventech.io (adults)<br/>aliveinjesus.info (children)"]
+      reading["Library reading<br/>text.egwwritings.org<br/>gutenberg.org"]
+    end
+    subgraph More["Giving and more"]
+      direction TB
+      giving["Giving<br/>adventistgiving.org"]
+      other["Other links<br/>506 hymnal app store pages<br/>GNYC · Atlantic Union · adventist.org"]
+    end
+  end
+
+  apps --> Runtime
+  apps -. opens .-> Links
+
+  classDef logo fill:#ffffff,stroke:#d0d7de
+  class ac,ia,bulletinapi,photos,youtube,spotify,zoom logo

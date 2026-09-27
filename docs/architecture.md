@@ -10,35 +10,56 @@ Super Administrators can share.
 
 ## Contents
 
-- [Diagram](#diagram)
+- [Diagrams](#diagrams)
 - [Foundational systems](#foundational-systems)
 - [Source code and CI/CD](#source-code-and-cicd)
 - [Printed and digital bulletin](#printed-and-digital-bulletin)
 - [Files not in this repository](#files-not-in-this-repository)
-- [Static media assets](#static-media-assets)
+- [Church media](#church-media)
 - [App stores](#app-stores)
-- [Public content providers](#public-content-providers)
+- [Website: app.nyccsda.org](#website-appnyccsdaorg)
+- [Third-party APIs and websites](#third-party-apis-and-websites)
 - [Upkeep calendar](#upkeep-calendar)
 - [Governance principles](#governance-principles)
 
-## Diagram
+## Diagrams
 
-Solid arrows are runtime data flow; dotted arrows are deployment, publishing, or
-account dependencies.
+Solid arrows are data flow; dotted arrows are deployment, publishing, or account
+links.
 
-![Architecture diagram: people, clients, Cloudflare, Google Workspace, GitHub, the app stores, the Adventist Connect media library, and public content providers, with arrows showing data flow and deployments](diagrams/architecture.svg)
+### Overview
 
-The diagram's source is [`diagrams/architecture.mmd`](diagrams/architecture.mmd).
-GitHub's built-in Mermaid can't load logo images from outside links, so the page
-shows a pre-rendered SVG instead. To change the diagram, edit the `.mmd` file, run
-`npm run docs:diagram`, and commit both files. The script renders the source with
-Mermaid CLI and embeds the logos from pinned jsDelivr URLs for the CC0-licensed
+How the congregation gets the app, how staff produce the digital and printed
+bulletins, and where the app's media comes from.
+
+![Overview diagram: the congregation installs the apps from the stores via a download page; staff edit the scheduling roster, which feeds the digital bulletin in the apps and the printed Queens, Queens Communion, and Brooklyn bulletins; the apps load images and Bible audio from Adventist Connect, backed by Wasabi, with a backup copy in Google Drive; and the apps also use third-party APIs and websites](diagrams/architecture.svg)
+
+### Build, deploy, and accounts
+
+How code reaches the stores, the bulletin backend, and the website, which secrets
+each step uses, and how the domain ties the accounts together.
+
+![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment to publish to Google Play and the Apple App Store, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace, and Google Search Console verifies the domain for Google Play](diagrams/operations.svg)
+
+### App dependencies
+
+Every outside service the apps talk to: what they load inside the app, and what they
+only open in the browser. See [Third-party APIs and websites](#third-party-apis-and-websites)
+for the full table.
+
+![App dependencies diagram: inside the app, Bible text from HelloAO and fetch(bible), Bible audio from Adventist Connect then Audio Power then the Internet Archive, the church's bulletin API and photos, and the Adventech, Chinese Union Mission, EGW Writings, and Sunrise-Sunset APIs; opened in the browser, hymns on zgaxr and Hymns for Worship, Sabbath School readers, library reading, YouTube, Spotify, Zoom, giving, and other links](diagrams/app-dependencies.svg)
+
+### Editing the diagrams
+
+The sources are the `.mmd` files in [`diagrams/`](diagrams/). GitHub's built-in
+Mermaid can't load logo images from outside links, so the page shows pre-rendered
+SVGs instead. To change a diagram, edit its `.mmd` file, run `npm run docs:diagram`,
+and commit both files. The script renders every source with Mermaid CLI and embeds
+the logos from pinned jsDelivr URLs for the CC0-licensed
 [SVG Logos](https://github.com/gilbarbara/logos) and
-[Simple Icons](https://simpleicons.org/) sets, so the SVG needs nothing external.
-The SVG records a fingerprint of the source it was rendered from, and a unit test
-fails in CI if the `.mmd` file changes without the SVG being re-rendered.
-The daily dependency checks and the account links between the stores and the domain
-are described below rather than drawn, to keep the diagram readable.
+[Simple Icons](https://simpleicons.org/) sets, so the SVGs need nothing external.
+Each SVG records a fingerprint of its source, and a unit test fails in CI if a
+`.mmd` file changes without its SVG being re-rendered.
 
 ## Foundational systems
 
@@ -50,8 +71,11 @@ and may not be possible, so protect them above everything else.
 - **Registrar and DNS** for `nyccsda.org`. The domain costs about $10 per year and
   can be registered up to 10 years at a time. Keep an active payment method on
   file for renewal. Renewal notices go to the Super Administrators.
-- **Workers** act as middleware for API keys used by programmatic clients such as
-  the mobile app. This is still under development.
+- **DNS** points `app.nyccsda.org` at GitHub Pages and the domain's email at
+  Google Workspace, and holds the record that verifies the domain in **Google
+  Search Console**. Google Play required that verification for the church's
+  organization developer account. Search Console is a Google tool, not an app
+  store; the administrators have access to it through their church accounts.
 - Administrators sign in to Cloudflare with Google.
 
 ### Google Workspace for Nonprofits
@@ -71,6 +95,9 @@ and may not be possible, so protect them above everything else.
   get the full history as soon as they are added. The free nonprofit edition
   includes 100 TB of storage pooled across the organization, so there is plenty
   of room to keep this history.
+- Where a service still signs in with an account outside the Workspace, move access
+  to a `nyccsda.org` account or the `technology@nyccsda.org` group wherever the
+  service allows it.
 
 > [!IMPORTANT]
 > **Get Workspace permissions right, with least-privilege access.** Each church
@@ -89,9 +116,6 @@ and may not be possible, so protect them above everything else.
 > verification codes via text, phone call**. Text and phone codes can be
 > intercepted through SIM swapping, so passkeys, security keys, authenticator
 > apps, and Google prompts are the accepted methods.
-- Where a service still signs in with an account outside the Workspace, move access
-  to a `nyccsda.org` account or the `technology@nyccsda.org` group wherever the
-  service allows it.
 
 ## Source code and CI/CD
 
@@ -99,32 +123,65 @@ and may not be possible, so protect them above everything else.
   repository.
 - **GitHub Actions** runs everything automated:
   - unit and integration tests on pull requests;
-  - native iOS and Android builds, signed with credentials from the `production`
-    Environment;
-  - Android preview APKs for pull requests;
-  - web/PWA preview deploys to GitHub Pages;
+  - native iOS and Android builds after each merge to `main`;
+  - Android preview APKs for pull requests into `main`;
+  - the [website](#website-appnyccsdaorg) deploy to GitHub Pages;
   - Apps Script deploys through `clasp`;
   - bulletin QR code generation into Google Drive;
   - a daily [external dependency monitor](operations/admin-runbook.md#external-dependency-monitor-alerts).
 - Publishing to the stores through [fastlane](https://fastlane.tools/) is planned
   but not yet in place.
+- **Credentials live in GitHub Secrets**, in this repository's `production`
+  environment. Each job that uses them waits for a `release-approvers` member to
+  approve it. There are three separate groups:
+  - **Android signing:** the upload keystore and its passwords
+    (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+    `ANDROID_KEY_PASSWORD`).
+  - **Apple signing:** the distribution certificate, provisioning profile, and team
+    ID (`IOS_DISTRIBUTION_CERTIFICATE_BASE64`,
+    `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`, `IOS_PROVISIONING_PROFILE_BASE64`,
+    `IOS_TEAM_ID`). The iOS workflow expects these, but they haven't been added
+    yet; they arrive with the 0.39.0 store certificate setup.
+  - **Apps Script:** the `clasp` login and the project and deployment IDs
+    (`CLASPRC_JSON`, `APPS_SCRIPT_PROJECT_ID`, `APPS_SCRIPT_DEPLOYMENT_ID`).
 
 The [Admin Runbook](operations/admin-runbook.md) covers approving production runs
 and rotating the credentials these workflows use.
 
 ## Printed and digital bulletin
 
-- The **scheduling roster** is a Google Sheet in a Shared Drive open to key church
-  staff. Staff edit it; nothing else is an intake point.
-- **`BulletinApi.gs`** publishes a privacy-filtered JSON feed (names anonymized) that
-  the apps read.
-- **`Printed*.gs`** renders the full-name printed bulletin to a Google Doc and PDF in
-  Drive.
-- The Apps Script source lives in [`google-apps-script/`](../google-apps-script/)
-  and is deployed by GitHub Actions, or locally by developers with access to the
-  scheduling Shared Drive.
+The bulletin has one source and two separate outputs. Staff maintain the
+**scheduling roster**, a Google Sheet in a Shared Drive open to key church staff.
+Nothing else is an intake point.
 
-Details: [Bulletin Automation Operations](operations/bulletin-automation.md).
+### Digital bulletin (in the app)
+
+- Members open the **Bulletin** tab in the app.
+- The app loads it from **`BulletinApi.gs`**, a public Apps Script endpoint that
+  returns privacy-filtered JSON with names anonymized.
+- Roster edits reach the app within a few minutes (the API caches for two minutes);
+  nothing is generated by hand.
+
+### Printed bulletin (on paper)
+
+- Staff open the roster spreadsheet and choose **Printed Bulletin → Create Google
+  Doc + PDF…**. This is the only regular manual step.
+- They pick the Sabbath, the congregation, and the layout. **Three layouts are
+  supported today:**
+  - **Queens**, regular worship;
+  - **Queens**, Holy Communion;
+  - **Brooklyn**, regular worship, including a weekly Sabbath Encouragement page.
+    Brooklyn Communion is intentionally disabled.
+- **`Printed*.gs`** renders a Google Doc and a PDF with full names, cover art, and
+  QR codes, and saves them to that congregation's Drive folder. The PDF is then
+  printed and handed out at church.
+- The printed layouts are separate from the app, so a layout can change, or a new
+  congregation can be added, without an app release. Each layout lives in its own
+  `Printed*.gs` file.
+
+The Apps Script source lives in [`google-apps-script/`](../google-apps-script/) and
+is deployed by GitHub Actions, or locally by developers with access to the
+scheduling Shared Drive. Details: [Bulletin Automation Operations](operations/bulletin-automation.md).
 
 ## Files not in this repository
 
@@ -162,7 +219,7 @@ These are generated per organization and can't be copied from anyone else.
 - **Android upload keystore** (`nyccsda-upload.jks`), which signs builds for Google
   Play.
 - **Apple distribution certificate** (`.p12`) and **App Store provisioning
-  profile** (`.mobileprovision`), renewed yearly.
+  profile** (`.mobileprovision`), renewed yearly. Not added to GitHub Secrets yet.
 - **Google `clasp` credentials** (`CLASPRC_JSON`) and the Apps Script project and
   deployment IDs.
 
@@ -170,26 +227,35 @@ Where each secret goes and how to rotate it is covered in
 [Native Builds](operations/native-builds.md) and the
 [Admin Runbook](operations/admin-runbook.md#credentials-that-need-attention).
 
-## Static media assets
+## Church media
 
-- Pictures and Bible audio are hosted in the church's media library on the North
-  American Division's Adventist Connect platform
-  (`newyorkchineseny.adventistchurch.org`, served from
+- The church's pictures and its copy of the Chinese Union Version Bible audio are
+  hosted in the church's media library on the North American Division's Adventist
+  Connect platform (`newyorkchineseny.adventistchurch.org`, served from
   `assets.adventistconnect.org`). The files are stored on Wasabi (`us-east-2`,
   Northern Virginia), an S3-compatible object store that is separate from AWS,
-  behind Adventist Connect's Cloudflare CDN. The conference or its WordPress host
-  runs this, not the church.
+  behind NAD's Cloudflare CDN. NAD or its WordPress host runs this, not the church.
 - Most of the traffic is Bible audio. Hosting details and a scaling analysis are in
   [Adventist Connect media hosting](operations/adventist-connect-media.md).
-- The church also keeps copies in Google Drive in case this hosting goes away.
 
-Where the license allows it, the church aims to keep at least two copies of
-media it depends on, on services it controls: the Adventist Connect media library
-and Google Drive. This is best effort rather than a complete backup of every file.
-Many sources don't permit separate copies, so the app relies on them directly;
-see [Public content providers](#public-content-providers).
+Where the license allows it, the church aims to keep at least two copies of media it
+depends on, on services it controls. This is best effort rather than a complete
+backup of every file. Many sources don't permit separate copies, so the app relies
+on them directly; see [Third-party APIs and websites](#third-party-apis-and-websites).
+
+| Media | Primary | Other copies |
+| --- | --- | --- |
+| CUV Bible audio (1,189 MP3s) | Adventist Connect | Google Drive backup; the app falls back to Audio Power, then the Internet Archive |
+| Church photos and hymnal lookup charts | Adventist Connect | Google Drive backup |
+| Bulletin cover art, logo, QR codes | Google Drive | See [Files not in this repository](#files-not-in-this-repository) |
 
 ## App stores
+
+Members install the app from **Google Play** and the **Apple App Store**. The
+church manages its listings through each store's publisher portal: **Google Play
+Console** and Apple's **App Store Connect**. App Store Connect isn't a separate
+store. It is where builds are uploaded, the listing is edited, and releases are
+submitted for review before they appear on the App Store.
 
 ### Apple App Store
 
@@ -197,7 +263,8 @@ see [Public content providers](#public-content-providers).
   registered with the church's own D-U-N-S number (not the conference's). That
   waives the $99 annual developer fee.
 - The **Apple Developer** account that publishes the app belongs to
-  `technology@nyccsda.org`.
+  `technology@nyccsda.org`. Builds are uploaded and releases submitted in App Store
+  Connect.
 - Nonprofit status must be **resubmitted every year**. Apple sends a reminder about
   30 days ahead; the earlier answers are remembered, so it is mostly a matter of
   confirming and resubmitting. No payment method is on file, so a lapse means the
@@ -205,34 +272,66 @@ see [Public content providers](#public-content-providers).
 - The signing certificates also expire every year. When they are renewed, update
   the matching GitHub secrets or the iOS build workflow will fail.
 
-### Google Play Console
+### Google Play
 
 - The church's organization developer account paid the one-time $25 fee, so there
   is no recurring cost.
 - Every IT administrator is a developer on the account.
-- Verifying the organization required adding `nyccsda.org` to **Google Search
-  Console**, where the administrators also have access.
+- Verifying the organization required verifying `nyccsda.org` in Google Search
+  Console; see [Cloudflare](#cloudflare).
 - Nothing needs renewing beyond keeping the app updated to meet Play's target API
   level requirements.
 
-## Public content providers
+## Website: app.nyccsda.org
 
-The app reads public content over HTTPS without an account. The dependency monitor
-checks each of these daily. Most of these sources don't allow the church to keep its
-own copy, so for them the app depends entirely on the provider staying online. The
-CUV audio is the exception: its owner allowed self-hosting, so Adventist Connect
-holds the primary copy and the provider is a fallback.
+`app.nyccsda.org` is served by GitHub Pages from this repository. Cloudflare DNS
+points the subdomain there. It has two real jobs:
 
-| Provider | Used for |
-| --- | --- |
-| HelloAO, fetch(bible) | Bible text |
-| Audio Power, Archive.org, Adventist Connect | Chinese Union Version Bible audio |
-| Hymnal sources (Chinese 505/506/707, Hymns for Worship) | Bulletin hymn lookup |
-| Adventech Sabbath School | Lesson quarterlies |
-| EGW Writings, Project Gutenberg, Chinese Union Mission library | Library reading |
-| Sunrise-Sunset API | Sabbath sunset times |
+- **Privacy policy** at `app.nyccsda.org/privacy-policy.html`, which both app stores
+  require for the listings.
+- **App download page** at `app.nyccsda.org/download`. The printed bulletin's app QR
+  code will point here, and the page sends each phone to the right store link.
+  Planned in [#237](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/237).
 
-Licensing for these sources is recorded in [Legal, Licensing & Privacy](LEGAL.md).
+The same Expo source can also be built as a Progressive Web App (PWA), and that
+build is what GitHub Pages serves. It is a **developer preview only**. It isn't
+supported or tested as a way to use the app, because some mobile features conflict
+with running as a PWA, so it doesn't appear as a client in the diagrams. Members use
+the native iOS and Android apps.
+
+## Third-party APIs and websites
+
+The apps use these outside services without an account. "In app" means the app
+downloads data from the service; "Link" means the app only opens the site in the
+browser. The [external dependency monitor](operations/external-dependency-monitor.md)
+checks nearly all of them daily.
+
+| Area | Provider | Host | Used for | How |
+| --- | --- | --- | --- | --- |
+| Bible | HelloAO | `bible.helloao.org` | Bible text and translation list | In app |
+| Bible | fetch(bible) | `v1.fetch.bible` | Original-language critical texts | In app |
+| Bible audio | Adventist Connect | `assets.adventistconnect.org` | The church's copy of the CUV audio, tried first | In app |
+| Bible audio | Audio Power | `theaudiopower.com` | CUV audio, second source | In app |
+| Bible audio | Internet Archive | `archive.org` | CUV audio, third source | In app |
+| Bulletin | Church Apps Script | `script.google.com` | Digital bulletin JSON | In app |
+| Sabbath School | Adventech | `sabbath-school.adventech.io` | Children's lesson catalog and PDFs (API); adult lessons (reader) | In app and link |
+| Sabbath School | Alive in Jesus | `aliveinjesus.info` | Children's Sabbath School | Link |
+| Library | Chinese Union Mission | `api.sdabible.org`, `cms.sdabible.site` | Chinese Ellen G. White catalog and books | In app |
+| Library | EGW Writings | `a.egwwritings.org`, `text.egwwritings.org` | Book covers (in app); reading (link) | In app and link |
+| Library | Project Gutenberg | `gutenberg.org` | Public-domain Christian classics | Link |
+| Hymns | zgaxr | `m.zgaxr.com` | Chinese 505, 506, and 707 hymnal sheet music | Link |
+| Hymns | Hymns for Worship | `hymnsforworship.org` | English SDA Hymnal (1985) sheet music | Link |
+| Hymns | Chinese Union Mission | App Store, Google Play | 506 hymnal app store pages | Link |
+| Home | Sunrise-Sunset API | `api.sunrise-sunset.org` | Sabbath sunset times and sunset theme | In app |
+| Media | YouTube | `youtube.com` | Livestream and sermon archive | Link |
+| Media | Spotify | `open.spotify.com` | Sermon and class audio archive | Link |
+| Media | Zoom | `zoom.us` | Online class | Link |
+| Giving | AdventistGiving | `adventistgiving.org` | Online giving | Link |
+| Church | GNYC, Atlantic Union, adventist.org | `gnyc.org`, `atlantic-union.org`, `adventist.org` | Conference, union, and beliefs pages | Link |
+
+Only the CUV Bible audio has copies the church controls, because its owner allowed
+self-hosting. For everything else, the feature stops working if the provider goes
+away. Licensing for these sources is recorded in [Legal, Licensing & Privacy](LEGAL.md).
 
 > [!WARNING]
 > **The Chinese hymnals depend on a single site in mainland China, with no copy the
