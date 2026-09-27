@@ -1,15 +1,12 @@
 /**
  * Planner safeguards for the Sabbath Calendar roster.
  *
- * 1. Conflict highlighting: when the same person is assigned to two roles
- *    that clash on the same Sabbath (row), both cells are painted pale red:
- *    Queens and Brooklyn, two parallel classes, teaching plus serving in
- *    worship, or two worship parts that happen at once. Worship parts that
- *    follow one another, and the Sabbath School program, may share a person;
- *    see doScheduleRolesOverlap_. The scan always
- *    covers every data row, including rows hidden by schedule maintenance and
- *    rows appended for the next quarter, so highlights never drift from the
- *    sheet's contents.
+ * 1. Conflict highlighting: when the same person is assigned to more than one
+ *    role on the same Sabbath (row), every cell holding that person is painted
+ *    pale red. Queens and Brooklyn columns are compared together because one
+ *    person cannot serve both locations at once. The scan always covers every
+ *    data row, including rows hidden by schedule maintenance and rows appended
+ *    for the next quarter, so highlights never drift from the sheet's contents.
  *
  * 2. Unknown-name warning: when an edited person cell contains a name that is
  *    not in the Name Dictionary, the editor is told so, with close spellings
@@ -32,81 +29,6 @@ var SCHEDULE_ASSIGNMENT_CHECK_CONFIG = Object.freeze({
   nameCheckTriggerHandler: 'onScheduleNameCheckEdit',
   nameCheckTriggerProperty: 'SCHEDULE_NAME_CHECK_TRIGGER',
 });
-
-// One role per Sabbath Calendar person column, F:Y in contract order. The
-// repeated Chair/Pastoral Prayer and Offering Prayer headers are told apart
-// by location here.
-var SCHEDULE_PERSON_COLUMN_ROLES = Object.freeze([
-  'queens.sermon',
-  'queens.translation',
-  'queens.chineseTeacher',
-  'queens.englishTeacher',
-  'queens.youthTeacher',
-  'queens.kidsTeacher',
-  'queens.chairPastoralPrayer',
-  'queens.specialMusic',
-  'queens.offeringPrayer',
-  'queens.pianist',
-  'queens.ssChair',
-  'queens.ssOpeningPrayer',
-  'queens.ssClosingPrayer',
-  'queens.flowerOffering',
-  'brooklyn.sermon',
-  'brooklyn.chairPastoralPrayer',
-  'brooklyn.offeringPrayer',
-  'brooklyn.technician',
-  'brooklyn.encouragement',
-  'brooklyn.sabbathSchool',
-]);
-
-// Sabbath School teachers are not also scheduled for the main service, so no
-// one teaches and serves in worship on the same day. This is a workload rule,
-// not a timing one; planners may leave the highlight when it is intended.
-var SCHEDULE_TEACHER_ROLES = Object.freeze([
-  'queens.chineseTeacher',
-  'queens.englishTeacher',
-  'queens.youthTeacher',
-  'queens.kidsTeacher',
-  'brooklyn.sabbathSchool',
-]);
-
-var SCHEDULE_WORSHIP_ROLES = Object.freeze([
-  'queens.sermon',
-  'queens.translation',
-  'queens.chairPastoralPrayer',
-  'queens.specialMusic',
-  'queens.offeringPrayer',
-  'queens.pianist',
-  'queens.flowerOffering',
-  'brooklyn.sermon',
-  'brooklyn.chairPastoralPrayer',
-  'brooklyn.offeringPrayer',
-  'brooklyn.technician',
-  'brooklyn.encouragement',
-]);
-
-// Other roles at the same location that happen at the same moment. Every
-// remaining same-location pair is allowed: the opening and closing Sabbath
-// School program is outside class time, and worship parts follow one another.
-var SCHEDULE_SAME_TIME_ROLE_PAIRS = Object.freeze([
-  // Queens Sabbath School classes run in parallel. Youth and Kids may share a
-  // teacher for now, so that pair is intentionally absent.
-  ['queens.chineseTeacher', 'queens.englishTeacher'],
-  ['queens.chineseTeacher', 'queens.youthTeacher'],
-  ['queens.chineseTeacher', 'queens.kidsTeacher'],
-  ['queens.englishTeacher', 'queens.youthTeacher'],
-  ['queens.englishTeacher', 'queens.kidsTeacher'],
-  // The translator speaks while the preacher speaks.
-  ['queens.sermon', 'queens.translation'],
-  // The pianist accompanies the Sabbath School opening program and worship.
-  ['queens.pianist', 'queens.ssChair'],
-  ['queens.pianist', 'queens.specialMusic'],
-  // The Brooklyn technician runs sound and streaming for the whole service.
-  ['brooklyn.technician', 'brooklyn.sermon'],
-  ['brooklyn.technician', 'brooklyn.chairPastoralPrayer'],
-  ['brooklyn.technician', 'brooklyn.offeringPrayer'],
-  ['brooklyn.technician', 'brooklyn.encouragement'],
-]);
 
 var SCHEDULE_NAME_SEPARATOR_PATTERN = /(\s*(?:\/|&|\+|,|;|\n|\band\b)\s*)/i;
 
@@ -195,72 +117,32 @@ function getScheduleNameIdentity_(name, lookup) {
   return normalizePhysicalNameKey_(resolveScheduleName_(name, lookup) || name);
 }
 
-function isScheduleTeacherAndWorshipPair_(roleA, roleB) {
-  return (
-    (SCHEDULE_TEACHER_ROLES.indexOf(roleA) !== -1 &&
-      SCHEDULE_WORSHIP_ROLES.indexOf(roleB) !== -1) ||
-    (SCHEDULE_TEACHER_ROLES.indexOf(roleB) !== -1 &&
-      SCHEDULE_WORSHIP_ROLES.indexOf(roleA) !== -1)
-  );
-}
-
 /**
- * True when one person should not hold both roles on the same Sabbath: the
- * roles are at different locations, one teaches Sabbath School while the
- * other serves in worship, or they are a listed same-time pair.
- */
-function doScheduleRolesOverlap_(roleA, roleB) {
-  if (roleA.split('.')[0] !== roleB.split('.')[0]) {
-    return true;
-  }
-  if (isScheduleTeacherAndWorshipPair_(roleA, roleB)) {
-    return true;
-  }
-  return SCHEDULE_SAME_TIME_ROLE_PAIRS.some(function (pair) {
-    return (
-      (pair[0] === roleA && pair[1] === roleB) ||
-      (pair[0] === roleB && pair[1] === roleA)
-    );
-  });
-}
-
-/**
- * Flags each person cell in one roster row (columns F:Y) whose person also
- * holds an overlapping role in another cell of the same row. A repeated name
- * inside a single cell is not a conflict.
+ * Flags each person cell in one roster row whose person also appears in a
+ * different cell of the same row. A repeated name inside a single cell is not
+ * a conflict.
  */
 function findScheduleRowConflicts_(row, lookup) {
-  var cellsByIdentity = {};
-  row.forEach(function (value, columnIndex) {
+  var identitiesByCell = row.map(function (value) {
+    var identities = {};
     splitScheduleCellNames_(value).forEach(function (name) {
-      var identity = getScheduleNameIdentity_(name, lookup);
-      var cells = cellsByIdentity[identity] || (cellsByIdentity[identity] = []);
-      if (cells.indexOf(columnIndex) === -1) {
-        cells.push(columnIndex);
-      }
+      identities[getScheduleNameIdentity_(name, lookup)] = true;
+    });
+    return Object.keys(identities);
+  });
+
+  var cellCounts = {};
+  identitiesByCell.forEach(function (identities) {
+    identities.forEach(function (identity) {
+      cellCounts[identity] = (cellCounts[identity] || 0) + 1;
     });
   });
 
-  var flags = row.map(function () {
-    return false;
-  });
-  Object.keys(cellsByIdentity).forEach(function (identity) {
-    var cells = cellsByIdentity[identity];
-    cells.forEach(function (a, index) {
-      cells.slice(index + 1).forEach(function (b) {
-        if (
-          doScheduleRolesOverlap_(
-            SCHEDULE_PERSON_COLUMN_ROLES[a],
-            SCHEDULE_PERSON_COLUMN_ROLES[b],
-          )
-        ) {
-          flags[a] = true;
-          flags[b] = true;
-        }
-      });
+  return identitiesByCell.map(function (identities) {
+    return identities.some(function (identity) {
+      return cellCounts[identity] > 1;
     });
   });
-  return flags;
 }
 
 /**

@@ -229,22 +229,10 @@ for a future quarter, the script does not delete or rewrite them.
 `ScheduleAssignmentChecks.gs` helps planners catch two roster mistakes in the
 person columns (`Queens Sermon` through `Sabbath School`, F:Y):
 
-- **One person in two clashing roles on one Sabbath.** Both cells turn pale
-  red (`#ea9999`) when a person in the same row is scheduled for:
-  - a Queens role and a Brooklyn role;
-  - two Queens classes (Chinese, English, Youth, Kids), except Youth + Kids;
-  - a Sabbath School class (including Brooklyn `Sabbath School`) and any role
-    in that location's main service, so no one teaches and serves in worship
-    on the same day;
-  - Queens Sermon + Translation, Pianist + Special Music, or Pianist + SS Chair;
-    or
-  - Brooklyn Technician + any other Brooklyn worship role.
-
-  Everything else may share a person: worship parts that follow one another,
-  and the SS Chair and SS Opening and Closing Prayers alongside teaching. The
-  red is advice, so a planner may leave it when a double role is intended.
-  The rules live in `SCHEDULE_TEACHER_ROLES`, `SCHEDULE_WORSHIP_ROLES`, and
-  `SCHEDULE_SAME_TIME_ROLE_PAIRS`. Cells with several names (`Mary Lin / John
+- **Same person twice on one Sabbath.** When a person appears in more than one
+  cell of the same row, every cell holding them turns pale red (`#ea9999`).
+  Queens and Brooklyn columns are compared together, because one person cannot
+  serve both locations at once. Cells with several names (`Mary Lin / John
   Chen`) are compared name by name, and placeholders such as `TBD` and `Choir`
   are ignored. Spelling differences in case or spacing do not hide a conflict,
   and a pinyin spelling derived from the Name Dictionary counts as the same
@@ -585,7 +573,7 @@ changes the URL and requires a coordinated mobile-app update.
 | API returns schedule-not-found | Missing `YYYY Sabbath` tab or row | Restore the exact tab name and a matching Date row |
 | A field moved to the wrong location | Header renamed/reordered or repeated header occurrence changed | Restore the exact header contract and deploy matching code |
 | Header says contract violation | A protected header was changed | Update Apps Script/tests/app first; technology group restores the header |
-| A roster cell is pale red | The same person holds a clashing role in another F:Y cell of that row | Reassign one of the roles, or leave it if intended; the color clears on the next edit |
+| A roster cell is pale red | The same person is in another F:Y cell of that row | Reassign one of the roles; the color clears on the next edit |
 | No unknown-name dialog, only an alert | The installable trigger is not installed | Run `installScheduleNameCheckTrigger` once from the Apps Script editor |
 | Chinese text appears in Sabbath Calendar | Typed or pasted into A:X | The validation/onEdit guard should reject/clear it; use Name Dictionary for approved English names |
 | New quarter rows lack validation | Maintenance did not run or append failed | Open the workbook as an editor, inspect Apps Script logs, and rerun maintenance; do not manually limit the rule to X53 |
