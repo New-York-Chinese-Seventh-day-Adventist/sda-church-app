@@ -348,6 +348,8 @@ checks nearly all of them daily.
 Only the CUV Bible audio has copies the church controls, because its owner allowed
 self-hosting. For everything else, the feature stops working if the provider goes
 away. Licensing for these sources is recorded in [Legal, Licensing & Privacy](LEGAL.md).
+Costs, published limits, and load for each one are in
+[Service Limits and Costs](operations/service-limits-and-costs.md).
 
 > [!WARNING]
 > **The Chinese hymnals depend on a single site in mainland China, with no copy the

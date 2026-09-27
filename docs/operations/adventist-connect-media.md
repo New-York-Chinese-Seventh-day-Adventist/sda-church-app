@@ -45,11 +45,11 @@ those directly from third-party API providers.
 ```mermaid
 flowchart LR
   app[App<br/>iOS · Android · web] -- HTTPS, byte ranges --> cdn
-  subgraph primary["① Primary: church's copy on Adventist Connect (NAD)"]
+  subgraph primary["1. Primary: church's copy on Adventist Connect (NAD)"]
     cdn[assets.adventistconnect.org<br/>NAD's Cloudflare CDN] -- cache miss only --> wasabi[(Wasabi object storage<br/>us-east-2, N. Virginia)]
   end
-  primary -. "if it fails" .-> ap["② Audio Power"]
-  ap -. "if it also fails" .-> ia["③ Internet Archive"]
+  primary -. "if it fails" .-> ap["2. Audio Power"]
+  ap -. "if it also fails" .-> ia["3. Internet Archive"]
 ```
 
 The app tries the sources in order and uses only one at a time; the fallbacks
@@ -114,6 +114,9 @@ WordPress puts an upload timestamp in each URL, so re-uploading a file changes i
 URL and the manifest must be regenerated.
 
 ## Scaling limits
+
+Limits and costs for every other service the app uses are in
+[Service Limits and Costs](service-limits-and-costs.md).
 
 ### Demand
 
