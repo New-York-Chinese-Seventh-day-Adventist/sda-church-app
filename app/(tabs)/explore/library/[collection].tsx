@@ -50,6 +50,7 @@ const allLabels = {
     chooseBook: 'Choose this book and its language edition',
     opensGutenberg: 'Opens externally on Project Gutenberg',
     opensPdf: 'Opens the PDF',
+    opensInternetArchive: 'Opens externally on the Internet Archive',
     openError: 'Could not open this library source.',
   },
   zh: {
@@ -64,6 +65,7 @@ const allLabels = {
     chooseBook: '選擇此書及語言版本',
     opensGutenberg: '在 Project Gutenberg 外部網站開啟',
     opensPdf: '開啟 PDF 文件',
+    opensInternetArchive: '在 Internet Archive 外部網站開啟',
     openError: '無法開啟此圖書來源。',
   },
   'zh-cn': {
@@ -78,6 +80,7 @@ const allLabels = {
     chooseBook: '选择此书及语言版本',
     opensGutenberg: '在 Project Gutenberg 外部网站打开',
     opensPdf: '打开 PDF 文件',
+    opensInternetArchive: '在 Internet Archive 外部网站打开',
     openError: '无法打开此图书来源。',
   },
   es: {
@@ -92,6 +95,7 @@ const allLabels = {
     chooseBook: 'Elige este libro y una edición por idioma',
     opensGutenberg: 'Se abre externamente en Project Gutenberg',
     opensPdf: 'Abre el PDF',
+    opensInternetArchive: 'Se abre externamente en Internet Archive',
     openError: 'No se pudo abrir esta fuente de la biblioteca.',
   },
 };
@@ -212,7 +216,9 @@ export default function LibraryScreen() {
             ? labels.opensOfficial
             : item.rights === 'church-hosted'
               ? labels.opensPdf
-              : labels.opensGutenberg
+              : item.sourceName === 'Internet Archive'
+                ? labels.opensInternetArchive
+                : labels.opensGutenberg
         }
         author={item.author}
         coverSource={BOOK_COVERS[item.id]}

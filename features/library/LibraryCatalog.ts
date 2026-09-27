@@ -18,6 +18,10 @@ export type LibraryItem = Readonly<{
   sourceName: string;
   sourceUrl: string;
   publicationYear?: number;
+  // The year of the scanned edition a link opens, when it differs from the
+  // original. Required for Internet Archive scans, whose own edition must be
+  // public domain too; see "Internet Archive sources" in docs/LEGAL.md.
+  editionYear?: number;
   simplifiedChinese?: Readonly<{
     author: string;
     description: string;
@@ -118,6 +122,24 @@ const publicDomainWorks: readonly LibraryItem[] = [
     sourceName: 'Project Gutenberg',
     sourceUrl: 'https://www.gutenberg.org/ebooks/51634',
     publicationYear: 1886,
+  },
+  {
+    // Not on Project Gutenberg. This scan is the 1838 Pickering edition, which
+    // also contains A Fountain Sealed and A Description of Christ; its only
+    // later addition is the 1838 editor's preface. Checked against the rules in
+    // docs/LEGAL.md, and the dependency monitor rechecks its access daily.
+    id: 'sibbes-bruised-reed',
+    title: 'The Bruised Reed',
+    author: 'Richard Sibbes',
+    collection: 'christian-classics',
+    description:
+      "A Puritan classic on Christ's tenderness toward weak and struggling believers, drawn from Isaiah 42:3.",
+    language: 'en',
+    rights: 'public-domain-us',
+    sourceName: 'Internet Archive',
+    sourceUrl: 'https://archive.org/details/bwb_C0-AVW-616',
+    publicationYear: 1630,
+    editionYear: 1838,
   },
 ];
 

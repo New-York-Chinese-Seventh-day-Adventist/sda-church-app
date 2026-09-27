@@ -154,7 +154,8 @@ licenses for the biblical text. Font sources and exact terms are documented in
 ## Library Sources and Licensing
 
 The Library is a curated catalog, not a web search. It links to each book's source;
-the app doesn't bundle or host any book text today. The content policy, catalog, and
+the app doesn't bundle book text. The only document the church hosts is the Sabbath
+Encouragement PDF, served with the web app. The content policy, catalog, and
 research queue are in [Christian Library](feature_designs/christian_library.md). A
 work may be copied into the app only when the exact edition, including any
 translation, is public domain where the app is distributed, a stable source records
@@ -165,11 +166,38 @@ is linked, not copied.
 | --- | --- | --- |
 | **Ellen G. White writings** (EGW Writings, `egwwritings.org`) | Links that open each book's official English, Chinese, or Spanish edition, and small cover thumbnails from `a.egwwritings.org` | The Ellen G. White Estate holds the rights to its editions, translations, website, and app content. The app only links to the official reader and never copies the text. Using the thumbnails to identify books that lead to their official editions is a fair-use assessment, not an express license. |
 | **Chinese Union Mission** (`api.sdabible.org`, `cms.sdabible.site`) | Cover thumbnails for the Chinese EGW editions only, loaded from its public catalog. The books themselves open on EGW Writings. | Same limited navigational use as the EGW covers. Image URLs are checked against the Mission's storage host. |
-| **Project Gutenberg** (`gutenberg.org`) | Links to three works: Joseph Bates, *The Seventh Day Sabbath, a Perpetual Sign* (1847); J. N. Andrews, *History of the Sabbath and First Day of the Week* (1873); John Bunyan, *The Pilgrim's Progress* (1678) | Each record is explicitly marked public domain in the U.S. |
+| **Adventist pioneer books on EGW Writings** | A link to Uriah Smith, *Daniel and the Revelation*, 1897 edition (`text.egwwritings.org/read/12861.1`) | Published in 1897, so public domain in the U.S. The app only links to it. Later revisions, such as the 1944 *The Prophecies of Daniel and the Revelation*, are still copyrighted and must not be substituted. |
+| **Project Gutenberg** (`gutenberg.org`) | Links to seven works: Joseph Bates, *The Seventh Day Sabbath, a Perpetual Sign* (1847); J. N. Andrews, *History of the Sabbath and First Day of the Week* (1873); Uriah Smith, *The State of the Dead and the Destiny of the Wicked* (1873); John Bunyan, *The Pilgrim's Progress* (1678); Andrew Murray, *Humility* (1895); John Foxe, *Fox's Book of Martyrs* (an abridged 19th-century American edition); Charles Chiniquy, *Fifty Years in the Church of Rome* (1886) | Each record is explicitly marked public domain in the U.S. |
+| **Internet Archive** (`archive.org`) | A link to Richard Sibbes, *The Bruised Reed* (1630), in the 1838 London edition by Pickering, which also contains *A Fountain Sealed* and *A Description of Christ* (`archive.org/details/bwb_C0-AVW-616`) | Checked 2026-09-27 under [Internet Archive sources](#internet-archive-sources): the scanned title page reads 1838, the only later addition is the 1838 editor's preface, and the scan is openly downloadable rather than lend-only. |
+| **The church's own copy** (`app.nyccsda.org/library/`) | *Sabbath Encouragement* (安息日勉言), the Chinese PDF the Brooklyn bulletin also uses, from `public/library/` | A compilation of Bible verses and Ellen G. White quotations edited by churches in China. The pastor confirmed it carries no copyright restriction ([#248](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/248#issuecomment-5852167793)); see [Sabbath Encouragement](operations/sabbath-encouragement-copyright.md). |
 
 Each source falls back to the app's own original, text-free cover art if its
 thumbnail can't load. That art was generated for this app without using the official
 covers as input or reference.
+
+### Internet Archive sources
+
+The Internet Archive holds both public-domain scans, which anyone can download, and
+in-copyright books, which it only lends. An old book's text can also be public domain
+while a later edition of it isn't, because an introduction, notes, modernized wording,
+or a translation carries its own copyright. So each Internet Archive item is checked
+on its own before the library links to it:
+
+1. **Read the scan's title page, not just the catalog record.** Catalog dates can be
+   wrong: an *Abide in Christ* record dated 1880 is really a 2013 large-print reprint.
+   The scanned edition itself must be from before 1928, the catalog's cutoff, and the
+   entry records it as `editionYear`.
+2. **Look for later additions.** Skip the scan if it adds an introduction, notes,
+   illustrations, or a translation from after the cutoff.
+3. **Check that it's openly downloadable.** Skip items that are access-restricted or
+   in a lending collection (`inlibrary`, `printdisabled`, `lendinglibrary`); those are
+   under copyright.
+4. **Record what was checked** in the table above: the edition, publisher, identifier,
+   and date.
+
+The [external dependency monitor](operations/external-dependency-monitor.md) rechecks
+every linked scan daily and fails if one becomes restricted, lend-only, or dated after
+the cutoff.
 
 ### Before copying any book into the app
 

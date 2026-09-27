@@ -7,14 +7,20 @@ import {
 } from '@/features/library/LibraryCatalog';
 
 describe('library catalog', () => {
-  it('keeps native-eligible public-domain works tied to explicit Gutenberg records', () => {
+  it('ties public-domain works to explicit Gutenberg or Internet Archive records', () => {
     expect(LIBRARY_CATALOG.publicDomainWorks.length).toBeGreaterThan(0);
 
     for (const work of LIBRARY_CATALOG.publicDomainWorks) {
       expect(work.rights).toBe('public-domain-us');
       expect(work.publicationYear).toBeLessThan(1928);
-      expect(work.sourceName).toBe('Project Gutenberg');
-      expect(work.sourceUrl).toMatch(/^https:\/\/(www\.)?gutenberg\.org\/ebooks\/\d+$/);
+      if (work.sourceName === 'Internet Archive') {
+        // A scan's own edition must be public domain, not just the original work.
+        expect(work.editionYear).toBeLessThan(1928);
+        expect(work.sourceUrl).toMatch(/^https:\/\/archive\.org\/details\/[A-Za-z0-9._-]+$/);
+      } else {
+        expect(work.sourceName).toBe('Project Gutenberg');
+        expect(work.sourceUrl).toMatch(/^https:\/\/(www\.)?gutenberg\.org\/ebooks\/\d+$/);
+      }
     }
   });
 
@@ -39,7 +45,7 @@ describe('library catalog', () => {
       LIBRARY_CATALOG.publicDomainWorks.filter(
         ({ collection }) => collection === 'christian-classics',
       ),
-    ).toHaveLength(4);
+    ).toHaveLength(5);
   });
 
   it('puts every book on a shelf the library screens can open', () => {
@@ -58,6 +64,7 @@ describe('library catalog', () => {
       'smith-state-dead-destiny-wicked': 'smith',
       'smith-daniel-revelation': 'smith',
       'murray-humility': 'classics',
+      'sibbes-bruised-reed': 'classics',
       'story-of-jesus': 'children',
       'sabbath-encouragement': 'egw',
     });

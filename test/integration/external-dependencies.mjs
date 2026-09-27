@@ -269,16 +269,23 @@ const gutenbergBooks = [...libraryCatalogSource.matchAll(
   /sourceUrl:\s*'(https:\/\/www\.gutenberg\.org\/ebooks\/(\d+))'/g,
 )].map(([, url, ebookId]) => ({ url, ebookId }));
 
-// Every public-domain entry links to Gutenberg, so a count mismatch means the
-// link pattern above stopped matching the catalog's format.
+const archiveBooks = [...libraryCatalogSource.matchAll(
+  /sourceUrl:\s*'(https:\/\/archive\.org\/details\/([A-Za-z0-9._-]+))'/g,
+)].map(([, url, identifier]) => ({ url, identifier }));
+
+// Every public-domain entry links to Gutenberg or the Internet Archive, so a
+// count mismatch means a link pattern stopped matching the catalog's format.
 const publicDomainEntryCount = [
   ...libraryCatalogSource.matchAll(/rights:\s*'public-domain-us'/g),
 ].length;
 
 await record('catalog has one unique link per public-domain book', 'Project Gutenberg', async () => {
-  if (!gutenbergBooks.length || gutenbergBooks.length !== publicDomainEntryCount) {
+  if (
+    !gutenbergBooks.length ||
+    gutenbergBooks.length + archiveBooks.length !== publicDomainEntryCount
+  ) {
     throw new Error(
-      `found ${gutenbergBooks.length} Project Gutenberg links for ${publicDomainEntryCount} public-domain books`,
+      `found ${gutenbergBooks.length} Project Gutenberg and ${archiveBooks.length} Internet Archive links for ${publicDomainEntryCount} public-domain books`,
     );
   }
   if (new Set(gutenbergBooks.map(({ url }) => url)).size !== gutenbergBooks.length) {
@@ -293,6 +300,35 @@ await record('daily public-domain book sample', 'Project Gutenberg', () => {
   return probe(sample.url, { allowed: [429] }).then(
     (detail) => `${detail}: ebook ${sample.ebookId}`,
   );
+});
+
+// An Internet Archive item can later be moved into a lending collection or
+// restricted, which usually means someone found it is still under copyright.
+// Recheck each linked scan so the library stops pointing at it.
+const ARCHIVE_LENDING_COLLECTIONS = ['inlibrary', 'printdisabled', 'lendinglibrary'];
+
+await record('public-domain scans stay openly downloadable', 'Internet Archive', async () => {
+  if (!archiveBooks.length) return 'no Internet Archive books in the catalog';
+  for (const { identifier } of archiveBooks) {
+    const item = await getJson(`https://archive.org/metadata/${identifier}`);
+    const metadata = item?.metadata || {};
+    const collections = [metadata.collection].flat().filter(Boolean);
+    if (!metadata.identifier || item.is_dark) {
+      throw new Error(`${identifier} is missing or dark`);
+    }
+    if (String(metadata['access-restricted-item']) === 'true') {
+      throw new Error(`${identifier} is now access-restricted`);
+    }
+    const lending = collections.filter((name) => ARCHIVE_LENDING_COLLECTIONS.includes(name));
+    if (lending.length) {
+      throw new Error(`${identifier} is now in lending collection ${lending.join(', ')}`);
+    }
+    const year = Number(String(metadata.year || metadata.date || '').slice(0, 4));
+    if (!(year > 0 && year < 1928)) {
+      throw new Error(`${identifier} records an edition year of ${year || 'unknown'}`);
+    }
+  }
+  return `${archiveBooks.length} openly downloadable pre-1928 scan(s)`;
 });
 
 const chineseLibrarySource = await readFile('features/library/ChineseLibrary.ts', 'utf8');
