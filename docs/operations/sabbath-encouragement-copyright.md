@@ -13,9 +13,18 @@ corresponds to the Sabbath of 2026-08-22. A backup copy is kept in
 offers it to readers. Its author metadata was removed before it was added to this public
 repository.
 
-The pastor confirmed that the Chinese version carries no copyright restriction: churches in China
-edited it and shared it freely
-([#248](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/248#issuecomment-5852167793)).
+**Provenance.** The Chinese compilation was edited by churches in China and has been passed
+freely from church to church there. The pastor reports that those churches checked it for copyright
+and treat it as free to share, so this church may reproduce it
+([#248](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/248#issuecomment-5852167793)). This is secondhand information: it comes through
+the pastor, not from the compilers directly.
+
+**What this means for an English translation.** A direct English translation would add only the
+translation itself. Its quotations would come from Ellen G. White's original English and from the
+Bible, and the compilation it follows is shared without restriction by the churches that made it.
+So an English translation made by this church should carry no outside rights. This is one more data
+point for the English translation tracked in #248, not a legal opinion. The cautions below about
+posthumous Ellen White compilations still apply to any quotation taken from one.
 
 This material is included solely for the **non-commercial ministry use of New York Chinese
 Seventh-day Adventist Church** in its printed bulletins and companion mobile app. It is not
