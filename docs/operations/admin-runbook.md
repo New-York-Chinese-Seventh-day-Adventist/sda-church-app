@@ -12,12 +12,14 @@ does and what still needs a person.
 ## Contents
 
 - [Who can do what](#who-can-do-what)
+- [Branch rules](#branch-rules)
 - [Approving a production deployment](#approving-a-production-deployment)
 - [Shipping a release to `main`](#shipping-a-release-to-main)
 - [Bulletin QR codes](#bulletin-qr-codes)
 - [Deploying the bulletin Apps Script](#deploying-the-bulletin-apps-script)
 - [Native app binaries](#native-app-binaries)
 - [Android PR preview APKs](#android-pr-preview-apks)
+- [iOS Simulator builds](#ios-simulator-builds)
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
 - [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
@@ -58,6 +60,52 @@ With that in place, a maintainer can keep email for **Watching** and **Participa
 @mentions and custom**, and choose **No additional events** under **Customize email
 updates**. Email then arrives for new PRs and issues in watched repositories, deploy
 approvals, assignments, and @mentions, but not for comments, pushes, or reviews.
+
+## Branch rules
+
+The rules are rulesets under **Settings → Rules → Rulesets**. Update this section
+whenever you change them.
+
+| Ruleset | Applies to | Enforces | Can bypass |
+| --- | --- | --- | --- |
+| **Deletion Protection** | `main`, `gh-pages` | No deleting the branch and no force-pushes | Nobody |
+| **Main protection** | `main` | No deleting or force-pushing, linear history, and changes only through a pull request that meets the review rules below; the checks marked for `main` must pass | Organization admins, through a pull request |
+| **PR approval** | `main` and `release/*` | Changes only through a pull request that meets the review rules below, with every review thread resolved; the checks marked for both must pass | Organization and repository admins, through a pull request |
+
+Review rules for both pull-request rulesets:
+- One approval is required.
+- A new push dismisses earlier approvals, and the last push must be approved by someone
+  other than the person who pushed it.
+- Only squash merges are allowed.
+- Required checks must pass on a branch that is up to date with its target.
+
+### Required checks
+
+| Check | Comes from | Required on |
+| --- | --- | --- |
+| `Jest unit tests` | `pr-tests.yml` | `main` and `release/*` |
+| `verify-bulletin-api` | `bulletin-integration.yml` | `main` and `release/*` |
+| `validate-pr` | `release-validation.yml` | `main` and `release/*` |
+| `require-linked-issue` | `pr-linked-issue.yml` | `main` and `release/*` |
+| `enforce-version` | `pr-check.yml` | `main` |
+| `sync` | `release-validation.yml` | `main` |
+| `ensure_pr_to_main_from_release_branch` | `main-release-source-gate.yml` | `main` |
+| `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
+| `Build ARM debug APK` | `android-pr-preview.yml` | `main` |
+| `iOS Simulator (Apple Silicon)`, `iOS Simulator (Intel)` | `ios-simulator-build.yml` | `main` |
+
+A skipped check counts as passed; for example, `sync` usually shows as skipped.
+
+### Changing a required check
+
+- **Add a check only after its workflow is on the branch it guards.** Otherwise pull
+  requests wait for a check that never runs. For a check required on `main`, the
+  workflow must first be in the open `release/*` branch, because that branch is the head
+  of the release PR.
+- **A check's name is its job's `name`,** or the job ID when there is no name. A matrix
+  job's name includes the matrix values, such as `iOS Simulator (Intel)`.
+- **Renaming or removing a job needs a matching ruleset change** in the same release;
+  otherwise merges block on the old name.
 
 ## Approving a production deployment
 
@@ -231,6 +279,17 @@ It builds an unsigned debug APK. After you approve `production`, it uploads the 
 to Google Drive as `sda-church-app-pr-<number>-<run>-arm-debug.apk`, and the run
 summary links to it. Fork pull requests are skipped. See
 [Android PR preview and Drive upload](native-builds.md#android-pr-preview-and-drive-upload).
+
+## iOS Simulator builds
+
+**Workflow:** **iOS Simulator build**, which runs automatically on pull requests into
+`main`.
+
+It builds the app without signing for an Apple Silicon Mac and an Intel Mac, launches it
+on a simulated iPhone, and uploads the app and a screenshot of its first screen. It
+needs no approval, because it reads no secrets. Download the build for your Mac from the
+run's Artifacts section to test the release on a Mac before merging; you don't need an
+iPhone. See [iOS Simulator builds](native-builds.md#ios-simulator-builds-unsigned).
 
 ## Dependabot pull requests
 
