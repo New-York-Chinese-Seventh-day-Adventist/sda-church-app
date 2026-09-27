@@ -5,8 +5,8 @@ flowchart TB
     repo@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/github-icon.svg", label: "sda-church-app repo", pos: "b", w: 48, h: 48, constraint: "on" }
     actions@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/github-actions.svg", label: "GitHub Actions<br/>tests · builds · deploys · monitor", pos: "b", w: 48, h: 48, constraint: "on" }
     subgraph Secrets["GitHub Secrets · production environment"]
-      androidKeys["🔑 Android signing<br/>upload keystore"]
-      appleKeys["🔑 Apple signing<br/>certificate + profile"]
+      androidKeys["🔑 Android signing<br/>upload keystore made by the church,<br/>certificate registered in Play Console"]
+      appleKeys["🔑 Apple signing<br/>certificate + profile,<br/>renewed every 12 months"]
       claspKeys["🔑 Apps Script<br/>clasp credentials"]
     end
     pages@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/github-icon.svg", label: "GitHub Pages · app.nyccsda.org<br/>privacy policy, download page<br/>PWA build: unsupported dev preview", pos: "b", w: 40, h: 40, constraint: "on" }

@@ -29,10 +29,10 @@ links.
 
 ### Overview
 
-How the congregation gets the app, how staff produce the digital and printed
-bulletins, and where the app's media comes from.
+Who does what: the congregation gets and uses the app, staff produce the digital and
+printed bulletins, and IT administrators develop, release, and maintain it.
 
-![Overview diagram: the congregation installs the apps from the stores via a download page; staff edit the scheduling roster, which feeds the digital bulletin in the apps and the printed Queens, Queens Communion, and Brooklyn bulletins; the apps load images and Bible audio from Adventist Connect, backed by Wasabi, with a backup copy in Google Drive; and the apps also use third-party APIs and websites](diagrams/architecture.svg)
+![Overview diagram: the congregation scans a QR code to reach the download page and installs the app from Google Play or the Apple App Store; staff edit the scheduling roster, which feeds the digital bulletin in the apps and the printed Queens, Queens Communion, and Brooklyn bulletins; IT administrators own the GitHub organization, develop on forks, merge feature PRs into a release branch and release PRs into main, then upload the signed AAB and IPA to the stores and rerun the QR code workflow when needed; the apps rely on media and third-party services shown in the app dependencies diagram](diagrams/architecture.svg)
 
 ### Build, deploy, and accounts
 
@@ -44,10 +44,13 @@ each step uses, and how the domain ties the accounts together.
 ### App dependencies
 
 Every outside service the apps talk to: what they load inside the app, and what they
-only open in the browser. See [Third-party APIs and websites](#third-party-apis-and-websites)
-for the full table.
+only open in the browser. It also shows how church media is kept available: the
+Adventist Connect library is served from Wasabi and backed up to Google Drive, and
+if it fails, Bible audio falls back to Audio Power and then the Internet Archive.
+See [Third-party APIs and websites](#third-party-apis-and-websites) for the full
+table.
 
-![App dependencies diagram: inside the app, Bible text from HelloAO and fetch(bible), Bible audio from Adventist Connect then Audio Power then the Internet Archive, the church's bulletin API and photos, and the Adventech, Chinese Union Mission, EGW Writings, and Sunrise-Sunset APIs; opened in the browser, hymns on zgaxr and Hymns for Worship, Sabbath School readers, library reading, YouTube, Spotify, Zoom, giving, and other links](diagrams/app-dependencies.svg)
+![App dependencies diagram: inside the app, church photos, hymnal charts, and Bible audio from the Adventist Connect media library, which is stored on Wasabi and can be restored from a Google Drive backup, with Bible audio falling back to Audio Power and then the Internet Archive; Bible text from HelloAO and fetch(bible); the church's bulletin API and the Adventech, Chinese Union Mission, EGW Writings, and Sunrise-Sunset APIs; opened in the browser, YouTube, Spotify, Zoom, hymns on zgaxr and Hymns for Worship, Sabbath School readers, library reading, giving, and other links](diagrams/app-dependencies.svg)
 
 ### Editing the diagrams
 
@@ -136,12 +139,18 @@ and may not be possible, so protect them above everything else.
   approve it. There are three separate groups:
   - **Android signing:** the upload keystore and its passwords
     (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
-    `ANDROID_KEY_PASSWORD`).
+    `ANDROID_KEY_PASSWORD`). With Play App Signing, Google keeps the real
+    app-signing key, which can't be downloaded. The church generates its own
+    upload keystore and registers its certificate in Play Console. It doesn't
+    expire yearly. If it's lost or leaked, request an upload key reset in Play
+    Console instead of creating a new one.
   - **Apple signing:** the distribution certificate, provisioning profile, and team
     ID (`IOS_DISTRIBUTION_CERTIFICATE_BASE64`,
     `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`, `IOS_PROVISIONING_PROFILE_BASE64`,
-    `IOS_TEAM_ID`). The iOS workflow expects these, but they haven't been added
-    yet; they arrive with the 0.39.0 store certificate setup.
+    `IOS_TEAM_ID`). The certificate and profile **expire every 12 months**; renew
+    them in the Apple Developer account and update these secrets, or iOS builds
+    fail. The iOS workflow expects these, but they haven't been added yet; they
+    arrive with the 0.39.0 store certificate setup.
   - **Apps Script:** the `clasp` login and the project and deployment IDs
     (`CLASPRC_JSON`, `APPS_SCRIPT_PROJECT_ID`, `APPS_SCRIPT_DEPLOYMENT_ID`).
 
@@ -217,9 +226,11 @@ rather than trashing it; the Admin Runbook explains why.
 These are generated per organization and can't be copied from anyone else.
 
 - **Android upload keystore** (`nyccsda-upload.jks`), which signs builds for Google
-  Play.
+  Play. The church generates it; Play Console only holds its certificate. Keep an
+  encrypted backup, because it can't be downloaded again.
 - **Apple distribution certificate** (`.p12`) and **App Store provisioning
-  profile** (`.mobileprovision`), renewed yearly. Not added to GitHub Secrets yet.
+  profile** (`.mobileprovision`), renewed every 12 months. Not added to GitHub
+  Secrets yet.
 - **Google `clasp` credentials** (`CLASPRC_JSON`) and the Apps Script project and
   deployment IDs.
 

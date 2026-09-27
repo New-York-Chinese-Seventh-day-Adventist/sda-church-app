@@ -21,18 +21,29 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const MERMAID_CLI = '@mermaid-js/mermaid-cli@12.0.0';
+// Plain SVG text labels instead of HTML ones: HTML labels are sized with the
+// renderer's fonts and get clipped when the viewer's font is wider.
+const MERMAID_CONFIG = {
+  htmlLabels: false,
+  markdownAutoWrap: false,
+  fontFamily: 'Arial, Helvetica, sans-serif',
+  flowchart: { htmlLabels: false, padding: 12, wrappingWidth: 1000 },
+};
 const LOGO_URL_PATTERN = /href="(https:\/\/cdn\.jsdelivr\.net\/[^"]+\.svg)"/g;
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const diagramsDir = path.join(repoRoot, 'docs/diagrams');
 
-const renderDiagram = async (sourceName, tempDir) => {
+const renderDiagram = async (sourceName, tempDir, configPath) => {
   const sourcePath = path.join(diagramsDir, sourceName);
   const outputPath = sourcePath.replace(/\.mmd$/, '.svg');
   const renderedPath = path.join(tempDir, path.basename(outputPath));
   execFileSync(
     'npx',
-    ['--yes', MERMAID_CLI, '--input', sourcePath, '--output', renderedPath, '--backgroundColor', 'white'],
+    [
+      '--yes', MERMAID_CLI, '--input', sourcePath, '--output', renderedPath,
+      '--backgroundColor', 'white', '--configFile', configPath,
+    ],
     { stdio: 'inherit' },
   );
 
@@ -58,9 +69,11 @@ const renderDiagram = async (sourceName, tempDir) => {
 
 const tempDir = await mkdtemp(path.join(os.tmpdir(), 'docs-diagrams-'));
 try {
+  const configPath = path.join(tempDir, 'mermaid-config.json');
+  await writeFile(configPath, JSON.stringify(MERMAID_CONFIG));
   const sources = (await readdir(diagramsDir)).filter((name) => name.endsWith('.mmd'));
   for (const sourceName of sources) {
-    await renderDiagram(sourceName, tempDir);
+    await renderDiagram(sourceName, tempDir, configPath);
   }
 } finally {
   await rm(tempDir, { recursive: true, force: true });
