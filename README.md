@@ -22,9 +22,17 @@ licensing decisions and third-party source review live in [docs/LEGAL.md](docs/L
 
 ### Project documentation
 
+- [Architecture & External Dependencies](docs/architecture.md): service diagram,
+  account ownership, and yearly upkeep
 - [Technical Setup & Testing](docs/README.md)
+- [Admin Runbook](docs/operations/admin-runbook.md): step-by-step manual workflows and
+  admin web tasks
 - [Build Instructions](docs/operations/native-builds.md)
 - [Bulletin Automation Operations](docs/operations/bulletin-automation.md)
+- [Adventist Connect Media Hosting](docs/operations/adventist-connect-media.md): Bible audio
+  and image hosting, with a scaling analysis
+- [Service Limits and Costs](docs/operations/service-limits-and-costs.md): cost, published
+  limits, and load for every external service
   - [Sabbath Encouragement attribution and copyright](docs/operations/sabbath-encouragement-copyright.md)
 - [Accessibility Guidelines](docs/accessibility/README.md)
 - [UI/UX Design](docs/UI_UX.md)

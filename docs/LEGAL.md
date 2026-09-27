@@ -10,6 +10,7 @@ terms, ownership, or permissions will remain unchanged.
 ## Contents
 
 - [Bible Sources and Licensing](#bible-sources-and-licensing)
+- [Library Sources and Licensing](#library-sources-and-licensing)
 - [English Hymnal Integration and Link Safety](#english-hymnal-integration-and-link-safety)
 - [Chinese Hymnal Source and Link Safety](#chinese-hymnal-source-and-link-safety-rationale)
 - [Branding & Trademarks](#branding--trademarks)
@@ -39,6 +40,73 @@ church's copies on Adventist Connect, with Audio Power and Internet Archive copi
 playback fallbacks; the repository does not bundle the recordings. Audio Power's owner,
 Phil, explicitly approved the church app's use, download, and self-hosting of these recordings in
 [issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5274730608).
+
+### Audio Power permission scope
+
+The permission covers **only Audio Power's own Chinese Union Version narration**. That
+is all the app uses from Audio Power: its audio sources are limited to the `cmn_cuv`
+and `cmn_cu1` translations in `services/BibleAudioSources.ts`. The quoted permission
+and its limits are recorded as text in
+[issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5851783677).
+
+Audio Power's site also carries **Spanish and English recordings that belong to
+others**, so they are not Audio Power's to license and are **not covered**:
+
+| Recording | Rights holder | Status |
+| --- | --- | --- |
+| KJV (Hosanna) | Believed to be Faith Comes By Hearing (Hosanna); unconfirmed | Believed free for non-commercial use; unconfirmed. See the Faith Comes By Hearing status below. |
+| KJV (D. Wagner) | Unconfirmed | Audio Power once bought a commercial license; current status unconfirmed. |
+| Spanish Reina-Valera 1909 | Unconfirmed | Reported as publicly available; unconfirmed. The recording's status is separate from the 1909 text. |
+
+**Faith Comes By Hearing (FCBH), as of August 2026.** The church asked FCBH about
+KJV and Reina-Valera 1909 audio, including the Hosanna KJV recording above. FCBH
+replied that it **does not have KJV English or Reina-Valera 1909 Spanish audio**
+filesets, nor the New Tibetan Bible or the public-domain Japanese translations
+requested. Still open:
+
+- Whether FCBH (Hosanna) owns the Hosanna KJV recording that Audio Power hosts, and
+  whether the church may use it. FCBH's replies covered only its current catalog.
+- Whether any FCBH audio may be downloaded and hosted on the church's own storage.
+  FCBH said it would check.
+- Redistributing FCBH audio through this public repository would need FCBH's
+  separate approval. FCBH noted that an audio recording can carry its own copyright
+  even when the Bible text is public domain.
+- The church's application for FCBH API access is pending.
+
+### Bible Brain API license (Faith Comes By Hearing): planned, not in use
+
+> [!NOTE]
+> **Work in progress.** The app does **not** use Bible Brain or any Faith Comes By
+> Hearing content today. The church has applied for API access and is waiting for a
+> reply. This section records the license terms ahead of time so the integration
+> ([#241](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/241))
+> is designed to follow them.
+
+Using FCBH audio through its Bible Brain API (the Digital Bible Platform, DBP) would
+mean agreeing to the [API License Agreement](https://www.faithcomesbyhearing.com/bible-brain/license)
+(last modified April 15, 2021), which the key application requires. Its terms that
+would affect this project, quoted from the agreement (not legal advice):
+
+| Topic | The agreement says | What it would mean here |
+| --- | --- | --- |
+| Downloading and offline use | "No DBP Content may be downloaded or made available for offline use by any person or outside of DBP except for DBP Content that is accessible via the /download endpoint." | No hosting FCBH audio or text on church storage, no caching it in a proxy, and offline listening only for content offered through `/download`, unless FCBH grants specific permission. |
+| Proxies | "You do not create a proxy distribution network for DBP Content (for instance, enabling other developers to use DBP Content or metadata via your servers or API instead of ours)." | A key-hiding proxy must serve only this app: forward only the specific requests the app needs, and never act as an open relay others could use. Whether even a private proxy is acceptable has been asked of FCBH. |
+| The API key | "You may not share your API Key with any other person and may only use the API through your assigned API Key." | The key must never ship in the app or the repository. Keep it as a server-side secret. |
+| Cost to users | "You enable your End Users to access DBP Content completely free of charge." | Matches the app, which must stay free anyway (see the [App stores](architecture.md#app-stores) rule). |
+| Attribution | You must "conspicuously post all proprietary rights notices on all DBP Content and FCBH Marks that is/are made available through Your Application." | The app must display FCBH's copyright notice wherever it plays or shows FCBH content. |
+| Copying by users | "Your Application shall not allow End Users to reproduce, copy, or replicate any DBP Content", apart from `/download` content. | No share-audio-file or export features for FCBH content. |
+| Termination | FCBH "may immediately terminate or suspend this Agreement … at any time and for any reason". | FCBH audio must never be the only source for a feature; keep a fallback, as the CUV audio has. |
+
+The planned Cloudflare Worker proxy for the key is tracked in
+[#241](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/241).
+It must follow the proxy and caching terms above, and it must stay on Cloudflare's
+Workers Free plan, which returns errors at its limits instead of billing.
+
+Before the app uses or hosts any of these, get written confirmation from the
+recording's rights holder and record it in #134 and in this section. Adding Spanish
+and KJV audio, and the other routes to it, is tracked in
+[#142](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/142). Audio Power can
+be reached at info@theaudiopower.com, the contact address on its website.
 
 ### “Free to access” does not mean “public domain”
 
@@ -80,6 +148,55 @@ evidence that a replacement work may be redistributed.
 The licenses for the bundled Greek and Hebrew fonts are separate from the
 licenses for the biblical text. Font sources and exact terms are documented in
 [assets/fonts/README.md](../assets/fonts/README.md).
+
+---
+
+## Library Sources and Licensing
+
+The Library is a curated catalog, not a web search. It links to each book's source;
+the app doesn't bundle or host any book text today. The content policy, catalog, and
+research queue are in [Christian Library](feature_designs/christian_library.md). A
+work may be copied into the app only when the exact edition, including any
+translation, is public domain where the app is distributed, a stable source records
+its rights status, and the required attribution can be kept. When in doubt, the work
+is linked, not copied.
+
+| Source | What the app uses | Rights basis |
+| --- | --- | --- |
+| **Ellen G. White writings** (EGW Writings, `egwwritings.org`) | Links that open each book's official English, Chinese, or Spanish edition, and small cover thumbnails from `a.egwwritings.org` | The Ellen G. White Estate holds the rights to its editions, translations, website, and app content. The app only links to the official reader and never copies the text. Using the thumbnails to identify books that lead to their official editions is a fair-use assessment, not an express license. |
+| **Chinese Union Mission** (`api.sdabible.org`, `cms.sdabible.site`) | Cover thumbnails for the Chinese EGW editions only, loaded from its public catalog. The books themselves open on EGW Writings. | Same limited navigational use as the EGW covers. Image URLs are checked against the Mission's storage host. |
+| **Project Gutenberg** (`gutenberg.org`) | Links to three works: Joseph Bates, *The Seventh Day Sabbath, a Perpetual Sign* (1847); J. N. Andrews, *History of the Sabbath and First Day of the Week* (1873); John Bunyan, *The Pilgrim's Progress* (1678) | Each record is explicitly marked public domain in the U.S. |
+
+Each source falls back to the app's own original, text-free cover art if its
+thumbnail can't load. That art was generated for this app without using the official
+covers as input or reference.
+
+### Before copying any book into the app
+
+Linking is the current design. Copying text into an in-app reader, or storing it for
+offline reading, needs more care:
+
+- **Project Gutenberg texts.** The underlying works are public domain in the U.S., but
+  Project Gutenberg's files carry its trademark and license. Either keep the Project
+  Gutenberg license header and follow its terms, or remove every reference to Project
+  Gutenberg and treat the result as a plain public-domain text. Decide which before
+  building the reader. Tracked in
+  [#166](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/166)
+  and [#238](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/238).
+- **Ellen G. White texts.** Although many original English works are old, the White
+  Estate's editions and every translation are its own. Don't copy or cache EGW text,
+  including the Chinese and Spanish editions, without the Estate's permission. Keep
+  linking to the official reader.
+- **Modern books.** Works such as C. S. Lewis's and other 20th-century authors' are
+  likely still under copyright and need permission or an official link. Candidates
+  are tracked in
+  [#171](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/171)
+  (C. S. Lewis) and
+  [#149](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/149)
+  (marriage preparation resources).
+- **Chinese Adventist authors.** Only pre-1928 editions with a verified record are
+  candidates for copying; later works need the publisher's or estate's permission.
+  See the research queue in [Christian Library](feature_designs/christian_library.md).
 
 ---
 
