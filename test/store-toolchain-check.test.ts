@@ -40,6 +40,10 @@ describe('store toolchain page parsing', () => {
     ).toEqual([{ effective: day('2027-04-26'), xcodeMajor: 27, iosSdk: 27 }]);
   });
 
+  it('decodes each HTML entity once', () => {
+    expect(htmlToText('Tom&#39;s &amp;#39; &amp; co')).toBe("Tom's &#39; & co");
+  });
+
   it('reads the recommended Xcode and strips HTML', () => {
     expect(parseAppleLatestXcode(htmlToText('<p>Build and test with <a href="#">Xcode 27</a>, which</p>'))).toBe('27');
   });
