@@ -6,7 +6,7 @@ const SOURCES = [
   'BulletinApi.gs',
   'BulletinScheduleMaintenance.gs',
   'ScheduleAssignmentChecks.gs',
-  'PrintedQueensBulletin.gs',
+  'PrintedBulletin.gs',
 ];
 
 const HEADERS = [

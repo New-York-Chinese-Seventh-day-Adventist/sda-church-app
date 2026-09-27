@@ -13,7 +13,7 @@ const loadAppsScript = (context: Record<string, unknown>) => {
       '\n' +
       readFileSync(join(process.cwd(), 'google-apps-script/ScheduleAssignmentChecks.gs'), 'utf8') +
       '\n' +
-      readFileSync(join(process.cwd(), 'google-apps-script/PrintedQueensBulletin.gs'), 'utf8') +
+      readFileSync(join(process.cwd(), 'google-apps-script/PrintedBulletin.gs'), 'utf8') +
       '\n' +
       readFileSync(join(process.cwd(), 'google-apps-script/PrintedHymnLookup.gs'), 'utf8') +
       '\n' +
@@ -542,7 +542,7 @@ describe('printed bulletin Apps Script helpers', () => {
 
   it('keeps the DAF note with the left-side giving content', () => {
     const source = readFileSync(
-      join(process.cwd(), 'google-apps-script/PrintedQueensBulletin.gs'),
+      join(process.cwd(), 'google-apps-script/PrintedBulletin.gs'),
       'utf8',
     );
     const givingTextStart = source.indexOf('function appendGivingText_');
