@@ -227,8 +227,8 @@ describe('Sabbath Calendar conflict notes', () => {
     edit(2, 21, 'John Chen');
 
     expect(schedule.notes[1][QUEENS_SERMON - 1]).toBe(
-      'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist, Brooklyn Chair/Pastoral Prayer. / ' +
-        '本安息日亦安排於：Pianist, Brooklyn Chair/Pastoral Prayer。',
+      'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist (O2), Brooklyn Chair/Pastoral Prayer (U2). / ' +
+        '本安息日亦安排於：Pianist (O2), Brooklyn Chair/Pastoral Prayer (U2)。',
     );
   });
 

@@ -252,8 +252,8 @@ setup is needed.
   planner decides whether to leave those. The value is never changed.
 - Each red cell has a note, shown by the small black triangle in its top-right
   corner. Hovering over the cell shows the person's other roles that Sabbath,
-  for example `Also scheduled this Sabbath as: Pianist, Brooklyn Chair/Pastoral
-  Prayer`. Repeated headers are named by location.
+  with the cell holding each, for example `Also scheduled this Sabbath as:
+  Pianist (O14), Brooklyn Chair/Pastoral Prayer (U14)`. Repeated headers are named by location.
 - Cells with several names (`Mary Lin / John Chen`) are compared name by name.
   Placeholders such as `TBD` and `Choir` are ignored. Case and spacing
   differences do not hide a repeat, and a pinyin spelling derived from a Name

@@ -171,11 +171,30 @@ function getSchedulePersonColumnLabel_(columnNumber) {
   return (columnNumber >= brooklynStart ? 'Brooklyn ' : 'Queens ') + header;
 }
 
-function buildScheduleConflictNote_(otherColumnNumbers) {
+function getScheduleColumnLetter_(columnNumber) {
+  var letters = '';
+  for (var n = columnNumber; n > 0; n = Math.floor((n - 1) / 26)) {
+    letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
+  }
+  return letters;
+}
+
+/**
+ * Lists the person's other roles that Sabbath with the cell holding each, for
+ * example "Brooklyn Sermon (T14)", so the planner can jump straight to it.
+ */
+function buildScheduleConflictNote_(rowNumber, otherColumnNumbers) {
   if (!otherColumnNumbers.length) {
     return '';
   }
-  var roles = otherColumnNumbers.map(getSchedulePersonColumnLabel_).join(', ');
+  var roles = otherColumnNumbers
+    .map(function (columnNumber) {
+      return (
+        getSchedulePersonColumnLabel_(columnNumber) +
+        ' (' + getScheduleColumnLetter_(columnNumber) + rowNumber + ')'
+      );
+    })
+    .join(', ');
   return (
     SCHEDULE_ASSIGNMENT_CHECK_CONFIG.notePrefix +
     '\n• Also scheduled this Sabbath as: ' + roles + '. / 本安息日亦安排於：' + roles + '。'
@@ -225,6 +244,7 @@ function refreshScheduleRosterChecks_(sheet, lookup) {
         return;
       }
       var wantedNote = buildScheduleConflictNote_(
+        rowIndex + 2,
         others.map(function (otherIndex) {
           return bounds.first + otherIndex;
         }),
