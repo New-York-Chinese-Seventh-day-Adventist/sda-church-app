@@ -273,14 +273,25 @@ Console** and Apple's **App Store Connect**. App Store Connect isn't a separate
 store. It is where builds are uploaded, the listing is edited, and releases are
 submitted for review before they appear on the App Store.
 
+> [!IMPORTANT]
+> **The app must stay free, and must never take money through the stores.** Both
+> store accounts are registered to the church as a nonprofit on the `nyccsda.org`
+> domain, and the Apple fee waiver depends on that status. Don't make the app paid,
+> and don't add in-app purchases, subscriptions, ads, or anything else that earns
+> money through Apple or Google. Giving stays outside the stores: the app only opens
+> external donation links (AdventistGiving) in the browser, and shows the Zelle
+> address, which is fine.
+
 ### Apple App Store
 
 - The church has an **Apple Business Manager** organization with nonprofit status,
   registered with the church's own D-U-N-S number (not the conference's). That
   waives the $99 annual developer fee.
-- The **Apple Developer** account that publishes the app belongs to
-  `technology@nyccsda.org`. Builds are uploaded and releases submitted in App Store
-  Connect.
+- The **Apple Developer** account that publishes the app is registered to
+  **`technology@nyccsda.org`**, the shared Google Group address, not to a person.
+  The other active administrators are added to the team with their own individual
+  `nyccsda.org` church accounts. Builds are uploaded and releases submitted in App
+  Store Connect.
 - Nonprofit status must be **resubmitted every year**. Apple sends a reminder about
   30 days ahead; the earlier answers are remembered, so it is mostly a matter of
   confirming and resubmitting. No payment method is on file, so a lapse means the
@@ -290,9 +301,11 @@ submitted for review before they appear on the App Store.
 
 ### Google Play
 
-- The church's organization developer account paid the one-time $25 fee, so there
-  is no recurring cost.
-- Every IT administrator is a developer on the account.
+- The church has **one organization developer account**, created under the
+  `nyccsda.org` domain. It paid the one-time $25 fee, so there is no recurring
+  cost.
+- Each IT administrator signs in to Play Console with their **own individual
+  `nyccsda.org` church account**, added as a user of that organization account.
 - Verifying the organization required verifying `nyccsda.org` in Google Search
   Console; see [Cloudflare](#cloudflare).
 - Nothing needs renewing beyond keeping the app updated to meet Play's target API

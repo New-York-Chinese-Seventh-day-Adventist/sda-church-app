@@ -254,6 +254,10 @@ DNS itself is free.
   must be resubmitted yearly. No payment method is on file, so a lapse removes the
   app; it doesn't charge the church.
 - **Google Play:** the one-time $25 registration was paid. No recurring cost.
+- Both are nonprofit organization accounts, so the app must stay free and never
+  earn money through the stores: no paid app, in-app purchases, subscriptions, or
+  ads. External donation links opened in the browser are fine. See
+  [App stores](../architecture.md#app-stores).
 
 ## Link-only websites
 
