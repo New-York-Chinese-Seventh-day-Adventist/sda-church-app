@@ -53,9 +53,24 @@ others**, so they are not Audio Power's to license and are **not covered**:
 
 | Recording | Rights holder | Status |
 | --- | --- | --- |
-| KJV (Hosanna) | Faith Comes By Hearing | Believed free for non-commercial use; unconfirmed. Faith Comes By Hearing has been contacted. |
+| KJV (Hosanna) | Believed to be Faith Comes By Hearing (Hosanna); unconfirmed | Believed free for non-commercial use; unconfirmed. See the Faith Comes By Hearing status below. |
 | KJV (D. Wagner) | Unconfirmed | Audio Power once bought a commercial license; current status unconfirmed. |
 | Spanish Reina-Valera 1909 | Unconfirmed | Reported as publicly available; unconfirmed. The recording's status is separate from the 1909 text. |
+
+**Faith Comes By Hearing (FCBH), as of August 2026.** The church asked FCBH about
+KJV and Reina-Valera 1909 audio, including the Hosanna KJV recording above. FCBH
+replied that it **does not have KJV English or Reina-Valera 1909 Spanish audio**
+filesets, nor the New Tibetan Bible or the public-domain Japanese translations
+requested. Still open:
+
+- Whether FCBH (Hosanna) owns the Hosanna KJV recording that Audio Power hosts, and
+  whether the church may use it. FCBH's replies covered only its current catalog.
+- Whether any FCBH audio may be downloaded and hosted on the church's own storage.
+  FCBH said it would check.
+- Redistributing FCBH audio through this public repository would need FCBH's
+  separate approval. FCBH noted that an audio recording can carry its own copyright
+  even when the Bible text is public domain.
+- The church's application for FCBH API access is pending.
 
 Before the app uses or hosts any of these, get written confirmation from the
 recording's rights holder and record it in #134 and in this section. Audio Power can
