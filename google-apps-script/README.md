@@ -18,9 +18,10 @@ The Sabbath Encouragement attribution and copyright review is maintained at:
 - `BulletinApi.gs` — public API, sheet contracts, joins, privacy filtering, and metadata translations.
 - `BulletinScheduleMaintenance.gs` — automatic validation, protection, visibility, and quarter maintenance.
 - `ScheduleAssignmentChecks.gs` — same-day roster conflict highlights and unknown-name warnings.
-- `PrintedQueensBulletin.gs` — shared helpers and Queens Regular rendering.
-- `PrintedQueensCommunionBulletin.gs` — Queens Holy Communion rendering and fixed ceremony readings.
-- `PrintedBrooklynBulletin.gs` — Brooklyn printed layout and Sabbath Encouragement integration.
+- `PrintedBulletin.gs` — shared printed-bulletin code: Sheet menu and prompts, data preparation, Docs and PDF export, page and table helpers, and the shared cover, giving, announcement, hymn, Bible, and QR helpers.
+- `PrintedCommunionBulletin.gs` — Communion service content both locations print: fixed ceremony readings, response hymn, and the Foot Washing and Holy Communion panels.
+- `PrintedQueensBulletin.gs` — Queens Regular and Queens Communion page layouts.
+- `PrintedBrooklynBulletin.gs` — Brooklyn Regular and Communion page layouts and Sabbath Encouragement integration.
 - `PrintedHymnLookup.gs` — reviewed bidirectional hymn-number lookup for physical printing.
 - `SabbathEncouragement.gs` — rotating 52-page source and bilingual printed spread.
 - `appsscript.json` — Apps Script runtime and web-app manifest.

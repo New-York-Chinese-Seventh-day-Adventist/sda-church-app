@@ -17,7 +17,9 @@ const loadAppsScript = (context: Record<string, unknown>) => {
       '\n' +
       readFileSync(join(process.cwd(), 'google-apps-script/PrintedHymnLookup.gs'), 'utf8') +
       '\n' +
-      readFileSync(join(process.cwd(), 'google-apps-script/PrintedQueensCommunionBulletin.gs'), 'utf8') +
+      readFileSync(join(process.cwd(), 'google-apps-script/PrintedCommunionBulletin.gs'), 'utf8') +
+      '\n' +
+      readFileSync(join(process.cwd(), 'google-apps-script/PrintedQueensBulletin.gs'), 'utf8') +
       '\n' +
       readFileSync(join(process.cwd(), 'google-apps-script/PrintedBrooklynBulletin.gs'), 'utf8'),
     vmContext,

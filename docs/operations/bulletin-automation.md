@@ -56,9 +56,10 @@ the church's Workspace terms during annual maintenance.
 | `google-apps-script/BulletinApi.gs` | Public API, sheet contracts, data joins, privacy filtering, and metadata translations |
 | `google-apps-script/BulletinScheduleMaintenance.gs` | Background `onOpen` maintenance, header protection, validation, hiding, and quarter expansion |
 | `google-apps-script/ScheduleAssignmentChecks.gs` | Same-day roster conflict highlights and Name Dictionary unknown-name warnings |
-| `google-apps-script/PrintedQueensBulletin.gs` | Shared data preparation, Queens Regular renderer, common Docs helpers, hymn/Bible/QR helpers |
-| `google-apps-script/PrintedQueensCommunionBulletin.gs` | Queens Communion page order and fixed Communion/Foot Washing readings |
-| `google-apps-script/PrintedBrooklynBulletin.gs` | Brooklyn cover, Zoom, Sabbath School, worship, and location-specific printed layout |
+| `google-apps-script/PrintedBulletin.gs` | Shared printed-bulletin code: Sheet menu and prompts, data preparation, Docs and PDF export, common Docs helpers, and the shared cover, giving, hymn/Bible/QR helpers |
+| `google-apps-script/PrintedCommunionBulletin.gs` | Communion service content both locations print: fixed Communion/Foot Washing readings, response hymn, and ceremony panels |
+| `google-apps-script/PrintedQueensBulletin.gs` | Queens Regular and Queens Communion page layouts |
+| `google-apps-script/PrintedBrooklynBulletin.gs` | Brooklyn cover, Zoom, Sabbath School, worship, Communion, and giving footer layouts |
 | `google-apps-script/PrintedHymnLookup.gs` | Reviewed bidirectional English/Chinese hymn-number lookup for physical printing |
 | `google-apps-script/SabbathEncouragement.gs` | 52-page Brooklyn encouragement rotation containing Ellen White quotations plus Bible/editorial/other source material, machine translation, and direct Bible replacement |
 | `services/BulletinService.ts` | App response types, date selection, local cache, refresh cooldown, and empty-location behavior |
