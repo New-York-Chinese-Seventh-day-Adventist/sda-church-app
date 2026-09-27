@@ -12,11 +12,12 @@ Code, Codex, Gemini, and others). The full contributor guide is
 - Title the PR `Release/x.y.z: Describe the change` (or `Release/x.y.x: …`),
   using the same major and minor version as the target branch. CI rejects
   other titles.
-- Write the PR description however suits the change, but it **must** contain
-  a line `Closes #123` for each issue it resolves. Use `Part of #123` for an
-  issue that should stay open. The **PR Linked Issue** check fails without
-  one, and it reruns when you edit the description. The line goes in the
-  description, not only in a commit message or the title.
+- Write the PR description however suits the change, but it **must** name
+  its issues. Use a line `Closes #123` for each issue it finishes. Use
+  `Part of #123` or `Related to #123` for an issue it only advances or
+  touches, so that issue stays open. The **PR Linked Issue** check fails
+  without one, and it reruns when you edit the description. The line goes in
+  the description, not only in a commit message or the title.
 - A release PR from `release/x.y.z` into `main` must repeat every `Closes #…`
   line from the feature PRs it includes. GitHub only closes issues when the
   reference reaches `main`.

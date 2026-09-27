@@ -58,8 +58,8 @@ The admin-only steps are:
    `Release/x.y.z:` or `Release/x.y.x:`.
 3. **Open the release pull request** from `release/x.y.z` into `main`, titled
    `Release/x.y.z: …`. Copy the `Closes #…` lines from the included feature pull
-   requests into its description. Use `Part of #…` for issues that should stay
-   open. The **PR Linked Issue** check fails if the description has neither.
+   requests into its description. Use `Part of #…` or `Related to #…` for issues
+   that should stay open. The **PR Linked Issue** check fails if the description has neither.
 4. **Merge it.** The version files must already say `x.y.z`
    (`npm run sync-version -- --version x.y.z` in the release branch).
 

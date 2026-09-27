@@ -71,8 +71,9 @@ feature and release PR must:
   same major and minor; the patch may be concrete or `x`.
 - Describe the user-visible and technical changes.
 - Include one line per resolved issue in the description, using a closing keyword such as
-  `Closes #133` (`Fixes` and `Resolves` also work). Use `Part of #133` for an issue that
-  should stay open. The `PR Linked Issue` check fails without one. When a PR truly has
+  `Closes #133` (`Fixes` and `Resolves` also work). For an issue the PR only advances or
+  touches, use `Part of #133`, `Related to #133`, or `Refs #133`; those issues stay open
+  and do not get the `pending release` label. The `PR Linked Issue` check fails without one. When a PR truly has
   no issue, a maintainer can apply the `no linked issue` label.
 - Say what was tested, with the command and result. Only claim an Android or iOS build
   that was actually run.
@@ -162,7 +163,8 @@ main (stable)
 #### `PR Linked Issue` (`.github/workflows/pr-linked-issue.yml`)
 
 - Fails a PR into `main` or a release branch whose description has no `Closes #…`
-  (or `Fixes`/`Resolves`) or `Part of #…` line. The error says exactly what to add.
+  (or `Fixes`/`Resolves`) line and no `Part of #…`, `Related to #…`, or `Refs #…`
+  line. The error says exactly what to add.
 - Reruns when the description is edited, so fixing the description clears it without a
   new commit.
 - Skips Dependabot PRs and PRs labeled `no linked issue`.

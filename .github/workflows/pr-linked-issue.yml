@@ -1,8 +1,9 @@
 name: PR Linked Issue
 
-# Every feature and release PR must say which issue it closes, because the
-# pending-release label and the issue closing on the merge to main both read
-# that line from the PR description. AI agents tend to write their own PR
+# Every feature and release PR must name its issue: "Closes #N" when it
+# finishes the issue (the pending-release label and the issue closing on the
+# merge to main both read that line), or "Part of #N" / "Related to #N" when
+# it only advances or touches one. AI agents tend to write their own PR
 # descriptions, so this check fails with the exact fix instead of relying on a
 # template. It reruns when the description is edited, so no new commit is
 # needed to clear it.
@@ -47,12 +48,13 @@ jobs:
               process.exit(0);
             }
 
-            // The same keywords GitHub uses to close issues, plus "Part of" for
-            // work that should leave its issue open.
+            // The same keywords GitHub uses to close issues, plus wording for
+            // work that advances or relates to an issue without closing it.
+            // Only closing keywords get the pending-release label.
             const closing = [...body.matchAll(/\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+#([1-9][0-9]*)\b/gi)];
-            const partOf = [...body.matchAll(/\bpart of:?\s+#([1-9][0-9]*)\b/gi)];
-            if (closing.length || partOf.length) {
-              const refs = [...closing, ...partOf].map((match) => "#" + match[1]);
+            const related = [...body.matchAll(/\b(?:part of|relate[sd]?(?: to)?|refs?):?\s+#([1-9][0-9]*)\b/gi)];
+            if (closing.length || related.length) {
+              const refs = [...closing, ...related].map((match) => "#" + match[1]);
               console.log("Linked issues: " + [...new Set(refs)].join(", "));
               process.exit(0);
             }
@@ -60,7 +62,7 @@ jobs:
             console.log(
               "::error title=Missing linked issue::The PR description has no issue reference. " +
                 "Add a line such as \"Closes #123\" to the PR description (not the title or a commit). " +
-                "Use \"Part of #123\" if the issue should stay open. " +
+                "If the PR advances or relates to an issue without finishing it, use \"Part of #123\" or \"Related to #123\" so the issue stays open. " +
                 "This check reruns automatically when the description is edited. " +
                 `If there is truly no issue, a maintainer can apply the "${noIssueLabel}" label.`,
             );
