@@ -10,11 +10,13 @@
  *
  * 2. Unknown-name warning: when an edited person cell contains a name that is
  *    not in the Name Dictionary, the editor is told so, with close spellings
- *    from the dictionary as suggestions. With the installable trigger from
- *    installScheduleNameCheckTrigger(), the warning is a dialog that can apply
- *    a suggestion or add the name (and its Chinese name) to the dictionary.
- *    Without it, the simple onEdit trigger falls back to a plain alert,
- *    because Google does not let simple triggers open HTML dialogs.
+ *    from the dictionary as suggestions. With the installable trigger, the
+ *    warning is a dialog that can apply a suggestion or add the name (and its
+ *    Chinese name) to the dictionary.
+ *    The trigger installs itself the first time a bulletin admin uses the
+ *    Printed Bulletin menu. Until then, the simple onEdit trigger falls back
+ *    to a plain alert, because Google does not let simple triggers open HTML
+ *    dialogs.
  *
  * Row 1 (headers) and columns A:E (date, quarter, and service metadata) are
  * never read or painted. Only cells the script painted are ever repainted.
@@ -322,8 +324,31 @@ function isScheduleNameCheckTriggerInstalled_() {
 }
 
 /**
- * One-time setup for the technology team: run this from the Apps Script
- * editor to enable the interactive unknown-name dialog. Safe to run again.
+ * Installs the unknown-name dialog trigger the first time a bulletin admin
+ * uses the Printed Bulletin menu. It cannot run from onOpen: simple triggers
+ * are not allowed to create triggers. Restricting it to admins keeps the
+ * trigger owned by a long-lived staff account, and the script property keeps
+ * a second admin from installing a duplicate that would double every dialog.
+ */
+function ensureScheduleNameCheckTrigger_() {
+  if (isScheduleNameCheckTriggerInstalled_() || !isPrintedBulletinAdmin_()) {
+    return false;
+  }
+  try {
+    installScheduleNameCheckTrigger();
+    return true;
+  } catch (error) {
+    if (typeof Logger !== 'undefined') {
+      Logger.log('Unknown-name dialog trigger not installed: ' + error);
+    }
+    return false;
+  }
+}
+
+/**
+ * Installs the unknown-name dialog trigger for the current account. Usually
+ * ensureScheduleNameCheckTrigger_ does this automatically; run it from the
+ * Apps Script editor only to reinstall. Safe to run again.
  */
 function installScheduleNameCheckTrigger() {
   var handler = SCHEDULE_ASSIGNMENT_CHECK_CONFIG.nameCheckTriggerHandler;

@@ -270,3 +270,54 @@ describe('Sabbath Calendar unknown-name warnings', () => {
     ).toThrow('not a roster name cell');
   });
 });
+
+describe('unknown-name dialog trigger installation', () => {
+  const setupTrigger = (email: string, installed = false) => {
+    const created: string[] = [];
+    const triggers: { getHandlerFunction: () => string }[] = [];
+    const scriptApp = {
+      getProjectTriggers: () => triggers,
+      newTrigger: (handler: string) => ({
+        forSpreadsheet: () => ({
+          onEdit: () => ({
+            create: () => {
+              created.push(handler);
+              triggers.push({ getHandlerFunction: () => handler });
+            },
+          }),
+        }),
+      }),
+    };
+    const session = {
+      getActiveUser: () => ({ getEmail: () => email }),
+      getEffectiveUser: () => ({ getEmail: () => email }),
+    };
+    const result = setup([], undefined, { ScriptApp: scriptApp, Session: session });
+    result.properties.PHYSICAL_BULLETIN_ADMIN_EMAILS = 'admin@example.org';
+    if (installed) {
+      result.properties.SCHEDULE_NAME_CHECK_TRIGGER = 'installed';
+    }
+    return { ...result, created };
+  };
+
+  it('installs once for a bulletin admin', () => {
+    const { context, created, properties } = setupTrigger('admin@example.org');
+
+    expect(runInContext('ensureScheduleNameCheckTrigger_()', context)).toBe(true);
+    expect(runInContext('ensureScheduleNameCheckTrigger_()', context)).toBe(false);
+
+    expect(created).toEqual(['onScheduleNameCheckEdit']);
+    expect(properties.SCHEDULE_NAME_CHECK_TRIGGER).toBe('installed');
+  });
+
+  it('does not install for other editors or when already installed', () => {
+    const editor = setupTrigger('editor@example.org');
+    const secondAdmin = setupTrigger('admin@example.org', true);
+
+    expect(runInContext('ensureScheduleNameCheckTrigger_()', editor.context)).toBe(false);
+    expect(runInContext('ensureScheduleNameCheckTrigger_()', secondAdmin.context)).toBe(false);
+
+    expect(editor.created).toEqual([]);
+    expect(secondAdmin.created).toEqual([]);
+  });
+});

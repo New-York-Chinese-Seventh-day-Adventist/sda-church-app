@@ -248,16 +248,24 @@ only clears cells that are exactly the conflict color, so row 1, columns A:E,
 and any other cell colors are never changed. Do not use `#ea9999` for manual
 highlighting in F:Y; the script treats that color as its own.
 
-The simple `onEdit` trigger cannot open HTML dialogs, so by default the unknown
-name warning is a plain alert. To get the interactive dialog, where the editor
-can apply a suggested spelling or add the name and its Chinese name to the Name
-Dictionary, a technology team member runs `installScheduleNameCheckTrigger`
-once from the Apps Script editor. It installs an `onEdit` trigger for
-`onScheduleNameCheckEdit` and records that in the `SCHEDULE_NAME_CHECK_TRIGGER`
-script property, so the plain alert stops. Running it again is safe. The
-dialog's add and replace buttons run as the editor, so an editor who has not
-authorized the script sees an authorization error there. The **Open Name
-Dictionary tab** link and manual editing still work.
+The simple `onEdit` trigger cannot open HTML dialogs, and simple triggers are
+not allowed to create the installable trigger that can. So the interactive
+dialog, where the editor can apply a suggested spelling or add the name and its
+Chinese name to the Name Dictionary, turns itself on the first time an account
+listed in `PHYSICAL_BULLETIN_ADMIN_EMAILS` uses **Printed Bulletin → Create
+Google Doc + PDF…**. That click installs an `onEdit` trigger for
+`onScheduleNameCheckEdit`, owned by that admin, and records it in the
+`SCHEDULE_NAME_CHECK_TRIGGER` script property. After that the plain alert stops,
+and no other admin installs a duplicate. Until then, editors get a plain alert
+with the same suggestions.
+
+If the owning admin's account is removed, its trigger stops. To recover,
+delete the `SCHEDULE_NAME_CHECK_TRIGGER` script property. The next admin menu
+click reinstalls the trigger, or you can run `installScheduleNameCheckTrigger`
+from the Apps Script editor. The dialog's add and replace buttons run as the
+editor, so an editor who has not authorized the script sees an authorization
+error there. The **Open Name Dictionary tab** link and manual editing still
+work.
 
 ## Data precedence and fallback behavior
 
@@ -574,7 +582,7 @@ changes the URL and requires a coordinated mobile-app update.
 | A field moved to the wrong location | Header renamed/reordered or repeated header occurrence changed | Restore the exact header contract and deploy matching code |
 | Header says contract violation | A protected header was changed | Update Apps Script/tests/app first; technology group restores the header |
 | A roster cell is pale red | The same person is in another F:Y cell of that row | Reassign one of the roles; the color clears on the next edit |
-| No unknown-name dialog, only an alert | The installable trigger is not installed | Run `installScheduleNameCheckTrigger` once from the Apps Script editor |
+| No unknown-name dialog, only an alert | No bulletin admin has used the Printed Bulletin menu yet, or the trigger owner's account was removed | Have an admin open **Printed Bulletin → Create Google Doc + PDF…**; if the owner was removed, delete the `SCHEDULE_NAME_CHECK_TRIGGER` script property first |
 | Chinese text appears in Sabbath Calendar | Typed or pasted into A:X | The validation/onEdit guard should reject/clear it; use Name Dictionary for approved English names |
 | New quarter rows lack validation | Maintenance did not run or append failed | Open the workbook as an editor, inspect Apps Script logs, and rerun maintenance; do not manually limit the rule to X53 |
 | Old rows disappeared | They were hidden, not deleted | Unhide rows when historical planning is needed; maintenance is non-destructive |
