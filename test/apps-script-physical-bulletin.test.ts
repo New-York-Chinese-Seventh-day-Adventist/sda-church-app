@@ -1295,7 +1295,7 @@ describe('printed bulletin Apps Script helpers', () => {
     expect(translated).toBe('本地教會\nLocal Church');
   });
 
-  it('gets sunset times from the same Sunrise-Sunset API endpoint used by the app', () => {
+  it('gets sunset times from the Sunrise-Sunset API', () => {
     const urls: string[] = [];
     const context = loadAppsScript({
       UrlFetchApp: {

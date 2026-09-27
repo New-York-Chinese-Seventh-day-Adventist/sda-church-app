@@ -46,11 +46,11 @@ each step uses, and how the domain ties the accounts together.
 Every outside service the apps talk to: what they load inside the app, and what they
 only open in the browser. It also shows how church media is kept available: the
 Adventist Connect library is served from Wasabi and backed up to Google Drive, and
-if it fails, Bible audio falls back to Audio Power and then the Internet Archive.
+if it fails, Bible audio falls back to the Internet Archive and then Audio Power.
 See [Third-party APIs and websites](#third-party-apis-and-websites) for the full
 table.
 
-![App dependencies diagram: inside the app, church photos, hymnal charts, and Bible audio from the Adventist Connect media library, which is stored on Wasabi and can be restored from a Google Drive backup, with Bible audio falling back to Audio Power and then the Internet Archive; Bible text from HelloAO and fetch(bible); the church's bulletin API and the Adventech, Chinese Union Mission, EGW Writings, and Sunrise-Sunset APIs; opened in the browser, YouTube, Spotify, Zoom, hymns on zgaxr and Hymns for Worship, Sabbath School readers, library reading, giving, and other links](diagrams/app-dependencies.svg)
+![App dependencies diagram: inside the app, church photos, hymnal charts, and Bible audio from the Adventist Connect media library, which is stored on Wasabi and can be restored from a Google Drive backup, with Bible audio falling back to the Internet Archive and then Audio Power; Bible text from HelloAO and fetch(bible); the church's bulletin API and the Adventech, Chinese Union Mission, and EGW Writings APIs; opened in the browser, YouTube, Spotify, Zoom, hymns on zgaxr and Hymns for Worship, Sabbath School readers, library reading, giving, and other links](diagrams/app-dependencies.svg)
 
 ### Editing the diagrams
 
@@ -262,7 +262,7 @@ on them directly; see [Third-party APIs and websites](#third-party-apis-and-webs
 
 | Media | Primary | Other copies |
 | --- | --- | --- |
-| CUV Bible audio (1,189 MP3s) | Adventist Connect | Google Drive backup; the app falls back to Audio Power, then the Internet Archive |
+| CUV Bible audio (1,189 MP3s) | Adventist Connect | Google Drive backup; the app falls back to the Internet Archive, then Audio Power |
 | Church photos and hymnal lookup charts | Adventist Connect | Google Drive backup |
 | Bulletin cover art, logo, QR codes | Google Drive | See [Files not in this repository](#files-not-in-this-repository) |
 
@@ -343,8 +343,8 @@ checks nearly all of them daily.
 | Bible | HelloAO | `bible.helloao.org` | Bible text and translation list | In app |
 | Bible | fetch(bible) | `v1.fetch.bible` | Original-language critical texts | In app |
 | Bible audio | Adventist Connect | `assets.adventistconnect.org` | The church's copy of the CUV audio, tried first | In app |
-| Bible audio | Audio Power | `theaudiopower.com` | CUV audio, second source | In app |
-| Bible audio | Internet Archive | `archive.org` | CUV audio, third source | In app |
+| Bible audio | Internet Archive | `archive.org` | CUV audio, second source | In app |
+| Bible audio | Audio Power | `theaudiopower.com` | CUV audio, third source | In app |
 | Bulletin | Church Apps Script | `script.google.com` | Digital bulletin JSON | In app |
 | Sabbath School | Adventech | `sabbath-school.adventech.io` | Children's lesson catalog and PDFs (API); adult lessons (reader) | In app and link |
 | Sabbath School | Alive in Jesus | `aliveinjesus.info` | Children's Sabbath School | Link |
@@ -354,7 +354,7 @@ checks nearly all of them daily.
 | Hymns | zgaxr | `m.zgaxr.com` | Chinese 505, 506, and 707 hymnal sheet music | Link |
 | Hymns | Hymns for Worship | `hymnsforworship.org` | English SDA Hymnal (1985) sheet music | Link |
 | Hymns | Chinese Union Mission | App Store, Google Play | 506 hymnal app store pages | Link |
-| Home | Sunrise-Sunset API | `api.sunrise-sunset.org` | Sabbath sunset times and sunset theme | In app |
+| Printed bulletin | Sunrise-Sunset API | `api.sunrise-sunset.org` | Sunset times on the printed Queens bulletin (Apps Script only; the app calculates its own) | Apps Script |
 | Media | YouTube | `youtube.com` | Livestream and sermon archive | Link |
 | Media | Spotify | `open.spotify.com` | Sermon and class audio archive | Link |
 | Media | Zoom | `zoom.us` | Online class | Link |

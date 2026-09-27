@@ -36,7 +36,7 @@ CUV), `cmn_cus` (simplified CUV), and `spa_rv` (Reina-Valera 1909) editions.
 Chinese Union Version audio is streamed chapter by chapter from
 [Audio Power](https://theaudiopower.org/translations/cuv/#nar1), which credits the
 recordings to 基督徒团契 (Christian Fellowship). The app links directly to the
-church's copies on Adventist Connect, with Audio Power and Internet Archive copies as
+church's copies on Adventist Connect, with Internet Archive and Audio Power copies as
 playback fallbacks; the repository does not bundle the recordings. Audio Power's owner,
 Phil, explicitly approved the church app's use, download, and self-hosting of these recordings in
 [issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5274730608).
@@ -330,18 +330,18 @@ source-data retention is governed by the church's administrative practices.
 ### 3. Temporary Caching and Device Storage
 
 Google Apps Script temporarily caches privacy-filtered bulletin responses to reduce Sheet
-reads. The app may store settings, saved verse references, cached Bible selections, and
-the same filtered bulletin data in device-local storage. This data is not synced to a
+reads. The app may store settings, saved verse references, cached Bible selections,
+library cover links, and the same filtered bulletin data in device-local storage. This data is not synced to a
 church account. Web users can remove the device copy by clearing this site's browser
 data; native users can uninstall the app or clear its storage using the operating
 system's app settings.
 
 ### 4. Hosting and Traffic Services
 
-This app requests Bible text, Bible-audio metadata or files, sunset times, cover images,
-and privacy-filtered bulletin data from external services over HTTPS. GitHub Pages,
-Cloudflare, Google Workspace/Apps Script, HelloAO, fetch(bible), Audio Power, Adventist
-Connect, the Chinese Union Mission services, and the sunrise-sunset service may process
+This app requests Bible text, Bible-audio metadata or files, cover images, and
+privacy-filtered bulletin data from external services over HTTPS. GitHub Pages,
+Cloudflare, Google Workspace/Apps Script, HelloAO, fetch(bible), Adventist Connect, the
+Internet Archive, Audio Power, and the Chinese Union Mission services may process
 ordinary connection metadata such as an IP address, user agent, request path, and request
 time for delivery, security, or service operations. The app does not receive or store
 those providers' server logs. Each provider handles information under its own applicable
@@ -411,3 +411,23 @@ conditions. We do not host, curate, or endorse the specific content or search re
 returned by these services. Users are responsible for ensuring their use complies with
 applicable copyright and performance licensing requirements; linking does not constitute
 legal authorization for public performance or reuse.
+
+### 4. Open-Source Software
+
+This application includes the following open-source software, whose licenses require
+these notices. The in-app Legal Disclaimer screen shows the same text from
+[`constants/OpenSourceNotices.ts`](../constants/OpenSourceNotices.ts).
+
+**[SunCalc](https://github.com/mourner/suncalc)**, which calculates the Sabbath sunset
+times and the sunrise/sunset theme:
+
+> Copyright (c) 2026, Volodymyr Agafonkin
+> All rights reserved.
+>
+> Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+>
+> 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+>
+> 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+>
+> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
