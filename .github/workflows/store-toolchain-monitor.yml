@@ -1,0 +1,129 @@
+name: Store Toolchain Monitor
+
+# Google Play and App Store Connect raise their minimum Android target API and
+# Xcode/iOS SDK requirements about once a year. This reads the official
+# requirement pages weekly and opens an alert issue when the app falls behind,
+# a new requirement starts within 120 days, or a page can no longer be read.
+
+on:
+  schedule:
+    # Mondays, away from the top of the hour, when scheduled Actions are busiest.
+    - cron: "23 16 * * 1"
+      timezone: "America/New_York"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: store-toolchain-monitor
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ALERT_TITLE: "[monitor] Store toolchain requirements need attention"
+
+jobs:
+  check-store-toolchain:
+    # Forks commonly disable Issues, while this monitor opens and updates an
+    # alert issue. Keep scheduled/manual monitoring scoped to the canonical repo.
+    if: github.event.repository.fork == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+
+      - name: Check store toolchain requirements
+        id: toolchain-check
+        continue-on-error: true
+        run: node scripts/check-store-toolchain.cjs --report store-toolchain-report.json
+
+      - name: Open or update the alert issue
+        if: steps.toolchain-check.outcome == 'failure'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const title = process.env.ALERT_TITLE;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            let report = '- The monitor exited before producing a readable report.';
+            try {
+              report = JSON.parse(fs.readFileSync('store-toolchain-report.json', 'utf8')).markdown;
+            } catch (error) {
+              core.warning(`Could not read the toolchain report: ${error.message}`);
+            }
+            const body = [
+              `@${context.actor}`,
+              '',
+              'The weekly store toolchain check needs attention. Google Play or App Store Connect uploads may be rejected if the Android target API or Xcode version is not updated.',
+              '',
+              report,
+              '',
+              'See **Store toolchain requirements** in `docs/operations/admin-runbook.md` for what to update and test.',
+              '',
+              `Run: ${runUrl}`,
+            ].join('\n');
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => issue.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+              });
+            }
+
+      - name: Close the alert issue after recovery
+        if: steps.toolchain-check.outcome == 'success'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = process.env.ALERT_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => issue.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Requirements met again in ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+            }
+
+      - name: Mark the workflow unhealthy
+        if: steps.toolchain-check.outcome == 'failure'
+        run: |
+          echo "The store toolchain check needs attention. See the job summary and alert issue."
+          exit 1

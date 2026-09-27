@@ -133,7 +133,9 @@ and may not be possible, so protect them above everything else.
   - bulletin Apps Script deploys, using [`clasp`](https://github.com/google/clasp),
     Google's command-line tool for uploading Apps Script code;
   - bulletin QR code generation into Google Drive;
-  - a daily [external dependency monitor](operations/admin-runbook.md#external-dependency-monitor-alerts).
+  - a daily [external dependency monitor](operations/admin-runbook.md#external-dependency-monitor-alerts);
+  - a weekly [store toolchain monitor](operations/admin-runbook.md#store-toolchain-monitor-alerts)
+    that warns before Google Play or App Store Connect requirements pass the app by.
 - Publishing to the stores through [fastlane](https://fastlane.tools/) is planned
   but not yet in place.
 - **Credentials live in GitHub Secrets**, in this repository's `production`

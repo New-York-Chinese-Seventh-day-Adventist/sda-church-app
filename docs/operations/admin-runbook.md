@@ -20,6 +20,7 @@ does and what still needs a person.
 - [Android PR preview APKs](#android-pr-preview-apks)
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
+- [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
 - [Credentials that need attention](#credentials-that-need-attention)
 
 ## Who can do what
@@ -217,6 +218,33 @@ manually.
 It opens or updates an issue when an outside service the app depends on fails, and
 closes the issue when the service recovers. See
 [External dependency monitor](external-dependency-monitor.md).
+
+## Store toolchain monitor alerts
+
+**Workflow:** **Store Toolchain Monitor**, which runs every Monday and can be run
+manually.
+
+It reads Google Play's [target API
+requirement](https://developer.android.com/google/play/requirements/target-sdk) and
+Apple's [upcoming requirements](https://developer.apple.com/news/upcoming-requirements/)
+and compares them with the app:
+
+- `targetSdkVersion` in `app.json` (the `expo-build-properties` plugin), and
+- the Xcode version selected in `.github/workflows/native-ios-build.yml`.
+
+It opens or updates the issue **[monitor] Store toolchain requirements need
+attention** in three cases:
+
+- the app is below a requirement already in force;
+- a new requirement starts within 120 days; or
+- it can no longer read either page, which usually means the wording changed. Then
+  check the page by hand and update the patterns in
+  `scripts/check-store-toolchain.cjs`.
+
+The issue closes itself on the next passing run. The job summary also notes when
+Apple recommends a newer Xcode than the build uses; that note alone does not open an
+issue. What to update and test is under
+[Store toolchain requirements](#store-toolchain-requirements).
 
 ## Credentials that need attention
 
