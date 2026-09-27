@@ -231,6 +231,8 @@ person columns (`Queens Sermon` through `Sabbath School`, F:Y):
 
 - **Same person twice on one Sabbath.** When a person appears in more than one
   cell of the same row, every cell holding them turns pale red (`#ea9999`).
+  Hovering over a red cell shows a note listing the person's other roles that
+  Sabbath.
   Queens and Brooklyn columns are compared together, because one person cannot
   serve both locations at once. Cells with several names (`Mary Lin / John
   Chen`) are compared name by name, and placeholders such as `TBD` and `Choir`
@@ -238,14 +240,16 @@ person columns (`Queens Sermon` through `Sabbath School`, F:Y):
   and a pinyin spelling derived from the Name Dictionary counts as the same
   person as its English entry.
 - **Name not in the Name Dictionary.** Editing a person cell to a name the
-  dictionary does not know shows a warning with close dictionary spellings
-  (typos, swapped name order, or a first name typed alone).
+  dictionary does not know shows a popup with close dictionary spellings
+  (typos, swapped name order, or a first name typed alone). The value is kept,
+  and the cell is not colored.
 
 The highlight is a warning, not a block: the value is kept. Every edit, every
 Name Dictionary change, and every `onOpen` maintenance run rescans every data
 row, including hidden past rows and newly appended quarter rows. The script
-only clears cells that are exactly the conflict color, so row 1, columns A:E,
-and any other cell colors are never changed. Do not use `#ea9999` for manual
+only clears cells that are exactly the conflict color, and only replaces
+notes it wrote itself. Row 1, columns A:E, other cell colors, and planners' own
+notes are never changed. Do not use `#ea9999` for manual
 highlighting in F:Y; the script treats that color as its own.
 
 The simple `onEdit` trigger cannot open HTML dialogs, and simple triggers are

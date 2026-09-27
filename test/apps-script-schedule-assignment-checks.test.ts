@@ -26,6 +26,7 @@ type Grid = string[][];
 
 const createSheet = (name: string, values: Grid) => {
   const backgrounds: (string | null)[][] = values.map((row) => row.map(() => '#ffffff'));
+  const notes: string[][] = values.map((row) => row.map(() => ''));
   const makeRange = (row: number, column: number, rows = 1, columns = 1) => {
     const slice = <T,>(grid: T[][]) =>
       Array.from({ length: rows }, (_, r) =>
@@ -45,6 +46,13 @@ const createSheet = (name: string, values: Grid) => {
             backgrounds[row - 1 + r][column - 1 + c] = color ?? '#ffffff';
           }),
         ),
+      getNotes: () => slice(notes),
+      setNotes: (next: string[][]) =>
+        next.forEach((line, r) =>
+          line.forEach((note, c) => {
+            notes[row - 1 + r][column - 1 + c] = note;
+          }),
+        ),
       setValue: (value: string) => {
         values[row - 1][column - 1] = value;
       },
@@ -61,6 +69,7 @@ const createSheet = (name: string, values: Grid) => {
     getDataRange: () => makeRange(1, 1, values.length, values[0].length),
     appendRow: (row: string[]) => values.push(row),
     backgrounds,
+    notes,
     values,
   };
   return sheet;
@@ -184,7 +193,7 @@ describe('Sabbath Calendar conflict highlighting', () => {
     ]);
     schedule.backgrounds[3][QUEENS_SERMON - 1] = CONFLICT;
 
-    const count = runInContext('refreshScheduleConflictHighlightsSafely_()', context);
+    const count = runInContext('refreshScheduleRosterChecksSafely_()', context);
 
     expect(count).toBe(2);
     expect(schedule.backgrounds[1][QUEENS_SERMON - 1]).toBe(CONFLICT);
@@ -206,6 +215,41 @@ describe('Sabbath Calendar conflict highlighting', () => {
 
     expect(schedule.backgrounds[1][QUEENS_SERMON - 1]).toBe(CONFLICT);
     expect(schedule.backgrounds[1][BROOKLYN_SERMON - 1]).toBe(CONFLICT);
+  });
+});
+
+describe('Sabbath Calendar conflict notes', () => {
+  it('notes the other roles a conflicting person holds, naming repeated headers by location', () => {
+    const { schedule, edit } = setup([
+      scheduleRow('2026-10-03', { [QUEENS_SERMON]: 'John Chen', [PIANIST]: 'John Chen' }),
+    ]);
+
+    edit(2, 21, 'John Chen');
+
+    expect(schedule.notes[1][QUEENS_SERMON - 1]).toBe(
+      'Roster check / 名單檢查\n• Also scheduled this Sabbath as: Pianist, Brooklyn Chair/Pastoral Prayer. / ' +
+        '本安息日亦安排於：Pianist, Brooklyn Chair/Pastoral Prayer。',
+    );
+  });
+
+  it('keeps a planner\'s own note while still coloring the cell', () => {
+    const { schedule, edit } = setup([scheduleRow('2026-10-03', { [QUEENS_SERMON]: 'Mary Lin' })]);
+    schedule.notes[1][PIANIST - 1] = 'Confirmed by phone';
+
+    edit(2, PIANIST, 'Mary Lin');
+
+    expect(schedule.notes[1][PIANIST - 1]).toBe('Confirmed by phone');
+    expect(schedule.backgrounds[1][PIANIST - 1]).toBe(CONFLICT);
+    expect(schedule.notes[1][QUEENS_SERMON - 1]).toContain('Pianist');
+  });
+
+  it('never colors a name just because it is missing from the Name Dictionary', () => {
+    const { schedule, edit } = setup([scheduleRow('2026-10-03', {})]);
+
+    edit(2, PIANIST, 'Jonh Chen');
+
+    expect(schedule.backgrounds[1][PIANIST - 1]).toBe('#ffffff');
+    expect(schedule.notes[1][PIANIST - 1]).toBe('');
   });
 });
 

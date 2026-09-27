@@ -78,7 +78,7 @@ function onEdit(e) {
   ) {
     // Dictionary edits can merge or split pinyin aliases, which changes
     // which roster cells count as the same person.
-    refreshScheduleConflictHighlightsSafely_();
+    refreshScheduleRosterChecksSafely_();
     return;
   }
   if (
@@ -120,7 +120,7 @@ function onEdit(e) {
       Logger.log('Name Dictionary lookup skipped: ' + error);
     }
   }
-  refreshScheduleConflictHighlightsSafely_(sheet, lookup);
+  refreshScheduleRosterChecksSafely_(sheet, lookup);
 
   // The installable trigger shows the interactive dialog instead; showing
   // this alert as well would stack two warnings for one edit.
@@ -179,7 +179,7 @@ function runBulletinScheduleMaintenance_() {
     }
     var hidden = hideOldBulletinScheduleRows_(sheet);
     // Runs after quarter rows are appended so the scan covers every row.
-    var conflicts = refreshScheduleConflictHighlightsSafely_(sheet);
+    var conflicts = refreshScheduleRosterChecksSafely_(sheet);
     SpreadsheetApp.flush();
     return {
       populated: populated,

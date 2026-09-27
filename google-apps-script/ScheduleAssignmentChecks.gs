@@ -3,23 +3,23 @@
  *
  * 1. Conflict highlighting: when the same person is assigned to more than one
  *    role on the same Sabbath (row), every cell holding that person is painted
- *    pale red. Queens and Brooklyn columns are compared together because one
+ *    pale red, with a hover note naming their other roles. Queens and Brooklyn columns are compared together because one
  *    person cannot serve both locations at once. The scan always covers every
  *    data row, including rows hidden by schedule maintenance and rows appended
  *    for the next quarter, so highlights never drift from the sheet's contents.
  *
  * 2. Unknown-name warning: when an edited person cell contains a name that is
- *    not in the Name Dictionary, the editor is told so, with close spellings
- *    from the dictionary as suggestions. With the installable trigger, the
- *    warning is a dialog that can apply a suggestion or add the name (and its
- *    Chinese name) to the dictionary.
- *    The trigger installs itself the first time a bulletin admin uses the
- *    Printed Bulletin menu. Until then, the simple onEdit trigger falls back
- *    to a plain alert, because Google does not let simple triggers open HTML
- *    dialogs.
+ *    not in the Name Dictionary, the editor gets a popup with close spellings
+ *    from the dictionary as suggestions. The value is kept. Once the
+ *    installable trigger exists, the popup is a dialog that can apply a
+ *    suggestion or add the name (and its Chinese name) to the dictionary; the
+ *    trigger installs itself the first time a bulletin admin uses the Printed
+ *    Bulletin menu. Until then it is a plain alert, because Google does not
+ *    let simple triggers open HTML dialogs.
  *
  * Row 1 (headers) and columns A:E (date, quarter, and service metadata) are
- * never read or painted. Only cells the script painted are ever repainted.
+ * never read or painted. Only fills and notes the script wrote are ever
+ * changed.
  */
 
 var SCHEDULE_ASSIGNMENT_CHECK_CONFIG = Object.freeze({
@@ -27,6 +27,7 @@ var SCHEDULE_ASSIGNMENT_CHECK_CONFIG = Object.freeze({
   firstPersonHeader: 'Queens Sermon',
   // Google Sheets palette "light red 2".
   conflictColor: '#ea9999',
+  notePrefix: 'Roster check / 名單檢查',
   maxSuggestions: 3,
   nameCheckTriggerHandler: 'onScheduleNameCheckEdit',
   nameCheckTriggerProperty: 'SCHEDULE_NAME_CHECK_TRIGGER',
@@ -120,9 +121,9 @@ function getScheduleNameIdentity_(name, lookup) {
 }
 
 /**
- * Flags each person cell in one roster row whose person also appears in a
- * different cell of the same row. A repeated name inside a single cell is not
- * a conflict.
+ * For each person cell in one roster row, lists the other cells (as indexes
+ * into the row) that hold one of the same people. An empty list means no
+ * conflict. A repeated name inside a single cell is not a conflict.
  */
 function findScheduleRowConflicts_(row, lookup) {
   var identitiesByCell = row.map(function (value) {
@@ -133,70 +134,126 @@ function findScheduleRowConflicts_(row, lookup) {
     return Object.keys(identities);
   });
 
-  var cellCounts = {};
-  identitiesByCell.forEach(function (identities) {
+  var cellsByIdentity = {};
+  identitiesByCell.forEach(function (identities, columnIndex) {
     identities.forEach(function (identity) {
-      cellCounts[identity] = (cellCounts[identity] || 0) + 1;
+      (cellsByIdentity[identity] = cellsByIdentity[identity] || []).push(columnIndex);
     });
   });
 
-  return identitiesByCell.map(function (identities) {
-    return identities.some(function (identity) {
-      return cellCounts[identity] > 1;
+  return identitiesByCell.map(function (identities, columnIndex) {
+    var others = [];
+    identities.forEach(function (identity) {
+      cellsByIdentity[identity].forEach(function (otherIndex) {
+        if (otherIndex !== columnIndex && others.indexOf(otherIndex) === -1) {
+          others.push(otherIndex);
+        }
+      });
+    });
+    return others.sort(function (x, y) {
+      return x - y;
     });
   });
 }
 
 /**
- * Repaints conflict highlights across every data row of the Sabbath Calendar.
- * Cells painted by an earlier run are cleared once their conflict is resolved,
- * which also clears highlights copied into newly appended quarter rows.
+ * Names a person column for a planner. The repeated Chair/Pastoral Prayer
+ * and Offering Prayer headers get their location so the note is unambiguous.
  */
-function refreshScheduleConflictHighlights_(sheet, lookup) {
+function getSchedulePersonColumnLabel_(columnNumber) {
+  var headers =
+    BULLETIN_HEADER_CONTRACTS[BULLETIN_SCHEDULE_MAINTENANCE_CONFIG.scheduleSheetName];
+  var header = headers[columnNumber - 1];
+  if (headers.indexOf(header) === headers.lastIndexOf(header)) {
+    return header;
+  }
+  var brooklynStart = headers.indexOf('Brooklyn Sermon') + 1;
+  return (columnNumber >= brooklynStart ? 'Brooklyn ' : 'Queens ') + header;
+}
+
+function buildScheduleConflictNote_(otherColumnNumbers) {
+  if (!otherColumnNumbers.length) {
+    return '';
+  }
+  var roles = otherColumnNumbers.map(getSchedulePersonColumnLabel_).join(', ');
+  return (
+    SCHEDULE_ASSIGNMENT_CHECK_CONFIG.notePrefix +
+    '\n• Also scheduled this Sabbath as: ' + roles + '. / 本安息日亦安排於：' + roles + '。'
+  );
+}
+
+/**
+ * Repaints conflict highlights across every data row of the Sabbath Calendar:
+ * a person in more than one cell of a row turns those cells pale red, with a
+ * hover note listing the person's other roles that Sabbath. Only fills and
+ * notes this script wrote are ever changed or cleared, which also clears
+ * fills copied into newly appended quarter rows. A cell with a planner's own
+ * note keeps that note and is only colored.
+ */
+function refreshScheduleRosterChecks_(sheet, lookup) {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) {
     return 0;
   }
 
+  var config = SCHEDULE_ASSIGNMENT_CHECK_CONFIG;
   var bounds = getSchedulePersonColumnBounds_();
   var range = sheet.getRange(2, bounds.first, lastRow - 1, bounds.count);
   var values = range.getDisplayValues();
   var backgrounds = range.getBackgrounds();
-  var conflictColor = SCHEDULE_ASSIGNMENT_CHECK_CONFIG.conflictColor;
+  var notes = range.getNotes();
   var conflictCells = 0;
-  var changed = false;
+  var backgroundsChanged = false;
+  var notesChanged = false;
 
   values.forEach(function (row, rowIndex) {
-    findScheduleRowConflicts_(row, lookup).forEach(function (isConflict, columnIndex) {
+    findScheduleRowConflicts_(row, lookup).forEach(function (others, columnIndex) {
       var current = String(backgrounds[rowIndex][columnIndex] || '').toLowerCase();
-      if (isConflict) {
+      if (others.length) {
         conflictCells += 1;
-        if (current !== conflictColor) {
-          backgrounds[rowIndex][columnIndex] = conflictColor;
-          changed = true;
+        if (current !== config.conflictColor) {
+          backgrounds[rowIndex][columnIndex] = config.conflictColor;
+          backgroundsChanged = true;
         }
-      } else if (current === conflictColor) {
+      } else if (current === config.conflictColor) {
         backgrounds[rowIndex][columnIndex] = null;
-        changed = true;
+        backgroundsChanged = true;
+      }
+
+      var currentNote = String(notes[rowIndex][columnIndex] || '');
+      if (currentNote && currentNote.indexOf(config.notePrefix) !== 0) {
+        return;
+      }
+      var wantedNote = buildScheduleConflictNote_(
+        others.map(function (otherIndex) {
+          return bounds.first + otherIndex;
+        }),
+      );
+      if (wantedNote !== currentNote) {
+        notes[rowIndex][columnIndex] = wantedNote;
+        notesChanged = true;
       }
     });
   });
 
-  if (changed) {
+  if (backgroundsChanged) {
     range.setBackgrounds(backgrounds);
+  }
+  if (notesChanged) {
+    range.setNotes(notes);
   }
   return conflictCells;
 }
 
-function refreshScheduleConflictHighlightsSafely_(sheet, lookup) {
+function refreshScheduleRosterChecksSafely_(sheet, lookup) {
   try {
-    return refreshScheduleConflictHighlights_(
+    return refreshScheduleRosterChecks_(
       sheet || getBulletinScheduleMaintenanceSheet_(),
       typeof lookup === 'undefined' ? loadScheduleNameLookup_() : lookup,
     );
   } catch (error) {
     if (typeof Logger !== 'undefined') {
-      Logger.log('Schedule conflict highlighting skipped: ' + error);
+      Logger.log('Schedule roster checks skipped: ' + error);
     }
     return 0;
   }
@@ -528,7 +585,7 @@ function addScheduleNameToDictionary(request) {
     return { added: false };
   }
   sheet.appendRow([english, chinese]);
-  refreshScheduleConflictHighlightsSafely_();
+  refreshScheduleRosterChecksSafely_();
   return { added: true };
 }
 
@@ -561,7 +618,7 @@ function replaceScheduleNameFromDialog(request) {
     throw new Error('The cell has changed since this check. / 此儲存格內容已變更。');
   }
   cell.setValue(updated);
-  refreshScheduleConflictHighlightsSafely_(sheet);
+  refreshScheduleRosterChecksSafely_(sheet);
   return { replaced: true };
 }
 
