@@ -23,6 +23,9 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   ALERT_TITLE: "[monitor] Store toolchain requirements need attention"
+  # Applied only when the app misses a store requirement, not when a page just
+  # can't be read, so the label keeps meaning "uploads will be rejected".
+  CRITICAL_LABEL: "critical / launch blocking"
 
 jobs:
   check-store-toolchain:
@@ -54,8 +57,11 @@ jobs:
             const title = process.env.ALERT_TITLE;
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             let report = '- The monitor exited before producing a readable report.';
+            let critical = false;
             try {
-              report = JSON.parse(fs.readFileSync('store-toolchain-report.json', 'utf8')).markdown;
+              const result = JSON.parse(fs.readFileSync('store-toolchain-report.json', 'utf8'));
+              report = result.markdown;
+              critical = result.checks.some((check) => check.kind === 'requirement');
             } catch (error) {
               core.warning(`Could not read the toolchain report: ${error.message}`);
             }
@@ -76,6 +82,7 @@ jobs:
               state: 'open',
               per_page: 100,
             });
+            const labels = critical ? [process.env.CRITICAL_LABEL] : [];
             const existing = issues.find((issue) => issue.title === title);
             if (existing) {
               await github.rest.issues.createComment({
@@ -84,12 +91,23 @@ jobs:
                 issue_number: existing.number,
                 body,
               });
+              // An alert that started as an unreadable page can turn into a
+              // real shortfall; never remove a label a person added.
+              if (labels.length) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  labels,
+                });
+              }
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title,
                 body,
+                labels,
               });
             }
 

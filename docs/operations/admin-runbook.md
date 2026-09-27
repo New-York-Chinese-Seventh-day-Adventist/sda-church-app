@@ -241,6 +241,11 @@ attention** in three cases:
   check the page by hand and update the patterns in
   `scripts/check-store-toolchain.cjs`.
 
+When the app is below a requirement or one starts within 120 days, the issue is
+labeled **critical / launch blocking**. An unreadable page alone does not add the
+label, because it usually means the page wording changed, not that uploads will be
+rejected.
+
 The issue closes itself on the next passing run. The job summary also notes when
 Apple recommends a newer Xcode than the build uses; that note alone does not open an
 issue. What to update and test is under

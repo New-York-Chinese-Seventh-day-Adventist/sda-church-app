@@ -74,6 +74,7 @@ describe('store toolchain evaluation', () => {
     const { checks } = evaluate({ app: { ...app, androidTargetApi: 35 } });
 
     expect(checks[0].status).toBe('failed');
+    expect(checks[0].kind).toBe('requirement');
     expect(checks[0].detail).toContain('target API level 36');
   });
 
@@ -86,6 +87,7 @@ describe('store toolchain evaluation', () => {
     });
 
     expect(checks[1].status).toBe('failed');
+    expect(checks[1].kind).toBe('requirement');
     expect(checks[1].detail).toContain('A new requirement starts 2026-12-01');
   });
 
@@ -104,6 +106,7 @@ describe('store toolchain evaluation', () => {
     const { checks } = evaluate({ androidRequirements: [] });
 
     expect(checks[0].status).toBe('failed');
+    expect(checks[0].kind).toBe('unreadable');
     expect(checks[0].detail).toContain('check it by hand');
   });
 });

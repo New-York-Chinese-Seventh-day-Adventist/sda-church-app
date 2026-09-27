@@ -109,13 +109,16 @@ const formatDate = (date) => date.toISOString().slice(0, 10);
 
 /**
  * Splits parsed requirements into the one in force today and the next one
- * starting within LEAD_DAYS, and checks the app against both.
+ * starting within LEAD_DAYS, and checks the app against both. A failed check
+ * has kind 'requirement' when the app falls short, which the workflow labels
+ * critical, or 'unreadable' when the page could not be parsed.
  */
 const evaluateRequirement = ({ requirements, today, meets, describe, name, source }) => {
   if (!requirements.length) {
     return {
       name,
       status: 'failed',
+      kind: 'unreadable',
       detail: `Could not read the requirement from ${source}. The page wording may have changed; check it by hand and update scripts/check-store-toolchain.cjs.`,
     };
   }
@@ -131,6 +134,7 @@ const evaluateRequirement = ({ requirements, today, meets, describe, name, sourc
     return {
       name,
       status: 'failed',
+      kind: 'requirement',
       detail: `Below the requirement in force since ${formatDate(inForce.effective)}: ${describe(inForce)}. Store uploads will be rejected.`,
     };
   }
@@ -138,6 +142,7 @@ const evaluateRequirement = ({ requirements, today, meets, describe, name, sourc
     return {
       name,
       status: 'failed',
+      kind: 'requirement',
       detail: `A new requirement starts ${formatDate(upcoming.effective)}: ${describe(upcoming)}. Update before then.`,
     };
   }
