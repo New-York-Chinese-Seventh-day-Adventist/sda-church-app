@@ -777,20 +777,43 @@ describe('printed bulletin Apps Script helpers', () => {
     ]);
   });
 
-  it('reuses the empty leading paragraph in both Queens footer cells', () => {
-    const calls: Array<[string, unknown]> = [];
+  it('puts each Queens QR code in its own footer column and reuses leading paragraphs', () => {
+    const calls: Array<[string, unknown, unknown]> = [];
+    const footerOptions: unknown[] = [];
     const context = loadAppsScript({});
     Object.assign(context, {
-      appendGivingText_: (_cell: unknown, options: unknown) => calls.push(['text', options]),
-      appendGivingQrPlaceholders_: (_cell: unknown, options: unknown) =>
-        calls.push(['qr', options]),
+      appendBookletPage_: (
+        _body: unknown,
+        _left: unknown,
+        _right: unknown,
+        _isFirstPage: boolean,
+        footerRenderer?: (left: unknown, right: unknown, qrCells: unknown) => void,
+        options?: unknown,
+      ) => {
+        if (!footerRenderer) return;
+        footerOptions.push(options);
+        footerRenderer('left cell', null, ['qr 1', 'qr 2', 'qr 3']);
+      },
+      appendGivingText_: (cell: unknown, options: unknown) => calls.push(['text', cell, options]),
+      appendGivingQrPlaceholderCells_: (cells: unknown, options: unknown) =>
+        calls.push(['qr', cells, options]),
     });
 
-    runInContext(`appendGivingFooter_({}, {}, 'queens')`, context);
+    runInContext(
+      `renderQueensRegularPrintedBulletinDocument_({}, {}, {}, 'regular')`,
+      context,
+    );
 
+    // A table nested in the right footer cell keeps a blank line above it,
+    // which pushed the QR captions onto a new page.
+    expect(footerOptions).toEqual([{ ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 }]);
     expect(calls).toEqual([
-      ['text', { reuseLeadingParagraph: true }],
-      ['qr', { compact: true, location: 'queens', reuseLeadingParagraph: true }],
+      ['text', 'left cell', { reuseLeadingParagraph: true }],
+      [
+        'qr',
+        ['qr 1', 'qr 2', 'qr 3'],
+        { compact: true, location: 'queens', reuseLeadingParagraph: true },
+      ],
     ]);
   });
 

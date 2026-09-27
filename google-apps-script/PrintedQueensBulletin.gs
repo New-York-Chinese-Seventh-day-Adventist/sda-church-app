@@ -1312,10 +1312,13 @@ function renderQueensRegularPrintedBulletinDocument_(body, bulletin, nextBulleti
       appendWorshipPanel_(cell, bulletin, true);
     },
     true,
-    function (leftCell, rightCell) {
-      appendGivingFooter_(leftCell, rightCell, 'queens');
+    function (leftCell, rightCell, qrCells) {
+      appendGivingFooter_(leftCell, qrCells, 'queens');
     },
-    { ruleSpacingBefore: 4 },
+    // Put each QR code in its own footer column, as Brooklyn does. A table
+    // nested in a cell keeps a blank line above it, which pushed the QR
+    // captions onto a new page.
+    { ruleSpacingBefore: 4, qrColumns: true, qrCount: 3 },
   );
   appendBookletPage_(
     body,
@@ -2696,12 +2699,12 @@ function getFirstPrintedAnnouncementSentenceLength_(text) {
   return match ? match[0].length : value.length;
 }
 
-function appendGivingFooter_(leftCell, rightCell, location) {
+function appendGivingFooter_(leftCell, qrCells, location) {
   // clear() leaves an empty default-size paragraph in each footer cell. Reuse
   // it, as the Brooklyn footer does, so it doesn't open a gap under the
   // divider and push the QR captions onto a new page.
   appendGivingText_(leftCell, { reuseLeadingParagraph: true });
-  appendGivingQrPlaceholders_(rightCell, {
+  appendGivingQrPlaceholderCells_(qrCells, {
     compact: true,
     location: location || 'queens',
     reuseLeadingParagraph: true,
