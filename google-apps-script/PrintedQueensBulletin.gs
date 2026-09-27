@@ -3107,6 +3107,11 @@ function appendWorshipPanel_(cell, bulletin, includeClosingRows) {
   appendProgramTable_(cell, worshipRowsAfterSermon);
   if (includeClosingRows) {
     appendSilentPrayerHeading_(cell, 'Silent Prayer', '請默禱之後散會');
+    // When this column is taller than the study column, the giving footer's
+    // divider sits right under the prayer. These spacers only add height in
+    // that case; a taller study column already leaves room.
+    appendSpacer_(cell);
+    appendSpacer_(cell);
   }
 }
 

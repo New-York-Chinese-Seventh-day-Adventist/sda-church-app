@@ -777,6 +777,38 @@ describe('printed bulletin Apps Script helpers', () => {
     ]);
   });
 
+  it('leaves room under the Queens silent prayer for the giving footer divider', () => {
+    const renderWorshipEnding = (includeClosingRows: boolean) => {
+      const calls: string[] = [];
+      const context = loadAppsScript({});
+      const record = (name: string) => () => {
+        calls.push(name);
+      };
+      Object.assign(context, {
+        appendPanelHeading_: record('heading'),
+        appendCenteredText_: record('text'),
+        appendProgramTable_: record('table'),
+        appendSermonRow_: record('sermon'),
+        appendSilentPrayerHeading_: record('silent prayer'),
+        appendSpacer_: record('spacer'),
+        printValue_: () => '',
+        formatHymnForPrint_: () => '',
+        formatBibleReferenceForPrint_: () => '',
+        formatPhysicalOfferingValue_: () => '',
+        formatSermonTitleForPrint_: () => '',
+      });
+      runInContext(
+        `appendWorshipPanel_({}, { queens: {} }, ${includeClosingRows})`,
+        context,
+      );
+      return calls.slice(calls.lastIndexOf('table'));
+    };
+
+    expect(renderWorshipEnding(true)).toEqual(['table', 'silent prayer', 'spacer', 'spacer']);
+    // The Communion worship panel has no closing rows and keeps its layout.
+    expect(renderWorshipEnding(false)).toEqual(['table']);
+  });
+
   it('puts each Queens QR code in its own footer column and reuses leading paragraphs', () => {
     const calls: Array<[string, unknown, unknown]> = [];
     const footerOptions: unknown[] = [];
