@@ -123,7 +123,10 @@ terms.
 
 `theaudiopower.com`, the second source for CUV audio. A single nginx server with no
 CDN (*measured*), run by a small ministry that gave the church permission to use and
-self-host its recordings. It publishes no limits and nothing is cached in front of it.
+self-host its Chinese recordings (see
+[Audio Power permission scope](../LEGAL.md#audio-power-permission-scope); its Spanish
+and English recordings are not covered). It publishes no limits and nothing is cached
+in front of it.
 
 **Load concern:** the app only reaches it when the Adventist Connect copy fails, but
 then *all* listeners move to it at once. At congregation scale that is modest; at

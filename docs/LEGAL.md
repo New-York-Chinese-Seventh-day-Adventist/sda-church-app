@@ -40,6 +40,27 @@ playback fallbacks; the repository does not bundle the recordings. Audio Power's
 Phil, explicitly approved the church app's use, download, and self-hosting of these recordings in
 [issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5274730608).
 
+### Audio Power permission scope
+
+The permission covers **only Audio Power's own Chinese Union Version narration**. That
+is all the app uses from Audio Power: its audio sources are limited to the `cmn_cuv`
+and `cmn_cu1` translations in `services/BibleAudioSources.ts`. The quoted permission
+and its limits are recorded as text in
+[issue #134](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/134#issuecomment-5851783677).
+
+Audio Power's site also carries **Spanish and English recordings that belong to
+others**, so they are not Audio Power's to license and are **not covered**:
+
+| Recording | Rights holder | Status |
+| --- | --- | --- |
+| KJV (Hosanna) | Faith Comes By Hearing | Believed free for non-commercial use; unconfirmed. Faith Comes By Hearing has been contacted. |
+| KJV (D. Wagner) | Unconfirmed | Audio Power once bought a commercial license; current status unconfirmed. |
+| Spanish Reina-Valera 1909 | Unconfirmed | Reported as publicly available; unconfirmed. The recording's status is separate from the 1909 text. |
+
+Before the app uses or hosts any of these, get written confirmation from the
+recording's rights holder and record it in #134 and in this section. Audio Power can
+be reached at info@theaudiopower.com, the contact address on its website.
+
 ### “Free to access” does not mean “public domain”
 
 fetch(bible) provides an open CDN with no API key, usage fee, request quota, or
