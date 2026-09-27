@@ -144,10 +144,45 @@ describe('Sabbath Calendar conflict highlighting', () => {
       scheduleRow('2026-10-03', { [TRANSLATION]: 'Mary Lin / David Wong' }),
     ]);
 
-    edit(2, PIANIST, 'David Wong');
+    edit(2, QUEENS_SERMON, 'David Wong');
 
     expect(schedule.backgrounds[1][TRANSLATION - 1]).toBe(CONFLICT);
-    expect(schedule.backgrounds[1][PIANIST - 1]).toBe(CONFLICT);
+    expect(schedule.backgrounds[1][QUEENS_SERMON - 1]).toBe(CONFLICT);
+  });
+
+  it('has one role for every person column', () => {
+    const { context } = setup([]);
+
+    expect(runInContext('SCHEDULE_PERSON_COLUMN_ROLES.length', context)).toBe(
+      HEADERS.indexOf('Sabbath School') - HEADERS.indexOf('Queens Sermon') + 1,
+    );
+  });
+
+  it.each([
+    ['Queens and Brooklyn', 'Flower Offering', 'Technician', true],
+    ['two parallel classes', 'Chinese Teacher', 'Kids Teacher', true],
+    ['a teacher also serving in worship', 'English Teacher', 'Special Music', true],
+    ['a Brooklyn teacher also serving in worship', 'Sabbath School', 'Encouragement', true],
+    ['preaching and translating', 'Queens Sermon', 'Translation', true],
+    ['piano during special music', 'Pianist', 'Special Music', true],
+    ['piano during the Sabbath School program', 'Pianist', 'SS Chair', true],
+    ['Brooklyn technician during worship', 'Technician', 'Brooklyn Sermon', true],
+    ['Youth and Kids classes', 'Youth Teacher', 'Kids Teacher', false],
+    ['a teacher leading the Sabbath School program', 'Chinese Teacher', 'SS Chair', false],
+    ['worship parts that follow one another', 'Offering Prayer', 'Special Music', false],
+    ['the pianist praying before Sabbath School', 'Pianist', 'SS Opening Prayer', false],
+  ])('flags %s: %s + %s → %s', (_label, first, second, expected) => {
+    const firstColumn = HEADERS.indexOf(first) + 1;
+    const secondColumn = HEADERS.indexOf(second) + 1;
+    const { schedule, edit } = setup([
+      scheduleRow('2026-10-03', { [firstColumn]: 'Mary Lin' }),
+    ]);
+
+    edit(2, secondColumn, 'Mary Lin');
+
+    const expectedColor = expected ? CONFLICT : '#ffffff';
+    expect(schedule.backgrounds[1][firstColumn - 1]).toBe(expectedColor);
+    expect(schedule.backgrounds[1][secondColumn - 1]).toBe(expectedColor);
   });
 
   it('ignores placeholders, the header row, metadata columns, and other Sabbaths', () => {
