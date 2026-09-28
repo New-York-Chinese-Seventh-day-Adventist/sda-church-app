@@ -25,10 +25,6 @@ on:
       - '.github/workflows/android-audio-e2e.yml'
       - 'package.json'
       - 'package-lock.json'
-  push:
-    # TEMPORARY: lets the fork run this before it opens a pull request.
-    branches:
-      - 'test/282-audio-failover-tests'
 
 permissions:
   contents: read
