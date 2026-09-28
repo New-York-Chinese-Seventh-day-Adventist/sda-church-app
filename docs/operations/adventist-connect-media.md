@@ -93,18 +93,24 @@ church-website platform.
     source, the app tries them all again from the first, with 30 and then 45
     seconds each, after pauses of 5 and 20 seconds. Slow connections, such as a
     subway dead zone, still get a fair chance, and an offline phone doesn't loop
-    through the hosts as fast as they fail. If every source fails on every pass,
-    for example with no connection at all, playback stops after about a minute.
-    Pressing Play again starts over, from where the chapter stopped.
+    through the hosts as fast as they fail.
+  - **The app never gives up while the listener is listening**, since a dead
+    zone between stations can last minutes. After the third pass it tries every
+    source again once a minute, and at once when the phone's connection comes
+    back or the app is reopened. On the third pass and after, a source that is
+    slow but hasn't failed keeps loading rather than being restarted. Pausing
+    stops the retries.
   - **Once audio has started**, the app never switches that chapter to another
     source because it is slow. If the connection drops mid-chapter and the player
     gives up, the app reloads the same source where it stopped. If that reload
     fails too, the other sources are tried from the same place, with the same
     retry passes as a first load.
   - **On Android with the screen off**, JavaScript timers pause, so the 15-second
-    timeout and the pauses between passes wait until the phone is unlocked. Errors
-    are still handled right away, so a host that fails outright is skipped even
-    with the screen off.
+    timeout and the pauses between passes wait until the phone is unlocked or the
+    connection comes back, whichever is first. Errors are still handled right
+    away, so a host that fails outright is skipped even with the screen off.
+  - **On iOS**, the system may suspend the app in the background while nothing
+    is playing. Retries then continue when the app is opened again.
   - On the web, the player switches a queued chapter's source as soon as the
     browser reports a load error. A chapter you start playing uses the timeouts
     above.

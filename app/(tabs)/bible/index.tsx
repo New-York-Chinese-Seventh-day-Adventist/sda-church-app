@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setIsAudioActiveAsync } from 'expo-audio';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { addNetworkStateListener } from 'expo-network';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -44,6 +45,7 @@ import {
   getBibleAudioSourceLoadTimeoutMs,
   getNextBibleAudioSourceAttempt,
   hasBibleAudioSourceStarted,
+  isLastTimedBibleAudioPass,
   type BibleAudioSourceAttempt,
   type NextBibleAudioSourceAttempt,
 } from '@/services/BibleAudioFailover';
@@ -975,8 +977,10 @@ export default function BibleScreen() {
   const audioSourceLoadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // The recording, mirror, pass, and resume position of the current attempt.
   const audioSourceAttemptRef = useRef<AudioSourceAttempt | null>(null);
-  // A switch to the next mirror waiting out its pass's start delay.
+  // A switch to the next mirror waiting out its pass's start delay, and the
+  // switch itself, so it can run early when the connection comes back.
   const audioSourceFailoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingAudioFailoverRef = useRef<(() => void) | null>(null);
   // The source that has loaded or played. An error after that reloads it where
   // it stopped instead of switching mirrors.
   const startedAudioUrlRef = useRef<string | null>(null);
@@ -1419,6 +1423,7 @@ export default function BibleScreen() {
       clearTimeout(audioSourceFailoverTimeoutRef.current);
       audioSourceFailoverTimeoutRef.current = null;
     }
+    pendingAudioFailoverRef.current = null;
   };
 
   const stopAfterEveryAudioSourceFailed = () => {
@@ -1489,8 +1494,12 @@ export default function BibleScreen() {
       return;
     }
     if (audioSourceFailoverTimeoutRef.current) return;
-    audioSourceFailoverTimeoutRef.current = setTimeout(() => {
-      audioSourceFailoverTimeoutRef.current = null;
+    const runFailover = () => {
+      if (audioSourceFailoverTimeoutRef.current) {
+        clearTimeout(audioSourceFailoverTimeoutRef.current);
+        audioSourceFailoverTimeoutRef.current = null;
+      }
+      pendingAudioFailoverRef.current = null;
       if (!isCurrentAudioSourceAttempt(attempt, target)) return;
       const waitingUrl = loadedAudioUrlRef.current;
       if (
@@ -1499,12 +1508,32 @@ export default function BibleScreen() {
         hasAudioSourceStarted(waitingUrl)
       ) return;
       void loadAudioSource(target, next.sourceIndex, resumePositionMillis, next.pass);
-    }, next.delayMs);
+    };
+    pendingAudioFailoverRef.current = runFailover;
+    audioSourceFailoverTimeoutRef.current = setTimeout(runFailover, next.delayMs);
   };
 
+  // Android pauses JavaScript timers while the screen is off, so a switch
+  // waiting between passes would otherwise wait for the phone to be unlocked.
+  // Run it as soon as the connection comes back, or the app is opened again.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const runPendingFailover = () => pendingAudioFailoverRef.current?.();
+    const network = addNetworkStateListener(({ isConnected, isInternetReachable }) => {
+      if (isConnected && isInternetReachable !== false) runPendingFailover();
+    });
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') runPendingFailover();
+    });
+    return () => {
+      network.remove();
+      appState.remove();
+    };
+  }, []);
+
   // Moves past a source that failed before it played: to the next mirror, or
-  // after the last one, back to the first on the next pass. Stops once every
-  // pass has failed, so the listener can press Play again.
+  // after the last one, back to the first on the next pass. It keeps going
+  // for as long as the listener is listening; pausing stops it.
   const moveToNextAudioSource = (
     attempt: number,
     target: AudioSourceTarget,
@@ -1598,7 +1627,7 @@ export default function BibleScreen() {
         if (hasAudioSourceStarted(audioUrl)) return;
 
         const next = getNextBibleAudioSourceAttempt({ sourceIndex, pass }, target.sources.length);
-        if (next) {
+        if (next && !isLastTimedBibleAudioPass(pass)) {
           console.warn('Bible audio initial load timed out; trying the next configured source.');
           failOverAudioSource(attempt, target, next, resumePositionMillis);
         } else {

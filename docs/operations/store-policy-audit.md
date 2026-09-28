@@ -185,7 +185,9 @@ The intended release permissions are audio playback and the Android media foregr
 service needed for background playback. The app does not request camera, microphone,
 location, contacts, photos, or notifications. The Android generated project previously
 contained legacy storage and `SYSTEM_ALERT_WINDOW` entries inherited from dependencies;
-`app.json` now blocks them. After generating the release project, inspect the merged
+`app.json` now blocks them. It also blocks `ACCESS_WIFI_STATE`, which `expo-network`
+declares only for reading Wi-Fi details; the app uses it just to learn when the
+connection comes back, through the network-state permission the app already had. After generating the release project, inspect the merged
 manifest and Play Console permission report to confirm they are gone.
 
 Background audio is tied to the app’s Bible-audio feature and is an appropriate use of

@@ -1,8 +1,10 @@
 import {
+  BIBLE_AUDIO_RETRY_DELAY_MS,
   BIBLE_AUDIO_SOURCE_PASSES,
   getBibleAudioSourceLoadTimeoutMs,
   getNextBibleAudioSourceAttempt,
   hasBibleAudioSourceStarted,
+  isLastTimedBibleAudioPass,
 } from '@/services/BibleAudioFailover';
 
 describe('Bible audio source failover', () => {
@@ -45,14 +47,32 @@ describe('Bible audio source failover', () => {
     });
   });
 
-  it('stops after every mirror has been tried on every pass', () => {
+  it('keeps trying every source once a minute after the last pass', () => {
     const tried: string[] = [];
-    let attempt: { sourceIndex: number; pass: number } | null = { sourceIndex: 0, pass: 0 };
-    while (attempt) {
+    let attempt: { sourceIndex: number; pass: number } = { sourceIndex: 0, pass: 0 };
+    const delays: number[] = [];
+    for (let step = 0; step < 15; step += 1) {
       tried.push(`${attempt.pass}:${attempt.sourceIndex}`);
-      attempt = getNextBibleAudioSourceAttempt(attempt, 3);
+      const next = getNextBibleAudioSourceAttempt(attempt, 3)!;
+      if (next.sourceIndex === 0) delays.push(next.delayMs);
+      attempt = next;
     }
-    expect(tried).toEqual(['0:0', '0:1', '0:2', '1:0', '1:1', '1:2', '2:0', '2:1', '2:2']);
+    expect(tried).toEqual([
+      '0:0', '0:1', '0:2', '1:0', '1:1', '1:2', '2:0', '2:1', '2:2',
+      '3:0', '3:1', '3:2', '4:0', '4:1', '4:2',
+    ]);
+    // Between passes: 5 seconds, 20 seconds, then a minute every time.
+    expect(delays).toEqual([
+      5_000, 20_000, BIBLE_AUDIO_RETRY_DELAY_MS, BIBLE_AUDIO_RETRY_DELAY_MS, BIBLE_AUDIO_RETRY_DELAY_MS,
+    ]);
+    expect(getBibleAudioSourceLoadTimeoutMs(7)).toBe(45_000);
+  });
+
+  it('keeps a slow source loading from the last timed pass on', () => {
+    expect(isLastTimedBibleAudioPass(0)).toBe(false);
+    expect(isLastTimedBibleAudioPass(1)).toBe(false);
+    expect(isLastTimedBibleAudioPass(2)).toBe(true);
+    expect(isLastTimedBibleAudioPass(5)).toBe(true);
   });
 
   it('retries a single source on each pass and handles no sources', () => {
