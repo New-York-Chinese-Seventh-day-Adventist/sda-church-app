@@ -51,51 +51,91 @@ network() { # on|off
 
 # Opens a CUV chapter in a freshly started app, so each scenario starts clean.
 # A deep link with the same parameters as the last one is ignored, and a cold
-# start avoids that. A fresh install first shows the Welcome dialog over the
-# screen; its default choices are fine, and it doesn't come back.
+# start avoids that.
 open_chapter() { # book chapter
   sh_ am force-stop "$PKG" >/dev/null
   adb_ logcat -c
   sh_ am start -W -a android.intent.action.VIEW \
     -d "'sdachurchapp://bible?bookId=$1&chapter=$2&translationId=cmn_cuv'" "$PKG" >/dev/null
+}
+
+# A fresh install shows the Welcome dialog over the first screen, and then
+# opens the Bible in its default translation rather than a deep link's. Get
+# past it once, before any scenario; its default choices are fine.
+# (open_chapter is defined above.)
+prepare_app() {
+  # Animations keep the screen from going idle, which uiautomator needs.
+  local scale
+  for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+    sh_ settings put global "$scale" 0 >/dev/null
+  done
+  wake
+  # Open a Bible chapter, not Home: Home's Sabbath countdown ticks every
+  # second, so its screen never goes idle.
+  open_chapter GEN 2
   local point
-  if point=$(ATTR=text TRIES=5 element_center 'Get Started'); then
+  if point=$(ATTR=text TRIES=15 element_center 'Get Started'); then
     # shellcheck disable=SC2086
     sh_ input tap $point >/dev/null
     sleep 2
+    log 'Dismissed the Welcome dialog.'
   fi
+  sh_ am force-stop "$PKG" >/dev/null
 }
 
+# The screen's elements. uiautomator can't dump while anything animates, and
+# then leaves the previous file behind, so the old dump is removed first.
 ui_dump() {
+  sh_ rm -f /sdcard/e2e-ui.xml
   sh_ uiautomator dump /sdcard/e2e-ui.xml >/dev/null 2>&1
-  sh_ cat /sdcard/e2e-ui.xml | sed 's/></>\n</g'
+  sh_ cat /sdcard/e2e-ui.xml 2>/dev/null | sed 's/></>\n</g'
 }
 
 # Prints the center of the first element whose content-desc (or, with
 # ATTR=text, text) matches the extended regex $1, retrying while the screen
 # loads. $2 picks a point along the element's width instead of its center.
-element_center() { # regex [x-fraction]
-  local fraction="${2:-0.5}" attr="${ATTR:-content-desc}" bounds attempt
+element_bounds() { # regex
+  local attr="${ATTR:-content-desc}" bounds attempt
   for attempt in $(seq 1 "${TRIES:-20}"); do
     bounds=$(ui_dump | grep "package=\"$PKG\"" | grep -E "$attr=\"$1\"" | head -1 |
       sed -nE 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/p')
     if [ -n "$bounds" ]; then
-      awk -v f="$fraction" '{ printf "%d %d\n", $1 + ($3 - $1) * f, ($2 + $4) / 2 }' <<< "$bounds"
+      echo "$bounds"
       return 0
     fi
     sleep 1
   done
   return 1
 }
-tap_element() { # desc-regex [x-fraction]
-  local point
-  point=$(element_center "$@") || return 1
-  # shellcheck disable=SC2086
-  sh_ input tap $point >/dev/null
+point_in() { # "x1 y1 x2 y2" [x-fraction]
+  awk -v f="${2:-0.5}" '{ printf "%d %d\n", $1 + ($3 - $1) * f, ($2 + $4) / 2 }' <<< "$1"
 }
+element_center() { # regex [x-fraction]
+  local bounds
+  bounds=$(element_bounds "$1") || return 1
+  point_in "$bounds" "${2:-0.5}"
+}
+
+# While audio plays, the progress bar and time update constantly, so the
+# screen never goes idle and uiautomator can't dump it. The controls don't
+# move, so find them once, when the chapter opens, and reuse them.
 # The play/pause button is "Bible audio"; the seek bar is "Bible audio, 0:00 / 1:23".
-tap_play_pause() { tap_element 'Bible audio'; }
-seek_to_fraction() { tap_element 'Bible audio, [^"]*' "$1"; }
+PLAY_BOUNDS=''
+SEEK_BOUNDS=''
+locate_controls() {
+  PLAY_BOUNDS=$(element_bounds 'Bible audio') || return 1
+  SEEK_BOUNDS=$(TRIES=3 element_bounds 'Bible audio, [^"]*') || SEEK_BOUNDS=''
+}
+tap_play_pause() {
+  [ -n "$PLAY_BOUNDS" ] || return 1
+  # shellcheck disable=SC2046
+  sh_ input tap $(point_in "$PLAY_BOUNDS") >/dev/null
+}
+seek_to_fraction() {
+  [ -n "$SEEK_BOUNDS" ] || return 1
+  # shellcheck disable=SC2046
+  sh_ input tap $(point_in "$SEEK_BOUNDS" "$1") >/dev/null
+}
 
 # This app's media session: its playback state, position in ms, and title.
 session() {
@@ -155,7 +195,8 @@ run() { # name function
 # Archive as soon as the player reports the failure.
 scenario_primary_host_down() {
   open_chapter GEN 1
-  tap_play_pause || { echo 'no play button'; return 1; }
+  locate_controls || { echo 'no play button'; return 1; }
+  tap_play_pause
   wait_until 90 'Genesis 1 playing from the Internet Archive' \
     playing_with_title '(Internet Archive)' || return 1
   app_log_has 'Bible audio source failed to load; trying the next configured source.' ||
@@ -168,7 +209,8 @@ scenario_primary_host_down() {
 # over with the screen off.
 scenario_next_chapter_screen_off() {
   open_chapter PSA 117
-  tap_play_pause || { echo 'no play button'; return 1; }
+  locate_controls || { echo 'no play button'; return 1; }
+  tap_play_pause
   wait_until 60 'Psalm 117 playing' is_playing || return 1
   screen_off
   wait_until 150 'Psalm 118 playing with the screen off' playing_with_title ' 118 ' || return 1
@@ -180,10 +222,10 @@ scenario_next_chapter_screen_off() {
 # comes back, audio starts without an unlock.
 scenario_dead_zone_screen_off() {
   open_chapter JHN 3
-  element_center 'Bible audio' >/dev/null || { echo 'no play button'; return 1; }
+  locate_controls || { echo 'no play button'; return 1; }
   network off
   sleep 2
-  tap_play_pause || { echo 'no play button'; return 1; }
+  tap_play_pause
   sleep 3
   screen_off
   sleep 90
@@ -198,7 +240,8 @@ scenario_dead_zone_screen_off() {
 # and playback resumes there once the connection returns.
 scenario_mid_chapter_offline() {
   open_chapter PSA 78
-  tap_play_pause || { echo 'no play button'; return 1; }
+  locate_controls || { echo 'no play button'; return 1; }
+  tap_play_pause
   wait_until 60 'Psalm 78 playing' is_playing || return 1
   network off
   sleep 1
@@ -216,14 +259,15 @@ scenario_mid_chapter_offline() {
 # Pausing and resuming a playing chapter continues from the same place.
 scenario_pause_and_resume() {
   open_chapter JHN 1
-  tap_play_pause || { echo 'no play button'; return 1; }
+  locate_controls || { echo 'no play button'; return 1; }
+  tap_play_pause
   wait_until 60 'John 1 playing' is_playing || return 1
   sleep 5
-  tap_play_pause || { echo 'no pause button'; return 1; }
+  tap_play_pause
   wait_until 20 'John 1 paused' is_paused || return 1
   local paused_at
   paused_at=$(session_field position)
-  tap_play_pause || { echo 'no play button'; return 1; }
+  tap_play_pause
   wait_until 30 'John 1 playing again' is_playing || return 1
   local resumed_at
   resumed_at=$(session_field position)
@@ -232,6 +276,7 @@ scenario_pause_and_resume() {
 }
 
 sh_ cmd media_session volume --stream 3 --set 0 >/dev/null 2>&1
+prepare_app
 if [ "${E2E_PRIMARY_BLOCKED:-0}" = 1 ]; then
   run primary-host-down scenario_primary_host_down
 fi
