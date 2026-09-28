@@ -5,6 +5,11 @@ import {
   getLibraryItemsForLanguage,
   LIBRARY_CATALOG,
 } from '@/features/library/LibraryCatalog';
+import {
+  isLibraryShelf,
+  LIBRARY_SHELF_TITLES,
+  LIBRARY_SHELVES,
+} from '@/features/library/LibraryShelves';
 
 describe('library catalog', () => {
   it('ties public-domain works to explicit Gutenberg or Internet Archive records', () => {
@@ -56,19 +61,30 @@ describe('library catalog', () => {
     ].map((work) => [work.id, getLibraryItemShelf(work)]);
 
     for (const [, shelf] of shelves) {
-      expect(['egw', 'bates', 'andrews', 'smith', 'classics', 'children']).toContain(shelf);
+      expect(LIBRARY_SHELVES).toContain(shelf);
     }
     expect(Object.fromEntries(shelves)).toMatchObject({
-      'bates-seventh-day-sabbath': 'bates',
-      'andrews-history-sabbath': 'andrews',
-      'smith-state-dead-destiny-wicked': 'smith',
-      'smith-daniel-revelation': 'smith',
+      'bates-seventh-day-sabbath': 'pioneers',
+      'andrews-history-sabbath': 'pioneers',
+      'smith-state-dead-destiny-wicked': 'pioneers',
+      'smith-daniel-revelation': 'pioneers',
       'murray-humility': 'classics',
       'murray-abide-in-christ': 'classics',
       'sibbes-bruised-reed': 'classics',
       'story-of-jesus': 'children',
       'sabbath-encouragement': 'egw',
     });
+  });
+
+  it('shows the general Christian shelf first and names every shelf in every language', () => {
+    // A visitor should meet the wider Christian shelf before Adventist writers.
+    expect(LIBRARY_SHELVES[0]).toBe('classics');
+    expect(LIBRARY_SHELVES.indexOf('egw')).toBeGreaterThan(LIBRARY_SHELVES.indexOf('children'));
+    for (const shelf of LIBRARY_SHELVES) {
+      expect(Object.keys(LIBRARY_SHELF_TITLES[shelf]).sort()).toEqual(['en', 'es', 'zh', 'zh-cn']);
+      expect(isLibraryShelf(shelf)).toBe(true);
+    }
+    expect(isLibraryShelf('topics')).toBe(false);
   });
 
   it('ships a cover for every book, so none shows the blank placeholder', () => {

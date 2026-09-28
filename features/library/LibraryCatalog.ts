@@ -1,4 +1,5 @@
 import type { SupportedLanguage } from '@/constants/LanguageContext';
+import type { LibraryShelf } from './LibraryShelves';
 
 export type LibraryRights = 'public-domain-us' | 'official-external' | 'church-hosted';
 export type LibraryCollection =
@@ -214,21 +215,21 @@ export const LIBRARY_CATALOG = Object.freeze({
   churchDocuments,
 });
 
-// Each Adventist pioneer has a shelf of their own in the library, and the
-// Sabbath Encouragement quotations sit with Ellen G. White's books. Other works
-// are shelved by collection.
-const ITEM_SHELVES: Readonly<Record<string, string>> = {
-  'bates-seventh-day-sabbath': 'bates',
-  'andrews-history-sabbath': 'andrews',
-  'smith-state-dead-destiny-wicked': 'smith',
-  'smith-daniel-revelation': 'smith',
+// The Sabbath Encouragement quotations sit with Ellen G. White's books. Other
+// works are shelved by collection.
+const ITEM_SHELVES: Readonly<Record<string, LibraryShelf>> = {
   'sabbath-encouragement': 'egw',
+};
+const COLLECTION_SHELVES: Readonly<Record<LibraryCollection, LibraryShelf>> = {
+  'adventist-pioneers': 'pioneers',
+  'christian-classics': 'classics',
+  youth: 'youth',
+  children: 'children',
 };
 
 /** The library shelf (the `[collection]` route) that lists this work. */
-export const getLibraryItemShelf = (item: LibraryItem) =>
-  ITEM_SHELVES[item.id] ??
-  (item.collection === 'christian-classics' ? 'classics' : item.collection);
+export const getLibraryItemShelf = (item: LibraryItem): LibraryShelf =>
+  ITEM_SHELVES[item.id] ?? COLLECTION_SHELVES[item.collection];
 
 export const getLibraryItemsForLanguage = (language: SupportedLanguage) => {
   const preferredLanguage = language === 'zh' || language === 'zh-cn' ? 'zh' : 'en';
