@@ -298,7 +298,8 @@ submitted for review before they appear on the App Store.
   confirming and resubmitting. No payment method is on file, so a lapse means the
   app is removed, not that the church is charged.
 - The signing certificates also expire every year. When they are renewed, update
-  the matching GitHub secrets or the iOS build workflow will fail.
+  the matching GitHub secrets or the iOS build workflow will fail. The steps are in
+  [Yearly Apple renewals](operations/app-store-setup.md#yearly-apple-renewals).
 
 ### Google Play
 

@@ -357,7 +357,7 @@ issue. What to update and test is under
 | Credential | Where | When to act |
 | --- | --- | --- |
 | `CLASPRC_JSON` (Google login for Apps Script and Drive uploads) | `production` Environment secret | When clasp authorization fails; see the Workspace session note in [Deployment and verification](bulletin-automation.md#deployment-and-verification). The login has `drive.file` and `drive.metadata.readonly`: it can see every file but can change only files it created. Replacing a hand-made file fails with `403 appNotAuthorizedToFile`; rename the hand-made copy and let the workflow create it. Keep this narrow access rather than granting full `drive` access, because this account can reach every shared drive. |
-| Apple distribution certificate and provisioning profile | `production` Environment secrets | Profiles expire after 12 months. See [iOS setup](native-builds.md#ios-setup-github-hosted-direct-builds). |
+| Apple distribution certificate and provisioning profile | `production` Environment secrets | Both expire every year, and the Apple fee waiver is reconfirmed at each membership renewal. See [Yearly Apple renewals](app-store-setup.md#yearly-apple-renewals). |
 | Android upload keystore | `production` Environment secrets | Only when Google Play requires a rotation. See [Android rotation and recovery policy](native-builds.md#android-rotation-and-recovery-policy). |
 
 Never paste credentials into issues, pull requests, or workflow logs.

@@ -41,6 +41,14 @@ licensing decisions and third-party source review live in [docs/LEGAL.md](docs/L
   - [Offline Bulletin Translation: Bergamot Feasibility](docs/feature_designs/offline_bulletin_translation.md)
 - [Contributing Code](docs/CONTRIBUTING.md)
 
+### Maintenance
+
+- [Upkeep calendar](docs/architecture.md#upkeep-calendar): what to renew or check each
+  year, and what breaks if it's missed
+- [App Store and Google Play setup](docs/operations/app-store-setup.md): store accounts,
+  signing files, and the yearly Apple renewals (membership, fee waiver, certificate)
+- [Credentials that need attention](docs/operations/admin-runbook.md#credentials-that-need-attention)
+
 ## Project status
 
 The app uses one Expo source for native apps and the web/PWA preview. The current Expo 58
