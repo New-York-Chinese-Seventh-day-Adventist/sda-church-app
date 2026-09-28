@@ -12,7 +12,7 @@ Usage (Python 3 with Pillow):
 
 To add a book, add an entry to SPECS (its id matches the catalog entry in
 features/library/LibraryCatalog.ts) and register the PNG in BOOK_COVERS in
-app/(tabs)/explore/library/[collection].tsx.
+features/library/LibraryCovers.ts.
 """
 import math
 import os
@@ -317,7 +317,72 @@ def emblem_hourglass(d, cx, cy):
     d.line([(cx, cy - 20), (cx, bottom - 100)], fill=255, width=4)
 
 
+def emblem_city(d, cx, cy):
+    # The narrow way up the hill to the gate of the Celestial City.
+    base = cy - 60
+    # Glory behind the city.
+    for i in range(15):
+        a = math.radians(180 + i * (180 / 14))
+        inner, outer = 120, 205 if i % 2 == 0 else 165
+        d.line(
+            [(cx + inner * math.cos(a), base - 40 + inner * math.sin(a)),
+             (cx + outer * math.cos(a), base - 40 + outer * math.sin(a))],
+            fill=255, width=6,
+        )
+    # Towers: a tall one over the gate, two lower ones, each with a spire.
+    for x, half, top in ((cx, 34, base - 135), (cx - 82, 26, base - 90), (cx + 82, 26, base - 90)):
+        d.rectangle([x - half, top, x + half, base], fill=255)
+        d.polygon([(x - half - 6, top), (x + half + 6, top), (x, top - 58)], fill=255)
+    d.rectangle([cx - 108, base - 50, cx + 108, base], fill=255)
+    # The gate stands open, and windows light the towers.
+    d.rectangle([cx - 17, base - 40, cx + 17, base], fill=0)
+    d.pieslice([cx - 17, base - 58, cx + 17, base - 24], 180, 360, fill=0)
+    for x, y in ((cx, base - 100), (cx - 82, base - 68), (cx + 82, base - 68)):
+        d.rounded_rectangle([x - 7, y - 12, x + 7, y + 12], radius=6, fill=0)
+    # The hill, and the way winding up it, narrowing toward the gate.
+    curve(d, quad((cx - 200, cy + 200), (cx - 120, base + 10), (cx - 40, base + 4)), 6)
+    curve(d, quad((cx + 40, base + 4), (cx + 120, base + 10), (cx + 200, cy + 200)), 6)
+    left = quad((cx - 90, cy + 205), (cx + 110, cy + 90), (cx - 12, base + 6), n=50)
+    right = quad((cx + 10, cy + 205), (cx + 150, cy + 80), (cx + 12, base + 6), n=50)
+    curve(d, left, 5)
+    curve(d, right, 5)
+
+
+def emblem_shepherd(d, cx, cy):
+    # The Good Shepherd (John 10): a lamb under a shepherd's crook.
+    k = 1.22
+
+    def box(x, y, rx, ry=None):
+        ry = rx if ry is None else ry
+        return [cx + (x - rx) * k, cy + (y - ry) * k, cx + (x + rx) * k, cy + (y + ry) * k]
+
+    # The crook: a shaft whose top curls over the lamb.
+    d.line([(cx + 120 * k, cy + 170 * k), (cx + 120 * k, cy - 150 * k)], fill=255, width=13)
+    d.arc(box(50, -150, 70), 180, 360, fill=255, width=13)
+    d.ellipse(box(-20, -150, 12), fill=255)
+    # The lamb: a fleece of overlapping curls and four legs.
+    for x, y, r in ((-86, 20, 50), (-40, -14, 52), (16, -18, 52), (64, 8, 50),
+                    (70, 50, 44), (16, 60, 50), (-38, 58, 50), (-88, 56, 42)):
+        d.ellipse(box(x, y, r), fill=255)
+    for x in (-74, -32, 28, 66):
+        d.rounded_rectangle(box(x, 132, 10, 38), radius=7, fill=255)
+    # The head, set off from the fleece by a thin line of cloth, with a
+    # drooping ear and an eye.
+    d.ellipse(box(-146, -30, 44, 42), fill=0)
+    d.ellipse(box(-146, -30, 38, 36), fill=255)
+    ear = (cx - 126 * k, cy - 58 * k)
+    leaf(d, ear[0], ear[1], -0.4, 48 * k, 12 * k)
+    d.ellipse(box(-160, -30, 6), fill=0)
+    # Ground and grass.
+    d.line([(cx - 200 * k, cy + 170 * k), (cx + 170 * k, cy + 170 * k)], fill=255, width=5)
+    for x in (-160, -118, 150):
+        leaf(d, cx + x * k, cy + 170 * k, -math.pi / 2 - 0.35, 40 * k, 8)
+        leaf(d, cx + (x + 8) * k, cy + 170 * k, -math.pi / 2 + 0.35, 34 * k, 7)
+
+
 EMBLEMS = {
+    'city': emblem_city,
+    'shepherd': emblem_shepherd,
     'reed': emblem_reed,
     'vine': emblem_vine,
     'wheat': emblem_wheat,
@@ -357,6 +422,10 @@ def make_cover(spec, out_dir):
 
 
 SPECS = [
+    {'id': 'bunyan-pilgrims-progress', 'title': "The Pilgrim's Progress",
+     'author': 'John Bunyan', 'color': (78, 30, 46), 'emblem': 'city'},
+    {'id': 'story-of-jesus', 'title': 'The Story of Jesus',
+     'author': 'Ellen G. White', 'color': (30, 56, 100), 'emblem': 'shepherd'},
     {'id': 'bates-seventh-day-sabbath', 'title': 'The Seventh Day Sabbath, a Perpetual Sign',
      'author': 'Joseph Bates', 'color': (29, 63, 68), 'emblem': 'tablets'},
     {'id': 'andrews-history-sabbath', 'title': 'History of the Sabbath and First Day of the Week',

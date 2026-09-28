@@ -39,3 +39,37 @@ export const FEATURED_LIBRARY_BOOKS = [
   'murray-abide-in-christ',
   'story-of-jesus',
 ] as const;
+
+/**
+ * Books that lead a shelf, in this order; the rest follow in catalog order.
+ * Keys are `LibraryShelfBook` keys.
+ */
+export const LIBRARY_SHELF_LEADERS: Readonly<Partial<Record<LibraryShelf, readonly string[]>>> = {
+  classics: ['sibbes-bruised-reed'],
+  // Sabbath Encouragement always comes first, then her most-read books.
+  egw: [
+    'sabbath-encouragement',
+    'egw:desire-of-ages',
+    'egw:steps-to-christ',
+    'egw:great-controversy',
+    'egw:patriarchs-and-prophets',
+    'egw:ministry-of-healing',
+    'egw:education',
+  ],
+};
+
+/** Puts a shelf's leading books first and keeps the others in their order. */
+export const orderShelfBooks = <T extends { key: string }>(
+  shelf: LibraryShelf,
+  books: readonly T[],
+): T[] => {
+  const leaders = LIBRARY_SHELF_LEADERS[shelf] ?? [];
+  const rank = (key: string) => {
+    const index = leaders.indexOf(key);
+    return index < 0 ? leaders.length : index;
+  };
+  return books
+    .map((book, index) => ({ book, index, rank: rank(book.key) }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(({ book }) => book);
+};

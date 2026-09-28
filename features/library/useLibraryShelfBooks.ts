@@ -16,7 +16,12 @@ import {
   type LibraryItem,
 } from './LibraryCatalog';
 import { BOOK_COVERS, EGW_COVERS } from './LibraryCovers';
-import { EGW_BOOK_IDS_BY_SHELF, LIBRARY_SHELVES, type LibraryShelf } from './LibraryShelves';
+import {
+  EGW_BOOK_IDS_BY_SHELF,
+  LIBRARY_SHELVES,
+  orderShelfBooks,
+  type LibraryShelf,
+} from './LibraryShelves';
 
 const LIBRARY_BOOK_LABELS = {
   en: {
@@ -165,7 +170,7 @@ export function useLibraryShelfBooks(
           onPress: () => openURL(item.sourceUrl, labels.title, labels.openError),
         };
       });
-    return [...egwBooks, ...otherBooks];
+    return orderShelfBooks(shelf, [...egwBooks, ...otherBooks]);
   };
 
   /** Books by key, in the order given, from whichever shelf holds them. */
