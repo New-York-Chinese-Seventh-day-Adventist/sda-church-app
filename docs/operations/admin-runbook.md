@@ -399,7 +399,10 @@ and closes it on the next passing run. To investigate:
 `scripts/e2e/android-bible-audio.sh`. Set `ADB` if `adb` isn't on your path, and
 `ADB_ARGS=-e` if a phone is also connected. `E2E_ONLY` runs chosen scenarios, for
 example `E2E_ONLY=dead-zone-screen-off`. The primary-host scenario runs only with
-`E2E_PRIMARY_BLOCKED=1`, which needs the DNS block the workflow sets up.
+`E2E_PRIMARY_BLOCKED=1`, which needs the DNS block the workflow sets up. The script
+clears the app's first-launch Welcome dialog, and turns off the device's animations
+while it runs (restoring them when it exits), because the screen must be still to be
+read.
 
 ## Credentials that need attention
 

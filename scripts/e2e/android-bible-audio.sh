@@ -63,12 +63,25 @@ open_chapter() { # book chapter
 # opens the Bible in its default translation rather than a deep link's. Get
 # past it once, before any scenario; its default choices are fine.
 # (open_chapter is defined above.)
+ANIMATION_SCALES=(window_animation_scale transition_animation_scale animator_duration_scale)
+SAVED_SCALES=()
+restore_animations() {
+  local i
+  for i in "${!SAVED_SCALES[@]}"; do
+    sh_ settings put global "${ANIMATION_SCALES[$i]}" "${SAVED_SCALES[$i]}" >/dev/null
+  done
+}
 prepare_app() {
   # Animations keep the screen from going idle, which uiautomator needs.
-  local scale
-  for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+  # They're restored when the script exits.
+  local scale value
+  for scale in "${ANIMATION_SCALES[@]}"; do
+    value=$(sh_ settings get global "$scale")
+    [ "$value" = null ] && value=1
+    SAVED_SCALES+=("$value")
     sh_ settings put global "$scale" 0 >/dev/null
   done
+  trap restore_animations EXIT
   wake
   # Open a Bible chapter, not Home: Home's Sabbath countdown ticks every
   # second, so its screen never goes idle.
