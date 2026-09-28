@@ -153,7 +153,9 @@ const createStyles = (textScale: Parameters<typeof scaleTypographyMetric>[1]) =>
       borderBottomRightRadius: 32,
       overflow: 'hidden',
     },
+    // Pages share the tallest page's height; center each one's content.
     page: {
+      justifyContent: 'center',
       overflow: 'hidden',
     },
     scrim: {

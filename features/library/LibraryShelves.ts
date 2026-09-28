@@ -30,7 +30,7 @@ export const EGW_BOOK_IDS_BY_SHELF: Readonly<Partial<Record<LibraryShelf, readon
 
 /**
  * Books featured at the top of the library page, in order. The first is a
- * general Christian classic; Ellen G. White's books alternate with others.
+ * general Christian classic.
  * Keys are `LibraryShelfBook` keys: a catalog id, or `egw:` and a book id.
  */
 export const FEATURED_LIBRARY_BOOKS = [
@@ -38,6 +38,7 @@ export const FEATURED_LIBRARY_BOOKS = [
   'egw:steps-to-christ',
   'murray-abide-in-christ',
   'egw:desire-of-ages',
+  'sabbath-encouragement',
 ] as const;
 
 /**
