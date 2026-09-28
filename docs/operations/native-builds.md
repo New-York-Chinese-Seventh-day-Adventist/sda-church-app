@@ -34,8 +34,10 @@ The direct-native iOS workflow is now checked in separately as
 `.github/workflows/native-ios-build.yml`. It runs only on trusted pushes to `main` and
 manual dispatch from `main`; it has no pull-request signing path. All signing paths require
 the protected `production` Environment. It uses a
-GitHub-hosted macOS runner with Expo prebuild and Xcode, and remains unable to complete
-until the church adds its Apple signing secrets. It does not use EAS or an Expo token.
+GitHub-hosted macOS runner with Expo prebuild and Xcode. The church added its Apple
+signing secrets to the `production` Environment in September 2026; how they were
+created is in [App Store and Google Play setup](app-store-setup.md). It does not use
+EAS or an Expo token.
 The repository no longer depends on an Expo account; keep any external account only if
 the church wants to preserve unrelated project history.
 
@@ -139,8 +141,8 @@ The intended credential boundary for the church-owned project is GitHub Actions:
 | --- | --- | --- |
 | Android upload keystore | Church / Google Play account | Protected `production` Environment secret |
 | Google Play service-account key | Church / Google Play account | Separate protected `production` Environment secret, not currently configured |
-| Apple distribution certificate (`.p12`) | Church Apple Developer account | Protected `production` Environment secret, pending Apple enrollment |
-| Apple App Store provisioning profile | Church Apple Developer account | Protected `production` Environment secret, pending Apple enrollment |
+| Apple distribution certificate (`.p12`) | Church Apple Developer account | Protected `production` Environment secret |
+| Apple App Store provisioning profile | Church Apple Developer account | Protected `production` Environment secret |
 | App Store Connect API key (`.p8`) | Church App Store Connect account | Separate protected `production` Environment secret, not currently configured |
 
 The Android keystore above is the **upload key**, not Google's Play app-signing key.
@@ -520,7 +522,9 @@ pushes to `main` or a manual dispatch from `main`. It has no pull-request or
 Store Connect. It creates an IPA artifact for manual upload or TestFlight processing.
 
 Before running it, configure these secrets in the protected `production`
-Environment in the upstream repository:
+Environment in the upstream repository. Creating the certificate and profile in the
+Apple Developer portal, encoding them on Windows, and renewing them each year are
+covered in [App Store and Google Play setup](app-store-setup.md#apple-app-store):
 
 ```text
 IOS_DISTRIBUTION_CERTIFICATE_BASE64
