@@ -92,7 +92,7 @@ Review rules for both pull-request rulesets:
 | `ensure_pr_to_main_from_release_branch` | `main-release-source-gate.yml` | `main` |
 | `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
 | `Build ARM debug APK` | `android-pr-preview.yml` | `main` |
-| `Build Apple Silicon Simulator app`, `Build Intel Simulator app` | `ios-pr-preview.yml` | `main` |
+| `Build iOS Simulator app (Apple Silicon Mac)`, `Build iOS Simulator app (Intel Mac)` | `ios-pr-preview.yml` | `main` |
 
 A skipped check counts as passed; for example, `sync` usually shows as skipped.
 
@@ -103,7 +103,7 @@ A skipped check counts as passed; for example, `sync` usually shows as skipped.
   workflow must first be in the open `release/*` branch, because that branch is the head
   of the release PR.
 - **A check's name is its job's `name`,** or the job ID when there is no name. A matrix
-  job's name includes the matrix values, such as `Build Intel Simulator app`.
+  job's name includes the matrix values, such as `Build iOS Simulator app (Intel Mac)`.
 - **Renaming or removing a job needs a matching ruleset change** in the same release;
   otherwise merges block on the old name.
 

@@ -75,6 +75,15 @@ describe('iOS PR preview', () => {
     expect(workflow).toMatch(/runner: macos-26-intel\s+arch: x86_64/);
   });
 
+  it('keeps the job names the Main protection ruleset requires', () => {
+    // Required checks: "Build iOS Simulator app (Apple Silicon Mac)" and
+    // "Build iOS Simulator app (Intel Mac)". Renaming the job without
+    // updating the ruleset blocks every release PR.
+    expect(workflow).toContain('name: Build iOS Simulator app (${{ matrix.mac }} Mac)');
+    expect(workflow).toMatch(/- mac: Apple Silicon\n/);
+    expect(workflow).toMatch(/- mac: Intel\n/);
+  });
+
   it('uses the same Xcode as the signed iOS build', () => {
     const xcode = /\/Applications\/Xcode_[\d.]+\.app/;
     expect(workflow.match(xcode)?.[0]).toBe(
