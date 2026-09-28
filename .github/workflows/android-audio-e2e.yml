@@ -80,11 +80,10 @@ jobs:
       - name: Install Android SDK tools and the emulator
         run: |
           set -euo pipefail
+          # The runner's preinstalled command-line tools are too old for the
+          # Android 16 system image, so avdmanager comes from the latest ones.
           sdkmanager "platforms;android-37.0" "build-tools;37.0.0" "ndk;27.1.12297006" \
-            "emulator" "system-images;android-36;google_apis;x86_64"
-
-      - name: Build the debug APK for the emulator
-        run: npm run build:android:apk:debug:intel -- --output "$RUNNER_TEMP/app.apk"
+            "cmdline-tools;latest" "emulator" "system-images;android-36;google_apis;x86_64"
 
       - name: Enable hardware acceleration for the emulator
         run: |
@@ -110,20 +109,32 @@ jobs:
           sudo chmod a+r "$RUNNER_TEMP/dnsmasq.log"
           echo "E2E_DNS_IP=$dns_ip" >> "$GITHUB_ENV"
 
+      # Booted before the build, so a broken emulator fails in minutes rather
+      # than after the build.
       - name: Start the emulator
         run: |
           set -euo pipefail
-          echo no | avdmanager create avd --force -n e2e \
+          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd --force -n e2e \
             -k "system-images;android-36;google_apis;x86_64" -d pixel_6
           nohup "$ANDROID_HOME/emulator/emulator" -avd e2e -no-window -no-snapshot \
             -no-boot-anim -gpu swiftshader_indirect -dns-server "$E2E_DNS_IP" \
             > "$RUNNER_TEMP/emulator.log" 2>&1 &
-          adb wait-for-device
-          timeout 600 bash -c \
-            'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = 1 ]; do sleep 5; done'
+          booted() {
+            timeout 300 adb wait-for-device &&
+            timeout 600 bash -c \
+              'until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r")" = 1 ]; do sleep 5; done'
+          }
+          if ! booted; then
+            echo 'The emulator did not boot. Its log:' >&2
+            tail -n 80 "$RUNNER_TEMP/emulator.log" >&2
+            exit 1
+          fi
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
+
+      - name: Build the debug APK for the emulator
+        run: npm run build:android:apk:debug:intel -- --output "$RUNNER_TEMP/app.apk"
 
       - name: Check that only the church's host is blocked
         run: |
@@ -152,7 +163,7 @@ jobs:
           scripts/e2e/android-bible-audio.sh
 
       - name: Collect emulator and DNS logs
-        if: failure()
+        if: failure() || cancelled()
         run: |
           mkdir -p "$RUNNER_TEMP/e2e-output"
           cp "$RUNNER_TEMP/emulator.log" "$RUNNER_TEMP/dnsmasq.log" "$RUNNER_TEMP/e2e-output/" 2>/dev/null || true
@@ -160,7 +171,7 @@ jobs:
 
       # Screenshots and logs only: this job reads no secrets or tokens.
       - name: Upload failure details
-        if: failure()
+        if: failure() || cancelled()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: android-audio-e2e-${{ github.run_id }}
