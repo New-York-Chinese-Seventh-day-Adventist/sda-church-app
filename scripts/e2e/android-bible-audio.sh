@@ -51,12 +51,19 @@ network() { # on|off
 
 # Opens a CUV chapter in a freshly started app, so each scenario starts clean.
 # A deep link with the same parameters as the last one is ignored, and a cold
-# start avoids that.
+# start avoids that. A fresh install first shows the Welcome dialog over the
+# screen; its default choices are fine, and it doesn't come back.
 open_chapter() { # book chapter
   sh_ am force-stop "$PKG" >/dev/null
   adb_ logcat -c
   sh_ am start -W -a android.intent.action.VIEW \
     -d "'sdachurchapp://bible?bookId=$1&chapter=$2&translationId=cmn_cuv'" "$PKG" >/dev/null
+  local point
+  if point=$(ATTR=text TRIES=5 element_center 'Get Started'); then
+    # shellcheck disable=SC2086
+    sh_ input tap $point >/dev/null
+    sleep 2
+  fi
 }
 
 ui_dump() {
@@ -64,12 +71,13 @@ ui_dump() {
   sh_ cat /sdcard/e2e-ui.xml | sed 's/></>\n</g'
 }
 
-# Prints the center of the first element whose content-desc matches the
-# extended regex $1, retrying while the screen loads.
-element_center() { # desc-regex [x-fraction]
-  local fraction="${2:-0.5}" bounds attempt
-  for attempt in $(seq 1 20); do
-    bounds=$(ui_dump | grep "package=\"$PKG\"" | grep -E "content-desc=\"$1\"" | head -1 |
+# Prints the center of the first element whose content-desc (or, with
+# ATTR=text, text) matches the extended regex $1, retrying while the screen
+# loads. $2 picks a point along the element's width instead of its center.
+element_center() { # regex [x-fraction]
+  local fraction="${2:-0.5}" attr="${ATTR:-content-desc}" bounds attempt
+  for attempt in $(seq 1 "${TRIES:-20}"); do
+    bounds=$(ui_dump | grep "package=\"$PKG\"" | grep -E "$attr=\"$1\"" | head -1 |
       sed -nE 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/p')
     if [ -n "$bounds" ]; then
       awk -v f="$fraction" '{ printf "%d %d\n", $1 + ($3 - $1) * f, ($2 + $4) / 2 }' <<< "$bounds"
