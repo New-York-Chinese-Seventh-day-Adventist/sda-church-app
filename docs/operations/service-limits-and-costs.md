@@ -139,8 +139,10 @@ in front of it.
 **Load:** until 0.39 it was the second source, so an Adventist Connect failure would
 have moved every listener onto it at once. It is now tried only when both Adventist
 Connect and the Internet Archive fail for a chapter, which keeps that load off the
-ministry's server. Fallback timing is tracked in
-[#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262).
+ministry's server. The app moves past a source that fails outright as soon as the
+player reports it, and past a slow one after 15 seconds
+([#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262)),
+so reaching Audio Power takes seconds rather than minutes.
 
 ### HelloAO
 
@@ -289,9 +291,9 @@ Found while writing this page and resolved in
 - **Chinese library catalog caching.** Fixed: the cover list is cached on the device
   and refreshed at most daily, keeping the cached copy if a refresh fails.
 - **Audio Power absorbing every listener if Adventist Connect fails.** Fixed: the
-  Internet Archive is now the second source and Audio Power the last. Fallback timing
-  is still tracked in
-  [#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262).
+  Internet Archive is now the second source and Audio Power the last. The slow
+  native fallback is fixed too
+  ([#262](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/262)).
 - **The bulletin API's execution ceiling.** Accepted: caching keeps real traffic well
   under 1 request a second, against a ceiling of about 20. The dependency monitor
   checks the API daily, and a failed request now falls back to the last stored copy.
