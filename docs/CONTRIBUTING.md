@@ -84,6 +84,9 @@ feature and release PR must:
 AI coding agents read these rules from [`AGENTS.md`](../AGENTS.md), which `CLAUDE.md` and
 `GEMINI.md` import. Keep them in sync with this section.
 
+The checks a pull request must pass, and the other branch rules, are listed under
+[Branch rules](operations/admin-runbook.md#branch-rules) in the admin runbook.
+
 GitHub closes linked issues only when the closing reference reaches the default branch.
 Therefore, `Closes #133` in a feature PR to `release/x.y.(patch|x)` links the work but does not
 close the issue when that feature PR merges. Release automation adds the `pending release`
