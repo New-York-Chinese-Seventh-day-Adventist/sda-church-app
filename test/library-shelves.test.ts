@@ -1,6 +1,7 @@
 import { EGW_BOOKS } from '@/features/library/EgwBookCatalog';
 import { LIBRARY_CATALOG } from '@/features/library/LibraryCatalog';
 import {
+  FEATURED_LIBRARY_BOOKS,
   LIBRARY_SHELF_LEADERS,
   orderShelfBooks,
 } from '@/features/library/LibraryShelves';
@@ -31,7 +32,7 @@ describe('library shelf order', () => {
     expect(orderShelfBooks('children', books('b', 'a'))).toEqual(books('b', 'a'));
   });
 
-  it('names only books that exist', () => {
+  it('names only books that exist, on shelves and in the featured banner', () => {
     const keys = new Set([
       ...EGW_BOOKS.map(({ id }) => `egw:${id}`),
       ...LIBRARY_CATALOG.publicDomainWorks.map(({ id }) => id),
@@ -41,5 +42,6 @@ describe('library shelf order', () => {
     for (const leaders of Object.values(LIBRARY_SHELF_LEADERS)) {
       for (const key of leaders ?? []) expect(keys).toContain(key);
     }
+    for (const key of FEATURED_LIBRARY_BOOKS) expect(keys).toContain(key);
   });
 });

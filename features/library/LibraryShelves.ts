@@ -34,10 +34,10 @@ export const EGW_BOOK_IDS_BY_SHELF: Readonly<Partial<Record<LibraryShelf, readon
  * Keys are `LibraryShelfBook` keys: a catalog id, or `egw:` and a book id.
  */
 export const FEATURED_LIBRARY_BOOKS = [
-  'bunyan-pilgrims-progress',
+  'sibbes-bruised-reed',
   'egw:steps-to-christ',
   'murray-abide-in-christ',
-  'story-of-jesus',
+  'egw:desire-of-ages',
 ] as const;
 
 /**
