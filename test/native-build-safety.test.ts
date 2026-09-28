@@ -60,6 +60,15 @@ describe('native Android build safety gates', () => {
 
 const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
+describe('Android PR preview', () => {
+  it('keeps the job name the Main protection ruleset requires', () => {
+    // Required check: "Build Android debug APK (ARM)". Renaming the job without
+    // updating the ruleset blocks every release PR.
+    expect(readRepoFile('.github/workflows/android-pr-preview.yml'))
+      .toContain('name: Build Android debug APK (ARM)');
+  });
+});
+
 describe('iOS PR preview', () => {
   const workflow = readRepoFile('.github/workflows/ios-pr-preview.yml');
 

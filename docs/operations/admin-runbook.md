@@ -91,7 +91,7 @@ Review rules for both pull-request rulesets:
 | `sync` | `release-validation.yml` | `main` |
 | `ensure_pr_to_main_from_release_branch` | `main-release-source-gate.yml` | `main` |
 | `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
-| `Build ARM debug APK` | `android-pr-preview.yml` | `main` |
+| `Build Android debug APK (ARM)` | `android-pr-preview.yml` | `main` |
 | `Build iOS Simulator app (Apple Silicon Mac)`, `Build iOS Simulator app (Intel Mac)` | `ios-pr-preview.yml` | `main` |
 
 A skipped check counts as passed; for example, `sync` usually shows as skipped.
@@ -106,6 +106,11 @@ A skipped check counts as passed; for example, `sync` usually shows as skipped.
   job's name includes the matrix values, such as `Build iOS Simulator app (Intel Mac)`.
 - **Renaming or removing a job needs a matching ruleset change** in the same release;
   otherwise merges block on the old name.
+- **`android-pr-preview.yml` runs from `main`'s copy of the workflow**, because it uses
+  `pull_request_target`. A release PR reports the job name `main` has, so after
+  renaming that job, keep the old name required until the release with the rename
+  reaches `main`, then swap it. Workflows triggered by `pull_request`, such as
+  `ios-pr-preview.yml`, report the release branch's names right away.
 
 ## Approving a production deployment
 
