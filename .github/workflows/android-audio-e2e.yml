@@ -158,7 +158,7 @@ jobs:
           cp "$RUNNER_TEMP/emulator.log" "$RUNNER_TEMP/dnsmasq.log" "$RUNNER_TEMP/e2e-output/" 2>/dev/null || true
           adb logcat -d -v time > "$RUNNER_TEMP/e2e-output/logcat.txt" 2>/dev/null || true
 
-      # Screenshots and logs only: this job reads no secrets.
+      # Screenshots and logs only: this job reads no secrets or tokens.
       - name: Upload failure details
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
