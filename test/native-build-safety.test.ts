@@ -69,6 +69,29 @@ describe('Android PR preview', () => {
   });
 });
 
+describe('Android audio e2e', () => {
+  const workflow = readRepoFile('.github/workflows/android-audio-e2e.yml');
+
+  it('reads no secrets and never runs pull request code with a write token', () => {
+    expect(workflow).not.toMatch(/secrets\./);
+    expect(workflow).not.toContain('pull_request_target');
+    expect(workflow).toMatch(/^permissions:\n  contents: read\n/m);
+  });
+
+  it('gives issue access only to the nightly alert job', () => {
+    expect(workflow.match(/issues: write/g)).toHaveLength(1);
+    const alertJob = workflow.slice(workflow.indexOf('\n  alert:\n'));
+    expect(alertJob).toContain('issues: write');
+    expect(alertJob).toContain("github.event_name == 'schedule'");
+  });
+
+  it('runs the scenarios with the church host blocked, as they expect', () => {
+    expect(workflow).toContain('--local=/adventistconnect.org/');
+    expect(workflow).toContain("E2E_PRIMARY_BLOCKED: '1'");
+    expect(workflow).toContain('scripts/e2e/android-bible-audio.sh');
+  });
+});
+
 describe('iOS PR preview', () => {
   const workflow = readRepoFile('.github/workflows/ios-pr-preview.yml');
 

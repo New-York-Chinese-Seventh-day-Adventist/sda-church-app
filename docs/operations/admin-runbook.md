@@ -23,6 +23,7 @@ does and what still needs a person.
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
 - [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
+- [Bible audio emulator test](#bible-audio-emulator-test)
 - [Credentials that need attention](#credentials-that-need-attention)
 
 ## Who can do what
@@ -356,6 +357,52 @@ The issue closes itself on the next passing run. The job summary also notes when
 Apple recommends a newer Xcode than the build uses; that note alone does not open an
 issue. What to update and test is under
 [Store toolchain requirements](#store-toolchain-requirements).
+
+## Bible audio emulator test
+
+**Workflow:** **Android audio e2e**. It runs every night, on pull requests that
+change Bible audio, and on release pull requests into `main`, and it can be run
+manually. It isn't a required check.
+
+It builds the debug APK, boots an Android emulator on the runner, and plays real
+Bible chapters to check what only a real player shows:
+
+- **Primary host down:** a local DNS server on the runner makes
+  `assets.adventistconnect.org` unreachable, and Genesis 1 must play from the
+  Internet Archive.
+- **Next chapter with the screen off:** Psalm 117 moves on to Psalm 118 by itself,
+  the screen stays off, and the media foreground service stays up.
+- **Dead zone with the screen off:** Play offline, wait 90 seconds, then reconnect.
+  Audio must start without an unlock.
+- **Mid-chapter loss:** go offline and seek past what has loaded. The same host
+  reloads where it stopped, and playback resumes there.
+- **Pause and resume** from the same place.
+
+The failover logic itself is tested on every pull request by
+`test/bible-audio-source-controller.test.ts`.
+
+When the nightly run fails, it opens or updates the issue **[monitor] Nightly Bible
+audio emulator test failed**, assigned to the users in `MONITOR_ALERT_ASSIGNEES`,
+and closes it on the next passing run. To investigate:
+
+1. Open the run from the issue. The log shows which scenario failed and why.
+2. Download the `android-audio-e2e-*` artifact. For each failed scenario it has a
+   screenshot, the app's log, and the media session, whose title names the host
+   that was playing, plus the emulator and DNS logs.
+3. The test plays real recordings, so check the
+   [external dependency monitor](#external-dependency-monitor-alerts) first. A host
+   outage fails it too, and isn't an app bug. A one-off emulator hiccup clears on a
+   rerun.
+
+**To run it on your own emulator**, install a debug APK
+(`npm run build:android:apk:debug:intel`) and run
+`scripts/e2e/android-bible-audio.sh`. Set `ADB` if `adb` isn't on your path, and
+`ADB_ARGS=-e` if a phone is also connected. `E2E_ONLY` runs chosen scenarios, for
+example `E2E_ONLY=dead-zone-screen-off`. The primary-host scenario runs only with
+`E2E_PRIMARY_BLOCKED=1`, which needs the DNS block the workflow sets up. The script
+clears the app's first-launch Welcome dialog, and turns off the device's animations
+while it runs (restoring them when it exits), because the screen must be still to be
+read.
 
 ## Credentials that need attention
 
