@@ -85,6 +85,16 @@ describe('Android audio e2e', () => {
     expect(alertJob).toContain("github.event_name == 'schedule'");
   });
 
+  it('always runs on release PRs into main, which require it', () => {
+    // A required check that never reports blocks the merge.
+    expect(workflow).toContain('name: Bible audio on an Android emulator');
+    expect(workflow).toContain("needs.scope.outputs.run == 'true'");
+    expect(workflow).toMatch(/\[ "\$BASE_REF" = 'main' \]; then\n\s+echo 'run=true'/);
+    // No workflow-level path filter, which would skip release PRs entirely.
+    const trigger = workflow.slice(workflow.indexOf('\non:'), workflow.indexOf('\npermissions:'));
+    expect(trigger).not.toContain('paths:');
+  });
+
   it('runs the scenarios with the church host blocked, as they expect', () => {
     expect(workflow).toContain('--local=/adventistconnect.org/');
     expect(workflow).toContain("E2E_PRIMARY_BLOCKED: '1'");

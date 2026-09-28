@@ -93,6 +93,7 @@ Review rules for both pull-request rulesets:
 | `ensure_pr_to_main_from_release_branch` | `main-release-source-gate.yml` | `main` |
 | `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
 | `Build Android debug APK (ARM)` | `android-pr-preview.yml` | `main` |
+| `Bible audio on an Android emulator` | `android-audio-e2e.yml` | `main` |
 | `Build iOS Simulator app (Apple Silicon Mac)`, `Build iOS Simulator app (Intel Mac)` | `ios-pr-preview.yml` | `main` |
 
 A skipped check counts as passed; for example, `sync` usually shows as skipped.
@@ -360,9 +361,14 @@ issue. What to update and test is under
 
 ## Bible audio emulator test
 
-**Workflow:** **Android audio e2e**. It runs every night, on pull requests that
-change Bible audio, and on release pull requests into `main`, and it can be run
-manually. It isn't a required check.
+**Workflow:** **Android audio e2e**. It runs every night, on every release pull
+request into `main`, and on pull requests into a release branch that change Bible
+audio, and it can be run manually. **It's a required check on `main`**, so a
+release can't merge until it passes. A small job decides whether to run it, so a
+release PR always reports it; keep that job if you change the triggers.
+
+It takes about 20 minutes, and runs alongside the iOS Simulator builds, which
+take longer.
 
 It builds the debug APK, boots an Android emulator on the runner, and plays real
 Bible chapters to check what only a real player shows:
@@ -393,6 +399,9 @@ and closes it on the next passing run. To investigate:
    [external dependency monitor](#external-dependency-monitor-alerts) first. A host
    outage fails it too, and isn't an app bug. A one-off emulator hiccup clears on a
    rerun.
+4. If it blocks a release PR because of a host outage, rerun it once the host is
+   back. If the release can't wait, an admin can bypass this one check when merging,
+   after confirming that the failure is the outage and not the app.
 
 **To run it on your own emulator**, install a debug APK
 (`npm run build:android:apk:debug:intel`) and run

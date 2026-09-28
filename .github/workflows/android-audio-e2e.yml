@@ -13,18 +13,12 @@ on:
     - cron: "41 3 * * *"
       timezone: "America/New_York"
   workflow_dispatch: {}
-  # Pull requests that change Bible audio, and every release PR into main.
+  # Every release PR into main, and pull requests into a release branch that
+  # change Bible audio (the scope job below decides).
   pull_request:
     branches:
       - main
       - 'release/**'
-    paths:
-      - 'app/(tabs)/bible/**'
-      - 'services/BibleAudio*'
-      - 'scripts/e2e/**'
-      - '.github/workflows/android-audio-e2e.yml'
-      - 'package.json'
-      - 'package-lock.json'
 
 permissions:
   contents: read
@@ -37,7 +31,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scope:
+    # The Main protection ruleset requires this test, so a release PR into main
+    # always runs it; a required check that never reports would block the
+    # merge. A PR into a release branch runs it only when it changes Bible
+    # audio, to spare the 20-minute run on every feature PR.
+    name: Decide whether to run the audio e2e test
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.scope.outputs.run }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the pull request's target and files
+        id: scope
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != 'pull_request' ] || [ "$BASE_REF" = 'main' ]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Capture first: with pipefail, grep -q exiting early can fail the pipe.
+          CHANGED_FILES="$(git diff --name-only "origin/$BASE_REF...HEAD")"
+          if grep -E '^(app/\(tabs\)/bible/|services/BibleAudio|scripts/e2e/|\.github/workflows/android-audio-e2e\.yml$|package(-lock)?\.json$)' \
+            <<<"$CHANGED_FILES" >/dev/null; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+          fi
+
   e2e:
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    # The Main protection ruleset requires this job name.
     name: Bible audio on an Android emulator
     runs-on: ubuntu-24.04
     timeout-minutes: 90
