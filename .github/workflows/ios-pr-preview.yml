@@ -61,7 +61,8 @@ jobs:
   simulator:
     needs: scope
     if: needs.scope.outputs.build == 'true'
-    name: Build ${{ matrix.mac }} Simulator app
+    # The "Main protection" ruleset requires these job names; rename both together.
+    name: Build iOS Simulator app (${{ matrix.mac }} Mac)
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     strategy:

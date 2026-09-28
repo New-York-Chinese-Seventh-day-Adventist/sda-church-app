@@ -60,6 +60,15 @@ describe('native Android build safety gates', () => {
 
 const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
+describe('Android PR preview', () => {
+  it('keeps the job name the Main protection ruleset requires', () => {
+    // Required check: "Build Android debug APK (ARM)". Renaming the job without
+    // updating the ruleset blocks every release PR.
+    expect(readRepoFile('.github/workflows/android-pr-preview.yml'))
+      .toContain('name: Build Android debug APK (ARM)');
+  });
+});
+
 describe('iOS PR preview', () => {
   const workflow = readRepoFile('.github/workflows/ios-pr-preview.yml');
 
@@ -73,6 +82,15 @@ describe('iOS PR preview', () => {
   it('builds for both Apple Silicon and Intel Macs', () => {
     expect(workflow).toMatch(/runner: macos-26\s+arch: arm64/);
     expect(workflow).toMatch(/runner: macos-26-intel\s+arch: x86_64/);
+  });
+
+  it('keeps the job names the Main protection ruleset requires', () => {
+    // Required checks: "Build iOS Simulator app (Apple Silicon Mac)" and
+    // "Build iOS Simulator app (Intel Mac)". Renaming the job without
+    // updating the ruleset blocks every release PR.
+    expect(workflow).toContain('name: Build iOS Simulator app (${{ matrix.mac }} Mac)');
+    expect(workflow).toMatch(/- mac: Apple Silicon\n/);
+    expect(workflow).toMatch(/- mac: Intel\n/);
   });
 
   it('uses the same Xcode as the signed iOS build', () => {
