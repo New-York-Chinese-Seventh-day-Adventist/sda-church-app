@@ -114,7 +114,15 @@ jobs:
       - name: Start the emulator
         run: |
           set -euo pipefail
-          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd --force -n e2e \
+          # The runner already has cmdline-tools "latest", so sdkmanager puts
+          # the newer copy in latest-2 or similar. Use the newest avdmanager,
+          # and one AVD folder for it and the emulator.
+          avdmanager_bin="$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/avdmanager | sort -V | tail -1)"
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+          echo "Using $avdmanager_bin"
+          echo no | "$avdmanager_bin" create avd --force -n e2e \
             -k "system-images;android-36;google_apis;x86_64" -d pixel_6
           nohup "$ANDROID_HOME/emulator/emulator" -avd e2e -no-window -no-snapshot \
             -no-boot-anim -gpu swiftshader_indirect -dns-server "$E2E_DNS_IP" \
@@ -167,7 +175,8 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/e2e-output"
           cp "$RUNNER_TEMP/emulator.log" "$RUNNER_TEMP/dnsmasq.log" "$RUNNER_TEMP/e2e-output/" 2>/dev/null || true
-          adb logcat -d -v time > "$RUNNER_TEMP/e2e-output/logcat.txt" 2>/dev/null || true
+          # adb waits forever for a device, so bound it.
+          timeout 60 adb logcat -d -v time > "$RUNNER_TEMP/e2e-output/logcat.txt" 2>/dev/null || true
 
       # Screenshots and logs only: this job reads no secrets or tokens.
       - name: Upload failure details
