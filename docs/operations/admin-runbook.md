@@ -85,7 +85,7 @@ Review rules for both pull-request rulesets:
 | Check | Comes from | Required on |
 | --- | --- | --- |
 | `Jest unit tests` | `pr-tests.yml` | `main` and `release/*` |
-| `verify-bulletin-api` | `bulletin-integration.yml` | `main` and `release/*` |
+| `verify-bulletin-api` | `bulletin-integration.yml` | `main` |
 | `validate-pr` | `release-validation.yml` | `main` and `release/*` |
 | `require-linked-issue` | `pr-linked-issue.yml` | `main` and `release/*` |
 | `enforce-version` | `pr-check.yml` | `main` |
@@ -93,9 +93,16 @@ Review rules for both pull-request rulesets:
 | `ensure_pr_to_main_from_release_branch` | `main-release-source-gate.yml` | `main` |
 | `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
 | `Build Android debug APK (ARM)` | `android-pr-preview.yml` | `main` |
+| `Bible audio on an Android emulator` | `android-audio-e2e.yml` | `main` |
 | `Build iOS Simulator app (Apple Silicon Mac)`, `Build iOS Simulator app (Intel Mac)` | `ios-pr-preview.yml` | `main` |
 
 A skipped check counts as passed; for example, `sync` usually shows as skipped.
+
+The slow checks (`verify-bulletin-api`, the Android and iOS builds, and the Bible audio
+test) run once per release, on the release pull request into `main`. Feature pull
+requests into a release branch run only the quick checks. Any other pull request into
+`main`, such as Dependabot's, skips the slow checks, because the source gate stops it
+from merging there anyway.
 
 ### Changing a required check
 
@@ -278,8 +285,8 @@ store announces a change, check that:
 
 ## Android PR preview APKs
 
-**Workflow:** **Android PR preview**, which runs automatically on same-repository pull
-requests into `main`.
+**Workflow:** **Android PR preview**, which runs automatically on release pull requests
+into `main` (from a `release/*` branch in this repository).
 
 It builds an unsigned debug APK. After you approve `production`, it uploads the APK
 to Google Drive as `sda-church-app-pr-<number>-<run>-arm-debug.apk`, and the run
@@ -288,8 +295,8 @@ summary links to it. Fork pull requests are skipped. See
 
 ## iOS PR preview builds
 
-**Workflow:** **iOS PR preview**, which runs automatically on pull requests into
-`main`.
+**Workflow:** **iOS PR preview**, which runs automatically on release pull requests
+into `main`, and can be run manually on any branch.
 
 It builds the app without signing for an Apple Silicon Mac and an Intel Mac, launches it
 on a simulated iPhone, and uploads the app and a screenshot of its first screen. It
@@ -299,15 +306,24 @@ iPhone. See [iOS PR preview](native-builds.md#ios-pr-preview-unsigned-simulator-
 
 ## Dependabot pull requests
 
-Dependabot opens pull requests against `main`, and they fail the `main` checks by
-design: **Main Release Source Gate**, **PR Version Check**, and **Release - PR Version
-Sync**. Don't merge them into `main`. For each one:
+Dependabot opens one pull request a week for all minor and patch updates, and a
+separate one for each major update (`.github/dependabot.yml`). It opens them against
+`main`, and they fail the `main` checks by design: **Main Release Source Gate**, **PR
+Version Check**, and **Release - PR Version Sync**. Don't merge them into `main`. For
+each one:
 
 1. Select **Edit** next to the title and change the base branch to the current
    `release/x.y.z`.
 2. Add `Release/x.y.z: ` to the start of the title.
 3. Comment `@dependabot rebase` so the branch is rebuilt on the release branch and the
    checks run again.
+
+Or copy the `package.json` and `package-lock.json` changes from several of them into
+one pull request into the release branch, and close the Dependabot pull requests with a
+link to it.
+
+While a Dependabot pull request still targets `main`, it runs only the quick checks.
+The slow builds and tests run on the release pull request that includes the update.
 
 When Dependabot reports `security_update_not_possible`, there's no fix Dependabot can
 apply yet, usually because another package pins the old version. Recheck after that
@@ -360,9 +376,14 @@ issue. What to update and test is under
 
 ## Bible audio emulator test
 
-**Workflow:** **Android audio e2e**. It runs every night, on pull requests that
-change Bible audio, and on release pull requests into `main`, and it can be run
-manually. It isn't a required check.
+**Workflow:** **Android audio e2e**. It runs every night and on every release pull
+request into `main`, and it can be run manually. **It's a required check on `main`**,
+so a release can't merge until it passes. Feature pull requests into a release branch
+don't run it; to test an audio change before the release, run it manually on your
+branch.
+
+It takes about 20 minutes, and runs alongside the iOS Simulator builds, which
+take longer.
 
 It builds the debug APK, boots an Android emulator on the runner, and plays real
 Bible chapters to check what only a real player shows:
@@ -393,6 +414,9 @@ and closes it on the next passing run. To investigate:
    [external dependency monitor](#external-dependency-monitor-alerts) first. A host
    outage fails it too, and isn't an app bug. A one-off emulator hiccup clears on a
    rerun.
+4. If it blocks a release PR because of a host outage, rerun it once the host is
+   back. If the release can't wait, an admin can bypass this one check when merging,
+   after confirming that the failure is the outage and not the app.
 
 **To run it on your own emulator**, install a debug APK
 (`npm run build:android:apk:debug:intel`) and run

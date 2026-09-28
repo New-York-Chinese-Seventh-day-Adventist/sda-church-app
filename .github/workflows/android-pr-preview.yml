@@ -20,13 +20,15 @@ concurrency:
 jobs:
   resolve-pr:
     # pull_request_target runs the workflow from the trusted base repository.
-    # Only same-repository PR heads are eligible. The build checks out the PR
-    # head without credentials; the Drive upload checks out only the trusted
-    # base commit's upload helper.
+    # Only release PRs, a release/* branch in this repository, are eligible;
+    # other PRs into main, such as Dependabot's, can't merge there. The build
+    # checks out the PR head without credentials; the Drive upload checks out
+    # only the trusted base commit's upload helper.
     if: >-
       github.event.repository.fork == false &&
       github.event.pull_request.base.ref == 'main' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
     name: Resolve PR head
     runs-on: ubuntu-24.04
     outputs:
