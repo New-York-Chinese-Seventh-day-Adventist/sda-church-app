@@ -334,8 +334,19 @@ submitted for review before they appear on the App Store.
   account**, so there is no way for Google to charge the church.
   [Service limits and costs](operations/service-limits-and-costs.md#google-cloud-play-upload-service-account)
   records why, with Google's own statements.
-- The other administrators are **Owners** of the project, so it doesn't depend on
-  one account.
+- **Every IT administrator is an Owner** of the project, under **IAM & Admin → IAM**,
+  so it doesn't depend on one account. When an administrator joins or leaves, update
+  that list too.
+
+| What | Name | Notes |
+| --- | --- | --- |
+| Project | `sda-church-app-play` | No billing account |
+| Service account | `play-upload` | In Play Console with only **Release apps to testing tracks**; it has no keys |
+| Workload identity pool and provider | `github`, `sda-church-app` | Accept only this repository, by its numeric ID, in the `store-upload` environment on `main` |
+| GitHub secrets | `GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER`, `GOOGLE_PLAY_SERVICE_ACCOUNT` | In the `store-upload` environment; neither is a key |
+
+There's nothing to renew. If an upload fails, the job names the step, and
+[Reading the result](operations/native-builds.md#reading-the-result) says what to check.
 
 > [!CAUTION]
 > **Never add a credit card or billing account to Google Cloud**, and never start its

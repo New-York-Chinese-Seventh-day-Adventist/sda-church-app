@@ -47,7 +47,8 @@ licensing decisions and third-party source review live in [docs/LEGAL.md](docs/L
   year, and what breaks if it's missed
 - [Google Cloud: free only](docs/architecture.md#google-cloud-free-only): the church's
   Google Cloud project, used only for automatic Google Play uploads, has no billing
-  account. Never add a credit card to Google Cloud.
+  account. Never add a credit card to Google Cloud. Every IT administrator is an
+  Owner of the project.
 - [App Store and Google Play setup](docs/operations/app-store-setup.md): store accounts,
   signing files, and the yearly Apple renewals (membership, fee waiver, certificate)
 - [Credentials that need attention](docs/operations/admin-runbook.md#credentials-that-need-attention)
