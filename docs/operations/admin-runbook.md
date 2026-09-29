@@ -23,6 +23,7 @@ does and what still needs a person.
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
 - [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
+- [Apple signing reminders](#apple-signing-reminders)
 - [Bible audio emulator test](#bible-audio-emulator-test)
 - [Credentials that need attention](#credentials-that-need-attention)
 
@@ -49,6 +50,7 @@ Each kind of item that needs a person reaches a maintainer as follows:
 | --- | --- |
 | A pull request to review | Watch the repository with **Watch → Custom → Pull requests** (and **Issues** for new issues). With **No additional events**, that emails each new PR or issue but not its comments or pushes. |
 | A production deploy to approve | The `production` Environment waits for a `release-approvers` member. |
+| An Apple renewal reminder | The **Apple Signing Monitor** issue is assigned to the usernames in `APPLE_SIGNING_ALERT_ASSIGNEES`, falling back to `MONITOR_ALERT_ASSIGNEES`. |
 | A monitor alert (external dependencies, store toolchain) | The alert issue is assigned to the usernames in the `MONITOR_ALERT_ASSIGNEES` Actions variable (comma-separated) under **Settings → Secrets and variables → Actions → Variables**. If it is empty, the alert @mentions whoever triggered the run. Both monitors share this handling in `scripts/monitor-alert-issue.cjs`, covered by `test/monitor-alert-issue.test.ts`. |
 
 The monitors can't read `release-approvers` membership or reliably @mention the
@@ -56,6 +58,11 @@ team: they run with the built-in Actions token, which has no organization
 permissions. That's why alerts use `MONITOR_ALERT_ASSIGNEES` instead. When the team's
 members change, update the variable to match. An assignee must have access to the
 repository, directly or through a team.
+
+To also send these emails to `technology@nyccsda.org`, one admin adds that address
+to their GitHub account (**Settings → Emails**; the group forwards the verification
+email) and, under **Settings → Notifications → Custom routing**, sends this
+organization's notifications to it. An address can belong to only one GitHub account.
 
 With that in place, a maintainer can keep email for **Watching** and **Participating,
 @mentions and custom**, and choose **No additional events** under **Customize email
@@ -383,6 +390,53 @@ The issue closes itself on the next passing run. The job summary also notes when
 Apple recommends a newer Xcode than the build uses; that note alone does not open an
 issue. What to update and test is under
 [Store toolchain requirements](#store-toolchain-requirements).
+
+## Apple signing reminders
+
+**Workflow:** **Apple Signing Monitor**, which runs every Monday and can be run
+manually.
+
+It reads the expiry dates of the Apple Distribution certificate, the App Store
+provisioning profile, and the Apple Developer membership from
+`.github/apple-signing-expiry.json`. It opens or updates the issue **[monitor] Apple
+signing needs renewal** when:
+
+- a date is 60 days away or less;
+- a date has passed; or
+- a date isn't recorded.
+
+The issue includes the renewal steps. It's assigned to the usernames in the
+`APPLE_SIGNING_ALERT_ASSIGNEES` Actions variable (comma-separated), or to
+`MONITOR_ALERT_ASSIGNEES` if that variable is empty. When the maintainers who handle
+Apple renewals change, update the variable under **Settings → Secrets and variables →
+Actions → Variables**. The issue
+comments weekly until the dates are updated and closes itself on the first run after
+every date is more than 60 days away. It reads no Apple credentials, and it shows only
+dates, which are safe in a public issue.
+
+The issue shows GitHub usernames, not people's names. GitHub can only notify GitHub
+accounts, not an email address such as `technology@nyccsda.org`, and the monitor's
+built-in Actions token can't mention the `release-approvers` team. A shared GitHub
+account for the group isn't an option either: GitHub's terms allow each login to be
+used by one person only. So:
+
+- **When a maintainer joins or leaves,** update `APPLE_SIGNING_ALERT_ASSIGNEES` and
+  `MONITOR_ALERT_ASSIGNEES` right away. If any listed user has lost access to the
+  repository, GitHub rejects the whole assignment: the issue is still opened, but
+  unassigned, and it @mentions the run's actor instead, which for a scheduled run is
+  whoever last changed the workflow's schedule.
+- **Apple also emails renewal notices** to the Account Holder, the
+  `technology@nyccsda.org` group, so the group hears about renewals even if the
+  variables are out of date.
+- To also send the GitHub emails to the group, see
+  [Getting notified only when action is needed](#getting-notified-only-when-action-is-needed).
+
+Each signed iOS build also runs **Check the recorded Apple signing dates**, which
+compares the file with the provisioning profile inside the IPA it just built and warns
+when they differ, for example after a renewal that didn't update the file.
+
+To renew, follow the
+[renewal checklist](app-store-setup.md#renewal-checklist).
 
 ## Bible audio emulator test
 

@@ -284,6 +284,40 @@ jobs:
         if: always()
         run: rm -rf "$RUNNER_TEMP/nyccsda-ios-export"
 
+  signing_dates:
+    name: Check the recorded Apple signing dates
+    needs: ios_build_ipa
+    # Compares .github/apple-signing-expiry.json, which the Apple Signing
+    # Monitor reads, with the provisioning profile inside the IPA just built,
+    # and warns if they differ, such as after a renewal that forgot the file.
+    # It reads no secrets: the profile inside the IPA holds only public dates
+    # and certificates, no key.
+    if: >-
+      github.event.repository.fork == false &&
+      github.ref == 'refs/heads/main' &&
+      needs.ios_build_ipa.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+      - name: Download IPA
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: native-ios-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/nyccsda-ipa
+      - name: Compare the recorded dates with the build
+        run: |
+          set -euo pipefail
+          IPA="$(find "$RUNNER_TEMP/nyccsda-ipa" -name '*.ipa' -print -quit)"
+          test -n "$IPA" || { echo 'The IPA artifact has no .ipa file.' >&2; exit 1; }
+          unzip -p "$IPA" 'Payload/*.app/embedded.mobileprovision' > "$RUNNER_TEMP/embedded.mobileprovision"
+          node scripts/check-apple-signing-expiry.cjs --profile "$RUNNER_TEMP/embedded.mobileprovision"
+
   testflight_upload:
     name: Upload to TestFlight
     needs: ios_build_ipa

@@ -921,8 +921,13 @@ Why a separate environment instead of `production`:
       - `APP_STORE_CONNECT_API_ISSUER_ID`: the issuer ID shown above the list of keys.
       - `APP_STORE_CONNECT_API_PRIVATE_KEY`: the whole `.p8` file, including its
         `BEGIN` and `END` lines.
-   4. In TestFlight, create an internal testing group with **automatic distribution**
-      turned on, so each new build reaches its testers.
+   4. Create an internal testing group, so each new build reaches its testers: App
+      Store Connect → **Apps** → the app → **TestFlight** → **Internal Testing** in
+      the sidebar → **+**. Name it, such as `Church testers`, tick **Enable automatic
+      distribution**, and click **Create**. Then add testers under **Testers → +**. Only
+      users on the App Store Connect team can be internal testers (up to 100); invite
+      anyone else under **Users and Access** first. Each tester gets an email and
+      installs the build with Apple's **TestFlight** app on their iPhone.
 3. **Google Play:** Play accepts uploads through its API only after the app's first
    upload is made by hand in Play Console. After that, follow
    [Setting up the Google Play service account](#setting-up-the-google-play-service-account).

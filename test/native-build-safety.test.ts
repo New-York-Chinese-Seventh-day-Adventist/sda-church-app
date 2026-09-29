@@ -185,6 +185,23 @@ describe('Google Play upload', () => {
   });
 });
 
+describe('Apple signing reminders', () => {
+  it('reads no secrets in the monitor or in the per-build date check', () => {
+    // The dates aren't secret; neither job needs Apple credentials.
+    const monitor = readRepoFile('.github/workflows/apple-signing-monitor.yml');
+    expect(monitor).not.toMatch(/secrets\./);
+    expect(monitor).not.toContain('environment:');
+    // Every repository admin gets the Apple reminder by email.
+    expect(monitor).toContain('vars.APPLE_SIGNING_ALERT_ASSIGNEES || vars.MONITOR_ALERT_ASSIGNEES');
+    const workflow = readRepoFile('.github/workflows/native-ios-build.yml');
+    const start = workflow.indexOf('\n  signing_dates:\n');
+    const job = workflow.slice(start, workflow.indexOf('\n  testflight_upload:\n'));
+    expect(start).toBeGreaterThan(-1);
+    expect(job).not.toMatch(/secrets\.|environment:/);
+    expect(job).toContain('node scripts/check-apple-signing-expiry.cjs --profile');
+  });
+});
+
 describe('TestFlight upload', () => {
   const workflow = readRepoFile('.github/workflows/native-ios-build.yml');
 
