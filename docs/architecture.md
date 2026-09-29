@@ -163,11 +163,12 @@ and may not be possible, so protect them above everything else.
     Apps Script code and also the QR codes and preview APKs to Google Drive. The
     Apps Script project and deployment IDs (`APPS_SCRIPT_PROJECT_ID`,
     `APPS_SCRIPT_DEPLOYMENT_ID`) say which script to update.
-- The **`store-upload`** environment holds the **store upload keys**, used only by
-  the jobs that upload approved builds to testers: an App Store Connect API key
+- The **`store-upload`** environment holds the **store upload settings**, used only
+  by the jobs that upload approved builds to testers: an App Store Connect API key
   (`APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`,
-  `APP_STORE_CONNECT_API_PRIVATE_KEY`) and a Google Play service account key
-  (`GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`). Those jobs never see the signing keys and
+  `APP_STORE_CONNECT_API_PRIVATE_KEY`), and which Google Play service account to sign
+  in as without a key (`GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER`,
+  `GOOGLE_PLAY_SERVICE_ACCOUNT`). Those jobs never see the signing keys and
   run no npm packages, and they start without a second approval once the builds
   are approved.
 
