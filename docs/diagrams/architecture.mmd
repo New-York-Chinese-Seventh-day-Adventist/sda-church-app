@@ -56,8 +56,8 @@ flowchart TB
   release -- release PR --> main
   main --> actions
   actions --> binaries
-  binaries -. admin uploads AAB in Play Console .-> play
-  binaries -. admin uploads IPA in App Store Connect .-> appstore
+  binaries -- "to internal testing;<br/>an admin releases it" --> play
+  binaries -- "to TestFlight;<br/>an admin submits it" --> appstore
   admins -. if Drive QR files are compromised .-> qr
   qr -. regenerates .-> assets
 

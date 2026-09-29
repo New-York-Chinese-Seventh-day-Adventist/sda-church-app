@@ -9,6 +9,9 @@ flowchart TB
       appleKeys["🔑 Apple signing<br/>certificate + profile,<br/>renewed every 12 months"]
       claspKeys["🔑 Google account login<br/>uploads Apps Script code and Drive files<br/>(CLASPRC_JSON, used by clasp)"]
     end
+    subgraph UploadSecrets["GitHub Secrets · store-upload environment"]
+      storeKeys["🔑 Store upload keys<br/>App Store Connect API key,<br/>Google Play service account"]
+    end
     pages@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/github-icon.svg", label: "GitHub Pages · app.nyccsda.org<br/>privacy policy, download page<br/>PWA build: unsupported dev preview", pos: "b", w: 40, h: 40, constraint: "on" }
   end
 
@@ -34,8 +37,9 @@ flowchart TB
   androidKeys --> actions
   appleKeys --> actions
   claspKeys --> actions
-  actions -- signed AAB --> play
-  actions -- signed IPA --> appstore
+  storeKeys --> actions
+  actions -- signed AAB to internal testing --> play
+  actions -- signed IPA to TestFlight --> appstore
   actions -- uploads bulletin code --> script
   actions -- QR codes, preview APKs --> drive
   actions -- web build --> pages

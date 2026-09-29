@@ -32,14 +32,14 @@ links.
 Who does what: the congregation gets and uses the app, staff produce the digital and
 printed bulletins, and IT administrators develop, release, and maintain it.
 
-![Overview diagram: the congregation scans a QR code to reach the download page and installs the app from Google Play or the Apple App Store; staff edit the scheduling roster, which feeds the digital bulletin in the apps and the printed Queens, Queens Communion, and Brooklyn bulletins; IT administrators own the GitHub organization, develop on forks, merge feature PRs into a release branch and release PRs into main, then upload the signed AAB and IPA to the stores and rerun the QR code workflow when needed; the apps rely on media and third-party services shown in the app dependencies diagram](diagrams/architecture.svg)
+![Overview diagram: the congregation scans a QR code to reach the download page and installs the app from Google Play or the Apple App Store; staff edit the scheduling roster, which feeds the digital bulletin in the apps and the printed Queens, Queens Communion, and Brooklyn bulletins; IT administrators own the GitHub organization, develop on forks, merge feature PRs into a release branch and release PRs into main; GitHub Actions uploads the signed AAB to Google Play internal testing and the IPA to TestFlight, and an administrator releases each one after testing; administrators rerun the QR code workflow when needed; the apps rely on media and third-party services shown in the app dependencies diagram](diagrams/architecture.svg)
 
 ### Build, deploy, and accounts
 
 How code reaches the stores, the bulletin backend, and the website, which secrets
 each step uses, and how the domain ties the accounts together.
 
-![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment to publish to Google Play and the Apple App Store, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace and holds the TXT record that verifies the domain in Google Search Console, which Google Play uses to verify the organization's website](diagrams/operations.svg)
+![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment and the store upload keys from the store-upload environment to upload builds to Google Play internal testing and TestFlight, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace and holds the TXT record that verifies the domain in Google Search Console, which Google Play uses to verify the organization's website](diagrams/operations.svg)
 
 ### App dependencies
 
@@ -127,7 +127,8 @@ and may not be possible, so protect them above everything else.
   repository.
 - **GitHub Actions** runs everything automated:
   - unit and integration tests on pull requests;
-  - native iOS and Android builds after each merge to `main`;
+  - native iOS and Android builds after each merge to `main`, uploaded to TestFlight
+    and Google Play internal testing for testers;
   - Android preview APKs for pull requests into `main`;
   - the [website](#website-appnyccsdaorg) deploy to GitHub Pages;
   - bulletin Apps Script deploys, using [`clasp`](https://github.com/google/clasp),
@@ -136,11 +137,14 @@ and may not be possible, so protect them above everything else.
   - a daily [external dependency monitor](operations/admin-runbook.md#external-dependency-monitor-alerts);
   - a weekly [store toolchain monitor](operations/admin-runbook.md#store-toolchain-monitor-alerts)
     that warns before Google Play or App Store Connect requirements pass the app by.
-- Publishing to the stores through [fastlane](https://fastlane.tools/) is planned
-  but not yet in place.
-- **Credentials live in GitHub Secrets**, in this repository's `production`
-  environment. Each job that uses them waits for a `release-approvers` member to
-  approve it. There are three separate groups:
+- Releasing to the public stays manual: after testing, an administrator submits
+  the iOS build for review in App Store Connect and promotes the Android release in
+  Play Console. See
+  [Automatic store uploads](operations/native-builds.md#automatic-store-uploads).
+- **Credentials live in GitHub Secrets**, in two environments of this repository.
+  The `production` environment holds the signing and Google account credentials.
+  Each job that uses them waits for a `release-approvers` member to approve it.
+  There are three separate groups:
   - **Android signing:** the upload keystore and its passwords
     (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
     `ANDROID_KEY_PASSWORD`). With Play App Signing, Google keeps the real
@@ -159,6 +163,13 @@ and may not be possible, so protect them above everything else.
     Apps Script code and also the QR codes and preview APKs to Google Drive. The
     Apps Script project and deployment IDs (`APPS_SCRIPT_PROJECT_ID`,
     `APPS_SCRIPT_DEPLOYMENT_ID`) say which script to update.
+- The **`store-upload`** environment holds the **store upload keys**, used only by
+  the jobs that upload approved builds to testers: an App Store Connect API key
+  (`APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`,
+  `APP_STORE_CONNECT_API_PRIVATE_KEY`) and a Google Play service account key
+  (`GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`). Those jobs never see the signing keys and
+  run no npm packages, and they start without a second approval once the builds
+  are approved.
 
 The [Admin Runbook](operations/admin-runbook.md) covers approving production runs
 and rotating the credentials these workflows use.
@@ -291,8 +302,8 @@ submitted for review before they appear on the App Store.
 - The **Apple Developer** account that publishes the app is registered to
   **`technology@nyccsda.org`**, the shared Google Group address, not to a person.
   The other active administrators are added to the team with their own individual
-  `nyccsda.org` church accounts. Builds are uploaded and releases submitted in App
-  Store Connect.
+  `nyccsda.org` church accounts. Builds are uploaded to TestFlight automatically,
+  and releases are submitted in App Store Connect.
 - Nonprofit status must be **resubmitted every year**. Apple sends a reminder about
   30 days ahead; the earlier answers are remembered, so it is mostly a matter of
   confirming and resubmitting. No payment method is on file, so a lapse means the
