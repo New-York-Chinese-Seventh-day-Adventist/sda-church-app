@@ -130,6 +130,11 @@ Any job that needs credentials pauses with the status **Waiting**.
 3. Check what triggered the run and from which branch before approving. Reject a run
    you didn't expect.
 
+The jobs that upload to TestFlight and Google Play internal testing use the separate
+`store-upload` environment, which needs no approval, so they run as soon as the builds
+you approved finish. Why it's separate is in
+[How the credentials are kept apart](native-builds.md#how-the-credentials-are-kept-apart).
+
 ## Shipping a release to `main`
 
 The full process is in [Contributing](../CONTRIBUTING.md#two-stage-release-process).

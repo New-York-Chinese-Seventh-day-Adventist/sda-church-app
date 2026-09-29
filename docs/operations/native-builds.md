@@ -890,6 +890,19 @@ testers need it.
 - Both run only for `main` in the church's repository, and skip with a notice until
   their secrets are set.
 
+Why a separate environment instead of `production`:
+
+- **`production` is shared.** The signed builds, the Apps Script deploy, the QR code
+  upload, and the Android PR preview's Drive upload all use it, and the preview runs
+  for pull requests. Any job that names an environment can read every secret in it.
+  In `store-upload`, only the two upload jobs can reach the store credentials.
+- **One approval instead of two.** `production` requires a reviewer for every job.
+  The upload jobs start after the builds finish, so in `production` each release would
+  ask for a second approval. `store-upload` has no reviewer, so approving the builds
+  is the only click, and the uploads reach only testers.
+- **Separate control.** Uploads can be paused, for example by adding a reviewer or
+  removing a secret, without touching signing or the other deploys.
+
 ### One-time setup
 
 1. **The environment:** Settings → Environments → **New environment** → `store-upload`.
