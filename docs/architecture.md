@@ -386,6 +386,7 @@ Costs, published limits, and load for each one are in
 | Yearly | Resubmit Apple nonprofit status | App removed from the App Store |
 | Yearly | Renew Apple signing certificates and update GitHub secrets | iOS builds fail; app can't be updated |
 | Yearly | Check the Cloudflare payment method hasn't expired and the domain's paid-through date | Domain renewal fails |
+| Yearly | Confirm the Google Cloud project for Play uploads (`sda-church-app-play`) still has no billing account | A billing account added by mistake would let Google charge the church |
 | Yearly | Review administrator access and recovery details on every system | An account can't be recovered |
 | Daily (automated) | External dependency monitor | Opens an issue; see the runbook |
 

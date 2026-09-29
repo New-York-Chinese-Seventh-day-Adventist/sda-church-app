@@ -901,21 +901,72 @@ testers need it.
    4. In TestFlight, create an internal testing group with **automatic distribution**
       turned on, so each new build reaches its testers.
 3. **Google Play:** Play accepts uploads through its API only after the app's first
-   upload is made by hand in Play Console. Google's upload API accepts only a Google
-   Cloud service account. The project, the service account, its key, and this API
-   are all free and need no billing account; don't add one. Then:
-   1. In a Google Cloud project the church controls, enable the **Google Play Android
-      Developer API**, create a service account, and create a JSON key for it. If the
-      Cloud console isn't available to your account, a Workspace admin turns on
-      **Google Cloud** under **Admin console → Apps → Additional Google services**.
-      If creating a key is blocked, a super admin overrides the **Disable service
-      account key creation** policy for this project under **IAM & Admin →
-      Organization Policies**.
-   2. In Play Console, open **Users and permissions → Invite new users**, invite the
-      service account's email address, and give it **Release apps to testing tracks**
-      for this app.
-   3. Add the whole JSON key file to `store-upload` as
-      `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`.
+   upload is made by hand in Play Console. After that, follow
+   [Setting up the Google Play service account](#setting-up-the-google-play-service-account).
+
+### Setting up the Google Play service account
+
+Google's upload API accepts only a *service account*: a robot Google account, kept in
+a Google Cloud project, that signs in with a key file instead of a password. **It
+costs nothing and needs no billing account.**
+[Service limits and costs](service-limits-and-costs.md#google-cloud-play-upload-service-account)
+records why, and the rules that keep it free.
+
+**Create the project**
+
+1. Open [console.cloud.google.com](https://console.cloud.google.com) and sign in with
+   a church (`nyccsda.org`) admin account. On a first visit, choose the country, accept
+   the terms, and continue.
+   - If Google offers a **free trial**, or asks you to **activate** an account with a
+     card, dismiss it. That creates a billing account, which this project must never
+     have.
+   - If the console says your account can't use Google Cloud, a Workspace admin turns
+     it on under **Admin console → Apps → Additional Google services → Google Cloud**.
+2. Click the project picker at the top of the page (it says **Select a project**),
+   then **New project**.
+3. Name it `sda-church-app-play`. If that ID is taken, Google suggests one with
+   numbers added, which is fine. Under **Organization** and **Location**, choose
+   `nyccsda.org`, so the project belongs to the church rather than to a person. Click
+   **Create**.
+4. When it's ready, choose it in the project picker. Every step below happens inside
+   it.
+
+**Turn on the Play API**
+
+5. Menu (☰) → **APIs & Services → Library**. Search for **Google Play Android
+   Developer API**, open it, and click **Enable**. It shouldn't ask for billing; if it
+   does, stop.
+
+**Create the service account and its key**
+
+6. Menu → **IAM & Admin → Service Accounts → Create service account**. Name it
+   `play-upload` and click **Create and continue**. Skip the two optional steps
+   (**Continue**, then **Done**); it needs no Google Cloud roles.
+7. Click the new account, open **Keys → Add key → Create new key**, choose **JSON**,
+   and click **Create**. A `.json` file downloads. That file is the secret: keep it on
+   the admin drive with the other signing files, and never commit it or send it by
+   email or chat.
+   - If key creation is blocked, the organization enforces **Disable service account
+     key creation**, the default for newer organizations. A Workspace super admin can
+     turn it off for this project only, under **IAM & Admin → Organization
+     Policies**: open that policy, **Manage policy**, override the parent's policy,
+     and set enforcement to **Off**.
+8. Copy the account's email address, which looks like
+   `play-upload@sda-church-app-play.iam.gserviceaccount.com`.
+
+**Let it upload in Play Console**
+
+9. Play Console → **Users and permissions → Invite new users**. Paste the email
+   address. Under **App permissions**, add the app and tick **Release apps to testing
+   tracks**. Send the invitation; a service account doesn't need to accept it.
+10. New permissions can take up to a day to reach the API. If the first automatic
+    upload fails with a permission error, rerun it later.
+
+**Give it to GitHub**
+
+11. Settings → Environments → `store-upload` → **Add environment secret**. Name it
+    `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, open the `.json` file in a text editor, and
+    paste everything in it as the value.
 
 ### Reading the result
 
