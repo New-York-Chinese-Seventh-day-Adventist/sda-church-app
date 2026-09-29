@@ -856,13 +856,16 @@ xcrun simctl launch booted org.nyccsda.app
 
 ## Automatic store uploads
 
-After you approve a release's signed builds, two more jobs upload them for testing:
+After you approve a release's signed builds, two more jobs upload them to testers
+automatically, with no further clicks:
 
 - **Upload to TestFlight**, in **Native iOS build**, uploads the IPA to App Store
   Connect. It appears in TestFlight once Apple finishes processing it, usually within
   half an hour, and an internal group with automatic distribution gets it.
-- **Upload to Google Play internal testing**, in **Native Android build**, uploads
-  the AAB and rolls it out to the internal testing track. Its "What's new" text is the
+- **Upload to Google Play internal testing**, in **Native Android build**, signs in
+  through the church's [Google Cloud project](../architecture.md#google-cloud-free-only)
+  without a key, uploads the AAB, and rolls it out to the internal testing track. Its
+  "What's new" text is the
   release PR's title without the `Release/x.y.z:` prefix: `Release/0.40.0: Faster
   bulletin (#300)` becomes "Faster bulletin". A title with nothing after the version
   gives no notes.
@@ -1030,7 +1033,9 @@ records why, and the rules that keep it free.
 | Already on TestFlight, or Google Play already has it | A rerun of the same release; the store has this build number | Nothing |
 | Uploaded as a draft | Play accepts only drafts until the app's first release is rolled out | Roll it out in Play Console → **Test and release → Internal testing** |
 | Changes need to be sent for review by hand | Play requires that for this app right now | Play Console → **Publishing overview** → send the changes for review |
-| Keyless sign-in failed at Google's token exchange | Google refused GitHub's sign-in: the provider's condition or repository ID doesn't match, or the grant is missing | Check steps 9–11 of [the service account setup](#setting-up-the-google-play-service-account) |
+| Keyless sign-in failed at Google's token exchange | Google refused GitHub's identity token: the provider's condition, the repository ID, or the provider name in `GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER` doesn't match | Check steps 9, 10, 12, and 15 of [the service account setup](#setting-up-the-google-play-service-account) |
+| Keyless sign-in failed at the service account token | Google accepted GitHub but won't let it act as `play-upload`: the pool isn't connected to the service account, or the IAM Service Account Credentials API is off | Check steps 6 and 11; the pool's **Connected service accounts** tab should list `play-upload` |
+| "The caller does not have permission" from Google Play | The service account isn't in Play Console yet, or the permission hasn't reached the API | Check step 13, and rerun after a day |
 | Failed | The log has the store's message, often a revoked key or a missing permission | Fix the cause and rerun the job, or upload by hand |
 
 ### Uploading by hand
