@@ -144,15 +144,17 @@ The admin-only steps are:
    requests into its description. Use `Part of #…` or `Related to #…` for issues
    that should stay open. The **PR Linked Issue** check fails if the description has neither.
 4. **Merge it.** The version files must already say `x.y.z`
-   (`npm run sync-version -- --version x.y.z` in the release branch).
+   (`npm run sync-version -- --version x.y.z` in the release branch), and it must be
+   higher than `main`'s version. The store build numbers are computed from it; see
+   [Version numbers](version-numbers.md).
 
 What runs after the merge to `main`:
 
 | Workflow | Automatic? | What you do |
 | --- | --- | --- |
 | Deploy Web Preview and Tag | Yes | Nothing. It tags `vx.y.z` and publishes the web app. |
-| Native Android build | Waits for `production` approval | Approve it to build the signed AAB and APK and publish a GitHub Release. See [Native app binaries](#native-app-binaries). |
-| Native iOS build | Waits for `production` approval | Approve it to build the signed IPA. |
+| Native Android build | Waits for `production` approval | Approve it to build the signed AAB and APK, upload the AAB to Google Play internal testing, and publish a GitHub Release. See [Native app binaries](#native-app-binaries). |
+| Native iOS build | Waits for `production` approval | Approve it to build the signed IPA and upload it to TestFlight. |
 
 Workflows that run from `main`'s copy (Android PR preview, and the upload step of the
 QR workflow) keep their old behavior until the release that changes them is merged.
@@ -237,11 +239,8 @@ Background, signing setup, and recovery are in [Build Instructions](native-build
   tick **AAB** (Google Play) and/or **APK** (direct install). Actions → **Native iOS
   build** → **Run workflow** on `main`. Both refuse to sign from any other branch.
 
-Before a store upload, raise the build numbers in a release pull request:
-
-- Android: the Play version code. See
-  [Set the Play version code explicitly](native-builds.md#3-set-the-play-version-code-explicitly).
-- iOS: `expo.ios.buildNumber` in `app.json`.
+There are no build numbers to raise. Both stores' build numbers are computed from the
+version (`0.40.0` becomes `40000`); see [Version numbers](version-numbers.md).
 
 ### Downloading
 
@@ -255,16 +254,20 @@ Download the IPA within 14 days. It isn't attached to the GitHub Release.
 
 ### Uploading to the stores
 
-Uploads are manual; nothing publishes to a store automatically.
+After you approve the signed builds, they upload for testing on their own: the IPA to
+TestFlight and the AAB to Google Play internal testing. Nothing reaches the public
+until you release it:
 
-- **Google Play:** Play Console → the app → **Test and release** → choose a track →
-  **Create new release** → upload the `.aab`. Use the AAB, not the APK.
-- **Apple:** upload the `.ipa` to App Store Connect (for example with Apple's
-  Transporter app). It appears under **TestFlight** after processing. Add testers
-  there, and submit for review from the app's **Distribution** page.
+1. **Test** the build on real devices, from TestFlight and from the Play Store's
+   internal testing link.
+2. **Apple:** on the app's **Distribution** page in App Store Connect, set the version
+   to the release's version, select the build, and **Add for Review**.
+3. **Google Play:** Play Console → **Test and release → Internal testing** → promote
+   the release to production.
 
-Store listings, review, and the production release are finished in each console. See
-[Upload separately](native-builds.md#upload-separately).
+The upload jobs, their `store-upload` secrets, what each result means, and how to
+upload by hand are in
+[Automatic store uploads](native-builds.md#automatic-store-uploads).
 
 ### Store toolchain requirements
 
