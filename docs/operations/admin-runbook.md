@@ -421,8 +421,10 @@ account for the group isn't an option either: GitHub's terms allow each login to
 used by one person only. So:
 
 - **When a maintainer joins or leaves,** update `APPLE_SIGNING_ALERT_ASSIGNEES` and
-  `MONITOR_ALERT_ASSIGNEES`. An assignee who has lost access is skipped; if none is
-  left, the issue @mentions whoever last triggered the workflow instead.
+  `MONITOR_ALERT_ASSIGNEES` right away. If any listed user has lost access to the
+  repository, GitHub rejects the whole assignment: the issue is still opened, but
+  unassigned, and it @mentions the run's actor instead, which for a scheduled run is
+  whoever last changed the workflow's schedule.
 - **Apple also emails renewal notices** to the Account Holder, the
   `technology@nyccsda.org` group, so the group hears about renewals even if the
   variables are out of date.
