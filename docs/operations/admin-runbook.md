@@ -414,9 +414,20 @@ comments weekly until the dates are updated and closes itself on the first run a
 every date is more than 60 days away. It reads no Apple credentials, and it shows only
 dates, which are safe in a public issue.
 
-GitHub can only notify GitHub accounts, not an email address such as
-`technology@nyccsda.org`. To send these emails to the group, see
-[Getting notified only when action is needed](#getting-notified-only-when-action-is-needed).
+The issue shows GitHub usernames, not people's names. GitHub can only notify GitHub
+accounts, not an email address such as `technology@nyccsda.org`, and the monitor's
+built-in Actions token can't mention the `release-approvers` team. A shared GitHub
+account for the group isn't an option either: GitHub's terms allow each login to be
+used by one person only. So:
+
+- **When a maintainer joins or leaves,** update `APPLE_SIGNING_ALERT_ASSIGNEES` and
+  `MONITOR_ALERT_ASSIGNEES`. An assignee who has lost access is skipped; if none is
+  left, the issue @mentions whoever last triggered the workflow instead.
+- **Apple also emails renewal notices** to the Account Holder, the
+  `technology@nyccsda.org` group, so the group hears about renewals even if the
+  variables are out of date.
+- To also send the GitHub emails to the group, see
+  [Getting notified only when action is needed](#getting-notified-only-when-action-is-needed).
 
 Each signed iOS build also runs **Check the recorded Apple signing dates**, which
 compares the file with the provisioning profile inside the IPA it just built and warns
