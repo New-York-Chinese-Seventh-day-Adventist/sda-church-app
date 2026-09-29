@@ -49,6 +49,7 @@ licensing decisions and third-party source review live in [docs/LEGAL.md](docs/L
   Google Cloud project, used only for automatic Google Play uploads, has no billing
   account. Never add a credit card to Google Cloud. Every IT administrator is an
   Owner of the project.
+  [Setup steps](docs/operations/native-builds.md#setting-up-the-google-play-service-account).
 - [App Store and Google Play setup](docs/operations/app-store-setup.md): store accounts,
   signing files, and the yearly Apple renewals (membership, fee waiver, certificate)
 - [Credentials that need attention](docs/operations/admin-runbook.md#credentials-that-need-attention)

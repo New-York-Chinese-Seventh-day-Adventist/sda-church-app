@@ -328,8 +328,11 @@ submitted for review before they appear on the App Store.
   signs in as to upload to internal testing. It signs in **without a key**: GitHub
   vouches for the upload job, and Google returns a token that expires within an hour
   (Workload Identity Federation). The organization blocks key files, and there are
-  none to store or leak. See
-  [Automatic store uploads](operations/native-builds.md#automatic-store-uploads).
+  none to store or leak.
+- **Every setup step** (the project, APIs, service account, workload identity pool,
+  OIDC provider and condition, IAM grant, Play Console access, GitHub secrets, and a
+  final checklist) is in
+  [Setting up the Google Play service account](operations/native-builds.md#setting-up-the-google-play-service-account).
 - It was created for free and uses only free services. It also has **no billing
   account**, so there is no way for Google to charge the church.
   [Service limits and costs](operations/service-limits-and-costs.md#google-cloud-play-upload-service-account)

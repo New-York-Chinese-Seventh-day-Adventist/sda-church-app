@@ -991,7 +991,9 @@ records why, and the rules that keep it free.
       `https://token.actions.githubusercontent.com`. **Audiences:** leave **Default
       audience**. Continue.
     - **Configure provider attributes:** set `google.subject` to `assertion.sub`, then
-      **Add mapping** for `attribute.repository_id` = `assertion.repository_id`.
+      **Add mapping** for `attribute.repository_id` = `assertion.repository_id`. The
+      mapping copies the repository ID out of GitHub's token so that step 11 can match
+      on it.
     - **Attribute conditions → Add condition**, with the repository ID from step 9 in
       place of `REPO_ID`:
 
@@ -1006,7 +1008,9 @@ records why, and the rules that keep it free.
     impersonation**. Choose `play-upload`. Under **Select principals**, choose **Only
     identities matching the filter**, attribute `repository_id`, and the repository ID
     as the value. Click **Save**, and close the **Configure your application** window
-    that follows; you don't need its file.
+    that follows; you don't need its file. This gives identities from this repository
+    the **Workload Identity User** role (`roles/iam.workloadIdentityUser`) on
+    `play-upload`: permission to get tokens as it, and nothing else.
     - To check, open the pool's **Connected service accounts** tab. It should list
       `play-upload`; expand it to see `attribute.repository_id="<the ID>"`. Ignore
       the **Download** buttons there; nothing needs those files.
