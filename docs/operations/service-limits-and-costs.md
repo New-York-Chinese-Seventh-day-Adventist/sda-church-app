@@ -43,7 +43,7 @@ whole system is the domain.
 | [GitHub Actions](#github-actions) | Tests, builds, deploys | Free (public repo) | Fair use, concurrency | Queued jobs | None |
 | [GitHub Pages](#github-pages) | `app.nyccsda.org` | Free | 1 GB site, 100 GB/month soft | `429` or a GitHub email | None |
 | [Google Workspace](#google-workspace-and-drive) | Roster, Drive, Apps Script | Free (nonprofit) | 100 TB pooled storage | Quota errors | None |
-| [Google Cloud](#google-cloud-play-upload-service-account) | Service account for automatic Google Play uploads | Free; **never link a billing account** | Play Developer API: 3,000 queries per minute | Uploads fail with an error | None: about six requests per release |
+| [Google Cloud](#google-cloud-play-upload-service-account) | Service account for automatic Google Play uploads | Free; **never link a billing account** | Play Developer API: 3,000 queries per minute | Uploads fail with an error | None: about ten requests per release |
 | [Cloudflare](#cloudflare) | Domain and DNS | **~$10/year** (domain only) | n/a | n/a | None |
 | [App stores](#app-stores) | Distribution | Free (Apple nonprofit waiver; Play $25 paid once) | n/a | n/a | None |
 
@@ -265,13 +265,15 @@ billing account.** That protection doesn't depend on Google's prices.
   ([Cloud Billing concepts](https://docs.cloud.google.com/billing/docs/concepts)); it's
   where a payment method lives. The church's project isn't linked to one, so there's
   no one to charge.
-- **Everything the project uses is free today.** Service accounts and their keys are
-  part of Identity and Access Management: "All use of Identity and Access Management
-  API is free of charge" ([IAM pricing](https://cloud.google.com/iam/pricing)). The
-  Google Play Developer API isn't a paid Google Cloud product: Google's
+- **Everything the project uses is free today.** The service account and the keyless
+  sign-in (Workload Identity Federation, with Google's token exchange) are part of
+  Identity and Access Management: "All use of Identity and Access Management API is
+  free of charge" ([IAM pricing](https://cloud.google.com/iam/pricing)). The Google
+  Play Developer API isn't a paid Google Cloud product: Google's
   [setup guide](https://developers.google.com/android-publisher/getting_started) and
   [quota page](https://developers.google.com/android-publisher/quotas) name no charge,
-  only a limit of 3,000 queries per minute. One upload makes about six requests.
+  only a limit of 3,000 queries per minute. One upload makes about ten requests,
+  counting the sign-in.
 - **If Google ever changed that,** the upload would fail with an error rather than
   bill anyone, because there's no billing account to bill. Uploads would go back to
   being made by hand in Play Console until the church decides what to do.

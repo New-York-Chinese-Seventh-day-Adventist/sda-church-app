@@ -240,10 +240,10 @@ These are generated per organization and can't be copied from anyone else.
 - **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool),
   which uploads the bulletin Apps Script code and Drive files, plus the Apps Script
   project and deployment IDs.
-- **Store upload keys**, in the separate `store-upload` environment: the App Store
-  Connect API key (`.p8`) and the
-  [Google Play service account](#google-cloud-free-only) key (`.json`). They
-  upload approved builds to TestFlight and Google Play internal testing.
+- **Store upload settings**, in the separate `store-upload` environment: the App
+  Store Connect API key (`.p8`), and which
+  [Google Play service account](#google-cloud-free-only) to sign in as, without a
+  key. They upload approved builds to TestFlight and Google Play internal testing.
 
 Where each secret goes and how to rotate it is covered in
 [Native Builds](operations/native-builds.md) and the
@@ -324,9 +324,12 @@ submitted for review before they appear on the App Store.
 
 - To upload each release's AAB to Google Play automatically, the church created a
   Google Cloud project, `sda-church-app-play`, with a church `nyccsda.org` account.
-  It exists only to hold the **Google Play service account** whose key,
-  `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, lets GitHub Actions upload to internal testing.
-  See [Automatic store uploads](operations/native-builds.md#automatic-store-uploads).
+  It exists only to hold the **Google Play service account** that GitHub Actions
+  signs in as to upload to internal testing. It signs in **without a key**: GitHub
+  vouches for the upload job, and Google returns a token that expires within an hour
+  (Workload Identity Federation). The organization blocks key files, and there are
+  none to store or leak. See
+  [Automatic store uploads](operations/native-builds.md#automatic-store-uploads).
 - It was created for free and uses only free services. It also has **no billing
   account**, so there is no way for Google to charge the church.
   [Service limits and costs](operations/service-limits-and-costs.md#google-cloud-play-upload-service-account)

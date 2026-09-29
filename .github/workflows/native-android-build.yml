@@ -148,18 +148,24 @@ jobs:
   play_upload:
     name: Upload to Google Play internal testing
     needs: build
-    # The Play service account key lives in its own store-upload environment,
-    # apart from the signing secrets, and this job runs no npm packages; the
-    # upload script uses only Node's built-ins. It skips until the secret is
-    # set. See docs/operations/native-builds.md#automatic-store-uploads.
+    # It signs in without a key: GitHub vouches that the job runs in this
+    # repository's store-upload environment on main, and Google returns a token
+    # that expires within an hour. The job never sees the signing secrets and
+    # runs no npm packages; the upload script uses only Node's built-ins. It
+    # skips until the two settings are added. See
+    # docs/operations/native-builds.md#automatic-store-uploads.
     if: >-
       github.event.repository.fork == false &&
       github.ref == 'refs/heads/main' &&
       needs.build.result == 'success' &&
       (github.event_name == 'push' || inputs.android)
-    # SECURITY CONTRACT: This job can read the Play service account key. Never
-    # add `set -x`, secret logging, environment dumps, or artifact uploads.
+    # SECURITY CONTRACT: This job can get a Google Play upload token. Never add
+    # `set -x`, secret logging, environment dumps, or artifact uploads.
     environment: store-upload
+    permissions:
+      contents: read
+      # Lets the job ask GitHub for the identity token that Google checks.
+      id-token: write
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -176,11 +182,14 @@ jobs:
           path: ${{ runner.temp }}/nyccsda-aab
       - name: Upload to internal testing
         env:
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          # Not keys, just which provider and account to use. They're secrets so
+          # the logs of this public repository don't show the project number.
+          GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
         run: |
           set -euo pipefail
-          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
-            echo '::notice title=Google Play upload skipped::Add GOOGLE_PLAY_SERVICE_ACCOUNT_JSON to the store-upload environment to upload automatically.'
+          if [ -z "$GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER" ] || [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT" ]; then
+            echo '::notice title=Google Play upload skipped::Add GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER and GOOGLE_PLAY_SERVICE_ACCOUNT to the store-upload environment to upload automatically.'
             exit 0
           fi
           # The release PR's title, the subject of the squash-merge commit,

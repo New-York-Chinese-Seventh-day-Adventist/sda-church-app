@@ -1,18 +1,9 @@
-import { generateKeyPairSync, verify } from 'node:crypto';
-
 const {
+  providerName,
   releaseNotesFromCommitSubject,
+  signInWithGitHub,
   uploadToInternalTesting,
 } = require('../scripts/upload-google-play.cjs');
-
-const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem' }) as string;
-const serviceAccountJson = JSON.stringify({
-  type: 'service_account',
-  client_email: 'uploader@example.iam.gserviceaccount.com',
-  private_key: privateKeyPem,
-  token_uri: 'https://oauth2.googleapis.com/token',
-});
 
 const APP = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications/org.nyccsda.app';
 const UPLOAD =
@@ -40,61 +31,43 @@ const fakeGoogle = (replies: Record<string, Reply[]>) => {
 };
 
 const happyReplies = (): Record<string, Reply[]> => ({
-  'POST https://oauth2.googleapis.com/token': [{ body: { access_token: 'access-token' } }],
   [`POST ${APP}/edits`]: [{ body: { id: 'edit-1' } }],
   [`POST ${UPLOAD}/edits/edit-1/bundles?uploadType=media`]: [{ body: { versionCode: 40000 } }],
 });
 
 const upload = (fetchImpl: unknown, log = jest.fn(), releaseNotes = '') =>
   uploadToInternalTesting({
-    serviceAccountJson,
+    accessToken: 'access-token',
     packageName: 'org.nyccsda.app',
     versionName: '0.40.0',
     bundle: Buffer.from('aab bytes'),
     releaseNotes,
     fetchImpl,
-    now: 1_700_000_000_000,
     log,
   });
 
 const trackBody = (call: Call) => JSON.parse(call.body as string);
 
 describe('Google Play upload', () => {
-  it('signs in as the service account, uploads, releases to internal testing, and commits', async () => {
+  it('uploads, releases to internal testing, and commits', async () => {
     const { calls, fetchImpl } = fakeGoogle(happyReplies());
 
     await expect(upload(fetchImpl)).resolves.toEqual({ status: 'completed', versionCode: 40000 });
 
     expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
-      'POST https://oauth2.googleapis.com/token',
       `POST ${APP}/edits`,
       `POST ${UPLOAD}/edits/edit-1/bundles?uploadType=media`,
       `PUT ${APP}/edits/edit-1/tracks/internal`,
       `POST ${APP}/edits/edit-1:commit`,
     ]);
 
-    // The token request carries a JWT signed with the service account's key.
-    const form = new URLSearchParams(calls[0].body as string);
-    expect(form.get('grant_type')).toBe('urn:ietf:params:oauth:grant-type:jwt-bearer');
-    const [header, claims, signature] = form.get('assertion')!.split('.');
-    expect(
-      verify('RSA-SHA256', Buffer.from(`${header}.${claims}`), publicKey, Buffer.from(signature, 'base64url')),
-    ).toBe(true);
-    expect(JSON.parse(Buffer.from(claims, 'base64url').toString())).toEqual({
-      iss: 'uploader@example.iam.gserviceaccount.com',
-      scope: 'https://www.googleapis.com/auth/androidpublisher',
-      aud: 'https://oauth2.googleapis.com/token',
-      iat: 1_700_000_000,
-      exp: 1_700_003_600,
-    });
-
-    // Every API call uses the access token; the bundle goes up as raw bytes.
-    for (const call of calls.slice(1)) {
+    // Every call uses the access token; the bundle goes up as raw bytes.
+    for (const call of calls) {
       expect(call.headers.authorization).toBe('Bearer access-token');
     }
-    expect(calls[2].headers['content-type']).toBe('application/octet-stream');
-    expect(calls[2].body).toEqual(Buffer.from('aab bytes'));
-    expect(trackBody(calls[3])).toEqual({
+    expect(calls[1].headers['content-type']).toBe('application/octet-stream');
+    expect(calls[1].body).toEqual(Buffer.from('aab bytes'));
+    expect(trackBody(calls[2])).toEqual({
       track: 'internal',
       releases: [{ name: '0.40.0 (40000)', versionCodes: ['40000'], status: 'completed' }],
     });
@@ -173,18 +146,94 @@ describe('Google Play upload', () => {
     const error = await upload(fetchImpl).catch((caught: Error) => caught);
     expect(error.message).toBe('The caller does not have permission');
     expect(error.message).not.toContain('access-token');
-    expect(error.message).not.toContain('PRIVATE KEY');
     expect(calls.at(-1)).toMatchObject({ method: 'DELETE', url: `${APP}/edits/edit-1` });
   });
+});
 
-  it('explains a secret that is not a service account key', async () => {
+describe('keyless sign-in', () => {
+  const PROVIDER = 'projects/123456/locations/global/workloadIdentityPools/github/providers/sda-church-app';
+  const ACCOUNT = 'play-upload@sda-church-app-play.iam.gserviceaccount.com';
+  const ID_TOKEN_URL = 'https://token.actions.example/request?api-version=2.0';
+  const STS = 'https://sts.googleapis.com/v1/token';
+  const GENERATE = `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${encodeURIComponent(ACCOUNT)}:generateAccessToken`;
+  const idTokenCall = `GET ${ID_TOKEN_URL}&audience=${encodeURIComponent(`https://iam.googleapis.com/${PROVIDER}`)}`;
+
+  const signInReplies = (): Record<string, Reply[]> => ({
+    [idTokenCall]: [{ body: { value: 'github-oidc-token' } }],
+    [`POST ${STS}`]: [{ body: { access_token: 'federated-token' } }],
+    [`POST ${GENERATE}`]: [{ body: { accessToken: 'service-account-token' } }],
+  });
+
+  const signIn = (fetchImpl: unknown, overrides = {}) =>
+    signInWithGitHub({
+      provider: PROVIDER,
+      serviceAccount: ACCOUNT,
+      idTokenUrl: ID_TOKEN_URL,
+      idTokenRequestToken: 'github-request-token',
+      fetchImpl,
+      ...overrides,
+    });
+
+  it('trades a GitHub identity token for a short-lived service account token', async () => {
+    const { calls, fetchImpl } = fakeGoogle(signInReplies());
+
+    await expect(signIn(fetchImpl)).resolves.toBe('service-account-token');
+
+    expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
+      idTokenCall,
+      `POST ${STS}`,
+      `POST ${GENERATE}`,
+    ]);
+    // GitHub's token is requested for the church's provider.
+    expect(calls[0].headers.authorization).toBe('Bearer github-request-token');
+    // Google checks that token against the provider...
+    expect(JSON.parse(calls[1].body as string)).toEqual({
+      grantType: 'urn:ietf:params:oauth:grant-type:token-exchange',
+      audience: `//iam.googleapis.com/${PROVIDER}`,
+      scope: 'https://www.googleapis.com/auth/cloud-platform',
+      requestedTokenType: 'urn:ietf:params:oauth:token-type:access_token',
+      subjectTokenType: 'urn:ietf:params:oauth:token-type:jwt',
+      subjectToken: 'github-oidc-token',
+    });
+    // ...and the result may only get a Play token for the service account.
+    expect(calls[2].headers.authorization).toBe('Bearer federated-token');
+    expect(JSON.parse(calls[2].body as string)).toEqual({
+      scope: ['https://www.googleapis.com/auth/androidpublisher'],
+      lifetime: '3600s',
+    });
+  });
+
+  it("accepts the provider as the audience URL Google's console shows", async () => {
+    expect(providerName(`https://iam.googleapis.com/${PROVIDER}`)).toBe(PROVIDER);
+    expect(providerName(`//iam.googleapis.com/${PROVIDER}`)).toBe(PROVIDER);
+    const { fetchImpl } = fakeGoogle(signInReplies());
+    await expect(
+      signIn(fetchImpl, { provider: ` https://iam.googleapis.com/${PROVIDER} ` }),
+    ).resolves.toBe('service-account-token');
+  });
+
+  it("says which step Google refused, with Google's reason", async () => {
+    const replies = signInReplies();
+    replies[`POST ${STS}`] = [
+      { status: 403, body: { error_description: 'The given credential is rejected by the attribute condition.' } },
+    ];
+    const { calls, fetchImpl } = fakeGoogle(replies);
+
+    await expect(signIn(fetchImpl)).rejects.toThrow(
+      "Keyless sign-in failed at Google's token exchange: The given credential is rejected by the attribute condition.",
+    );
+    expect(calls).toHaveLength(2);
+  });
+
+  it('explains missing or malformed settings before calling anyone', async () => {
     const { fetchImpl } = fakeGoogle({});
-    await expect(
-      uploadToInternalTesting({ serviceAccountJson: 'not json', fetchImpl }),
-    ).rejects.toThrow('not valid JSON');
-    await expect(
-      uploadToInternalTesting({ serviceAccountJson: '{"type":"authorized_user"}', fetchImpl }),
-    ).rejects.toThrow('service account key file');
+    await expect(signIn(fetchImpl, { provider: 'sda-church-app' })).rejects.toThrow(
+      'GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER must look like',
+    );
+    await expect(signIn(fetchImpl, { serviceAccount: 'someone@gmail.com' })).rejects.toThrow(
+      'GOOGLE_PLAY_SERVICE_ACCOUNT must be the service account email',
+    );
+    await expect(signIn(fetchImpl, { idTokenRequestToken: '' })).rejects.toThrow('id-token: write');
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

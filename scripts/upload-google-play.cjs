@@ -2,13 +2,18 @@
 // church's testers get it automatically. Nothing reaches the public until a
 // maintainer promotes the release in Play Console.
 //
-// It uses only Node's built-ins, so the job that holds the Play credential runs
-// no npm packages. The credential is a service account key; setup is in
-// docs/operations/native-builds.md#automatic-store-uploads.
+// It signs in without a key (Workload Identity Federation): GitHub vouches for
+// the job, and Google returns a token for the church's service account that
+// expires within an hour. It uses only Node's built-ins, so the job runs no npm
+// packages. Setup is in
+// docs/operations/native-builds.md#setting-up-the-google-play-service-account.
 //
-//   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON='{…}' node scripts/upload-google-play.cjs app.aab
+//   node scripts/upload-google-play.cjs app.aab
+//
+// It runs in GitHub Actions with `id-token: write` and these environment
+// variables: GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER, GOOGLE_PLAY_SERVICE_ACCOUNT,
+// and RELEASE_COMMIT_SUBJECT for the release notes.
 
-const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -16,8 +21,12 @@ const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applica
 const UPLOAD_API =
   'https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications';
 const SCOPE = 'https://www.googleapis.com/auth/androidpublisher';
-const DEFAULT_TOKEN_URI = 'https://oauth2.googleapis.com/token';
 const TRACK = 'internal';
+const STS_URL = 'https://sts.googleapis.com/v1/token';
+const IAM_CREDENTIALS_API = 'https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts';
+const PROVIDER_PATTERN =
+  /^projects\/\d+\/locations\/global\/workloadIdentityPools\/[a-z0-9-]+\/providers\/[a-z0-9-]+$/;
+const SERVICE_ACCOUNT_PATTERN = /^[a-z0-9-]+@[a-z0-9-]+\.iam\.gserviceaccount\.com$/;
 
 // Play refuses a versionCode it has seen before, for example on a rerun.
 const ALREADY_UPLOADED = /already been used/i;
@@ -35,40 +44,6 @@ class PlayApiError extends Error {
     this.status = status;
   }
 }
-
-const parseServiceAccount = (json) => {
-  let account;
-  try {
-    account = JSON.parse(json);
-  } catch {
-    throw new Error(
-      'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not valid JSON. Paste the whole key file.',
-    );
-  }
-  if (account?.type !== 'service_account' || !account.client_email || !account.private_key) {
-    throw new Error(
-      'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must be a service account key file with client_email and private_key.',
-    );
-  }
-  return { ...account, token_uri: account.token_uri || DEFAULT_TOKEN_URI };
-};
-
-// A signed JWT that Google trades for an access token.
-const createAssertion = (serviceAccount, now) => {
-  const issuedAt = Math.floor(now / 1000);
-  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
-  const unsigned = `${encode({ alg: 'RS256', typ: 'JWT' })}.${encode({
-    iss: serviceAccount.client_email,
-    scope: SCOPE,
-    aud: serviceAccount.token_uri,
-    iat: issuedAt,
-    exp: issuedAt + 3600,
-  })}`;
-  const signature = crypto
-    .sign('RSA-SHA256', Buffer.from(unsigned), serviceAccount.private_key)
-    .toString('base64url');
-  return `${unsigned}.${signature}`;
-};
 
 // The "What's new" text testers see: the release PR's title. On main, it's the
 // subject of the squash-merge commit, such as
@@ -105,27 +80,89 @@ const request = async (fetchImpl, url, { method = 'GET', token, body, contentTyp
 
 const json = (value) => ({ body: JSON.stringify(value), contentType: 'application/json' });
 
+// Google's console shows the provider as an audience URL; accept that too.
+const providerName = (value) =>
+  String(value || '').trim().replace(/^(?:https:)?\/\/iam\.googleapis\.com\//, '');
+
+const step = async (name, work) => {
+  try {
+    return await work();
+  } catch (error) {
+    throw new Error(`Keyless sign-in failed at ${name}: ${error.message}`);
+  }
+};
+
+// Keyless sign-in (Workload Identity Federation). GitHub signs a token saying
+// which repository, branch, and environment this job runs in. Google checks it
+// against the church's provider, whose condition accepts only the store-upload
+// environment on main, and trades it for a short-lived token for the service
+// account. No key exists to store or leak.
+const signInWithGitHub = async ({
+  provider,
+  serviceAccount,
+  idTokenUrl,
+  idTokenRequestToken,
+  fetchImpl = fetch,
+}) => {
+  const name = providerName(provider);
+  if (!PROVIDER_PATTERN.test(name)) {
+    throw new Error(
+      'GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER must look like projects/<number>/locations/global/workloadIdentityPools/<pool>/providers/<provider>.',
+    );
+  }
+  if (!SERVICE_ACCOUNT_PATTERN.test(serviceAccount || '')) {
+    throw new Error(
+      'GOOGLE_PLAY_SERVICE_ACCOUNT must be the service account email, such as play-upload@<project>.iam.gserviceaccount.com.',
+    );
+  }
+  if (!idTokenUrl || !idTokenRequestToken) {
+    throw new Error("GitHub offered no identity token; the job needs 'permissions: id-token: write'.");
+  }
+
+  const gitHubToken = await step('the GitHub identity token', async () => {
+    const url = new URL(idTokenUrl);
+    url.searchParams.set('audience', `https://iam.googleapis.com/${name}`);
+    const { value } = await request(fetchImpl, url.toString(), { token: idTokenRequestToken });
+    if (!value) throw new Error('GitHub returned no token.');
+    return value;
+  });
+
+  const federatedToken = await step("Google's token exchange", async () => {
+    const { access_token: token } = await request(fetchImpl, STS_URL, {
+      method: 'POST',
+      ...json({
+        grantType: 'urn:ietf:params:oauth:grant-type:token-exchange',
+        audience: `//iam.googleapis.com/${name}`,
+        scope: 'https://www.googleapis.com/auth/cloud-platform',
+        requestedTokenType: 'urn:ietf:params:oauth:token-type:access_token',
+        subjectTokenType: 'urn:ietf:params:oauth:token-type:jwt',
+        subjectToken: gitHubToken,
+      }),
+    });
+    if (!token) throw new Error('Google returned no token.');
+    return token;
+  });
+
+  return step('the service account token', async () => {
+    const { accessToken } = await request(
+      fetchImpl,
+      `${IAM_CREDENTIALS_API}/${encodeURIComponent(serviceAccount)}:generateAccessToken`,
+      { method: 'POST', token: federatedToken, ...json({ scope: [SCOPE], lifetime: '3600s' }) },
+    );
+    if (!accessToken) throw new Error('Google returned no token.');
+    return accessToken;
+  });
+};
+
 const uploadToInternalTesting = async ({
-  serviceAccountJson,
+  accessToken: token,
   packageName,
   versionName,
   bundle,
   releaseNotes = '',
   fetchImpl = fetch,
-  now = Date.now(),
   log = console.log,
 }) => {
-  const serviceAccount = parseServiceAccount(serviceAccountJson);
-  const { access_token: token } = await request(fetchImpl, serviceAccount.token_uri, {
-    method: 'POST',
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: createAssertion(serviceAccount, now),
-    }).toString(),
-    contentType: 'application/x-www-form-urlencoded',
-  });
-  if (!token) throw new Error('Google returned no access token.');
-
   // Every change happens inside an "edit", which takes effect only on commit.
   const app = `${API}/${encodeURIComponent(packageName)}`;
   const edit = await request(fetchImpl, `${app}/edits`, { method: 'POST', token, ...json({}) });
@@ -214,8 +251,14 @@ const main = async () => {
   );
   const versionName = appJson.expo.version;
   const releaseNotes = releaseNotesFromCommitSubject(process.env.RELEASE_COMMIT_SUBJECT);
+  const accessToken = await signInWithGitHub({
+    provider: process.env.GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER,
+    serviceAccount: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT,
+    idTokenUrl: process.env.ACTIONS_ID_TOKEN_REQUEST_URL,
+    idTokenRequestToken: process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN,
+  });
   const result = await uploadToInternalTesting({
-    serviceAccountJson: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || '',
+    accessToken,
     packageName: appJson.expo.android.package,
     versionName,
     bundle: fs.readFileSync(bundlePath),
@@ -236,9 +279,9 @@ const main = async () => {
 };
 
 module.exports = {
-  createAssertion,
-  parseServiceAccount,
+  providerName,
   releaseNotesFromCommitSubject,
+  signInWithGitHub,
   uploadToInternalTesting,
 };
 

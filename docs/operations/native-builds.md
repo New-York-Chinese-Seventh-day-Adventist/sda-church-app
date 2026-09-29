@@ -504,8 +504,11 @@ Environment used only by the upload jobs:
 APP_STORE_CONNECT_API_KEY_ID
 APP_STORE_CONNECT_API_ISSUER_ID
 APP_STORE_CONNECT_API_PRIVATE_KEY
-GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
+GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER
+GOOGLE_PLAY_SERVICE_ACCOUNT
 ```
+
+The two Google Play values aren't keys: the upload signs in without one.
 
 See [Automatic store uploads](#automatic-store-uploads).
 
@@ -873,7 +876,9 @@ testers need it.
 ### How the credentials are kept apart
 
 - The store credentials live in their own `store-upload` Environment. The build jobs,
-  which hold the signing keys, never see them.
+  which hold the signing keys, never see them. Google Play needs no stored key at all:
+  GitHub vouches for the upload job, and Google returns a token that expires within an
+  hour (see [Setting up the Google Play service account](#setting-up-the-google-play-service-account)).
 - The upload jobs never see the signing keys. They download the finished file and
   upload it without running any npm packages: iOS uses Apple's `altool`, and Android
   uses `scripts/upload-google-play.cjs`, which needs only Node's built-ins. So a
@@ -906,9 +911,14 @@ testers need it.
 
 ### Setting up the Google Play service account
 
-Google's upload API accepts only a *service account*: a robot Google account, kept in
-a Google Cloud project, that signs in with a key file instead of a password. **It
-costs nothing and needs no billing account.**
+Google's upload API accepts only a *service account*: a robot Google account kept in a
+Google Cloud project. GitHub signs in as it **without any key**: it vouches that the
+job runs in the church's repository, in the `store-upload` environment on `main`, and
+Google returns a token that expires within an hour. This is called *Workload Identity
+Federation*. There's nothing to store, leak, or renew, and it's a one-time setup;
+every release after that signs in on its own. The church's Google organization blocks
+key files, so this is the only way in. **It costs nothing and needs no billing
+account.**
 [Service limits and costs](service-limits-and-costs.md#google-cloud-play-upload-service-account)
 records why, and the rules that keep it free.
 
@@ -934,42 +944,81 @@ records why, and the rules that keep it free.
    access** and add the other administrators' church accounts with the **Owner**
    role.
 
-**Turn on the Play API**
+**Turn on the APIs**
 
-6. Menu (☰) → **APIs & Services → Library**. Search for **Google Play Android
-   Developer API**, open it, and click **Enable**. It shouldn't ask for billing; if it
-   does, stop.
+6. Menu (☰) → **APIs & Services → Library**. Search for each of these, open it, and
+   click **Enable**. None of them asks for billing; if one does, stop.
+   - **Google Play Android Developer API**
+   - **IAM Service Account Credentials API**
+   - **Security Token Service API**
+   - **Identity and Access Management (IAM) API**
+   - **Cloud Resource Manager API**
 
-**Create the service account and its key**
+**Create the service account**
 
 7. Menu → **IAM & Admin → Service Accounts → Create service account**. Name it
    `play-upload` and click **Create and continue**. Skip the two optional steps
-   (**Continue**, then **Done**); it needs no Google Cloud roles.
-8. Click the new account, open **Keys → Add key → Create new key**, choose **JSON**,
-   and click **Create**. A `.json` file downloads. That file is the secret: keep it on
-   the admin drive with the other signing files, and never commit it or send it by
-   email or chat.
-   - If key creation is blocked, the organization enforces **Disable service account
-     key creation**, the default for newer organizations. A Workspace super admin can
-     turn it off for this project only, under **IAM & Admin → Organization
-     Policies**: open that policy, **Manage policy**, override the parent's policy,
-     and set enforcement to **Off**.
-9. Copy the account's email address, which looks like
+   (**Continue**, then **Done**); it needs no Google Cloud roles. Don't create a key
+   for it: the organization blocks keys, and the upload doesn't need one.
+8. Copy the account's email address, which looks like
    `play-upload@sda-church-app-play.iam.gserviceaccount.com`.
+
+**Let GitHub sign in as it, without a key**
+
+9. Find the repository's numeric ID: open
+   `https://api.github.com/repos/New-York-Chinese-Seventh-day-Adventist/sda-church-app`
+   in a browser and note the `"id"` near the top. Google recommends the number
+   because, unlike a name, no other repository can ever take it over. It only goes
+   into Google Cloud; don't commit it.
+10. Menu → **IAM & Admin → Workload Identity Federation → Create pool** (or **Get
+    started**).
+    - **Name:** `GitHub`. **Pool ID:** `github`. Continue.
+    - **Add a provider to pool:** choose **OpenID Connect (OIDC)**. **Provider name**
+      and **Provider ID:** `sda-church-app`. **Issuer (URL):**
+      `https://token.actions.githubusercontent.com`. **Audiences:** leave **Default
+      audience**. Continue.
+    - **Configure provider attributes:** set `google.subject` to `assertion.sub`, then
+      **Add mapping** for `attribute.repository_id` = `assertion.repository_id`.
+    - **Attribute conditions → Add condition**, with the repository ID from step 9 in
+      place of `REPO_ID`:
+
+      ```text
+      assertion.repository_id == 'REPO_ID' && assertion.environment == 'store-upload' && assertion.ref == 'refs/heads/main'
+      ```
+
+      This is the lock: Google accepts only jobs in this repository's `store-upload`
+      environment, on `main`.
+    - Click **Save**.
+11. On the pool's page, click **Grant access → Grant access using service account
+    impersonation**. Choose `play-upload`. Under **Select principals**, choose **Only
+    identities matching the filter**, attribute `repository_id`, and the repository ID
+    as the value. Click **Save**, and close the **Configure your application** window
+    that follows; you don't need its file.
+    - If Google refuses because an organization policy limits who can be granted
+      access, a super admin allows this project's workload identity pool in that
+      policy.
+12. Copy the provider's name. Open the `sda-church-app` provider: its **Default
+    audience** looks like
+    `https://iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/github/providers/sda-church-app`.
+    Copy it as it is; the upload drops the `https://iam.googleapis.com/` part.
 
 **Let it upload in Play Console**
 
-10. Play Console → **Users and permissions → Invite new users**. Paste the email
-   address. Under **App permissions**, add the app and tick **Release apps to testing
-   tracks**. Send the invitation; a service account doesn't need to accept it.
-11. New permissions can take up to a day to reach the API. If the first automatic
+13. Play Console → **Users and permissions → Invite new users**. Paste the email
+    address from step 8. Under **App permissions**, add the app and tick **Release
+    apps to testing tracks**. Send the invitation; a service account doesn't need to
+    accept it.
+14. New permissions can take up to a day to reach the API. If the first automatic
     upload fails with a permission error, rerun it later.
 
-**Give it to GitHub**
+**Give GitHub the two settings**
 
-12. Settings → Environments → `store-upload` → **Add environment secret**. Name it
-    `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, open the `.json` file in a text editor, and
-    paste everything in it as the value.
+15. Settings → Environments → `store-upload` → **Add environment secret**, twice:
+    - `GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER`: the provider name from step 12.
+    - `GOOGLE_PLAY_SERVICE_ACCOUNT`: the email address from step 8.
+
+    Neither is a key. They're secrets only so that the logs of this public repository
+    don't show the project number.
 
 ### Reading the result
 
@@ -980,6 +1029,7 @@ records why, and the rules that keep it free.
 | Already on TestFlight, or Google Play already has it | A rerun of the same release; the store has this build number | Nothing |
 | Uploaded as a draft | Play accepts only drafts until the app's first release is rolled out | Roll it out in Play Console → **Test and release → Internal testing** |
 | Changes need to be sent for review by hand | Play requires that for this app right now | Play Console → **Publishing overview** → send the changes for review |
+| Keyless sign-in failed at Google's token exchange | Google refused GitHub's sign-in: the provider's condition or repository ID doesn't match, or the grant is missing | Check steps 9–11 of [the service account setup](#setting-up-the-google-play-service-account) |
 | Failed | The log has the store's message, often a revoked key or a missing permission | Fix the cause and rerun the job, or upload by hand |
 
 ### Uploading by hand
