@@ -52,6 +52,16 @@ table.
 
 ![App dependencies diagram: inside the app, church photos, hymnal charts, and Bible audio from the Adventist Connect media library, which is stored on Wasabi and can be restored from a Google Drive backup, with Bible audio falling back to the Internet Archive and then Audio Power; Bible text from HelloAO and fetch(bible); the church's bulletin API and the Adventech, Chinese Union Mission, and EGW Writings APIs; opened in the browser, YouTube, Spotify, Zoom, hymns on zgaxr and Hymns for Worship, Sabbath School readers, library reading, giving, and other links](diagrams/app-dependencies.svg)
 
+### Google Play upload sign-in
+
+Each service the automatic Google Play upload passes through, in order. It signs in
+without a key: GitHub vouches for the job, Google's Security Token Service checks that
+against the church's workload identity pool, and the IAM Service Account Credentials
+API returns a short-lived token for the `play-upload` service account. Setup is in
+[Setting up the Google Play service account](operations/native-builds.md#setting-up-the-google-play-service-account).
+
+![Google Play upload sign-in diagram: 1, the upload job, which runs only in the store-upload environment on main, asks GitHub for an identity token; 2, GitHub returns a signed token naming the repository ID, environment, and branch; 3, the job sends it to Google's Security Token Service API for the provider named in GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER; 4, the Security Token Service checks it against the provider sda-church-app in the workload identity pool github, which accepts only this repository's ID, the store-upload environment, and main; 5, the pool accepts it; 6, the Security Token Service returns a federated token; 7, the job asks the IAM Service Account Credentials API to act as the play-upload service account, which is allowed because the pool is a Workload Identity User on it; 8, it returns a play-upload token limited to Google Play that expires within an hour; 9, the job uploads the AAB to the Google Play Android Developer API, sets the release name and What's new, and commits, which Play Console allows because play-upload may release to testing tracks; 10, Play rolls the release out to the internal testing track. The Google Cloud services are in the project sda-church-app-play, which is free and has no billing account. No key is stored anywhere, and an admin promotes the release to production after testing](diagrams/play-upload.svg)
+
 ### Editing the diagrams
 
 The sources are the `.mmd` files in [`diagrams/`](diagrams/). GitHub's built-in
