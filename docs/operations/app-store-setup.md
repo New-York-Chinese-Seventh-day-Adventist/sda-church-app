@@ -145,9 +145,14 @@ is computed from the version; see [Version numbers](version-numbers.md).
 Three things expire every year. **GitHub reminds you.** Every Monday, the **Apple
 Signing Monitor** reads their dates from `.github/apple-signing-expiry.json`. From 60
 days before any of them expires, it opens the issue **[monitor] Apple signing needs
-renewal**, assigned to the maintainers in `MONITOR_ALERT_ASSIGNEES`, with the steps
-below. It comments every week until the renewal is recorded, then closes itself. It
-reads no Apple credentials: the dates aren't secret.
+renewal**, with the steps below. The issue is assigned to the maintainers listed in
+the `APPLE_SIGNING_ALERT_ASSIGNEES` Actions variable, so each gets an email.
+It comments every week until the renewal is recorded, which emails them again, then
+closes itself. The first reminder for the current dates arrives around July 26, 2027,
+two months before the membership renews on September 20, 2027.
+
+The monitor reads no Apple credentials, and the public issue shows only dates, which
+give no access to anything.
 
 | What | When it expires | Who renews it |
 | --- | --- | --- |

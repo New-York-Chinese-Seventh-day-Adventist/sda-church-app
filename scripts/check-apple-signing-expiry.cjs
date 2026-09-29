@@ -2,14 +2,16 @@
  * Three Apple things expire every year: the Apple Distribution certificate that
  * signs iOS builds, the App Store provisioning profile made from it, and the
  * Apple Developer Program membership. Their dates are recorded in
- * .github/apple-signing-expiry.json. None of them is secret: the certificate
- * and profile dates are inside every copy of the app.
+ * .github/apple-signing-expiry.json. None of them is secret, and knowing them
+ * gives no access to anything: the certificate and profile dates are inside
+ * every signed IPA the workflow builds, and the alert issue shows only dates.
  *
  * - The weekly Apple Signing Monitor runs `--report`. It exits non-zero from 60
  *   days before any date, when one has passed, or when one isn't recorded, and
  *   the workflow opens an alert issue with the renewal steps.
  * - Each signed iOS build runs `--profile` on the provisioning profile inside
- *   the IPA it just built, and warns when the recorded dates don't match, for
+ *   the IPA it just built (Apple re-signs App Store and TestFlight copies, so
+ *   only this build has it), and warns when the recorded dates don't match, for
  *   example after a renewal that forgot to update the file.
  *
  * Renewal steps: docs/operations/app-store-setup.md#yearly-apple-renewals.

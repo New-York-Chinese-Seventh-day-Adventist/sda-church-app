@@ -50,6 +50,7 @@ Each kind of item that needs a person reaches a maintainer as follows:
 | --- | --- |
 | A pull request to review | Watch the repository with **Watch → Custom → Pull requests** (and **Issues** for new issues). With **No additional events**, that emails each new PR or issue but not its comments or pushes. |
 | A production deploy to approve | The `production` Environment waits for a `release-approvers` member. |
+| An Apple renewal reminder | The **Apple Signing Monitor** issue is assigned to the usernames in `APPLE_SIGNING_ALERT_ASSIGNEES`, falling back to `MONITOR_ALERT_ASSIGNEES`. |
 | A monitor alert (external dependencies, store toolchain) | The alert issue is assigned to the usernames in the `MONITOR_ALERT_ASSIGNEES` Actions variable (comma-separated) under **Settings → Secrets and variables → Actions → Variables**. If it is empty, the alert @mentions whoever triggered the run. Both monitors share this handling in `scripts/monitor-alert-issue.cjs`, covered by `test/monitor-alert-issue.test.ts`. |
 
 The monitors can't read `release-approvers` membership or reliably @mention the
@@ -57,6 +58,11 @@ team: they run with the built-in Actions token, which has no organization
 permissions. That's why alerts use `MONITOR_ALERT_ASSIGNEES` instead. When the team's
 members change, update the variable to match. An assignee must have access to the
 repository, directly or through a team.
+
+To also send these emails to `technology@nyccsda.org`, one admin adds that address
+to their GitHub account (**Settings → Emails**; the group forwards the verification
+email) and, under **Settings → Notifications → Custom routing**, sends this
+organization's notifications to it. An address can belong to only one GitHub account.
 
 With that in place, a maintainer can keep email for **Watching** and **Participating,
 @mentions and custom**, and choose **No additional events** under **Customize email
@@ -399,9 +405,18 @@ signing needs renewal** when:
 - a date has passed; or
 - a date isn't recorded.
 
-The issue includes the renewal steps. A new issue is assigned to the users in
-`MONITOR_ALERT_ASSIGNEES`, and it closes itself on the first run after every date is
-more than 60 days away. It reads no Apple credentials.
+The issue includes the renewal steps. It's assigned to the usernames in the
+`APPLE_SIGNING_ALERT_ASSIGNEES` Actions variable (comma-separated), or to
+`MONITOR_ALERT_ASSIGNEES` if that variable is empty. When the maintainers who handle
+Apple renewals change, update the variable under **Settings → Secrets and variables →
+Actions → Variables**. The issue
+comments weekly until the dates are updated and closes itself on the first run after
+every date is more than 60 days away. It reads no Apple credentials, and it shows only
+dates, which are safe in a public issue.
+
+GitHub can only notify GitHub accounts, not an email address such as
+`technology@nyccsda.org`. To send these emails to the group, see
+[Getting notified only when action is needed](#getting-notified-only-when-action-is-needed).
 
 Each signed iOS build also runs **Check the recorded Apple signing dates**, which
 compares the file with the provisioning profile inside the IPA it just built and warns

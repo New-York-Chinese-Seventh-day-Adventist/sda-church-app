@@ -191,6 +191,8 @@ describe('Apple signing reminders', () => {
     const monitor = readRepoFile('.github/workflows/apple-signing-monitor.yml');
     expect(monitor).not.toMatch(/secrets\./);
     expect(monitor).not.toContain('environment:');
+    // Every repository admin gets the Apple reminder by email.
+    expect(monitor).toContain('vars.APPLE_SIGNING_ALERT_ASSIGNEES || vars.MONITOR_ALERT_ASSIGNEES');
     const workflow = readRepoFile('.github/workflows/native-ios-build.yml');
     const start = workflow.indexOf('\n  signing_dates:\n');
     const job = workflow.slice(start, workflow.indexOf('\n  testflight_upload:\n'));

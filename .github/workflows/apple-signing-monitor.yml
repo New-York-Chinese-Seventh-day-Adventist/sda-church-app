@@ -4,7 +4,7 @@ name: Apple Signing Monitor
 # the Apple Developer membership expire every year. This reads their dates
 # from .github/apple-signing-expiry.json weekly and opens an alert issue, with
 # the renewal steps, from 60 days before any of them expires. It uses no Apple
-# credentials: the dates aren't secret.
+# credentials: the dates aren't secret, and the issue shows nothing but dates.
 
 on:
   schedule:
@@ -50,9 +50,11 @@ jobs:
         if: steps.expiry-check.outcome == 'failure'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
-          # Comma-separated GitHub usernames. Assigning the alert sends them a
-          # notification even when they don't watch the repository.
-          ALERT_ASSIGNEES: ${{ vars.MONITOR_ALERT_ASSIGNEES }}
+          # Comma-separated GitHub usernames. Assigning the alert emails them
+          # even when they don't watch the repository. Apple renewals go to the
+          # maintainers in APPLE_SIGNING_ALERT_ASSIGNEES; without it, they go to
+          # the usual monitor assignees.
+          ALERT_ASSIGNEES: ${{ vars.APPLE_SIGNING_ALERT_ASSIGNEES || vars.MONITOR_ALERT_ASSIGNEES }}
         with:
           script: |
             const alerts = require(`${process.env.GITHUB_WORKSPACE}/scripts/monitor-alert-issue.cjs`);

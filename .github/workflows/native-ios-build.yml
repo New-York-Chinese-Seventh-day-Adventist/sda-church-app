@@ -290,7 +290,8 @@ jobs:
     # Compares .github/apple-signing-expiry.json, which the Apple Signing
     # Monitor reads, with the provisioning profile inside the IPA just built,
     # and warns if they differ, such as after a renewal that forgot the file.
-    # It reads no secrets: the profile ships inside every copy of the app.
+    # It reads no secrets: the profile inside the IPA holds only public dates
+    # and certificates, no key.
     if: >-
       github.event.repository.fork == false &&
       github.ref == 'refs/heads/main' &&
