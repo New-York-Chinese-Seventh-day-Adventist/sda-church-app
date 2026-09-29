@@ -140,7 +140,8 @@ The admin-only steps are:
 2. **Merge feature pull requests** into that branch. Their titles must start with
    `Release/x.y.z:` or `Release/x.y.x:`.
 3. **Open the release pull request** from `release/x.y.z` into `main`, titled
-   `Release/x.y.z: …`. Copy the `Closes #…` lines from the included feature pull
+   `Release/x.y.z: …`. Write the part after the colon for testers: it becomes the
+   "What's new" text in Google Play internal testing. Copy the `Closes #…` lines from the included feature pull
    requests into its description. Use `Part of #…` or `Related to #…` for issues
    that should stay open. The **PR Linked Issue** check fails if the description has neither.
 4. **Merge it.** The version files must already say `x.y.z`
@@ -263,7 +264,8 @@ until you release it:
 2. **Apple:** on the app's **Distribution** page in App Store Connect, set the version
    to the release's version, select the build, and **Add for Review**.
 3. **Google Play:** Play Console → **Test and release → Internal testing** → promote
-   the release to production.
+   the release to production. Promoting copies the testers' "What's new" text, so
+   rewrite it for the public first.
 
 The upload jobs, their `store-upload` secrets, what each result means, and how to
 upload by hand are in

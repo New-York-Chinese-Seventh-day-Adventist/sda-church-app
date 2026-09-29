@@ -166,6 +166,16 @@ describe.each([
   });
 });
 
+describe('Google Play upload', () => {
+  it("reads the release notes from git, never by pasting the commit message into the shell", () => {
+    // `${{ github.event.head_commit.message }}` inside `run:` would let a
+    // commit message run commands.
+    const workflow = readRepoFile('.github/workflows/native-android-build.yml');
+    expect(workflow).toContain('RELEASE_COMMIT_SUBJECT="$(git log -1 --format=%s)"');
+    expect(workflow).not.toContain('head_commit');
+  });
+});
+
 describe('TestFlight upload', () => {
   const workflow = readRepoFile('.github/workflows/native-ios-build.yml');
 

@@ -858,11 +858,17 @@ After you approve a release's signed builds, two more jobs upload them for testi
   Connect. It appears in TestFlight once Apple finishes processing it, usually within
   half an hour, and an internal group with automatic distribution gets it.
 - **Upload to Google Play internal testing**, in **Native Android build**, uploads
-  the AAB and rolls it out to the internal testing track.
+  the AAB and rolls it out to the internal testing track. Its "What's new" text is the
+  release PR's title without the `Release/x.y.z:` prefix: `Release/0.40.0: Faster
+  bulletin (#300)` becomes "Faster bulletin". A title with nothing after the version
+  gives no notes.
 
 Nothing reaches the public automatically. After testing on real devices, a maintainer
 submits the iOS build for review from App Store Connect's **Distribution** page, and
-promotes the Android release to production in Play Console.
+promotes the Android release to production in Play Console. **Promoting copies the
+testers' "What's new" text,** so rewrite it for the public before rolling out.
+TestFlight builds have no "What to Test" text; add one in App Store Connect if
+testers need it.
 
 ### How the credentials are kept apart
 
@@ -895,9 +901,16 @@ promotes the Android release to production in Play Console.
    4. In TestFlight, create an internal testing group with **automatic distribution**
       turned on, so each new build reaches its testers.
 3. **Google Play:** Play accepts uploads through its API only after the app's first
-   upload is made by hand in Play Console. Then:
+   upload is made by hand in Play Console. Google's upload API accepts only a Google
+   Cloud service account. The project, the service account, its key, and this API
+   are all free and need no billing account; don't add one. Then:
    1. In a Google Cloud project the church controls, enable the **Google Play Android
-      Developer API**, create a service account, and create a JSON key for it.
+      Developer API**, create a service account, and create a JSON key for it. If the
+      Cloud console isn't available to your account, a Workspace admin turns on
+      **Google Cloud** under **Admin console → Apps → Additional Google services**.
+      If creating a key is blocked, a super admin overrides the **Disable service
+      account key creation** policy for this project under **IAM & Admin →
+      Organization Policies**.
    2. In Play Console, open **Users and permissions → Invite new users**, invite the
       service account's email address, and give it **Release apps to testing tracks**
       for this app.

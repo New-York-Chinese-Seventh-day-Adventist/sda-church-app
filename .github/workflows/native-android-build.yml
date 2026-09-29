@@ -183,7 +183,10 @@ jobs:
             echo '::notice title=Google Play upload skipped::Add GOOGLE_PLAY_SERVICE_ACCOUNT_JSON to the store-upload environment to upload automatically.'
             exit 0
           fi
-          node scripts/upload-google-play.cjs "$RUNNER_TEMP/nyccsda-aab/app.aab"
+          # The release PR's title, the subject of the squash-merge commit,
+          # becomes the "What's new" text testers see.
+          RELEASE_COMMIT_SUBJECT="$(git log -1 --format=%s)" \
+            node scripts/upload-google-play.cjs "$RUNNER_TEMP/nyccsda-aab/app.aab"
 
   release:
     # A manual build should produce artifacts only; publish a GitHub Release

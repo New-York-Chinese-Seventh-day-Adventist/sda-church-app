@@ -26,6 +26,8 @@ const ALREADY_UPLOADED = /already been used/i;
 const DRAFT_APP = /only releases with status draft may be created on draft app/i;
 // Some apps need changes sent for review by hand in Play Console.
 const REVIEW_BY_HAND = /changesNotSentForReview/;
+// Play's limit for one language's release notes.
+const MAX_RELEASE_NOTES = 500;
 
 class PlayApiError extends Error {
   constructor(status, message) {
@@ -68,6 +70,19 @@ const createAssertion = (serviceAccount, now) => {
   return `${unsigned}.${signature}`;
 };
 
+// The "What's new" text testers see: the release PR's title. On main, it's the
+// subject of the squash-merge commit, such as
+// "Release/0.40.0: Leaner CI and Dependabot updates (#291)", so drop the
+// "Release/x.y.z:" prefix and the "(#291)" suffix.
+const releaseNotesFromCommitSubject = (subject) => {
+  const text = String(subject || '')
+    .replace(/^\s*Release\/\d+\.\d+\.(?:\d+|x)\s*:?/i, '')
+    .replace(/(?:\s*\(#\d+\))+\s*$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > MAX_RELEASE_NOTES ? `${text.slice(0, MAX_RELEASE_NOTES - 1)}…` : text;
+};
+
 const request = async (fetchImpl, url, { method = 'GET', token, body, contentType } = {}) => {
   const headers = {};
   if (token) headers.authorization = `Bearer ${token}`;
@@ -95,6 +110,7 @@ const uploadToInternalTesting = async ({
   packageName,
   versionName,
   bundle,
+  releaseNotes = '',
   fetchImpl = fetch,
   now = Date.now(),
   log = console.log,
@@ -132,6 +148,13 @@ const uploadToInternalTesting = async ({
       return { status: 'already-uploaded' };
     }
 
+    // Release notes need a language; use the store listing's default one.
+    let notes;
+    if (releaseNotes) {
+      const { defaultLanguage } = await request(fetchImpl, `${editUrl}/details`, { token });
+      notes = [{ language: defaultLanguage, text: releaseNotes }];
+    }
+
     const release = async (status, commitQuery = '') => {
       await request(fetchImpl, `${editUrl}/tracks/${TRACK}`, {
         method: 'PUT',
@@ -139,7 +162,12 @@ const uploadToInternalTesting = async ({
         ...json({
           track: TRACK,
           releases: [
-            { name: `${versionName} (${versionCode})`, versionCodes: [String(versionCode)], status },
+            {
+              name: `${versionName} (${versionCode})`,
+              versionCodes: [String(versionCode)],
+              status,
+              ...(notes && { releaseNotes: notes }),
+            },
           ],
         }),
       });
@@ -185,14 +213,19 @@ const main = async () => {
     fs.readFileSync(path.resolve(__dirname, '..', 'app.json'), 'utf8'),
   );
   const versionName = appJson.expo.version;
+  const releaseNotes = releaseNotesFromCommitSubject(process.env.RELEASE_COMMIT_SUBJECT);
   const result = await uploadToInternalTesting({
     serviceAccountJson: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || '',
     packageName: appJson.expo.android.package,
     versionName,
     bundle: fs.readFileSync(bundlePath),
+    releaseNotes,
   });
   const name = result.versionCode ? `${versionName} (${result.versionCode})` : versionName;
-  const summary = SUMMARIES[result.status](name);
+  let summary = SUMMARIES[result.status](name);
+  if (releaseNotes && result.status !== 'already-uploaded') {
+    summary += ` What's new: "${releaseNotes}"`;
+  }
   console.log(summary);
   if (process.env.GITHUB_STEP_SUMMARY) {
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
@@ -202,7 +235,12 @@ const main = async () => {
   }
 };
 
-module.exports = { createAssertion, parseServiceAccount, uploadToInternalTesting };
+module.exports = {
+  createAssertion,
+  parseServiceAccount,
+  releaseNotesFromCommitSubject,
+  uploadToInternalTesting,
+};
 
 if (require.main === module) {
   main().catch((error) => {

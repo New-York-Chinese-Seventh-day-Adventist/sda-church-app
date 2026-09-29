@@ -1,6 +1,9 @@
 import { generateKeyPairSync, verify } from 'node:crypto';
 
-const { uploadToInternalTesting } = require('../scripts/upload-google-play.cjs');
+const {
+  releaseNotesFromCommitSubject,
+  uploadToInternalTesting,
+} = require('../scripts/upload-google-play.cjs');
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem' }) as string;
@@ -42,12 +45,13 @@ const happyReplies = (): Record<string, Reply[]> => ({
   [`POST ${UPLOAD}/edits/edit-1/bundles?uploadType=media`]: [{ body: { versionCode: 40000 } }],
 });
 
-const upload = (fetchImpl: unknown, log = jest.fn()) =>
+const upload = (fetchImpl: unknown, log = jest.fn(), releaseNotes = '') =>
   uploadToInternalTesting({
     serviceAccountJson,
     packageName: 'org.nyccsda.app',
     versionName: '0.40.0',
     bundle: Buffer.from('aab bytes'),
+    releaseNotes,
     fetchImpl,
     now: 1_700_000_000_000,
     log,
@@ -94,6 +98,27 @@ describe('Google Play upload', () => {
       track: 'internal',
       releases: [{ name: '0.40.0 (40000)', versionCodes: ['40000'], status: 'completed' }],
     });
+  });
+
+  it("adds release notes in the store listing's default language", async () => {
+    const replies = happyReplies();
+    replies[`GET ${APP}/edits/edit-1/details`] = [{ body: { defaultLanguage: 'zh-TW' } }];
+    replies[`POST ${APP}/edits/edit-1:commit`] = [
+      { status: 400, body: { error: { message: 'Only releases with status draft may be created on draft app.' } } },
+    ];
+    const { calls, fetchImpl } = fakeGoogle(replies);
+
+    await upload(fetchImpl, jest.fn(), 'Leaner CI and Dependabot updates');
+
+    expect(calls.map((call) => `${call.method} ${call.url}`)).toContain(`GET ${APP}/edits/edit-1/details`);
+    // Both the first try and the draft retry carry the notes.
+    const trackUpdates = calls.filter((call) => call.method === 'PUT').map(trackBody);
+    expect(trackUpdates).toHaveLength(2);
+    for (const body of trackUpdates) {
+      expect(body.releases[0].releaseNotes).toEqual([
+        { language: 'zh-TW', text: 'Leaner CI and Dependabot updates' },
+      ]);
+    }
   });
 
   it("saves a draft release while Play still treats the app as a draft", async () => {
@@ -161,5 +186,29 @@ describe('Google Play upload', () => {
       uploadToInternalTesting({ serviceAccountJson: '{"type":"authorized_user"}', fetchImpl }),
     ).rejects.toThrow('service account key file');
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe('release notes from the release commit', () => {
+  it.each([
+    ['Release/0.40.0: Leaner CI and Dependabot updates (#291)', 'Leaner CI and Dependabot updates'],
+    ['Release/0.38.x: Isolate Communion and Brooklyn bulletin layouts (#246)', 'Isolate Communion and Brooklyn bulletin layouts'],
+    // Older titles had no colon, a doubled PR number, or extra spaces.
+    ['Release/0.36.0 Fix Bible audio continuation (#217)', 'Fix Bible audio continuation'],
+    ['Release/0.37.0: Prepare for review  and add builds (#218) (#220)', 'Prepare for review and add builds'],
+    ['A commit made without a release PR', 'A commit made without a release PR'],
+  ])('turns %p into %p', (subject, notes) => {
+    expect(releaseNotesFromCommitSubject(subject)).toBe(notes);
+  });
+
+  it('gives no notes when the title has nothing after the version', () => {
+    expect(releaseNotesFromCommitSubject('Release/0.35.0 (#212)')).toBe('');
+    expect(releaseNotesFromCommitSubject(undefined)).toBe('');
+  });
+
+  it("keeps within Play's 500-character limit", () => {
+    const notes = releaseNotesFromCommitSubject(`Release/1.0.0: ${'a'.repeat(600)} (#1)`);
+    expect(notes).toHaveLength(500);
+    expect(notes.endsWith('…')).toBe(true);
   });
 });
