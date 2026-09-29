@@ -1,6 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 const androidBuildScript = resolve(
   process.cwd(),
@@ -100,6 +101,26 @@ describe.each([
     expect(condition).toContain("startsWith(github.head_ref, 'release/')");
     expect(condition).toContain('github.event.pull_request.head.repo.full_name == github.repository');
     expect(condition).toContain("github.event_name != 'pull_request'");
+  });
+});
+
+describe('Native Android build', () => {
+  it('reads the release version for the GitHub Release', () => {
+    // A quoting mistake here once failed every release after the binaries built.
+    const workflow = readRepoFile('.github/workflows/native-android-build.yml');
+    const command = workflow.match(/- name: Read release version\n\s+id: version\n\s+run: (.+)\n/)?.[1];
+    expect(command).toBeDefined();
+    const output = resolve(mkdtempSync(join(tmpdir(), 'release-version-')), 'output');
+    const result = spawnSync('bash', ['-c', command as string], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      env: { ...process.env, GITHUB_OUTPUT: output },
+    });
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    expect(readFileSync(output, 'utf8')).toBe(
+      `version=${JSON.parse(readRepoFile('package.json')).version}\n`,
+    );
   });
 });
 
