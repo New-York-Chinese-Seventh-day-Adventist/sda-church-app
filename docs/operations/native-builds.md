@@ -898,7 +898,8 @@ testers need it.
    testers.
 2. **App Store Connect:**
    1. The Account Holder requests API access under **Users and Access → Integrations
-      → App Store Connect API**.
+      → App Store Connect API**. Its terms limit the API to a team's own internal
+      development and testing, which uploading the church's builds to TestFlight is.
    2. Generate a **Team key** with the **Developer** role, the smallest role that can
       upload builds. Download its `.p8` file right away (Apple allows it only once),
       and keep it with the other signing files.
@@ -920,9 +921,15 @@ Google Cloud project. GitHub signs in as it **without any key**: it vouches that
 job runs in the church's repository, in the `store-upload` environment on `main`, and
 Google returns a token that expires within an hour. This is called *Workload Identity
 Federation*. There's nothing to store, leak, or renew, and it's a one-time setup;
-every release after that signs in on its own. The church's Google organization blocks
-key files, so this is the only way in. **It costs nothing and needs no billing
+every release after that signs in on its own. **It costs nothing and needs no billing
 account.**
+
+Why not a key file: the church's Google organization blocks service account keys with
+Google's *Secure by Default* policy, `iam.managed.disableServiceAccountKeyCreation`. A
+super admin could turn it off for this project, but a key file never expires and can
+leak, so the church kept the policy on and uses keyless sign-in instead. The
+[Google Play upload sign-in diagram](../architecture.md#google-play-upload-sign-in)
+shows each step.
 [Service limits and costs](service-limits-and-costs.md#google-cloud-play-upload-service-account)
 records why, and the rules that keep it free.
 
@@ -963,7 +970,9 @@ records why, and the rules that keep it free.
 7. Menu → **IAM & Admin → Service Accounts → Create service account**. Name it
    `play-upload` and click **Create and continue**. Skip the two optional steps
    (**Continue**, then **Done**); it needs no Google Cloud roles. Don't create a key
-   for it: the organization blocks keys, and the upload doesn't need one.
+   for it: the upload doesn't need one, and the organization blocks it. Trying shows
+   *"An Organization Policy that blocks service accounts key creation has been
+   enforced on your organization"*, which is expected.
 8. Copy the account's email address, which looks like
    `play-upload@sda-church-app-play.iam.gserviceaccount.com`.
 
@@ -998,6 +1007,9 @@ records why, and the rules that keep it free.
     identities matching the filter**, attribute `repository_id`, and the repository ID
     as the value. Click **Save**, and close the **Configure your application** window
     that follows; you don't need its file.
+    - To check, open the pool's **Connected service accounts** tab. It should list
+      `play-upload`; expand it to see `attribute.repository_id="<the ID>"`. Ignore
+      the **Download** buttons there; nothing needs those files.
     - If Google refuses because an organization policy limits who can be granted
       access, a super admin allows this project's workload identity pool in that
       policy.
@@ -1008,10 +1020,13 @@ records why, and the rules that keep it free.
 
 **Let it upload in Play Console**
 
-13. Play Console → **Users and permissions → Invite new users**. Paste the email
-    address from step 8. Under **App permissions**, add the app and tick **Release
-    apps to testing tracks**. Send the invitation; a service account doesn't need to
-    accept it.
+13. In Play Console, **Users and permissions** is on the developer account's page,
+    not in the app's menu: click **← All apps** at the top left, then **Users and
+    permissions → Invite new users**. Paste the email address from step 8. On the
+    **App permissions** tab, **Add app**, choose the church app, and tick only
+    **Release apps to testing tracks**. That's the permission's name; the app doesn't
+    need any testing tracks yet. Click **Invite user**; a service account doesn't
+    need to accept.
 14. New permissions can take up to a day to reach the API. If the first automatic
     upload fails with a permission error, rerun it later.
 
@@ -1023,6 +1038,26 @@ records why, and the rules that keep it free.
 
     Neither is a key. They're secrets only so that the logs of this public repository
     don't show the project number.
+
+**Check the setup**
+
+Everything below should be true before the first automatic upload:
+
+- [ ] Google Cloud → **Billing**: the project has no billing account, and no free trial
+      was started.
+- [ ] **APIs & Services → Enabled APIs & services** lists the five APIs from step 6.
+      Google also turns on others, such as BigQuery and Cloud Storage, for every new
+      project. Without a billing account they can't cost anything, so leave them.
+- [ ] **IAM & Admin → IAM** lists every IT administrator as **Owner**.
+- [ ] **Workload Identity Federation → github**: the `sda-church-app` provider shows a
+      green status, and **Connected service accounts** lists `play-upload`.
+- [ ] Play Console → **Users and permissions** lists `play-upload@…` as **Active**,
+      with **Release apps to testing tracks** on the app.
+- [ ] GitHub → Settings → Environments → `store-upload`: deployment branches allow only
+      `main`, and the secrets are the three `APP_STORE_CONNECT_API_*` values plus
+      `GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER` and `GOOGLE_PLAY_SERVICE_ACCOUNT`.
+- [ ] The app's first release has been published by hand to internal testing; see
+      [Signing and the first upload](app-store-setup.md#signing-and-the-first-upload).
 
 ### Reading the result
 
