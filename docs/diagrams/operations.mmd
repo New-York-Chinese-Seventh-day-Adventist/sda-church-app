@@ -15,7 +15,7 @@ flowchart TB
     pages@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/github-icon.svg", label: "GitHub Pages · app.nyccsda.org<br/>privacy policy, download page<br/>PWA build: unsupported dev preview", pos: "b", w: 40, h: 40, constraint: "on" }
   end
 
-  gcloud@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/google-cloud.svg", label: "Google Cloud · sda-church-app-play<br/>keyless sign-in for Play uploads<br/>no billing account", pos: "b", w: 48, h: 39, constraint: "on" }
+  gcloud@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/google-cloud.svg", label: "Google Cloud · sda-church-app-play<br/>keyless sign-in for Play uploads<br/>free: no billing account, never add one", pos: "b", w: 48, h: 39, constraint: "on" }
 
   subgraph Stores["App stores"]
     play@{ img: "https://cdn.jsdelivr.net/gh/gilbarbara/logos@a5b65275e761a8347a99eded1101c6b130a06e52/logos/google-play-icon.svg", label: "Google Play<br/>managed in Play Console", pos: "b", w: 40, h: 44, constraint: "on" }
@@ -42,8 +42,8 @@ flowchart TB
   storeKeys --> actions
   actions -. signs in without a key .-> gcloud
   gcloud -. as the play-upload service account .-> play
-  actions -- signed AAB to internal testing --> play
-  actions -- signed IPA to TestFlight --> appstore
+  actions -- "automatic upload: signed AAB<br/>to internal testing" --> play
+  actions -- "automatic upload: signed IPA<br/>to TestFlight" --> appstore
   actions -- uploads bulletin code --> script
   actions -- QR codes, preview APKs --> drive
   actions -- web build --> pages
