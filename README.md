@@ -51,7 +51,8 @@ licensing decisions and third-party source review live in [docs/LEGAL.md](docs/L
   Owner of the project.
   [Setup steps](docs/operations/native-builds.md#setting-up-the-google-play-service-account).
 - [App Store and Google Play setup](docs/operations/app-store-setup.md): store accounts,
-  signing files, and the yearly Apple renewals (membership, fee waiver, certificate)
+  signing files, and the yearly Apple renewals (membership, fee waiver, certificate).
+  GitHub opens a reminder issue two months before any Apple renewal is due.
 - [Credentials that need attention](docs/operations/admin-runbook.md#credentials-that-need-attention)
 
 ## Project status

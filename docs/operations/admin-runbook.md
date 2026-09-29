@@ -23,6 +23,7 @@ does and what still needs a person.
 - [Dependabot pull requests](#dependabot-pull-requests)
 - [External dependency monitor alerts](#external-dependency-monitor-alerts)
 - [Store toolchain monitor alerts](#store-toolchain-monitor-alerts)
+- [Apple signing reminders](#apple-signing-reminders)
 - [Bible audio emulator test](#bible-audio-emulator-test)
 - [Credentials that need attention](#credentials-that-need-attention)
 
@@ -383,6 +384,31 @@ The issue closes itself on the next passing run. The job summary also notes when
 Apple recommends a newer Xcode than the build uses; that note alone does not open an
 issue. What to update and test is under
 [Store toolchain requirements](#store-toolchain-requirements).
+
+## Apple signing reminders
+
+**Workflow:** **Apple Signing Monitor**, which runs every Monday and can be run
+manually.
+
+It reads the expiry dates of the Apple Distribution certificate, the App Store
+provisioning profile, and the Apple Developer membership from
+`.github/apple-signing-expiry.json`. It opens or updates the issue **[monitor] Apple
+signing needs renewal** when:
+
+- a date is 60 days away or less;
+- a date has passed; or
+- a date isn't recorded.
+
+The issue includes the renewal steps. A new issue is assigned to the users in
+`MONITOR_ALERT_ASSIGNEES`, and it closes itself on the first run after every date is
+more than 60 days away. It reads no Apple credentials.
+
+Each signed iOS build also runs **Check the recorded Apple signing dates**, which
+compares the file with the provisioning profile inside the IPA it just built and warns
+when they differ, for example after a renewal that didn't update the file.
+
+To renew, follow the
+[renewal checklist](app-store-setup.md#renewal-checklist).
 
 ## Bible audio emulator test
 

@@ -142,35 +142,67 @@ is computed from the version; see [Version numbers](version-numbers.md).
 
 ### Yearly Apple renewals
 
-Three things expire every year. Put each date in the church calendar with a
-reminder about a month ahead.
+Three things expire every year. **GitHub reminds you.** Every Monday, the **Apple
+Signing Monitor** reads their dates from `.github/apple-signing-expiry.json`. From 60
+days before any of them expires, it opens the issue **[monitor] Apple signing needs
+renewal**, assigned to the maintainers in `MONITOR_ALERT_ASSIGNEES`, with the steps
+below. It comments every week until the renewal is recorded, then closes itself. It
+reads no Apple credentials: the dates aren't secret.
 
-1. **Developer Program membership and the fee waiver.** Because the church is a
-   recognized nonprofit, Apple waives the $99 annual fee. The waiver isn't
-   permanent: when the membership comes up for renewal, the **Account Holder**
-   must confirm that the church is still eligible. Renewal opens 30 days before
-   the expiration date. To stay eligible, the church must remain a recognized
-   nonprofit (in the U.S., by the IRS), and the app must stay free, with no paid apps, in-app
-   purchases, or sales of digital goods. If the membership lapses, the app is
-   removed from the App Store (copies already installed keep working) and no
-   updates can be uploaded until it's renewed. See Apple's
+| What | When it expires | Who renews it |
+| --- | --- | --- |
+| **Apple Developer Program membership** and its fee waiver | The date on the account's **Membership details** page | The Account Holder |
+| **Apple Distribution certificate** | One year after it's created | An administrator with a Mac |
+| **App Store provisioning profile** | With the certificate it was made from | An administrator |
+
+When the certificate or profile expires, the app already on the App Store keeps
+working, but new builds can't be signed or uploaded. When the membership lapses,
+the app is removed from the App Store (copies already installed keep working) and no
+updates can be uploaded until it's renewed.
+
+#### Renewal checklist
+
+1. **Renew the membership** (Account Holder). Renewal opens 30 days before it
+   expires. Because the church is a recognized nonprofit, Apple waives the $99
+   annual fee, but the Account Holder must confirm at each renewal that the church
+   is still eligible: it must remain a recognized nonprofit (in the U.S., by the
+   IRS), and the app must stay free, with no paid apps, in-app purchases, or sales
+   of digital goods. See Apple's
    [fee waiver requirements](https://developer.apple.com/help/account/membership/fee-waivers/)
    and [program renewal](https://developer.apple.com/help/account/membership/renewal/).
-2. **The Apple Distribution certificate** is valid for one year. When it expires,
-   the app already on the App Store keeps working, but new builds can't be
-   uploaded. Before it expires, create a replacement: a new certificate request,
-   certificate, and `.p12`, as above.
-3. **The provisioning profile** depends on the certificate. Generate a new
-   App Store profile with the new certificate.
+2. **Create a new certificate** on a Mac, as in
+   [Create an Apple Distribution certificate](#create-an-apple-distribution-certificate):
+   a new certificate signing request, a new **Apple Distribution** certificate, and a
+   `.p12` exported with a new strong password. Apple allows more than one at a time,
+   so the old certificate keeps working until you revoke it in step 7.
+3. **Create a new provisioning profile** with the new certificate, as in
+   [Create the App Store provisioning profile](#create-the-app-store-provisioning-profile).
+4. **Update GitHub.** In the `production` environment, replace
+   `IOS_DISTRIBUTION_CERTIFICATE_BASE64`, `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`, and
+   `IOS_PROVISIONING_PROFILE_BASE64`, encoding the files as in
+   [Add the signing values to GitHub Actions](#add-the-signing-values-to-github-actions).
+   `IOS_TEAM_ID` doesn't change.
+5. **Test the signing.** Run **Actions → Native iOS build → Run workflow** from
+   `main`. The build should succeed. Its **Check the recorded Apple signing dates** job
+   then prints the new certificate and profile dates to record, because they no longer
+   match the file. Its TestFlight upload reports that the build is already there,
+   which is expected for a rebuild of the same release.
+6. **Record the new dates** in `.github/apple-signing-expiry.json`, in a pull request
+   into the current release branch: the values printed in step 5 for
+   `distributionCertificate` and `provisioningProfile`, and, if it was renewed, the new
+   membership date from **Membership details** for `developerMembership`. The dates
+   are ISO dates, such as `2028-09-27T00:00:00Z`; the time of day doesn't matter.
+7. **Revoke the old certificate** in **Certificates, Identifiers & Profiles →
+   Certificates**, once the new one has signed a build. A revoked certificate doesn't
+   affect the app already on the App Store, but builds signed with it that were
+   uploaded and not yet submitted may be marked invalid.
+8. **Store the new files** where the IT administrators keep signing files, replacing
+   last year's: the `.p12`, the `.mobileprovision`, and the `.p12` password, kept apart
+   from the file.
 
-After replacing the certificate and profile, update
-`IOS_DISTRIBUTION_CERTIFICATE_BASE64`, `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`
-and `IOS_PROVISIONING_PROFILE_BASE64` in the `production` Environment.
-`IOS_TEAM_ID` doesn't change. Then run **Actions → Native iOS build → Run
-workflow** from `main` to confirm that signing still works. Once the new
-certificate works, revoke the old one in the Apple Developer portal. A revoked
-certificate doesn't affect the app already on the App Store, but builds signed
-with it that are uploaded and not yet submitted may be marked invalid.
+Once every date is more than 60 days away, the reminder issue closes on the next
+Monday run. To close it sooner, run **Actions → Apple Signing Monitor → Run
+workflow**.
 
 ## Google Play
 
