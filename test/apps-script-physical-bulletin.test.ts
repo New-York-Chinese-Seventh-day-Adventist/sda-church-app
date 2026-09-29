@@ -638,12 +638,12 @@ describe('printed bulletin Apps Script helpers', () => {
     const context = loadAppsScript({});
     const output = JSON.parse(
       runInContext(
-        `JSON.stringify(splitPrintedBilingualValue_('李德健\\nNathaniel Lee'))`,
+        `JSON.stringify(splitPrintedBilingualValue_('林志遠\\nEverett Lin'))`,
         context,
       ) as string,
     );
 
-    expect(output).toEqual({ english: 'Nathaniel Lee', chinese: '李德健' });
+    expect(output).toEqual({ english: 'Everett Lin', chinese: '林志遠' });
   });
 
   it('formats the shared cover date in the reference layout', () => {
@@ -1182,22 +1182,22 @@ describe('printed bulletin Apps Script helpers', () => {
     const output = JSON.parse(
       runInContext(
         `JSON.stringify(mergeBrooklynStudyRowsByAssignment_([
-          ['Welcome', '', 'Shuang Geng'],
-          ['Song and Bible Verse', '', 'Shuang Geng'],
+          ['Welcome', '', 'Ruoxi Tan'],
+          ['Song and Bible Verse', '', 'Ruoxi Tan'],
           ['Opening Hymn', '', 'Congregation'],
-          ['Prayer', '', 'Shuang Geng'],
-          ['Sabbath Message', 'Grace Upon Grace', 'Shuang Geng'],
-          ['Sabbath School', '', 'Moyan Qi']
+          ['Prayer', '', 'Ruoxi Tan'],
+          ['Sabbath Message', 'Grace Upon Grace', 'Ruoxi Tan'],
+          ['Sabbath School', '', 'Haoran Du']
         ]))`,
         context,
       ) as string,
     );
 
     expect(output).toEqual([
-      ['Song and Bible Verse', '', 'Shuang Geng'],
+      ['Song and Bible Verse', '', 'Ruoxi Tan'],
       ['Opening Hymn', '', 'Congregation'],
-      ['Prayer\nSabbath Message', 'Grace Upon Grace', 'Shuang Geng'],
-      ['Sabbath School', '', 'Moyan Qi'],
+      ['Prayer\nSabbath Message', 'Grace Upon Grace', 'Ruoxi Tan'],
+      ['Sabbath School', '', 'Haoran Du'],
     ]);
   });
 
@@ -1253,15 +1253,15 @@ describe('printed bulletin Apps Script helpers', () => {
     const output = JSON.parse(
       runInContext(
         `JSON.stringify({
-          english: formatPhysicalPersonValue_('Lingli Wang', {
-            englishToChinese: { 'lingli wang': '王玲俐' },
-            chineseToEnglish: { '王玲俐': 'Lingli Wang' },
+          english: formatPhysicalPersonValue_('Yuting Chen', {
+            englishToChinese: { 'yuting chen': '陳雨婷' },
+            chineseToEnglish: { '陳雨婷': 'Yuting Chen' },
             pinyinToChinese: {},
             pinyinToEnglish: {}
           }),
-          chinese: formatPhysicalPersonValue_('王玲俐', {
-            englishToChinese: { 'lingli wang': '王玲俐' },
-            chineseToEnglish: { '王玲俐': 'Lingli Wang' },
+          chinese: formatPhysicalPersonValue_('陳雨婷', {
+            englishToChinese: { 'yuting chen': '陳雨婷' },
+            chineseToEnglish: { '陳雨婷': 'Yuting Chen' },
             pinyinToChinese: {},
             pinyinToEnglish: {}
           }),
@@ -1285,8 +1285,8 @@ describe('printed bulletin Apps Script helpers', () => {
       ) as string,
     );
 
-    expect(output.english).toBe('王玲俐\nLingli Wang');
-    expect(output.chinese).toBe('王玲俐\nLingli Wang');
+    expect(output.english).toBe('陳雨婷\nYuting Chen');
+    expect(output.chinese).toBe('陳雨婷\nYuting Chen');
     expect(output.pinyin).toBe('中文姓名\nOfficial Person');
     expect(output.unmatchedEnglish).toBe('—\nUnknown Person');
     expect(output.unmatchedChinese).toBe('未知姓名\n—');
@@ -1298,14 +1298,14 @@ describe('printed bulletin Apps Script helpers', () => {
       getDataRange: () => ({
         getValues: () => [
           ['English Name', 'Chinese Name'],
-          ['Lingli Wang', '王玲俐'],
+          ['Yuting Chen', '陳雨婷'],
           ['English Only', ''],
           ['', '只有中文'],
           ['Official Person', '中文姓名'],
         ],
         getDisplayValues: () => [
           ['English Name', 'Chinese Name'],
-          ['Lingli Wang', '王玲俐'],
+          ['Yuting Chen', '陳雨婷'],
           ['English Only', ''],
           ['', '只有中文'],
           ['Official Person', '中文姓名'],
@@ -1326,8 +1326,8 @@ describe('printed bulletin Apps Script helpers', () => {
       runInContext(`JSON.stringify(buildPhysicalNameDictionary_())`, context) as string,
     );
 
-    expect(dictionary.englishToChinese['lingli wang']).toBe('王玲俐');
-    expect(dictionary.chineseToEnglish['王玲俐']).toBe('Lingli Wang');
+    expect(dictionary.englishToChinese['yuting chen']).toBe('陳雨婷');
+    expect(dictionary.chineseToEnglish['陳雨婷']).toBe('Yuting Chen');
     expect(dictionary.pinyinToChinese['wen zhong']).toBe('中文姓名');
     expect(dictionary.pinyinToEnglish['wen zhong']).toBe('Official Person');
     expect(dictionary.englishToChinese['english only']).toBeUndefined();
@@ -1590,25 +1590,25 @@ describe('printed bulletin Apps Script helpers', () => {
       'Local Conference',
       '',
       'Moses Fang',
-      'Samuel Zhang',
-      'Jane Gao',
-      'Lily Chee',
+      'Peter Huang',
+      'Ruth Feng',
+      'Joy Soh',
       '',
-      'Xiu Yang',
-      'Enn Kong Liew',
+      'Lan Xu',
+      'Wen Jie Koh',
       'Church Choir',
-      'Stephen Chee',
-      'Angeline Lee',
-      'Caiyun Zhao',
-      'Jane Gao',
-      'Susie Zhang',
-      'Lily Chee',
+      'Caleb Soh',
+      'Esther Lin',
+      'Yunxi Pan',
+      'Ruth Feng',
+      'Rachel Huang',
+      'Joy Soh',
       'Moses Fang',
-      'Daniel Zhang',
-      'Grace Wu',
-      'Morgan Wu',
-      'Grace Zhang',
-      'Daniel Zhang',
+      'Timothy Huang',
+      'Hannah Ho',
+      'Jordan Ho',
+      'Hannah Huang',
+      'Timothy Huang',
     ];
     const scheduleSheet = {
       getName: () => 'Sabbath Calendar',
@@ -1668,8 +1668,8 @@ describe('printed bulletin Apps Script helpers', () => {
 
     expect(names.public.queens.sermon).toBe('Moses F.');
     expect(names.private.queens.sermon).toBe('Moses Fang');
-    expect(names.private.queens.chairPastoralPrayer).toBe('Enn Kong Liew');
-    expect(names.private.brooklyn.technician).toBe('Morgan Wu');
-    expect(names.private.brooklyn.encouragement).toBe('Grace Zhang');
+    expect(names.private.queens.chairPastoralPrayer).toBe('Wen Jie Koh');
+    expect(names.private.brooklyn.technician).toBe('Jordan Ho');
+    expect(names.private.brooklyn.encouragement).toBe('Hannah Huang');
   });
 });
