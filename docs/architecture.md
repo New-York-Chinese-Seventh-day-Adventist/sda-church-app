@@ -39,7 +39,7 @@ printed bulletins, and IT administrators develop, release, and maintain it.
 How code reaches the stores, the bulletin backend, and the website, which secrets
 each step uses, and how the domain ties the accounts together.
 
-![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment and the store upload keys from the store-upload environment to upload builds to Google Play internal testing and TestFlight, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace and holds the TXT record that verifies the domain in Google Search Console, which Google Play uses to verify the organization's website](diagrams/operations.svg)
+![Build and deploy diagram: GitHub Actions uses the Android, Apple, and Apps Script secrets from the production environment and the store upload settings from the store-upload environment to upload builds to Google Play internal testing and TestFlight, signing in to Google Play without a key through a Google Cloud project that has no billing account, deploy the bulletin Apps Script, upload QR codes and preview APKs to Google Drive, and build the GitHub Pages site; Cloudflare DNS for nyccsda.org points at GitHub Pages and Google Workspace and holds the TXT record that verifies the domain in Google Search Console, which Google Play uses to verify the organization's website](diagrams/operations.svg)
 
 ### App dependencies
 
