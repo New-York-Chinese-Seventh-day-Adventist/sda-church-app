@@ -127,8 +127,9 @@ and may not be possible, so protect them above everything else.
   repository.
 - **GitHub Actions** runs everything automated:
   - unit and integration tests on pull requests;
-  - native iOS and Android builds after each merge to `main`, uploaded to TestFlight
-    and Google Play internal testing for testers;
+  - native iOS and Android builds after each merge to `main`, uploaded automatically
+    to TestFlight and Google Play internal testing for testers (Google Play through a
+    keyless sign-in in the church's [Google Cloud project](#google-cloud-free-only));
   - Android preview APKs for pull requests into `main`;
   - the [website](#website-appnyccsdaorg) deploy to GitHub Pages;
   - bulletin Apps Script deploys, using [`clasp`](https://github.com/google/clasp),
@@ -166,9 +167,9 @@ and may not be possible, so protect them above everything else.
 - The **`store-upload`** environment holds the **store upload settings**, used only
   by the jobs that upload approved builds to testers: an App Store Connect API key
   (`APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`,
-  `APP_STORE_CONNECT_API_PRIVATE_KEY`), and which Google Play service account to sign
-  in as without a key (`GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER`,
-  `GOOGLE_PLAY_SERVICE_ACCOUNT`). Those jobs never see the signing keys and
+  `APP_STORE_CONNECT_API_PRIVATE_KEY`), and which Google Play service account in the
+  [Google Cloud project](#google-cloud-free-only) to sign in as without a key
+  (`GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER`, `GOOGLE_PLAY_SERVICE_ACCOUNT`). Those jobs never see the signing keys and
   run no npm packages, and they start without a second approval once the builds
   are approved.
 
