@@ -700,7 +700,7 @@ Both paths regenerate the ignored Android project with Expo prebuild, apply the
 committed signing plugin, invoke Gradle, and copy the result to the requested
 path. The signed path refuses to build without complete signing values, or with a
 hand-set `versionCode` in `app.json`. The signed APK is useful for physical-device testing;
-upload the AAB to Play Console.
+the AAB is what goes to Google Play.
 
 Verify the artifact locally before uploading:
 
@@ -708,11 +708,11 @@ Verify the artifact locally before uploading:
 jarsigner -verify -verbose -certs /tmp/nyccsda-release.aab
 ```
 
-Then run the same build through **Actions → Native Android build → Run workflow**
-with Android selected. Download the artifact, upload it to an internal-testing
-track first, and verify installation and an update over the previous build.
-Do not enable automatic store submission until this manual internal-track
-check succeeds.
+Google requires the app's **first** upload to be made by hand in Play Console; the
+church did this with 0.39.0. Every release since uploads its AAB to internal testing
+automatically; see [Automatic store uploads](#automatic-store-uploads). Install each
+one from the Play Store on a real phone, and check that it updates over the previous
+build.
 
 ### Android rotation and recovery policy
 
@@ -723,11 +723,12 @@ independent encrypted backups. If it must change, initiate the Google Play
 upload-key reset and wait for Play to confirm the new certificate before using
 the replacement in GitHub.
 
-The Google Play service-account JSON is separate from the upload keystore and
-is not required for manual uploads or compilation. Add it later only if upload
-automation is worth the extra credential. Service-account keys do not have the
-same annual certificate rule; rotate/revoke them when access changes or as an
-organization policy requires.
+The automatic Google Play upload doesn't use the upload keystore to sign in. It signs
+in as the `play-upload` service account **without a key**, so there's no second
+credential to back up or rotate; see
+[Setting up the Google Play service account](#setting-up-the-google-play-service-account).
+When an administrator leaves, remove them as an Owner of the Google Cloud project and
+from Play Console.
 
 ## External account cleanup
 
