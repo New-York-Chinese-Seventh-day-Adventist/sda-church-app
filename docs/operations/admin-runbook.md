@@ -130,6 +130,11 @@ Any job that needs credentials pauses with the status **Waiting**.
 3. Check what triggered the run and from which branch before approving. Reject a run
    you didn't expect.
 
+The jobs that upload to TestFlight and Google Play internal testing use the separate
+`store-upload` environment, which needs no approval, so they run as soon as the builds
+you approved finish. Why it's separate is in
+[How the credentials are kept apart](native-builds.md#how-the-credentials-are-kept-apart).
+
 ## Shipping a release to `main`
 
 The full process is in [Contributing](../CONTRIBUTING.md#two-stage-release-process).
@@ -140,7 +145,8 @@ The admin-only steps are:
 2. **Merge feature pull requests** into that branch. Their titles must start with
    `Release/x.y.z:` or `Release/x.y.x:`.
 3. **Open the release pull request** from `release/x.y.z` into `main`, titled
-   `Release/x.y.z: …`. Copy the `Closes #…` lines from the included feature pull
+   `Release/x.y.z: …`. Write the part after the colon for testers: it becomes the
+   "What's new" text in Google Play internal testing. Copy the `Closes #…` lines from the included feature pull
    requests into its description. Use `Part of #…` or `Related to #…` for issues
    that should stay open. The **PR Linked Issue** check fails if the description has neither.
 4. **Merge it.** The version files must already say `x.y.z`
@@ -263,7 +269,8 @@ until you release it:
 2. **Apple:** on the app's **Distribution** page in App Store Connect, set the version
    to the release's version, select the build, and **Add for Review**.
 3. **Google Play:** Play Console → **Test and release → Internal testing** → promote
-   the release to production.
+   the release to production. Promoting copies the testers' "What's new" text, so
+   rewrite it for the public first.
 
 The upload jobs, their `store-upload` secrets, what each result means, and how to
 upload by hand are in
@@ -438,5 +445,7 @@ read.
 | `CLASPRC_JSON` (Google login for Apps Script and Drive uploads) | `production` Environment secret | When clasp authorization fails; see the Workspace session note in [Deployment and verification](bulletin-automation.md#deployment-and-verification). The login has `drive.file` and `drive.metadata.readonly`: it can see every file but can change only files it created. Replacing a hand-made file fails with `403 appNotAuthorizedToFile`; rename the hand-made copy and let the workflow create it. Keep this narrow access rather than granting full `drive` access, because this account can reach every shared drive. |
 | Apple distribution certificate and provisioning profile | `production` Environment secrets | Both expire every year, and the Apple fee waiver is reconfirmed at each membership renewal. See [Yearly Apple renewals](app-store-setup.md#yearly-apple-renewals). |
 | Android upload keystore | `production` Environment secrets | Only when Google Play requires a rotation. See [Android rotation and recovery policy](native-builds.md#android-rotation-and-recovery-policy). |
+| App Store Connect API key (`APP_STORE_CONNECT_API_*`) | `store-upload` Environment secrets | It doesn't expire. If it leaks, revoke it under **Users and Access → Integrations** in App Store Connect, create a new one with the **Developer** role, and replace the three secrets. |
+| Google Play sign-in (`GOOGLE_PLAY_*`) | `store-upload` Environment secrets | Never: it has no key to renew. Keep the Google Cloud project free of billing, with every administrator as an Owner. See [Google Cloud: free only](../architecture.md#google-cloud-free-only). |
 
 Never paste credentials into issues, pull requests, or workflow logs.

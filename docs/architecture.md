@@ -17,6 +17,7 @@ Super Administrators can share.
 - [Files not in this repository](#files-not-in-this-repository)
 - [Church media](#church-media)
 - [App stores](#app-stores)
+- [Google Cloud: free only](#google-cloud-free-only)
 - [Website: app.nyccsda.org](#website-appnyccsdaorg)
 - [Third-party APIs and websites](#third-party-apis-and-websites)
 - [Upkeep calendar](#upkeep-calendar)
@@ -262,6 +263,10 @@ These are generated per organization and can't be copied from anyone else.
 - **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool),
   which uploads the bulletin Apps Script code and Drive files, plus the Apps Script
   project and deployment IDs.
+- **Store upload settings**, in the separate `store-upload` environment: the App
+  Store Connect API key (`.p8`), and which
+  [Google Play service account](#google-cloud-free-only) to sign in as, without a
+  key. They upload approved builds to TestFlight and Google Play internal testing.
 
 Where each secret goes and how to rotate it is covered in
 [Native Builds](operations/native-builds.md) and the
@@ -338,6 +343,45 @@ submitted for review before they appear on the App Store.
 - Nothing needs renewing beyond keeping the app updated to meet Play's target API
   level requirements.
 
+## Google Cloud: free only
+
+- To upload each release's AAB to Google Play automatically, the church created a
+  Google Cloud project, `sda-church-app-play`, with a church `nyccsda.org` account.
+  It exists only to hold the **Google Play service account** that GitHub Actions
+  signs in as to upload to internal testing. It signs in **without a key**: GitHub
+  vouches for the upload job, and Google returns a token that expires within an hour
+  (Workload Identity Federation). The organization blocks key files, and there are
+  none to store or leak.
+- **Every setup step** (the project, APIs, service account, workload identity pool,
+  OIDC provider and condition, IAM grant, Play Console access, GitHub secrets, and a
+  final checklist) is in
+  [Setting up the Google Play service account](operations/native-builds.md#setting-up-the-google-play-service-account).
+- It was created for free and uses only free services. It also has **no billing
+  account**, so there is no way for Google to charge the church.
+  [Service limits and costs](operations/service-limits-and-costs.md#google-cloud-play-upload-service-account)
+  records why, with Google's own statements.
+- **Every IT administrator is an Owner** of the project, under **IAM & Admin → IAM**,
+  so it doesn't depend on one account. When an administrator joins or leaves, update
+  that list too.
+
+| What | Name | Notes |
+| --- | --- | --- |
+| Project | `sda-church-app-play` | No billing account |
+| Service account | `play-upload` | In Play Console with only **Release apps to testing tracks**; it has no keys |
+| Workload identity pool and provider | `github`, `sda-church-app` | Accept only this repository, by its numeric ID, in the `store-upload` environment on `main` |
+| GitHub secrets | `GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER`, `GOOGLE_PLAY_SERVICE_ACCOUNT` | In the `store-upload` environment; neither is a key |
+
+There's nothing to renew. The [Google Play upload sign-in](#google-play-upload-sign-in)
+diagram shows each service an upload passes through. If an upload fails, the job
+names the step, and
+[Reading the result](operations/native-builds.md#reading-the-result) says what to check.
+
+> [!CAUTION]
+> **Never add a credit card or billing account to Google Cloud**, and never start its
+> free trial, which asks for a card. The church will never need Google Cloud's paid
+> services and shouldn't use them: the risk of a surprise bill is too high. If a
+> screen asks for billing to continue, stop and ask the other administrators.
+
 ## Website: app.nyccsda.org
 
 `app.nyccsda.org` is served by GitHub Pages from this repository. Cloudflare DNS
@@ -409,6 +453,7 @@ Costs, published limits, and load for each one are in
 | Yearly | Resubmit Apple nonprofit status | App removed from the App Store |
 | Yearly | Renew Apple signing certificates and update GitHub secrets | iOS builds fail; app can't be updated |
 | Yearly | Check the Cloudflare payment method hasn't expired and the domain's paid-through date | Domain renewal fails |
+| Yearly | Confirm the Google Cloud project for Play uploads (`sda-church-app-play`) still has no billing account | A billing account added by mistake would let Google charge the church |
 | Yearly | Review administrator access and recovery details on every system | An account can't be recovered |
 | Daily (automated) | External dependency monitor | Opens an issue; see the runbook |
 
@@ -416,7 +461,9 @@ Costs, published limits, and load for each one are in
 
 - **Apply for nonprofit status** wherever a provider offers it, using the church's
   own EIN and D-U-N-S number rather than the conference's.
-- **Free services only**, apart from small necessities such as the domain.
+- **Free services only**, apart from small necessities such as the domain. **Never
+  add a payment method to a service that bills by usage**, such as
+  [Google Cloud](#google-cloud-free-only): a surprise bill is too great a risk.
 - **Two-factor authentication for every user, everywhere**, including on the
   personal accounts that sit at the root of account recovery. Don't allow SMS or
   phone-call codes, which SIM swapping and number porting can intercept. Use an

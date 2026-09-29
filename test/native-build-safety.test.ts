@@ -133,7 +133,7 @@ describe.each([
     'testflight_upload',
     ['APP_STORE_CONNECT_API_KEY_ID', 'APP_STORE_CONNECT_API_ISSUER_ID', 'APP_STORE_CONNECT_API_PRIVATE_KEY'],
   ],
-  ['native-android-build.yml', 'play_upload', ['GOOGLE_PLAY_SERVICE_ACCOUNT_JSON']],
+  ['native-android-build.yml', 'play_upload', ['GOOGLE_PLAY_WORKLOAD_IDENTITY_PROVIDER', 'GOOGLE_PLAY_SERVICE_ACCOUNT']],
 ])('%s store upload', (file, job, secrets) => {
   const workflow = readRepoFile(`.github/workflows/${file}`);
   const start = workflow.indexOf(`\n  ${job}:\n`);
@@ -163,6 +163,25 @@ describe.each([
 
   it('skips with a notice until the secrets are set', () => {
     expect(uploadJob).toContain('::notice title=');
+  });
+});
+
+describe('Google Play upload', () => {
+  it('lets only the upload job ask GitHub for an identity token', () => {
+    // The keyless sign-in's token is accepted only for the store-upload
+    // environment, but no other job should be able to request one at all.
+    const workflow = readRepoFile('.github/workflows/native-android-build.yml');
+    expect(workflow.match(/id-token: write/g)).toHaveLength(1);
+    const playJob = workflow.slice(workflow.indexOf('\n  play_upload:\n'), workflow.indexOf('\n  release:\n'));
+    expect(playJob).toContain('id-token: write');
+  });
+
+  it("reads the release notes from git, never by pasting the commit message into the shell", () => {
+    // `${{ github.event.head_commit.message }}` inside `run:` would let a
+    // commit message run commands.
+    const workflow = readRepoFile('.github/workflows/native-android-build.yml');
+    expect(workflow).toContain('RELEASE_COMMIT_SUBJECT="$(git log -1 --format=%s)"');
+    expect(workflow).not.toContain('head_commit');
   });
 });
 

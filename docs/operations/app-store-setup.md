@@ -278,18 +278,40 @@ changed afterwards.
 - Back up the upload keystore and its passwords in the church's password
   manager, with a separate encrypted offline copy. Never commit them or record
   them here.
-- Make the **first** upload by hand: after a release reaches `main`, approve the
-  **Native Android build** in the `production` environment, download its AAB, and
-  upload it to the **Internal testing** track. Google requires this before it accepts
-  uploads through its API. Later releases upload on their own once the service
-  account is set up; see
+- Make the **first** upload by hand. Google requires this before it accepts uploads
+  through its API; the church did it with 0.39.0:
+  1. After a release reaches `main`, approve the **Native Android build** in the
+     `production` environment, and download its AAB from the release's GitHub Release
+     or from the run's `native-android-production-…` artifact.
+  2. Play Console → **Test and release → Testing → Internal testing → Create new
+     release**, and upload the `.aab`.
+  3. **Release name:** use the version and build number, such as `0.39.0 (1)`. The
+     automatic uploads use the same format.
+  4. **Release notes:** keep Play's language tags, such as `<en-US>` and `</en-US>`,
+     and write the text between them. Testers see it as "What's new".
+  5. **Next.** A warning that the release "will not be available to any users because
+     you haven't specified any testers" is expected; testers are added next. Click
+     **Save and publish**.
+  6. On the **Testers** tab, add testers as described under
+     [Testing and release tracks](#testing-and-release-tracks).
+- Every later release uploads to internal testing automatically. The upload signs
+  in, without a key, as the `play-upload` service account in the church's Google
+  Cloud project, `sda-church-app-play`, which Play Console lets release to testing
+  tracks. That project is free and has **no billing account; never add one**. See
+  [Google Cloud: free only](../architecture.md#google-cloud-free-only) and
   [Automatic store uploads](native-builds.md#automatic-store-uploads).
 
 ### Testing and release tracks
 
-- **Internal testing:** add testers by email, or by a Google Group of church
-  testers, and share the opt-in link. Install the build from Google Play on a
-  real phone, and confirm that a later build installs over it as an update.
+- **Internal testing:** on the track's **Testers** tab, **Create email list**, add up
+  to 100 testers, and tick the list. Use each tester's **Google account email: the one
+  signed into the Play Store on their phone** (the Play Store app shows it under the
+  profile picture). A personal Gmail is usually right; a church `nyccsda.org` account
+  works only if it's the one in their Play Store. Add yourself too. Once the release
+  is published, the tab shows an **opt-in link**: each tester opens it signed in with
+  that account, taps **Become a tester**, and installs from the Play Store, which can
+  take a few minutes. Install on a real phone, and confirm that a later build installs
+  over it as an update.
 - **Production:** promote a tested release from its track, or create a
   production release with the same AAB. New releases go through Google's
   review before they reach users. As an organization account, the church
