@@ -67,6 +67,40 @@ describe('Android PR preview', () => {
     expect(readRepoFile('.github/workflows/android-pr-preview.yml'))
       .toContain('name: Build Android debug APK (ARM)');
   });
+
+  it('builds only release PRs, not Dependabot PRs into main', () => {
+    expect(readRepoFile('.github/workflows/android-pr-preview.yml'))
+      .toContain("startsWith(github.event.pull_request.head.ref, 'release/')");
+  });
+});
+
+// The slow checks run once per release, on the release PR into main, where
+// the Main protection ruleset requires them. Feature PRs into a release branch
+// get only the quick checks, and PRs into main from any other branch, such as
+// Dependabot's, skip them without taking a runner.
+describe.each([
+  ['android-audio-e2e.yml', 'e2e'],
+  ['bulletin-integration.yml', 'verify-bulletin-api'],
+  ['ios-pr-preview.yml', 'simulator'],
+])('%s runs only on release PRs into main', (file, job) => {
+  const workflow = readRepoFile(`.github/workflows/${file}`);
+
+  it('triggers on pull requests into main only, with no path filter', () => {
+    // A path filter would skip the release PR, and a required check that
+    // never reports blocks the merge.
+    const trigger = workflow.slice(workflow.indexOf('\non:'), workflow.indexOf('\npermissions:'));
+    expect(trigger).toMatch(/\n  pull_request:\n    branches:\n      - main\n(?! {6}-)/);
+    expect(trigger).not.toContain('paths:');
+  });
+
+  it('skips PRs whose head is not a release branch in this repository', () => {
+    const jobStart = workflow.indexOf(`\n  ${job}:\n`);
+    expect(jobStart).toBeGreaterThan(-1);
+    const condition = workflow.slice(jobStart, workflow.indexOf('\n    runs-on:', jobStart));
+    expect(condition).toContain("startsWith(github.head_ref, 'release/')");
+    expect(condition).toContain('github.event.pull_request.head.repo.full_name == github.repository');
+    expect(condition).toContain("github.event_name != 'pull_request'");
+  });
 });
 
 describe('Android audio e2e', () => {
@@ -83,6 +117,10 @@ describe('Android audio e2e', () => {
     const alertJob = workflow.slice(workflow.indexOf('\n  alert:\n'));
     expect(alertJob).toContain('issues: write');
     expect(alertJob).toContain("github.event_name == 'schedule'");
+  });
+
+  it('keeps the job name the Main protection ruleset requires', () => {
+    expect(workflow).toContain('name: Bible audio on an Android emulator');
   });
 
   it('runs the scenarios with the church host blocked, as they expect', () => {

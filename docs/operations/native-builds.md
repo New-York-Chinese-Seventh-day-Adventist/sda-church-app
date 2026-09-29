@@ -111,7 +111,8 @@ The signed **Native Android build** workflow intentionally runs only after a com
 preview** workflow is credential-free and is reserved for unsigned debug APK previews in
 ARM and Intel variants. Fork PRs do not receive Linux native checks or production signing;
 the only native artifact permitted by this policy is an unsigned debug APK preview. The
-workflow runs automatically for eligible same-repository pull requests targeting `main`.
+workflow runs automatically for release pull requests into `main`, from a `release/*`
+branch in this repository.
 It does not accept manual commit or pull-request SHA inputs and does not use dependency
 caching while executing PR code in the `pull_request_target` context.
 
@@ -832,7 +833,7 @@ works on Intel and Apple Silicon Macs. On Windows or Linux, the command explains
 needs a Mac.
 
 **In GitHub Actions.** The **iOS PR preview** workflow (`ios-pr-preview.yml`) builds
-every pull request into `main` (a release PR) without signing. It runs on an Apple
+each release PR into `main` without signing. It runs on an Apple
 Silicon runner (`macos-26`, arm64) and an Intel runner (`macos-26-intel`, x86_64), with
 the same Xcode as the signed iOS build. Each job installs the app on a simulated iPhone
 and fails if it isn't still running 45 seconds after launch. Each also uploads the app
@@ -843,10 +844,10 @@ preview's `sda-church-app-pr-<number>-<run>-arm-debug.apk`:
   the app;
 - `sda-church-app-pr-<number>-<run>-<arch>-first-screen.png`: the screenshot.
 
-A pull request into a `release/*` branch runs the builds only when it changes the
-workflow or `scripts/build-ios-simulator.mjs`. The workflow reads no secrets, so it is
-safe on pull requests. Once it is on `main`, it can also be started by hand from the
-Actions tab.
+Pull requests into a `release/*` branch don't run it, and neither do other pull
+requests into `main`, such as Dependabot's. To test a change to the workflow or
+`scripts/build-ios-simulator.mjs` before the release PR, start it by hand on your branch
+from the Actions tab. The workflow reads no secrets, so it is safe on pull requests.
 
 **Install a downloaded build on a Mac.** From the run's Artifacts section, download the
 artifact ending in `-x86_64` for an Intel Mac or `-arm64` for Apple Silicon, and unzip

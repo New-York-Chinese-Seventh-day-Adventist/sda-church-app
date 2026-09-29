@@ -13,18 +13,12 @@ on:
     - cron: "41 3 * * *"
       timezone: "America/New_York"
   workflow_dispatch: {}
-  # Pull requests that change Bible audio, and every release PR into main.
+  # Only the release PR into main, which requires it. Feature PRs into a release
+  # branch skip this 20-minute run; start it by hand on a branch to test an
+  # audio change early.
   pull_request:
     branches:
       - main
-      - 'release/**'
-    paths:
-      - 'app/(tabs)/bible/**'
-      - 'services/BibleAudio*'
-      - 'scripts/e2e/**'
-      - '.github/workflows/android-audio-e2e.yml'
-      - 'package.json'
-      - 'package-lock.json'
 
 permissions:
   contents: read
@@ -38,6 +32,14 @@ concurrency:
 
 jobs:
   e2e:
+    # A release PR is a release/* branch in this repository. Other PRs into
+    # main, such as Dependabot's, can't merge there, so they skip it.
+    if: >-
+      github.event.repository.fork == false &&
+      (github.event_name != 'pull_request' ||
+        (startsWith(github.head_ref, 'release/') &&
+          github.event.pull_request.head.repo.full_name == github.repository))
+    # The Main protection ruleset requires this job name.
     name: Bible audio on an Android emulator
     runs-on: ubuntu-24.04
     timeout-minutes: 90
