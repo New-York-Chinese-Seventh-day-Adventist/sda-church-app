@@ -8,7 +8,8 @@ separate credential-free path for unsigned debug APKs in ARM and Intel variants.
 not receive Linux checks from this native-build documentation path; they are limited to the
 unsigned debug APK preview policy. Native iOS does not run on pull requests at all. It runs
 only from `main` after merge (or an explicitly approved manual run on `main`). Native builds
-do not publish to either store. Native iOS and Android are the primary release targets; the
+upload to TestFlight and Google Play internal testing only; nothing is released to the public
+automatically (see [Automatic store uploads](#automatic-store-uploads)). Native iOS and Android are the primary release targets; the
 web/PWA build is retained for browser testing and previews. The same Expo source is
 used for all platforms.
 
@@ -57,16 +58,11 @@ EXPO_PREBUILD=true npm run build:android:apk:debug
 The execution environment may still require network approval for a clean prebuild;
 that permission is controlled by the runner or sandbox, not by repository settings.
 
-The Play Console currently shows no uploaded app bundle, so `app.json` uses the
-initial Android `versionCode` of `1`. The Android native build script refuses
-to create a store binary unless this field remains explicit. `versionCode` is
-separate from the user-facing `package.json`/`app.json` version such as `0.37.0`.
-Only a code maintainer changes it, as part of final release preparation immediately
-before a Google Play upload. Do not bump it for ordinary feature PRs, local builds,
-or browser previews. Increase it to `2`, `3`, and so on for later uploads; never
-reuse or lower a value already uploaded to Google Play. Do not build a signed AAB
-on a release branch before the final merge; build the signed artifact only after
-the release commit reaches `main`.
+The Android `versionCode` and the iOS build number are computed from the version by
+`app.config.js` (`0.40.0` becomes `40000`), so nobody sets them by hand; see
+[Version numbers](version-numbers.md). Do not build a signed AAB on a release branch
+before the final merge; build the signed artifact only after the release commit
+reaches `main`.
 
 ## Decision rationale and risk register
 
@@ -77,7 +73,7 @@ the release commit reaches `main`.
 | Store Android signing values in the protected GitHub Environment | Google retains the final Play app-signing key; CI needs only the upload key and four narrowly scoped values, while GitHub provides reviewer approval and branch controls | Repository-level copies weaken environment scoping; keep the four values only in `production`, require approval, restrict trusted refs, use least privilege, and review Actions |
 | Do not rotate the Android key annually | Upload keys do not expire annually; keeping the same key preserves the Play update path | Maintain encrypted backups; use Play's upload-key reset process after loss or compromise |
 | Build iOS with prebuild + Xcode | Removes Expo authentication and EAS credential custody from iOS while using trusted-branch or manual macOS workflows | Apple certificate/profile renewal and Xcode/runner updates still need periodic validation |
-| Build artifacts but submit manually first | Compilation and signing can be automated without granting store-publishing access to every build | Upload the AAB to Play internal testing and verify an update before adding submission automation |
+| Upload automatically to testing only | Testers get every release without anyone moving files by hand, while the public release stays a manual step in each console | Store credentials are in a separate `store-upload` environment and job that runs no npm packages; the first Play upload was made by hand, as Play requires |
 | Do not build signed binaries before `main` | Production signing material is reserved for the post-merge `main` build. | Pull-request previews remain unsigned debug APKs for ARM and Intel; fork PRs do not receive signed builds or Linux native checks |
 
 This is why the migration is not just “put the JKS in a GitHub secret.” The
@@ -175,11 +171,10 @@ iOS release, the implementation must:
    committed to source.
 3. Use a protected production Environment, required approval, and a `main`-only
    push or manual-dispatch guard for jobs that can read Apple signing secrets.
-4. Commit an explicit iOS `buildNumber` policy after recording the current store
-   counter. Until then, changing `appVersionSource` from `remote` would risk a
-   duplicate or invalid store build number.
+4. Compute the iOS build number from the version; see
+   [Version numbers](version-numbers.md).
 5. Upload the artifact to TestFlight and verify an update install on a physical
-   iPhone.
+   iPhone; see [Automatic store uploads](#automatic-store-uploads).
 
 The workflow's `main`-only guard is an important part of this boundary and must remain.
 Secrets must be configured in the church's upstream repository/Environment; they are
@@ -502,11 +497,17 @@ IOS_PROVISIONING_PROFILE_BASE64
 IOS_TEAM_ID
 ```
 
-For automated submission from a GitHub Actions job, restore the Google Play
-service-account JSON and App Store Connect `.p8` key in the same temporary-file
-pattern. Keep submission credentials in a separate approved job; the current
-workflows intentionally omit them. For a manual release, upload the finished
-`.aab`/`.ipa` through the store consoles instead.
+The store-upload credentials are kept apart from these, in a separate `store-upload`
+Environment used only by the upload jobs:
+
+```text
+APP_STORE_CONNECT_API_KEY_ID
+APP_STORE_CONNECT_API_ISSUER_ID
+APP_STORE_CONNECT_API_PRIVATE_KEY
+GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
+```
+
+See [Automatic store uploads](#automatic-store-uploads).
 
 The production secret Environment should require reviewer approval, be
 available only to protected `main` builds or deliberate manual dispatches from
@@ -519,8 +520,9 @@ main-only guard is necessary but is not a substitute for these controls.
 
 The separate `.github/workflows/native-ios-build.yml` workflow runs only on trusted
 pushes to `main` or a manual dispatch from `main`. It has no pull-request or
-`release/**` signing path, does not receive `EXPO_TOKEN`, and does not upload to App
-Store Connect. It creates an IPA artifact for manual upload or TestFlight processing.
+`release/**` signing path and does not receive `EXPO_TOKEN`. It creates an IPA
+artifact, which a separate job then uploads to TestFlight; see
+[Automatic store uploads](#automatic-store-uploads).
 
 Before running it, configure these secrets in the protected `production`
 Environment in the upstream repository. Creating the certificate and profile in the
@@ -559,16 +561,14 @@ profile, archives with Xcode, exports an App Store IPA, uploads only the IPA, an
 deletes the certificate, profile, keychain, archive, and export files in an
 `always()` cleanup step.
 
-The iOS build number is the checked-in `expo.ios.buildNumber` value in `app.json`.
-Both trusted push runs and manual dispatch use this same source of truth; there is no
-separate Actions input or GitHub run-number fallback. Start at `1` for an app with no
-prior App Store build, then have a code maintainer increase it before each later IPA
-uploaded to App Store Connect. The build number is independent of the marketing
-version in `app.json`; App Store Connect rejects a reused or lower build number.
+The iOS build number is computed from the version in `app.json` (`0.40.0` becomes
+`40000`) and passed to Xcode, for pushes and manual runs alike; see
+[Version numbers](version-numbers.md). The workflow refuses to run if `app.json` sets
+`expo.ios.buildNumber` by hand.
 
-The action intentionally has no App Store Connect API key. Upload the resulting
-IPA manually first. Submission automation, if added later, must be a separate
-reviewed job with separate credentials and environment approval.
+The build job has no App Store Connect API key. The separate **Upload to TestFlight**
+job, in the `store-upload` Environment, uploads the IPA; see
+[Automatic store uploads](#automatic-store-uploads).
 
 ## Android setup: GitHub-hosted direct builds
 
@@ -621,22 +621,12 @@ encrypted offline backup. The `.jks` is an upload key, not the Play app-signing
 key. The `10000`-day validity is deliberate: Android upload keys do not need
 annual rotation and should normally remain stable for the life of the app.
 
-### 3. Set the Play version code explicitly
+### 3. The Play version code
 
-The `versionCode` must increase for every Google Play upload. It is independent
-of the user-facing `version` string. Because this app has no uploaded bundle,
-the first value is `1`:
-
-```json
-"android": {
-  "versionCode": 1,
-  "package": "org.nyccsda.app"
-}
-```
-
-For the next release, change it to `2`. Keep the value in source control and
-increment it deliberately with each release. Do not use a remote auto-increment
-system and a checked-in local number at the same time.
+The `versionCode` must increase with every Google Play upload. `app.config.js`
+computes it from the version (`0.40.0` becomes `40000`), so nobody sets it by hand,
+and the build script refuses to run if `app.json` sets one. See
+[Version numbers](version-numbers.md).
 
 ### 4. Configure the protected GitHub Environment
 
@@ -705,8 +695,8 @@ unset ANDROID_KEYSTORE_PATH ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_
 
 Both paths regenerate the ignored Android project with Expo prebuild, apply the
 committed signing plugin, invoke Gradle, and copy the result to the requested
-path. The signed path refuses to build without an explicit `versionCode` or
-complete signing values. The signed APK is useful for physical-device testing;
+path. The signed path refuses to build without complete signing values, or with a
+hand-set `versionCode` in `app.json`. The signed APK is useful for physical-device testing;
 upload the AAB to Play Console.
 
 Verify the artifact locally before uploading:
@@ -765,8 +755,8 @@ npm run build:android -- --output /absolute/path/app.aab
 npm run build:android:apk:debug -- --output /absolute/path/local-preview.apk
 ```
 
-The signed commands require the four `ANDROID_*` signing environment variables and an
-explicit `expo.android.versionCode`; see [Android setup](#android-setup-github-hosted-direct-builds).
+The signed commands require the four `ANDROID_*` signing environment variables; see
+[Android setup](#android-setup-github-hosted-direct-builds).
 The debug command uses Gradle's automatically generated debug key and does not require
 or touch the production upload keystore. It creates a standalone APK for local device
 testing and must never be uploaded to Google Play. A truly unsigned APK is generally
@@ -784,8 +774,8 @@ The signed APK is for direct installation/testing, and the AAB is the Google Pla
 The direct Android commands output a binary on this computer; append
 `--output /absolute/path/app.aab` or `.apk` to choose its destination. The
 preview APK is standalone and does not require Metro. The direct iOS workflow
-uses the App Store distribution profile and an explicit build number; internal
-iOS distribution is not TestFlight.
+uses the App Store distribution profile and a build number computed from the version;
+internal iOS distribution is not TestFlight.
 
 Local iOS builds require macOS, Xcode with command-line tools, and CocoaPods. Local Android builds require macOS or Linux, Java 17, Android SDK/NDK
 and accepted SDK licenses; install Android Studio and the SDK tooling required by
@@ -797,7 +787,7 @@ offline build paths. Build one platform at a time.
 
 In GitHub Actions, select **Native Android build → Run workflow** for an Android AAB
 or APK. Select **Native iOS build → Run workflow** for an iOS IPA; its build number
-comes from `expo.ios.buildNumber` in the selected branch's `app.json`. These workflows
+is computed from the version. These workflows
 become available in the Actions UI after they reach the default branch. Android compiles
 directly with Gradle on Ubuntu 24.04 / Java 17; iOS compiles directly with Xcode
 on macOS 26 / Xcode 26.6. Download the signed binaries from the run's Artifacts
@@ -860,28 +850,84 @@ xcrun simctl install booted /path/to/the.app
 xcrun simctl launch booted org.nyccsda.app
 ```
 
-## Upload separately
+## Automatic store uploads
 
-For a downloaded store binary, upload the `.aab` manually through Google Play
-Console or the `.ipa` through App Store Connect. These are not automatic public
-releases. Make the first Google Play upload manually in Play Console before adding
-submission automation. Apple builds are processed in App Store
-Connect for TestFlight; choose testers and complete required beta review there.
-Complete store listings and production review/release separately in each console.
-An APK is for direct Android testing; upload an AAB for this app's Play listing.
+After you approve a release's signed builds, two more jobs upload them for testing:
+
+- **Upload to TestFlight**, in **Native iOS build**, uploads the IPA to App Store
+  Connect. It appears in TestFlight once Apple finishes processing it, usually within
+  half an hour, and an internal group with automatic distribution gets it.
+- **Upload to Google Play internal testing**, in **Native Android build**, uploads
+  the AAB and rolls it out to the internal testing track.
+
+Nothing reaches the public automatically. After testing on real devices, a maintainer
+submits the iOS build for review from App Store Connect's **Distribution** page, and
+promotes the Android release to production in Play Console.
+
+### How the credentials are kept apart
+
+- The store credentials live in their own `store-upload` Environment. The build jobs,
+  which hold the signing keys, never see them.
+- The upload jobs never see the signing keys. They download the finished file and
+  upload it without running any npm packages: iOS uses Apple's `altool`, and Android
+  uses `scripts/upload-google-play.cjs`, which needs only Node's built-ins. So a
+  compromised dependency in a build job can't reach the store credentials.
+- Both run only for `main` in the church's repository, and skip with a notice until
+  their secrets are set.
+
+### One-time setup
+
+1. **The environment:** Settings → Environments → **New environment** → `store-upload`.
+   Under **Deployment branches and tags**, allow only `main`. It doesn't need required
+   reviewers: approving the signed builds already gates the uploads, which reach only
+   testers.
+2. **App Store Connect:**
+   1. The Account Holder requests API access under **Users and Access → Integrations
+      → App Store Connect API**.
+   2. Generate a **Team key** with the **Developer** role, the smallest role that can
+      upload builds. Download its `.p8` file right away (Apple allows it only once),
+      and keep it with the other signing files.
+   3. Add these secrets to `store-upload`:
+      - `APP_STORE_CONNECT_API_KEY_ID`: the key's ID.
+      - `APP_STORE_CONNECT_API_ISSUER_ID`: the issuer ID shown above the list of keys.
+      - `APP_STORE_CONNECT_API_PRIVATE_KEY`: the whole `.p8` file, including its
+        `BEGIN` and `END` lines.
+   4. In TestFlight, create an internal testing group with **automatic distribution**
+      turned on, so each new build reaches its testers.
+3. **Google Play:** Play accepts uploads through its API only after the app's first
+   upload is made by hand in Play Console. Then:
+   1. In a Google Cloud project the church controls, enable the **Google Play Android
+      Developer API**, create a service account, and create a JSON key for it.
+   2. In Play Console, open **Users and permissions → Invite new users**, invite the
+      service account's email address, and give it **Release apps to testing tracks**
+      for this app.
+   3. Add the whole JSON key file to `store-upload` as
+      `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`.
+
+### Reading the result
+
+| The job reports | What it means | What to do |
+| --- | --- | --- |
+| Uploaded | The build is on its way to testers | Test it |
+| A notice that the upload was skipped | The secrets aren't set | Add them to `store-upload` |
+| Already on TestFlight, or Google Play already has it | A rerun of the same release; the store has this build number | Nothing |
+| Uploaded as a draft | Play accepts only drafts until the app's first release is rolled out | Roll it out in Play Console → **Test and release → Internal testing** |
+| Changes need to be sent for review by hand | Play requires that for this app right now | Play Console → **Publishing overview** → send the changes for review |
+| Failed | The log has the store's message, often a revoked key or a missing permission | Fix the cause and rerun the job, or upload by hand |
+
+### Uploading by hand
+
+If an upload job can't run, download the `.ipa` from the **Native iOS build** run's
+artifacts (kept 14 days) and upload it with Apple's Transporter app, or download the
+`.aab` from the release's GitHub Release and upload it in Play Console → **Test and
+release → Internal testing → Create new release**. Upload the AAB, not the APK.
 
 ## Versions and maintenance
 
 `package.json` / `app.json` retain the shared user-facing release version managed by
 `npm run sync-version`. That version should be changed explicitly for each planned
-release, and release CI can synchronize it from the release PR title. Android direct
-builds use the explicit checked-in `expo.android.versionCode`; the script refuses to
-build until it exists. Before a Play upload, a code maintainer records the latest Play
-value and chooses a higher number. Do not use a remote auto-increment system alongside
-a checked-in local number. iOS builds use the explicit checked-in
-`expo.ios.buildNumber` in `app.json`; the workflow passes it to Xcode as
-`CURRENT_PROJECT_VERSION` for every trigger. Keep both platform counters maintained
-by a code maintainer, and do not reuse or lower either store's build number.
+release, and release CI can synchronize it from the release PR title. Both stores'
+build numbers are computed from it; see [Version numbers](version-numbers.md).
 
 Keep generated `ios/` and `android/` projects out of Git and express native
 configuration through Expo config/plugins. SDK upgrades require checking

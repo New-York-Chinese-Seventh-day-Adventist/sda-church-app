@@ -135,10 +135,10 @@ macOS, see the commands in
 The workflow checks that the profile belongs to `IOS_TEAM_ID` and to
 `org.nyccsda.app` before importing anything, and deletes every signing file when
 it finishes. It runs only for commits on `main`, or a manual run from `main`, so
-the first signed build happens when a release reaches `main`. It produces an IPA
-artifact; uploading it to App Store Connect is a separate manual step (see
-[Uploading to the stores](admin-runbook.md#uploading-to-the-stores)). Each upload
-needs a higher `expo.ios.buildNumber` in `app.json`.
+the first signed build happens when a release reaches `main`. A separate job then
+uploads the IPA to TestFlight, once the App Store Connect API key is set up; see
+[Automatic store uploads](native-builds.md#automatic-store-uploads). The build number
+is computed from the version; see [Version numbers](version-numbers.md).
 
 ### Yearly Apple renewals
 
@@ -271,15 +271,19 @@ changed afterwards.
 
 - Use **Google-managed Play App Signing**: Google keeps the key that signs what
   users install, and the church's CI signs uploads with an **upload key**. The
-  upload key, the four `production` Environment secrets, and the `versionCode`
-  rules are in
-  [Android setup](native-builds.md#android-setup-github-hosted-direct-builds).
+  upload key and the four `production` Environment secrets are in
+  [Android setup](native-builds.md#android-setup-github-hosted-direct-builds). The
+  `versionCode` is computed from the version; see
+  [Version numbers](version-numbers.md).
 - Back up the upload keystore and its passwords in the church's password
   manager, with a separate encrypted offline copy. Never commit them or record
   them here.
-- After a release reaches `main`, approve the **Native Android build** in the
-  `production` environment, download its AAB, and upload it to the **Internal
-  testing** track first.
+- Make the **first** upload by hand: after a release reaches `main`, approve the
+  **Native Android build** in the `production` environment, download its AAB, and
+  upload it to the **Internal testing** track. Google requires this before it accepts
+  uploads through its API. Later releases upload on their own once the service
+  account is set up; see
+  [Automatic store uploads](native-builds.md#automatic-store-uploads).
 
 ### Testing and release tracks
 

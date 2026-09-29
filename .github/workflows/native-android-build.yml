@@ -145,6 +145,46 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  play_upload:
+    name: Upload to Google Play internal testing
+    needs: build
+    # The Play service account key lives in its own store-upload environment,
+    # apart from the signing secrets, and this job runs no npm packages; the
+    # upload script uses only Node's built-ins. It skips until the secret is
+    # set. See docs/operations/native-builds.md#automatic-store-uploads.
+    if: >-
+      github.event.repository.fork == false &&
+      github.ref == 'refs/heads/main' &&
+      needs.build.result == 'success' &&
+      (github.event_name == 'push' || inputs.android)
+    # SECURITY CONTRACT: This job can read the Play service account key. Never
+    # add `set -x`, secret logging, environment dumps, or artifact uploads.
+    environment: store-upload
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+      - name: Download AAB
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: native-android-production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/nyccsda-aab
+      - name: Upload to internal testing
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo '::notice title=Google Play upload skipped::Add GOOGLE_PLAY_SERVICE_ACCOUNT_JSON to the store-upload environment to upload automatically.'
+            exit 0
+          fi
+          node scripts/upload-google-play.cjs "$RUNNER_TEMP/nyccsda-aab/app.aab"
+
   release:
     # A manual build should produce artifacts only; publish a GitHub Release
     # only after a successful push to main.

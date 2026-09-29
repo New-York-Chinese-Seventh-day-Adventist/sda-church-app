@@ -124,6 +124,73 @@ describe('Native Android build', () => {
   });
 });
 
+// Store uploads run in their own jobs and environment, apart from the signing
+// secrets, and run no npm packages, so a compromised dependency in the build
+// job can't reach the store credentials.
+describe.each([
+  [
+    'native-ios-build.yml',
+    'testflight_upload',
+    ['APP_STORE_CONNECT_API_KEY_ID', 'APP_STORE_CONNECT_API_ISSUER_ID', 'APP_STORE_CONNECT_API_PRIVATE_KEY'],
+  ],
+  ['native-android-build.yml', 'play_upload', ['GOOGLE_PLAY_SERVICE_ACCOUNT_JSON']],
+])('%s store upload', (file, job, secrets) => {
+  const workflow = readRepoFile(`.github/workflows/${file}`);
+  const start = workflow.indexOf(`\n  ${job}:\n`);
+  const length = workflow.slice(start + 1).search(/\n {2}[a-z_-]+:\n/);
+  const uploadJob = workflow.slice(start, length === -1 ? undefined : start + 1 + length);
+  const otherJobs = workflow.replace(uploadJob, '');
+
+  it('runs in the store-upload environment, only for main in this repository', () => {
+    expect(start).toBeGreaterThan(-1);
+    expect(uploadJob).toContain('environment: store-upload');
+    expect(uploadJob).toContain("github.ref == 'refs/heads/main'");
+    expect(uploadJob).toContain('github.event.repository.fork == false');
+  });
+
+  it('keeps the store credentials out of every other job, and the signing secrets out of it', () => {
+    for (const secret of secrets) {
+      expect(uploadJob).toContain(`secrets.${secret}`);
+      expect(otherJobs).not.toContain(secret);
+    }
+    expect(uploadJob).not.toMatch(/secrets\.(IOS|ANDROID)_/);
+  });
+
+  it('runs no npm packages and never traces the shell', () => {
+    expect(uploadJob).not.toMatch(/npm (ci|install)|npx |cache:/);
+    expect(uploadJob).not.toMatch(/^\s+set -[a-z]*x/m);
+  });
+
+  it('skips with a notice until the secrets are set', () => {
+    expect(uploadJob).toContain('::notice title=');
+  });
+});
+
+describe('TestFlight upload', () => {
+  const workflow = readRepoFile('.github/workflows/native-ios-build.yml');
+
+  it('removes the App Store Connect key however the upload ends', () => {
+    expect(workflow).toContain(`trap 'rm -f "$KEY_PATH"' EXIT`);
+    expect(workflow).toMatch(
+      /- name: Remove the IPA and API key\n\s+if: always\(\)\n\s+run: rm -rf [^\n]*\.appstoreconnect\/private_keys/,
+    );
+  });
+});
+
+describe('Store build numbers in CI', () => {
+  it('computes the iOS build number from the version', () => {
+    expect(readRepoFile('.github/workflows/native-ios-build.yml')).toContain(
+      'node scripts/store-build-number.cjs "$APP_VERSION"',
+    );
+  });
+
+  it('requires each release PR to raise the version, and with it the build number', () => {
+    const workflow = readRepoFile('.github/workflows/pr-check.yml');
+    expect(workflow).toContain('node scripts/store-build-number.cjs "$HEAD_VER"');
+    expect(workflow).toContain('if [ "$HEAD_BUILD" -le "$BASE_BUILD" ]; then');
+  });
+});
+
 describe('Android audio e2e', () => {
   const workflow = readRepoFile('.github/workflows/android-audio-e2e.yml');
 
