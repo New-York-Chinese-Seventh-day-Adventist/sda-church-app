@@ -281,8 +281,12 @@ changed afterwards.
 - Make the **first** upload by hand: after a release reaches `main`, approve the
   **Native Android build** in the `production` environment, download its AAB, and
   upload it to the **Internal testing** track. Google requires this before it accepts
-  uploads through its API. Later releases upload on their own once the service
-  account is set up; see
+  uploads through its API. The church did this with 0.39.0.
+- Every later release uploads to internal testing automatically. The upload signs
+  in, without a key, as the `play-upload` service account in the church's Google
+  Cloud project, `sda-church-app-play`, which Play Console lets release to testing
+  tracks. That project is free and has **no billing account; never add one**. See
+  [Google Cloud: free only](../architecture.md#google-cloud-free-only) and
   [Automatic store uploads](native-builds.md#automatic-store-uploads).
 
 ### Testing and release tracks
