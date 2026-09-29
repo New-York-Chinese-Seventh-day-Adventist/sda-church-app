@@ -17,6 +17,7 @@ Super Administrators can share.
 - [Files not in this repository](#files-not-in-this-repository)
 - [Church media](#church-media)
 - [App stores](#app-stores)
+- [Google Cloud: free only](#google-cloud-free-only)
 - [Website: app.nyccsda.org](#website-appnyccsdaorg)
 - [Third-party APIs and websites](#third-party-apis-and-websites)
 - [Upkeep calendar](#upkeep-calendar)
@@ -239,6 +240,10 @@ These are generated per organization and can't be copied from anyone else.
 - **Google account login** (`CLASPRC_JSON`, created with Google's `clasp` tool),
   which uploads the bulletin Apps Script code and Drive files, plus the Apps Script
   project and deployment IDs.
+- **Store upload keys**, in the separate `store-upload` environment: the App Store
+  Connect API key (`.p8`) and the
+  [Google Play service account](#google-cloud-free-only) key (`.json`). They
+  upload approved builds to TestFlight and Google Play internal testing.
 
 Where each secret goes and how to rotate it is covered in
 [Native Builds](operations/native-builds.md) and the
@@ -314,6 +319,26 @@ submitted for review before they appear on the App Store.
   requested from Play Console.
 - Nothing needs renewing beyond keeping the app updated to meet Play's target API
   level requirements.
+
+## Google Cloud: free only
+
+- To upload each release's AAB to Google Play automatically, the church created a
+  Google Cloud project, `sda-church-app-play`, with a church `nyccsda.org` account.
+  It exists only to hold the **Google Play service account** whose key,
+  `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, lets GitHub Actions upload to internal testing.
+  See [Automatic store uploads](operations/native-builds.md#automatic-store-uploads).
+- It was created for free and uses only free services. It also has **no billing
+  account**, so there is no way for Google to charge the church.
+  [Service limits and costs](operations/service-limits-and-costs.md#google-cloud-play-upload-service-account)
+  records why, with Google's own statements.
+- The other administrators are **Owners** of the project, so it doesn't depend on
+  one account.
+
+> [!CAUTION]
+> **Never add a credit card or billing account to Google Cloud**, and never start its
+> free trial, which asks for a card. The church will never need Google Cloud's paid
+> services and shouldn't use them: the risk of a surprise bill is too high. If a
+> screen asks for billing to continue, stop and ask the other administrators.
 
 ## Website: app.nyccsda.org
 
@@ -394,7 +419,9 @@ Costs, published limits, and load for each one are in
 
 - **Apply for nonprofit status** wherever a provider offers it, using the church's
   own EIN and D-U-N-S number rather than the conference's.
-- **Free services only**, apart from small necessities such as the domain.
+- **Free services only**, apart from small necessities such as the domain. **Never
+  add a payment method to a service that bills by usage**, such as
+  [Google Cloud](#google-cloud-free-only): a surprise bill is too great a risk.
 - **Two-factor authentication for every user, everywhere**, including on the
   personal accounts that sit at the root of account recovery. Don't allow SMS or
   phone-call codes, which SIM swapping and number porting can intercept. Use an

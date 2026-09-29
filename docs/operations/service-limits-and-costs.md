@@ -279,7 +279,8 @@ billing account.** That protection doesn't depend on Google's prices.
 The rules that keep it free:
 
 - **Never link a billing account to this project**, and never start a Google Cloud
-  free trial: the trial asks for a card and creates a billing account.
+  free trial: the trial asks for a card and creates a billing account. This is also a
+  [governance rule](../architecture.md#google-cloud-free-only).
 - **If any screen asks for billing to continue, stop.** Nothing in this setup needs
   it, so being asked means something changed.
 - **Once a year**, with the [upkeep calendar](../architecture.md#upkeep-calendar), open
