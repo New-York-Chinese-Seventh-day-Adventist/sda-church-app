@@ -899,7 +899,11 @@ prompt failed, and so did one screenshot the app hadn't drawn yet, which the bla
 then missed. To try a rule change without a 40-minute build, start the workflow by hand
 with **screens_from_run** set to an earlier run's ID: it downloads that run's screenshots
 and only checks them. The tests use text Vision read from real screenshots
-(`test/screens/ocr-samples.json`).
+(`test/screens/ocr-samples.json`), unedited. It includes Vision's mistakes on text
+that's fine on screen, such as "ANDKPW MUKKA" for the "ANDREW MURRAY" printed small on
+the *Humility* cover image, and "eternal life4." for a verse with footnote 4. The
+checks look only for particular labels in particular places, so text like that can't
+pass or fail them, and a test makes sure of it.
 
 **Human review.** Other layout problems, such as a cut-off label or a verse number
 split across two lines, need a person. When the iOS preview finishes on the release

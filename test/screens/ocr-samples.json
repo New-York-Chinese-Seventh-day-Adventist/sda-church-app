@@ -1,5 +1,5 @@
 {
- "$comment": "Text Apple Vision read from real key-screen screenshots (#331), for testing scripts/check-screens.cjs. clean: a good run; openPrompt: a run where iOS covered each screen with its Open in prompt.",
+ "$comment": "Text Apple Vision read from real key-screen screenshots (#331), unedited, for testing scripts/check-screens.cjs against what Vision really returns. clean: a good run; openPrompt: a run where iOS covered each screen with its Open in prompt. Vision garbles some text that is fine on screen, such as small print in images and superscript footnote numbers: in library-zh, ANDKPW MUKKA is ANDREW MURRAY on the Humility cover image (the app's own caption below it reads Andrew Murray), and in bible-scrolled-default, eternal life4. is John 3:15 with the BSB's footnote 4. The checks look only for particular labels in particular places, so text like this can't pass or fail them.",
  "clean": {
   "bible-dual-default": [
    {

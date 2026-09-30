@@ -26,6 +26,15 @@ describe('key-screen text checks on real screenshots', () => {
     expect(checkShot(shot('bible-scrolled-default'), samples.clean['bible-scrolled-default'])).toEqual([]);
   });
 
+  it('ignores text Vision garbles elsewhere on a good screen', () => {
+    // Small print in a book cover image, and a superscript footnote number.
+    const text = (sample: string) => (samples.clean[sample] as Line[]).map((each) => each.text);
+    expect(text('library-zh')).toEqual(expect.arrayContaining(['ANDKPW MUKKA', 'Andrew Murray']));
+    expect(text('bible-scrolled-default')).toContain('eternal life4.');
+    expect(checkShot(shot('library-zh'), samples.clean['library-zh'])).toEqual([]);
+    expect(checkShot(shot('bible-scrolled-default'), samples.clean['bible-scrolled-default'])).toEqual([]);
+  });
+
   it('catches a screen covered by the "Open in" prompt', () => {
     const problems = checkShot(shot('bible-dual-default'), samples.openPrompt['bible-dual-default']);
     expect(problems).toContain('shows "Open in"');
