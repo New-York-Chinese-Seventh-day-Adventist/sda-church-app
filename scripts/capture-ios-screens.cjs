@@ -198,9 +198,9 @@ const capture = async (outDir) => {
 
     const file = join(outDir, shot.file);
     mkdirSync(dirname(file), { recursive: true });
-    // The whole rectangular screen: no rounded corners or Dynamic Island cutout,
-    // as the App Store expects. Taken even when something went wrong, so the
-    // artifact shows what was on screen.
+    // The whole rectangular screen, without the rounded corners. (The iOS 26
+    // Simulator still draws the Dynamic Island.) Taken even when something went
+    // wrong, so the artifact shows what was on screen.
     simctl('io', udid, 'screenshot', '--type=png', '--mask=ignored', file);
     const problems = [];
     if (!isRunning(udid, bundleId)) problems.push(`the app wasn't running after opening ${shot.url}`);
