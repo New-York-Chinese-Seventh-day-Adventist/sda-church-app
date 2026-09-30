@@ -56,6 +56,9 @@ const BASE_SETTINGS = {
 const WAIT = 10;
 const BIBLE_WAIT = 15;
 
+// Screenshots taken again, 2 seconds apart, while the screen is still blank.
+const BLANK_RETRIES = 10;
+
 // Where services/ScreenshotRoute.ts looks for the screen to open.
 const ROUTE_KEY = 'screenshot-route';
 
@@ -144,9 +147,15 @@ const isRunning = (udid, bundleId) =>
 const largestSpread = (stats) => Math.max(...stats.channels.map((channel) => channel.stdev));
 
 // A screenshot of a crashed app or an unloaded screen is one flat colour.
+// Measured below the status bar, whose clock and icons show even before the
+// app has drawn anything.
 const looksBlank = async (file) => {
   const sharp = require('sharp');
-  return largestSpread(await sharp(file).stats()) < 3;
+  const { width, height } = await sharp(file).metadata();
+  const top = Math.round(width * 0.14);
+  // sharp's stats() measures the whole input, not the crop, so crop into a new image first.
+  const below = await sharp(file).extract({ left: 0, top, width, height: height - top }).png().toBuffer();
+  return largestSpread(await sharp(below).stats()) < 3;
 };
 
 /**
@@ -212,8 +221,14 @@ const capture = async (outDir) => {
     mkdirSync(dirname(file), { recursive: true });
     // The whole rectangular screen, without the rounded corners. (The iOS 26
     // Simulator still draws the Dynamic Island.) Taken even when something went
-    // wrong, so the artifact shows what was on screen.
-    simctl('io', udid, 'screenshot', '--type=png', '--mask=ignored', file);
+    // wrong, so the artifact shows what was on screen. If the app hasn't drawn
+    // yet, as happens on some slow launches, it tries again for a while.
+    const screenshot = () => simctl('io', udid, 'screenshot', '--type=png', '--mask=ignored', file);
+    screenshot();
+    for (let retry = 0; retry < BLANK_RETRIES && (await looksBlank(file)); retry++) {
+      await sleep(2);
+      screenshot();
+    }
     const problems = [];
     if (!isRunning(udid, bundleId)) problems.push(`the app wasn't running after opening ${shot.url}`);
     // The app removes the saved screen once it has opened it.
@@ -271,6 +286,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  looksBlank,
   SETTING_KEYS,
   BASE_SETTINGS,
   loadConfig,

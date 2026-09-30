@@ -9,6 +9,7 @@ const {
   planAppStore,
   manifestPath,
   statusBarClear,
+  looksBlank,
 } = require('../scripts/capture-ios-screens.cjs');
 
 const repoFile = (path: string) => readFileSync(resolve(__dirname, '..', path), 'utf8');
@@ -238,5 +239,37 @@ describe('Screenshot review', () => {
 
   it('keeps the job name the ruleset will require', () => {
     expect(workflow).toContain('name: Screenshots reviewed');
+  });
+});
+
+describe('blank screen check', () => {
+  const sharp = require('sharp');
+  const { mkdtempSync } = require('node:fs');
+  const { tmpdir } = require('node:os');
+  const { join } = require('node:path');
+  const dir = mkdtempSync(join(tmpdir(), 'blank-'));
+  const box = (left: number, top: number, width: number, height: number, fill: string) => ({
+    input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="${fill}"/></svg>`),
+    left,
+    top,
+  });
+
+  it('calls a black screen blank even though the status bar shows', async () => {
+    // A slow dark-mode launch once captured only the clock and icons.
+    const file = join(dir, 'black.png');
+    await sharp({ create: { width: 1320, height: 2868, channels: 3, background: '#000' } })
+      .composite([box(196, 60, 104, 60, '#fff'), box(940, 70, 260, 50, '#fff')])
+      .png()
+      .toFile(file);
+    expect(await looksBlank(file)).toBe(true);
+  });
+
+  it('doesn’t call a drawn screen blank', async () => {
+    const file = join(dir, 'drawn.png');
+    await sharp({ create: { width: 1320, height: 2868, channels: 3, background: '#000' } })
+      .composite([box(196, 60, 104, 60, '#fff'), box(80, 900, 1100, 300, '#333'), box(80, 2700, 1160, 80, '#888')])
+      .png()
+      .toFile(file);
+    expect(await looksBlank(file)).toBe(false);
   });
 });
