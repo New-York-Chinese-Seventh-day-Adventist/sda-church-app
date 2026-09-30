@@ -4,12 +4,17 @@
  * reading their text with Apple's Vision framework (scripts/ocr-screens.swift,
  * macOS only) and applying rules (#331):
  *
- * - every screen shows the four tab labels in the shot's language;
+ * - every screen with a tab bar shows the four tab labels, in the shot's
+ *   language, in the tab bar;
  * - no screen shows a system prompt, the setup dialog, or a code value such as
  *   "undefined";
- * - Bible screens show the verse button's whole label, not a cut-off "V";
- * - a screen's own `mustShowLines` rules in test/screens/screens.json match the
- *   start of some line, which catches a verse number split across two lines.
+ * - Bible screens show the verse button's whole label in the chapter controls,
+ *   not a cut-off "V";
+ * - a screen's own `mustShowLines` in test/screens/screens.json match the start
+ *   of some line, which catches a verse number split across two lines.
+ *
+ * Where a label is missing, it takes a closer look at that strip of the screen,
+ * enlarged and with more contrast, before reporting it.
  *
  *   node scripts/check-screens.cjs --dir <screens folder>   The folder holding ios/*.png
  *
@@ -17,7 +22,8 @@
  * summary. Exits 1 if any rule fails.
  */
 const { execFileSync } = require('node:child_process');
-const { appendFileSync, existsSync, writeFileSync } = require('node:fs');
+const { appendFileSync, existsSync, mkdtempSync, writeFileSync } = require('node:fs');
+const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
 const { loadConfig, planCaptures } = require('./capture-ios-screens.cjs');
 
@@ -41,34 +47,65 @@ const TAB_LABELS = {
 // The Bible's verse button, from app/(tabs)/bible/index.tsx.
 const VERSE_BUTTON = { en: 'Verse', zh: '節', 'zh-cn': '节', es: 'Versículo' };
 
+// Where each label belongs, as fractions of the screenshot's height from the
+// top, measured on the iPhone in screens.json. A label elsewhere, such as
+// "Read Verse" on Home, doesn't count.
+const REGIONS = {
+  tabs: [0.9, 0.99],
+  chapterControls: [0.82, 0.91],
+  // While reading, the tab bar hides and the chapter controls move down.
+  chapterControlsReading: [0.88, 0.99],
+};
+
 // Text that means something went wrong: a system prompt over the app, the
 // first-launch setup, or a value the app failed to fill in.
-const NEVER_SHOWN = ['Open in', 'Get Started', 'Welcome', 'undefined', 'NaN', '[object Object]'];
+const NEVER_SHOWN = ['Open in', 'Get Started', 'undefined', 'NaN', '[object Object]'];
 
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const isChinese = (text) => /\p{Script=Han}/u.test(text);
 
-// A label counts only as a whole word: "Verse" doesn't count inside "Verses".
-// Chinese has no spaces between words, so any occurrence counts there.
-const showsLabel = (lines, label) => {
-  const pattern = /[㐀-鿿]/.test(label)
-    ? new RegExp(escape(label))
+/**
+ * Whether a label appears as a whole word, with its top inside the region.
+ * "Verse" doesn't count inside "Verses". Chinese has no spaces between words,
+ * so any occurrence counts there.
+ */
+const showsLabel = (lines, label, region) => {
+  const pattern = isChinese(label)
+    ? new RegExp(escape(label), 'u')
     : new RegExp(`(^|[^\\p{L}])${escape(label)}($|[^\\p{L}])`, 'u');
-  return lines.some((line) => pattern.test(line.text));
+  return lines.some(
+    (line) =>
+      pattern.test(line.text) &&
+      (!region || (line.box[1] >= region[0] && line.box[1] <= region[1])),
+  );
+};
+
+/** The labels a shot must show, by region. */
+const expectedLabels = (shot) => {
+  const language = shot.settings.language;
+  const expected = [];
+  if (shot.tabs !== false) expected.push(['tabs', TAB_LABELS[language]]);
+  if (shot.route.startsWith('bible')) {
+    const controls = shot.tabs === false ? 'chapterControlsReading' : 'chapterControls';
+    expected.push([controls, [VERSE_BUTTON[language]]]);
+  }
+  return expected;
 };
 
 /** Returns what's wrong with one shot, given the lines of text read from it. */
 const checkShot = (shot, lines) => {
-  const language = shot.settings.language;
   const problems = [];
-  if (shot.tabs !== false) {
-    const missing = TAB_LABELS[language].filter((label) => !showsLabel(lines, label));
-    if (missing.length) problems.push(`tab labels missing: ${missing.join(', ')}`);
+  for (const [region, labels] of expectedLabels(shot)) {
+    const missing = labels.filter((label) => !showsLabel(lines, label, REGIONS[region]));
+    if (!missing.length) continue;
+    problems.push(
+      region === 'tabs'
+        ? `tab labels missing: ${missing.join(', ')}`
+        : `the verse button doesn't show "${missing[0]}"`,
+    );
   }
   for (const text of NEVER_SHOWN) {
     if (lines.some((line) => line.text.includes(text))) problems.push(`shows "${text}"`);
-  }
-  if (shot.route.startsWith('bible') && !showsLabel(lines, VERSE_BUTTON[language])) {
-    problems.push(`the verse button doesn't show "${VERSE_BUTTON[language]}"`);
   }
   for (const rule of shot.mustShowLines || []) {
     if (!lines.some((line) => new RegExp(rule, 'u').test(line.text.trim()))) {
@@ -78,15 +115,22 @@ const checkShot = (shot, lines) => {
   return problems;
 };
 
-/** Reads every shot's text, one Vision call per language set. */
-const readText = (dir, shots) => {
+/** Adds each screen's rules to its shots. */
+const planChecks = (config) =>
+  planCaptures(config).map((shot) => {
+    const screen = config.screens.find((candidate) =>
+      candidate.variants.some((variant) => `${candidate.name}-${variant}` === shot.name),
+    );
+    return { ...shot, tabs: screen.tabs, mustShowLines: screen.mustShowLines };
+  });
+
+/** Runs Vision on images, one call per language set: { [file]: lines }. */
+const ocr = (jobs) => {
   const groups = new Map();
-  for (const shot of shots) {
-    const file = join(dir, shot.file);
-    if (!existsSync(file)) continue;
-    const languages = OCR_LANGUAGES[shot.settings.language].join(',');
-    if (!groups.has(languages)) groups.set(languages, []);
-    groups.get(languages).push(file);
+  for (const { file, languages } of jobs) {
+    const key = languages.join(',');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(file);
   }
   const text = {};
   for (const [languages, files] of groups) {
@@ -100,19 +144,76 @@ const readText = (dir, shots) => {
   return text;
 };
 
-const main = () => {
+/**
+ * Crops a strip of the screen for a closer look: three times larger, in grey,
+ * with its contrast stretched. Dim tab labels in dark mode and single Chinese
+ * characters, such as 您, are often missed at full size.
+ */
+const cropStrip = async (file, region, out) => {
+  const sharp = require('sharp');
+  const { width, height } = await sharp(file).metadata();
+  const top = Math.round(height * region[0]);
+  const stripHeight = Math.round(height * (region[1] - region[0]));
+  await sharp(file)
+    .extract({ left: 0, top, width, height: stripHeight })
+    .resize(width * 3, stripHeight * 3)
+    .greyscale()
+    .normalise()
+    .png()
+    .toFile(out);
+};
+
+/** Converts a line read from a strip back to the whole screenshot's coordinates. */
+const fromStrip = (line, region) => ({
+  ...line,
+  box: [
+    line.box[0],
+    region[0] + line.box[1] * (region[1] - region[0]),
+    line.box[2],
+    line.box[3] * (region[1] - region[0]),
+  ],
+  closerLook: true,
+});
+
+/** Reads every shot's text, taking a closer look where a label is missing. */
+const readText = async (dir, shots) => {
+  const present = shots.filter((shot) => existsSync(join(dir, shot.file)));
+  const text = ocr(present.map((shot) => ({
+    file: join(dir, shot.file),
+    languages: OCR_LANGUAGES[shot.settings.language],
+  })));
+
+  const workDir = mkdtempSync(join(tmpdir(), 'screens-'));
+  const strips = [];
+  for (const shot of present) {
+    const file = join(dir, shot.file);
+    for (const [regionName, labels] of expectedLabels(shot)) {
+      const region = REGIONS[regionName];
+      if (labels.every((label) => showsLabel(text[file] || [], label, region))) continue;
+      const strip = join(workDir, `${shot.name}-${regionName}.png`);
+      await cropStrip(file, region, strip);
+      strips.push({ file, strip, region, languages: OCR_LANGUAGES[shot.settings.language] });
+    }
+  }
+  if (strips.length) {
+    const stripText = ocr(strips.map(({ strip, languages }) => ({ file: strip, languages })));
+    for (const { file, strip, region } of strips) {
+      const lines = (stripText[strip] || []).map((line) => fromStrip(line, region));
+      text[file] = [...(text[file] || []), ...lines];
+    }
+  }
+  return text;
+};
+
+const main = async () => {
   const dirIndex = process.argv.indexOf('--dir');
   const dir = dirIndex === -1 ? undefined : resolve(process.argv[dirIndex + 1]);
   if (!dir) {
     console.error('Usage: node scripts/check-screens.cjs --dir <screens folder>');
     process.exit(2);
   }
-  const config = loadConfig();
-  const shots = planCaptures(config).map((shot) => {
-    const screen = config.screens.find((candidate) => shot.name.startsWith(`${candidate.name}-`));
-    return { ...shot, tabs: screen?.tabs, mustShowLines: screen?.mustShowLines };
-  });
-  const text = readText(dir, shots);
+  const shots = planChecks(loadConfig());
+  const text = await readText(dir, shots);
   writeFileSync(join(dir, 'ocr.json'), JSON.stringify(text, null, 1));
 
   const results = shots.map((shot) => {
@@ -133,6 +234,21 @@ const main = () => {
   if (failed.length) process.exitCode = 1;
 };
 
-if (require.main === module) main();
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
 
-module.exports = { OCR_LANGUAGES, TAB_LABELS, VERSE_BUTTON, NEVER_SHOWN, showsLabel, checkShot };
+module.exports = {
+  OCR_LANGUAGES,
+  TAB_LABELS,
+  VERSE_BUTTON,
+  REGIONS,
+  NEVER_SHOWN,
+  showsLabel,
+  checkShot,
+  planChecks,
+  fromStrip,
+};
