@@ -52,7 +52,7 @@ describe('the bugs fixed in 0.42.0', () => {
 
   it('catches a screen in the wrong language', () => {
     const englishTabs = [line('Home', 0.944), line('Bible', 0.944), line('Explore', 0.944), line('You', 0.944)];
-    expect(checkShot(shot('explore-zh'), englishTabs)).toEqual(['tab labels missing: 首頁, 聖經, 探索, 您']);
+    expect(checkShot(shot('explore-zh'), englishTabs)).toEqual(['tab labels missing: 首頁, 聖經, 探索']);
   });
 
   it('catches the setup dialog and unfilled values', () => {
@@ -66,12 +66,17 @@ describe('the bugs fixed in 0.42.0', () => {
 });
 
 describe('closer look at a strip', () => {
-  it('finds a single Chinese character the first pass missed', () => {
-    const lines = samples.clean['library-zh'] as Line[];
-    expect(checkShot(shot('library-zh'), lines)).toEqual(['tab labels missing: 您']);
-    const fromCloserLook = fromStrip({ text: '您', box: [0.86, 0.5, 0.05, 0.2] }, REGIONS.tabs);
+  it('maps a line read from a strip back onto the screenshot', () => {
+    const fromCloserLook = fromStrip({ text: 'Explore', box: [0.58, 0.5, 0.2, 0.2] }, REGIONS.tabs);
     expect(fromCloserLook.box[1]).toBeCloseTo(0.945, 3);
-    expect(checkShot(shot('library-zh'), [...lines, fromCloserLook])).toEqual([]);
+    expect(fromCloserLook.box[3]).toBeCloseTo(0.018, 3);
+  });
+
+  it('doesn’t require one-character labels, which Vision often misses', () => {
+    // The first pass missed 您 here; the other three labels still show Chinese.
+    const lines = samples.clean['library-zh'] as Line[];
+    expect(checkShot(shot('library-zh'), lines)).toEqual([]);
+    expect(checkShot(shot('bible-cuv-zh'), [line('首頁', 0.944), line('聖經', 0.944), line('探索', 0.944)])).toEqual([]);
   });
 });
 

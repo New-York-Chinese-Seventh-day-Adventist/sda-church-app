@@ -164,6 +164,16 @@ jobs:
         timeout-minutes: 35
         run: node scripts/capture-ios-screens.cjs --out "$RUNNER_TEMP/ios-pr-preview/screens"
 
+      - name: Check the text on the key screens
+        # Reads each screenshot's text with Apple's Vision framework and checks
+        # what every screen must show: tab labels in the right language, the
+        # verse button's whole label, verse numbers starting their lines, and no
+        # system prompt or setup dialog. Saves ocr.json and checks.json beside
+        # the screenshots. Runs even if a capture failed, to report on the rest.
+        if: matrix.arch == 'arm64' && !cancelled()
+        timeout-minutes: 10
+        run: node scripts/check-screens.cjs --dir "$RUNNER_TEMP/ios-pr-preview/screens"
+
       - name: Upload the Simulator app and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
