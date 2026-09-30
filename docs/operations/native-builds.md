@@ -853,24 +853,42 @@ rather than in TestFlight (#331). `scripts/capture-ios-screens.cjs` takes each o
 1. It saves the settings the app reads at startup into the app's storage: setup
    finished, and the language, theme, and text size for that shot. The first-launch
    setup dialog can't be tapped away in the Simulator, so this is how it's skipped.
+   Shots with the same settings share one launch, which keeps the run to a few minutes.
 2. It opens the screen by deep link (`sdachurchapp://<path>`), waits for it to load,
    and saves `screens/ios/<screen>-<variant>.png`.
 3. The status bar is fixed (9:41, full battery and signal), so images differ only when
    the app does. Each image is the whole rectangular screen, with no rounded corners or
-   Dynamic Island cutout. The run fails if the app isn't running after a deep link, or if a
-   screenshot is blank; the step summary lists which.
+   Dynamic Island cutout.
 
-The images are 1320 × 2868, the App Store's 6.9-inch iPhone size, so they can also be
-uploaded as App Store screenshots; see [Store assets](../store-assets/README.md).
-The Home screen's verse of the day and countdown change daily, which its
-`changesDaily` entry marks for when these images are compared with known-good copies.
+Variants cover dark mode, 150% and 200% app text, the iPhone's own largest text sizes,
+and the Chinese and Spanish interfaces. Some screens reproduce bugs fixed before:
+Psalm 119's three-digit verse numbers at 200%, a chapter opened at verse 14 so text sits
+under the status bar, and the Bible header with two translations and a back arrow.
+
+**Automatic checks.** The run fails, and the step summary says why, if the app isn't
+running after a deep link, if a screenshot is blank, or if a screen marked
+`statusBarClear` shows anything behind the status bar.
+
+**Human review.** Other layout problems, such as a cut-off label or a verse number
+split across two lines, need a person. On the release pull request into `main`,
+download the Apple Silicon run's artifact and look through `screens/ios/`, then add the
+**screenshots reviewed** label. The **Screenshots reviewed** check
+(`screenshot-review.yml`) fails until the label is there, and a new push removes it, so
+each version of the release gets its own review.
+
+**App Store screenshots.** The images are 1320 × 2868, the App Store's 6.9-inch iPhone
+size. The shots listed under `appStore` in the screen list are also copied, numbered in
+upload order, to `screens/app-store/<language>/`, ready to upload; see
+[Store assets](../store-assets/README.md). The Home screen's verse of the day and
+countdown change daily, which its `changesDaily` entry marks for when these images are
+compared with known-good copies.
 
 To add a screen, add an entry to `test/screens/screens.json`: a `name`, the deep link
-`path` without the scheme, any Bible `settings`, and the `variants` to take, from
-`default`, `dark`, `large` (150% text), `zh`, `zh-cn`, and `es`. Leave out screens that
-show members' names or photos, such as the bulletin, the team page, and the fellowship
-page; `test/screens.test.ts` checks this. A new setting also needs its storage key in
-the script's `SETTING_KEYS`, and the test checks the app still reads that key.
+`path` without the scheme, any Bible `settings`, the `variants` to take, and any
+`checks`. Leave out screens that show members' names or photos, such as the bulletin,
+the team page, and the fellowship page; `test/screens.test.ts` checks this. A new
+setting also needs its storage key in the script's `SETTING_KEYS`, and the test checks
+the app still reads that key.
 
 **Install a downloaded build on a Mac.** From the run's Artifacts section, download the
 artifact ending in `-x86_64` for an Intel Mac or `-arm64` for Apple Silicon, and unzip
