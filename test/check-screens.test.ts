@@ -30,7 +30,7 @@ describe('key-screen text checks on real screenshots', () => {
     const problems = checkShot(shot('bible-dual-default'), samples.openPrompt['bible-dual-default']);
     expect(problems).toContain('shows "Open in"');
     // Home behind the prompt says "Read Verse", but not in the chapter controls.
-    expect(problems).toContain('the verse button doesn’t show "Verse"'.replace('’', "'"));
+    expect(problems).toContain("the verse button doesn't show \"Verse\"");
   });
 });
 
