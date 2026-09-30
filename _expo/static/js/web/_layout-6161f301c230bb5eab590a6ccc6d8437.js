@@ -1,0 +1,1 @@
+__d(function(g,r,i,a,m,e,d){"use strict";Object.defineProperty(e,'__esModule',{value:!0}),Object.defineProperty(e,"default",{enumerable:!0,get:function(){return u}});var n=r(d[0]),t=r(d[1]),c=r(d[2]);function u(){return(0,c.jsx)(t.Stack,{screenOptions:{header:t=>(0,c.jsx)(n.GlobalHeader,{...t})},children:(0,c.jsx)(t.Stack.Screen,{name:"index"})})}},1425,[1406,84,2]);
