@@ -144,9 +144,9 @@ jobs:
         # Screenshots of the screens in test/screens/screens.json, named
         # ios/<screen>-<variant>.png, for checking layouts before release (#331).
         # One set is enough: both builds run the same JavaScript, and Mac minutes
-        # cost about ten times Linux ones.
+        # cost about ten times Linux ones. About 66 shots take about 15 minutes.
         if: matrix.arch == 'arm64'
-        timeout-minutes: 10
+        timeout-minutes: 25
         run: node scripts/capture-ios-screens.cjs --out "$RUNNER_TEMP/ios-pr-preview/screens"
 
       - name: Upload the Simulator app and screenshots
