@@ -224,21 +224,63 @@ describe('Screenshot review', () => {
   });
 
   it('passes only with the label, and clears it on a new push', () => {
-    expect(workflow).toContain("contains(github.event.pull_request.labels.*.name, 'screenshots reviewed')");
+    // From the API, not the event: a 👍 re-runs the check, and a re-run keeps its first event.
+    expect(workflow).toContain('gh api "repos/$REPO/issues/$PR/labels"');
+    expect(workflow).toContain("grep -qx 'screenshots reviewed'");
     expect(workflow).toMatch(/"\$ACTION" = synchronize/);
     expect(workflow).toContain('labels/screenshots%20reviewed');
   });
 
-  it('never runs pull request code or reads a secret', () => {
-    expect(workflow).not.toMatch(/actions\/checkout|secrets\./);
-    expect(workflow).not.toMatch(/pull_request_target/);
-    // Pull request text reaches the script only through environment variables.
-    const script = workflow.slice(workflow.indexOf('run: |'));
-    expect(script).not.toMatch(/\$\{\{/);
+  it('doesn’t clear the label again when a 👍 re-runs a push’s check', () => {
+    expect(workflow).toContain('RUN_ATTEMPT: ${{ github.run_attempt }}');
+    expect(workflow).toContain('[ "$ACTION" = synchronize ] && [ "$RUN_ATTEMPT" = 1 ]');
   });
 
   it('keeps the job name the ruleset will require', () => {
     expect(workflow).toContain('name: Screenshots reviewed');
+  });
+});
+
+describe('Screenshot review comment and 👍 approval', () => {
+  const workflow = repoFile('.github/workflows/screenshot-review.yml');
+  const preview = repoFile('.github/workflows/ios-pr-preview.yml');
+  // The review-comment job, up to the next job.
+  const start = preview.indexOf('\n  review-comment:');
+  const next = preview.slice(start + 1).search(/\n {2}[a-z-]+:\n/);
+  const commentJob = next === -1 ? preview.slice(start) : preview.slice(start, start + 1 + next);
+  const approval = repoFile('.github/workflows/screenshot-approval.yml');
+
+  it('posts the comment only on the release PR into main, after the builds', () => {
+    expect(commentJob).toContain('needs: simulator');
+    expect(commentJob).toContain("startsWith(github.head_ref, 'release/')");
+    expect(commentJob).toContain('github.event.pull_request.head.repo.full_name == github.repository');
+    expect(commentJob).toContain('<!-- key-screens-review sha=$SHA -->');
+    // It replaces its own earlier comments only.
+    expect(commentJob).toContain('select(.user.login == "github-actions[bot]"');
+  });
+
+  it('counts only a bare 👍 from someone with write access, once this commit’s screenshots are posted', () => {
+    expect(approval).toMatch(/issue_comment:\n\s+types: \[created\]/);
+    expect(approval).toContain("'👍'|'👍🏻'|'👍🏼'|'👍🏽'|'👍🏾'|'👍🏿'|':+1:'");
+    expect(approval).toContain('collaborators/$AUTHOR/permission');
+    expect(approval).toMatch(/admin\|maintain\|write\) ;;/);
+    expect(approval).toContain('"<!-- key-screens-review sha=$sha -->"');
+    expect(approval).toContain('[ "$base" != main ]');
+    expect(approval).toContain('labels[]=screenshots reviewed');
+    expect(approval).toContain('actions/workflows/screenshot-review.yml/runs?head_sha=$sha');
+  });
+
+  it.each([
+    ['the review check', workflow],
+    ['the review comment job', commentJob],
+    ['the 👍 approval', approval],
+  ])('%s never runs pull request code or reads a secret', (_name, text) => {
+    expect(text).not.toMatch(/actions\/checkout|secrets\./);
+    expect(text).not.toMatch(/pull_request_target/);
+    // Pull request and comment text reach the script only through environment variables.
+    for (const script of text.split('run: |').slice(1)) {
+      expect(script).not.toMatch(/\$\{\{/);
+    }
   });
 });
 

@@ -873,11 +873,20 @@ running after launch, if it didn't open the saved screen, if a screenshot is bla
 if a screen marked `statusBarClear` shows anything behind the status bar.
 
 **Human review.** Other layout problems, such as a cut-off label or a verse number
-split across two lines, need a person. On the release pull request into `main`,
-download the Apple Silicon run's artifact and look through `screens/ios/`, then add the
-**screenshots reviewed** label. The **Screenshots reviewed** check
-(`screenshot-review.yml`) fails until the label is there, and a new push removes it, so
-each version of the release gets its own review.
+split across two lines, need a person. When the iOS preview finishes on the release
+pull request into `main`, it posts a comment there with a link to that commit's
+screenshots, what to look for, and how to approve; each run replaces the previous
+comment. After looking through `screens/ios/`, approve in either of two ways:
+
+- add the **screenshots reviewed** label; or
+- reply to the pull request with just 👍. `screenshot-approval.yml` then adds the label
+  and re-runs the check, if the person has write access and that commit's screenshots
+  are posted. GitHub starts no workflow for an emoji reaction, so it has to be a reply.
+  Comment-triggered workflows run from `main`'s copy, so the reply works once this
+  workflow is on `main`; until then, the comment offers only the label.
+
+The **Screenshots reviewed** check (`screenshot-review.yml`) fails until the label is
+there, and a new push removes it, so each version of the release gets its own review.
 
 **App Store screenshots.** The images are 1320 × 2868, the App Store's 6.9-inch iPhone
 size. The shots listed under `appStore` in the screen list are also copied, numbered in
