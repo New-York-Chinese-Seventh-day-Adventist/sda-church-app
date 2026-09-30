@@ -5,10 +5,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * (scripts/capture-ios-screens.cjs, #331). The iOS Simulator asks "Open in …?"
  * before following a deep link, and nothing on a build runner can tap that, so
  * the capture saves the screen here and launches the app instead. The app opens
- * it once and forgets it. Only something that can already write the app's
- * private storage can set it.
+ * it once and forgets it.
  */
 export const SCREENSHOT_ROUTE_KEY = 'screenshot-route';
+
+/**
+ * Whether this is the iOS PR preview's Simulator build, the only one the
+ * capture runs on. That build sets EXPO_PUBLIC_KEY_SCREENS=1, which Expo writes
+ * into the app when it's built; the store builds don't, so on a real phone the
+ * app never even looks for a saved screen.
+ */
+export const isKeyScreensBuild = () => process.env.EXPO_PUBLIC_KEY_SCREENS === '1';
 
 /**
  * Turns a saved path such as `bible?bookId=PSA&chapter=23` into an app route,
@@ -24,8 +31,12 @@ export const parseScreenshotRoute = (value: string | null): string | null => {
   return `/${path}`;
 };
 
-/** Reads and removes the saved screen, returning its route if there was one. */
+/**
+ * Reads and removes the saved screen, returning its route if there was one.
+ * Outside the Simulator preview build, it returns null without reading storage.
+ */
 export const takeScreenshotRoute = async (): Promise<string | null> => {
+  if (!isKeyScreensBuild()) return null;
   const value = await AsyncStorage.getItem(SCREENSHOT_ROUTE_KEY);
   if (value === null) return null;
   await AsyncStorage.removeItem(SCREENSHOT_ROUTE_KEY);

@@ -82,6 +82,10 @@ jobs:
       - name: Build for the Simulator without signing
         env:
           ARCH: ${{ matrix.arch }}
+          # Lets the key-screen capture open each screen from a saved setting
+          # (services/ScreenshotRoute.ts). Expo writes it into this build only;
+          # the store builds in native-ios-build.yml never set it.
+          EXPO_PUBLIC_KEY_SCREENS: '1'
         run: |
           set -euo pipefail
           WORKSPACE="$(find ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"

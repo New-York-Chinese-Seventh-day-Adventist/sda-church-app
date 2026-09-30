@@ -54,7 +54,7 @@ import {
 import { getSunTimes } from '@/services/SunTimesService';
 import packageJson from '@/package.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { takeScreenshotRoute } from '@/services/ScreenshotRoute';
+import { isKeyScreensBuild, takeScreenshotRoute } from '@/services/ScreenshotRoute';
 import { ThemeProvider } from 'expo-router/react-navigation';
 import { useFonts } from 'expo-font';
 import * as Localization from 'expo-localization';
@@ -898,9 +898,10 @@ function RootLayoutNav({
   const routeKey = `${pathname}:${JSON.stringify(globalParams)}`;
 
   // Opens the screen the key-screen capture saved before launching the app
-  // (#331). Nothing is saved on a normal launch, so this does nothing then.
+  // (#331). Only the iOS PR preview's Simulator build does this; see
+  // isKeyScreensBuild.
   useEffect(() => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web' || !isKeyScreensBuild()) return;
     let cancelled = false;
     takeScreenshotRoute()
       .then((route) => {

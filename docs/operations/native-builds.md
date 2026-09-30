@@ -855,7 +855,10 @@ rather than in TestFlight (#331). `scripts/capture-ios-screens.cjs` takes each o
    open. Nothing on a build runner can tap the Simulator's screen, which rules out
    both the first-launch setup dialog and the "Open in …?" prompt iOS shows before
    following a deep link. So the app reads the screen from its storage once at launch
-   (`services/ScreenshotRoute.ts`) and forgets it.
+   (`services/ScreenshotRoute.ts`) and forgets it. Only this Simulator build does
+   that: its build step sets `EXPO_PUBLIC_KEY_SCREENS=1`, which Expo writes into the
+   app, and the store builds never set it, so on a real phone the app never looks for
+   a saved screen. A test checks that no other workflow sets it.
 2. It launches the app, waits for the screen to load, and saves
    `screens/ios/<screen>-<variant>.png`. Each shot gets a fresh launch, so the run
    takes about 22 minutes.
