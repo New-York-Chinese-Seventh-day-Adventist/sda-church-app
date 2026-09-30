@@ -150,22 +150,34 @@ const looksBlank = async (file) => {
 };
 
 /**
- * Whether the status bar's middle stays one colour. With a scrolled screen, text
- * that shows through behind the status bar makes it uneven. The time sits on
- * the left and the icons on the right, so only the middle is checked.
+ * Whether nothing shows through behind the status bar. Text scrolled up under it
+ * would reach the plain strip below the clock and icons, or the gaps beside
+ * them; the clock, the icons, and the Dynamic Island never do. The positions
+ * are fractions of the width, measured on the iPhone in screens.json.
  */
+const STATUS_BAR_REGIONS = [
+  { x: [0.05, 0.95], y: [0.118, 0.138] }, // the strip below the icons
+  { x: [0.015, 0.135], y: [0.032, 0.114] }, // left of the clock
+  { x: [0.235, 0.348], y: [0.032, 0.114] }, // between the clock and the island
+  { x: [0.653, 0.705], y: [0.032, 0.114] }, // between the island and the icons
+  { x: [0.917, 0.985], y: [0.032, 0.114] }, // right of the icons
+];
+
 const statusBarClear = async (file) => {
   const sharp = require('sharp');
   const { width } = await sharp(file).metadata();
-  const region = {
-    left: Math.round(width * 0.3),
-    top: Math.round(width * 0.015),
-    width: Math.round(width * 0.4),
-    height: Math.round(width * 0.09),
-  };
-  // sharp's stats() measures the whole input, not the crop, so crop into a new image first.
-  const crop = await sharp(file).extract(region).png().toBuffer();
-  return largestSpread(await sharp(crop).stats()) < 6;
+  for (const { x, y } of STATUS_BAR_REGIONS) {
+    const region = {
+      left: Math.round(width * x[0]),
+      top: Math.round(width * y[0]),
+      width: Math.round(width * (x[1] - x[0])),
+      height: Math.round(width * (y[1] - y[0])),
+    };
+    // sharp's stats() measures the whole input, not the crop, so crop into a new image first.
+    const crop = await sharp(file).extract(region).png().toBuffer();
+    if (largestSpread(await sharp(crop).stats()) >= 6) return false;
+  }
+  return true;
 };
 
 const CHECKS = { statusBarClear };

@@ -177,25 +177,39 @@ describe('status bar check', () => {
   const { join } = require('node:path');
   const dir = mkdtempSync(join(tmpdir(), 'screens-'));
 
-  const screenshot = async (name: string, withText: boolean) => {
+  // A 1320 × 2868 screenshot with the given overlays: a clock and status icons
+  // always, and optionally the Dynamic Island or text behind the status bar.
+  const screenshot = async (name: string, extras: { island?: boolean; textAt?: number }) => {
     const file = join(dir, `${name}.png`);
-    const width = 1320;
-    const overlays = withText
-      ? [{ input: Buffer.from('<svg width="600" height="60"><text x="0" y="45" font-size="44">For God so loved</text></svg>'), left: 420, top: 40 }]
-      : [];
-    await sharp({ create: { width, height: 2868, channels: 3, background: '#f3e6df' } })
+    const box = (left: number, top: number, width: number, height: number, fill = '#111') => ({
+      input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="${fill}"/></svg>`),
+      left,
+      top,
+    });
+    const overlays = [box(196, 60, 104, 60), box(940, 70, 260, 50)];
+    if (extras.island) overlays.push(box(472, 42, 380, 110, '#000'));
+    // A line of text 30 px tall, broken into words, starting at textAt.
+    if (extras.textAt !== undefined) {
+      for (let left = 80; left < 1240; left += 140) overlays.push(box(left, extras.textAt, 100, 30, '#222'));
+    }
+    await sharp({ create: { width: 1320, height: 2868, channels: 3, background: '#f3e6df' } })
       .composite(overlays)
       .png()
       .toFile(file);
     return file;
   };
 
-  it('passes when the status bar sits on a plain backdrop', async () => {
-    expect(await statusBarClear(await screenshot('clear', false))).toBe(true);
+  it('passes with only the clock, icons, and Dynamic Island on a plain backdrop', async () => {
+    expect(await statusBarClear(await screenshot('island', { island: true }))).toBe(true);
   });
 
   it('fails when text shows through behind the status bar', async () => {
-    expect(await statusBarClear(await screenshot('overlap', true))).toBe(false);
+    expect(await statusBarClear(await screenshot('under-icons', { island: true, textAt: 158 }))).toBe(false);
+    expect(await statusBarClear(await screenshot('beside-clock', { island: true, textAt: 80 }))).toBe(false);
+  });
+
+  it('ignores text that starts below the status bar', async () => {
+    expect(await statusBarClear(await screenshot('below', { island: true, textAt: 190 }))).toBe(true);
   });
 });
 
