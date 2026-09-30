@@ -5,7 +5,6 @@ const {
   SETTING_KEYS,
   loadConfig,
   planCaptures,
-  orderCaptures,
   buildManifest,
   planAppStore,
   manifestPath,
@@ -67,23 +66,6 @@ describe('key screen list (test/screens/screens.json)', () => {
   });
 });
 
-describe('capture order', () => {
-  it('takes every shot once, grouping those with the same settings into one launch', () => {
-    const ordered = orderCaptures(shots);
-    expect(ordered).toHaveLength(shots.length);
-    expect(new Set(ordered.map((shot: { name: string }) => shot.name)).size).toBe(shots.length);
-    const launches = ordered.filter((shot: { coldStart: boolean }) => shot.coldStart).length;
-    expect(launches).toBeLessThan(shots.length);
-    // Within a launch, the settings never change.
-    let current = '';
-    for (const shot of ordered) {
-      const settings = JSON.stringify(shot.settings, Object.keys(shot.settings).sort());
-      if (shot.coldStart) current = settings;
-      else expect(settings).toBe(current);
-    }
-  });
-});
-
 describe('App Store shots', () => {
   const copies = planAppStore(config);
 
@@ -113,6 +95,15 @@ describe('saved settings', () => {
       .map(repoFile)
       .join('\n');
     for (const key of Object.values(SETTING_KEYS)) expect(sources).toContain(`'${key}'`);
+  });
+
+  it('saves the screen to open, where the app looks for it, except for Home', () => {
+    const { SCREENSHOT_ROUTE_KEY } = require('../services/ScreenshotRoute');
+    const explore = shots.find((shot: { name: string }) => shot.name === 'explore-default');
+    expect(buildManifest(explore.settings, explore.route)[SCREENSHOT_ROUTE_KEY]).toBe('explore');
+    const home = shots.find((shot: { name: string }) => shot.name === 'home-default');
+    expect(buildManifest(home.settings, home.route)).not.toHaveProperty(SCREENSHOT_ROUTE_KEY);
+    expect(repoFile('app/_layout.tsx')).toContain('takeScreenshotRoute()');
   });
 
   it('skips setup and fixes the language, theme, and text size for every shot', () => {

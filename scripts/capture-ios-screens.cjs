@@ -6,11 +6,13 @@
  * known-good copies. The App Store shots are also copied, numbered in upload
  * order, to app-store/<language>/.
  *
- * The app shows a setup dialog on its first launch, and the Simulator can't tap
- * it away. So before each group of shots this saves the settings the app reads
- * at startup straight into its AsyncStorage file, marking setup as done and
- * choosing the language, theme, and text size. It then opens each screen by
- * deep link. Shots with the same settings share one launch.
+ * Nothing on a build runner can tap the Simulator's screen: not the setup
+ * dialog on first launch, and not the "Open in …?" prompt iOS shows before
+ * following a deep link. So before each shot this saves the settings the app
+ * reads at startup straight into its AsyncStorage file: setup done, the
+ * language, theme, and text size, and the screen to open
+ * (services/ScreenshotRoute.ts). It then launches the app, which opens that
+ * screen.
  *
  *   node scripts/capture-ios-screens.cjs --pick-device   Prints the configured iPhone's UDID, creating it if needed
  *   node scripts/capture-ios-screens.cjs --out <dir>     Captures every screen into <dir>
@@ -50,9 +52,12 @@ const BASE_SETTINGS = {
   iosTextSize: 'large',
 };
 
-// Seconds to wait after opening a screen: longer when the app starts cold.
-const COLD_WAIT = 14;
-const WARM_WAIT = 6;
+// Seconds to wait after launching: the Bible loads its text over the network.
+const WAIT = 10;
+const BIBLE_WAIT = 15;
+
+// Where services/ScreenshotRoute.ts looks for the screen to open.
+const ROUTE_KEY = 'screenshot-route';
 
 const loadConfig = (file = join(projectRoot, 'test/screens/screens.json')) =>
   JSON.parse(readFileSync(file, 'utf8'));
@@ -66,36 +71,21 @@ const planCaptures = (config) =>
       return {
         name: `${screen.name}-${variant}`,
         file: `ios/${screen.name}-${variant}.png`,
+        route: screen.path,
         url: `${SCHEME}://${screen.path}`,
         settings: { ...BASE_SETTINGS, ...(screen.settings || {}), ...overrides },
         checks: screen.checks || [],
-        wait: screen.wait,
+        wait: screen.wait || (screen.path.startsWith('bible') ? BIBLE_WAIT : WAIT),
       };
     }),
   );
 
-const settingsKey = (settings) =>
-  JSON.stringify(Object.keys(settings).sort().map((name) => [name, settings[name]]));
-
 /**
- * Orders shots so those with the same settings run together, keeping the
- * screen list's order otherwise, and marks which ones need a fresh launch.
+ * The AsyncStorage manifest: every value is a string, keyed by its storage key,
+ * plus the screen to open unless it's Home.
  */
-const orderCaptures = (shots) => {
-  const groups = new Map();
-  for (const shot of shots) {
-    const key = settingsKey(shot.settings);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(shot);
-  }
-  return [...groups.values()].flatMap((group) =>
-    group.map((shot, index) => ({ ...shot, coldStart: index === 0 })),
-  );
-};
-
-/** The AsyncStorage manifest: every value is a string, keyed by its storage key. */
-const buildManifest = (settings) =>
-  Object.fromEntries(
+const buildManifest = (settings, route = '') => ({
+  ...Object.fromEntries(
     Object.entries(settings)
       .filter(([name]) => !DEVICE_SETTINGS.includes(name))
       .map(([name, value]) => {
@@ -103,7 +93,9 @@ const buildManifest = (settings) =>
         if (!key) throw new Error(`Unknown setting "${name}".`);
         return [key, String(value)];
       }),
-  );
+  ),
+  ...(route ? { [ROUTE_KEY]: route } : {}),
+});
 
 /** The App Store copies: app-store/<language>/<NN>-<shot>.png, in upload order. */
 const planAppStore = (config) =>
@@ -187,32 +179,22 @@ const capture = async (outDir) => {
   simctl('bootstatus', udid, '-b');
   // A fixed status bar, so the images differ only when the app does.
   simctl('status_bar', udid, 'override', '--time', '9:41', '--dataNetwork', 'wifi', '--wifiMode', 'active',
-    '--wifiBars', '3', '--cellularMode', 'active', '--cellularBars', '4', '--batteryState', 'charged',
+    '--wifiBars', '3', '--cellularMode', 'active', '--cellularBars', '4', '--batteryState', 'discharging',
     '--batteryLevel', '100');
   const dataContainer = simctl('get_app_container', udid, bundleId, 'data');
   const failures = [];
   const captured = new Set();
   const started = Date.now();
 
-  for (const shot of orderCaptures(planCaptures(config))) {
-    if (shot.coldStart) {
-      spawnSync('xcrun', ['simctl', 'terminate', udid, bundleId]); // Not running is fine.
-      const manifest = manifestPath(dataContainer, bundleId);
-      mkdirSync(dirname(manifest), { recursive: true });
-      writeFileSync(manifest, JSON.stringify(buildManifest(shot.settings)));
-      simctl('ui', udid, 'appearance', shot.settings.theme === 'dark' ? 'dark' : 'light');
-      simctl('ui', udid, 'content_size', shot.settings.iosTextSize);
-      // Launch the app itself: a deep link to an app that isn't running doesn't
-      // reliably start it in the Simulator.
-      simctl('launch', udid, bundleId);
-      await sleep(COLD_WAIT);
-    }
-    // The app opens on Home, so a Home shot right after launch needs no link.
-    const atHome = shot.coldStart && shot.url === `${SCHEME}://`;
-    if (!atHome) {
-      simctl('openurl', udid, shot.url);
-      await sleep(shot.wait || WARM_WAIT);
-    }
+  for (const shot of planCaptures(config)) {
+    spawnSync('xcrun', ['simctl', 'terminate', udid, bundleId]); // Not running is fine.
+    const manifest = manifestPath(dataContainer, bundleId);
+    mkdirSync(dirname(manifest), { recursive: true });
+    writeFileSync(manifest, JSON.stringify(buildManifest(shot.settings, shot.route)));
+    simctl('ui', udid, 'appearance', shot.settings.theme === 'dark' ? 'dark' : 'light');
+    simctl('ui', udid, 'content_size', shot.settings.iosTextSize);
+    simctl('launch', udid, bundleId);
+    await sleep(shot.wait);
 
     const file = join(outDir, shot.file);
     mkdirSync(dirname(file), { recursive: true });
@@ -222,6 +204,9 @@ const capture = async (outDir) => {
     simctl('io', udid, 'screenshot', '--type=png', '--mask=ignored', file);
     const problems = [];
     if (!isRunning(udid, bundleId)) problems.push(`the app wasn't running after opening ${shot.url}`);
+    // The app removes the saved screen once it has opened it.
+    const left = JSON.parse(readFileSync(manifest, 'utf8'));
+    if (shot.route && left[ROUTE_KEY]) problems.push("the app didn't open the saved screen");
     if (await looksBlank(file)) problems.push('the screen is blank');
     for (const check of shot.checks) {
       if (!CHECKS[check]) problems.push(`unknown check "${check}"`);
@@ -278,7 +263,6 @@ module.exports = {
   BASE_SETTINGS,
   loadConfig,
   planCaptures,
-  orderCaptures,
   buildManifest,
   planAppStore,
   manifestPath,

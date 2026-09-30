@@ -851,14 +851,17 @@ hand on your branch from the Actions tab. The workflow reads no secrets, so it i
 rather than in TestFlight (#331). `scripts/capture-ios-screens.cjs` takes each one:
 
 1. It saves the settings the app reads at startup into the app's storage: setup
-   finished, and the language, theme, and text size for that shot. The first-launch
-   setup dialog can't be tapped away in the Simulator, so this is how it's skipped.
-   Shots with the same settings share one launch, which keeps the run to a few minutes.
-2. It opens the screen by deep link (`sdachurchapp://<path>`), waits for it to load,
-   and saves `screens/ios/<screen>-<variant>.png`.
+   finished, the language, theme, and text size for that shot, and the screen to
+   open. Nothing on a build runner can tap the Simulator's screen, which rules out
+   both the first-launch setup dialog and the "Open in …?" prompt iOS shows before
+   following a deep link. So the app reads the screen from its storage once at launch
+   (`services/ScreenshotRoute.ts`) and forgets it.
+2. It launches the app, waits for the screen to load, and saves
+   `screens/ios/<screen>-<variant>.png`. Each shot gets a fresh launch, so the run
+   takes 15 to 20 minutes.
 3. The status bar is fixed (9:41, full battery and signal), so images differ only when
-   the app does. Each image is the whole rectangular screen, with no rounded corners or
-   Dynamic Island cutout.
+   the app does. The iOS 26 Simulator draws the Dynamic Island into its screenshots,
+   although a real iPhone's screenshots leave it out.
 
 Variants cover dark mode, 150% and 200% app text, the iPhone's own largest text sizes,
 and the Chinese and Spanish interfaces. Some screens reproduce bugs fixed before:
@@ -866,8 +869,8 @@ Psalm 119's three-digit verse numbers at 200%, a chapter opened at verse 14 so t
 under the status bar, and the Bible header with two translations and a back arrow.
 
 **Automatic checks.** The run fails, and the step summary says why, if the app isn't
-running after a deep link, if a screenshot is blank, or if a screen marked
-`statusBarClear` shows anything behind the status bar.
+running after launch, if it didn't open the saved screen, if a screenshot is blank, or
+if a screen marked `statusBarClear` shows anything behind the status bar.
 
 **Human review.** Other layout problems, such as a cut-off label or a verse number
 split across two lines, need a person. On the release pull request into `main`,

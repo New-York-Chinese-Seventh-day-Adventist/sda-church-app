@@ -54,6 +54,7 @@ import {
 import { getSunTimes } from '@/services/SunTimesService';
 import packageJson from '@/package.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { takeScreenshotRoute } from '@/services/ScreenshotRoute';
 import { ThemeProvider } from 'expo-router/react-navigation';
 import { useFonts } from 'expo-font';
 import * as Localization from 'expo-localization';
@@ -895,6 +896,22 @@ function RootLayoutNav({
     : '/';
   const androidBackTarget = backTarget;
   const routeKey = `${pathname}:${JSON.stringify(globalParams)}`;
+
+  // Opens the screen the key-screen capture saved before launching the app
+  // (#331). Nothing is saved on a normal launch, so this does nothing then.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    let cancelled = false;
+    takeScreenshotRoute()
+      .then((route) => {
+        // One tick later, so the navigator below has mounted.
+        if (route && !cancelled) setTimeout(() => router.replace(route as any), 0);
+      })
+      .catch((error) => console.warn('Could not read the saved screen', error));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (
