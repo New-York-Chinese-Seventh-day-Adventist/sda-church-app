@@ -224,7 +224,7 @@ jobs:
             download="the screenshots from [the run]($run_url), which uploaded none; it says why"
           fi
           if [ "$CHECKS" = success ]; then
-            checks="✅ The automatic checks passed: the app opened every screen, and none is blank or has text behind the status bar."
+            checks="✅ The automatic checks passed: the app opened every screen; none is blank or has text behind the status bar; and each shows its tab labels, verse button, and verse numbers, in its language."
           else
             checks="⚠️ **The automatic checks failed or didn't finish.** Start with [the run]($run_url) to see why."
           fi
