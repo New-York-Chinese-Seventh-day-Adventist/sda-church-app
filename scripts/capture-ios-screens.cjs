@@ -202,20 +202,26 @@ const capture = async (outDir) => {
       writeFileSync(manifest, JSON.stringify(buildManifest(shot.settings)));
       simctl('ui', udid, 'appearance', shot.settings.theme === 'dark' ? 'dark' : 'light');
       simctl('ui', udid, 'content_size', shot.settings.iosTextSize);
+      // Launch the app itself: a deep link to an app that isn't running doesn't
+      // reliably start it in the Simulator.
+      simctl('launch', udid, bundleId);
+      await sleep(COLD_WAIT);
     }
-    simctl('openurl', udid, shot.url);
-    await sleep(shot.wait || (shot.coldStart ? COLD_WAIT : WARM_WAIT));
+    // The app opens on Home, so a Home shot right after launch needs no link.
+    const atHome = shot.coldStart && shot.url === `${SCHEME}://`;
+    if (!atHome) {
+      simctl('openurl', udid, shot.url);
+      await sleep(shot.wait || WARM_WAIT);
+    }
 
     const file = join(outDir, shot.file);
     mkdirSync(dirname(file), { recursive: true });
-    if (!isRunning(udid, bundleId)) {
-      failures.push(`${shot.file}: the app wasn't running after opening ${shot.url}`);
-      continue;
-    }
     // The whole rectangular screen: no rounded corners or Dynamic Island cutout,
-    // as the App Store expects.
+    // as the App Store expects. Taken even when something went wrong, so the
+    // artifact shows what was on screen.
     simctl('io', udid, 'screenshot', '--type=png', '--mask=ignored', file);
     const problems = [];
+    if (!isRunning(udid, bundleId)) problems.push(`the app wasn't running after opening ${shot.url}`);
     if (await looksBlank(file)) problems.push('the screen is blank');
     for (const check of shot.checks) {
       if (!CHECKS[check]) problems.push(`unknown check "${check}"`);
