@@ -858,7 +858,7 @@ rather than in TestFlight (#331). `scripts/capture-ios-screens.cjs` takes each o
    (`services/ScreenshotRoute.ts`) and forgets it.
 2. It launches the app, waits for the screen to load, and saves
    `screens/ios/<screen>-<variant>.png`. Each shot gets a fresh launch, so the run
-   takes 15 to 20 minutes.
+   takes about 22 minutes.
 3. The status bar is fixed (9:41, full battery and signal), so images differ only when
    the app does. The iOS 26 Simulator draws the Dynamic Island into its screenshots,
    although a real iPhone's screenshots leave it out.
