@@ -829,19 +829,48 @@ needs a Mac.
 **In GitHub Actions.** The **iOS PR preview** workflow (`ios-pr-preview.yml`) builds
 each release PR into `main` without signing. It runs on an Apple
 Silicon runner (`macos-26`, arm64) and an Intel runner (`macos-26-intel`, x86_64), with
-the same Xcode as the signed iOS build. Each job installs the app on a simulated iPhone
-and fails if it isn't still running 45 seconds after launch. Each also uploads the app
+the same Xcode as the signed iOS build. Each job installs the app on the simulated
+iPhone that `test/screens/screens.json` names (an iPhone 17 Pro Max, on the newest iOS
+runtime) and fails if it isn't still running 45 seconds after launch. Each also uploads the app
 and a screenshot of its first screen (14-day retention), named like the Android
 preview's `sda-church-app-pr-<number>-<run>-arm-debug.apk`:
 
 - `sda-church-app-pr-<number>-<run>-arm64-simulator.zip` and `…-x86_64-simulator.zip`:
   the app;
-- `sda-church-app-pr-<number>-<run>-<arch>-first-screen.png`: the screenshot.
+- `sda-church-app-pr-<number>-<run>-<arch>-first-screen.png`: the screenshot;
+- `screens/ios/<screen>-<variant>.png`, in the Apple Silicon artifact only: the key
+  screens, described below.
 
 Pull requests into a `release/*` branch don't run it, and neither do other pull
-requests into `main`, such as Dependabot's. To test a change to the workflow or
-`scripts/build-ios-simulator.mjs` before the release PR, start it by hand on your branch
-from the Actions tab. The workflow reads no secrets, so it is safe on pull requests.
+requests into `main`, such as Dependabot's. To test a change to the workflow,
+`scripts/build-ios-simulator.mjs`, or the key screens before the release PR, start it by
+hand on your branch from the Actions tab. The workflow reads no secrets, so it is safe on pull requests.
+
+**Key screens.** The Apple Silicon job also screenshots the screens listed in
+`test/screens/screens.json`, so a layout problem on iPhone shows up before release
+rather than in TestFlight (#331). `scripts/capture-ios-screens.cjs` takes each one:
+
+1. It saves the settings the app reads at startup into the app's storage: setup
+   finished, and the language, theme, and text size for that shot. The first-launch
+   setup dialog can't be tapped away in the Simulator, so this is how it's skipped.
+2. It opens the screen by deep link (`sdachurchapp://<path>`), waits for it to load,
+   and saves `screens/ios/<screen>-<variant>.png`.
+3. The status bar is fixed (9:41, full battery and signal), so images differ only when
+   the app does. Each image is the whole rectangular screen, with no rounded corners or
+   Dynamic Island cutout. The run fails if the app isn't running after a deep link, or if a
+   screenshot is blank; the step summary lists which.
+
+The images are 1320 × 2868, the App Store's 6.9-inch iPhone size, so they can also be
+uploaded as App Store screenshots; see [Store assets](../store-assets/README.md).
+The Home screen's verse of the day and countdown change daily, which its
+`changesDaily` entry marks for when these images are compared with known-good copies.
+
+To add a screen, add an entry to `test/screens/screens.json`: a `name`, the deep link
+`path` without the scheme, any Bible `settings`, and the `variants` to take, from
+`default`, `dark`, `large` (150% text), `zh`, `zh-cn`, and `es`. Leave out screens that
+show members' names or photos, such as the bulletin, the team page, and the fellowship
+page; `test/screens.test.ts` checks this. A new setting also needs its storage key in
+the script's `SETTING_KEYS`, and the test checks the app still reads that key.
 
 **Install a downloaded build on a Mac.** From the run's Artifacts section, download the
 artifact ending in `-x86_64` for an Intel Mac or `-arm64` for Apple Silicon, and unzip

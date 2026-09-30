@@ -119,22 +119,9 @@ jobs:
           lipo -archs "$APP_PATH/$EXECUTABLE"
           BUNDLE_ID="$(node -p "require('./app.json').expo.ios.bundleIdentifier")"
 
-          # Use an iPhone from the newest installed iOS runtime.
-          DEVICE_ID="$(xcrun simctl list devices available --json | node -e '
-            const { devices } = JSON.parse(require("fs").readFileSync(0, "utf8"));
-            const version = (runtime) => runtime.split("iOS-")[1].split("-").map(Number);
-            const runtimes = Object.keys(devices)
-              .filter((runtime) => runtime.includes("SimRuntime.iOS-"))
-              .sort((a, b) => version(b)[0] - version(a)[0] || (version(b)[1] || 0) - (version(a)[1] || 0));
-            for (const runtime of runtimes) {
-              const phone = devices[runtime].find((device) => device.isAvailable && device.name.startsWith("iPhone"));
-              if (phone) {
-                console.log(phone.udid);
-                process.exit(0);
-              }
-            }
-            process.exit(1);
-          ')"
+          # The iPhone test/screens/screens.json names, on the newest installed iOS
+          # runtime, so this check and the key screens below share one Simulator.
+          DEVICE_ID="$(node scripts/capture-ios-screens.cjs --pick-device)"
           xcrun simctl boot "$DEVICE_ID"
           xcrun simctl bootstatus "$DEVICE_ID" -b
           xcrun simctl install "$DEVICE_ID" "$APP_PATH"
@@ -153,7 +140,16 @@ jobs:
             exit 1
           }
 
-      - name: Upload the Simulator app and screenshot
+      - name: Capture the key screens
+        # Screenshots of the screens in test/screens/screens.json, named
+        # ios/<screen>-<variant>.png, for checking layouts before release (#331).
+        # One set is enough: both builds run the same JavaScript, and Mac minutes
+        # cost about ten times Linux ones.
+        if: matrix.arch == 'arm64'
+        timeout-minutes: 10
+        run: node scripts/capture-ios-screens.cjs --out "$RUNNER_TEMP/ios-pr-preview/screens"
+
+      - name: Upload the Simulator app and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

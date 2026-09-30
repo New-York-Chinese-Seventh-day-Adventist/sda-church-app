@@ -1,0 +1,66 @@
+{
+  "$comment": "The app's key screens, captured from each platform's preview build (#331). Each screen opens by deep link (sdachurchapp://<path>) after its settings are saved, and each variant saves the settings listed under variants. Screenshots are named <platform>/<screen>-<variant>.png. Leave out screens that show members' names or photos, such as the bulletin, the team page, and the fellowship page. See docs/operations/native-builds.md.",
+  "ios": {
+    "device": "iPhone 17 Pro Max"
+  },
+  "variants": {
+    "default": {},
+    "dark": { "theme": "dark" },
+    "large": { "textScale": 1.5 },
+    "zh": { "language": "zh" },
+    "zh-cn": { "language": "zh-cn" },
+    "es": { "language": "es" }
+  },
+  "screens": [
+    {
+      "name": "home",
+      "path": "",
+      "variants": ["default", "dark", "large", "zh"],
+      "changesDaily": true
+    },
+    {
+      "name": "bible",
+      "path": "bible?bookId=PSA&chapter=23&translationId=BSB",
+      "settings": { "dualLanguage": false, "pinyin": false },
+      "variants": ["default"]
+    },
+    {
+      "name": "bible-dual",
+      "path": "bible?bookId=PSA&chapter=23&translationId=BSB",
+      "settings": { "dualLanguage": true, "supportingTranslation": "cmn_cuv", "pinyin": false },
+      "variants": ["default", "dark", "large"]
+    },
+    {
+      "name": "bible-dual-back",
+      "path": "bible?bookId=PSA&chapter=23&translationId=BSB&backTo=%2F",
+      "settings": { "dualLanguage": true, "supportingTranslation": "cmn_cuv", "pinyin": false },
+      "variants": ["default", "large"]
+    },
+    {
+      "name": "bible-pinyin",
+      "path": "bible?bookId=JHN&chapter=3&translationId=cmn_cuv",
+      "settings": { "dualLanguage": true, "supportingTranslation": "BSB", "pinyin": true },
+      "variants": ["default", "zh"]
+    },
+    {
+      "name": "explore",
+      "path": "explore",
+      "variants": ["default"]
+    },
+    {
+      "name": "library",
+      "path": "explore/library",
+      "variants": ["default", "zh", "es"]
+    },
+    {
+      "name": "hymnal",
+      "path": "home/english-hymnal",
+      "variants": ["default"]
+    },
+    {
+      "name": "you",
+      "path": "you",
+      "variants": ["default", "large"]
+    }
+  ]
+}
