@@ -18,7 +18,7 @@ the credential boundary and must stay. Every merge into `main` starts **Native A
 build** and **Native iOS build**, which wait for `production` approval. Pull requests
 get only unsigned builds that read no signing secrets: on the release pull request into
 `main`, **Android PR preview** builds a debug APK for ARM phones and **iOS PR preview**
-builds the app for the iOS Simulator on Apple Silicon and Intel Macs. Fork pull requests
+builds the app for the iOS Simulator on Apple Silicon Macs. Fork pull requests
 get no native builds. Signed builds upload to TestFlight and Google Play internal testing
 only; nothing is released to the public automatically (see
 [Automatic store uploads](#automatic-store-uploads)).
@@ -559,19 +559,19 @@ works on Intel and Apple Silicon Macs. On Windows or Linux, the command explains
 needs a Mac.
 
 **In GitHub Actions.** The **iOS PR preview** workflow (`ios-pr-preview.yml`) builds
-each release PR into `main` without signing. It runs on an Apple
-Silicon runner (`macos-26`, arm64) and an Intel runner (`macos-26-intel`, x86_64), with
-the same Xcode as the signed iOS build. Each job installs the app on the simulated
-iPhone that `test/screens/screens.json` names (an iPhone 17 Pro Max, on the newest iOS
-runtime) and fails if it isn't still running 45 seconds after launch. Each also uploads the app
-and a screenshot of its first screen (14-day retention), named like the Android
-preview's `sda-church-app-pr-<number>-<run>-arm-debug.apk`:
+each release PR into `main` without signing, on one Apple Silicon runner (`macos-26`,
+arm64) per key-screen bucket, five at once, with the same Xcode as the signed iOS build.
+Each runner, a `capture` job named **Key screens (`<bucket>`)**, starts booting
+the simulated iPhone that `test/screens/screens.json` names (an iPhone 17 Pro Max, on
+the newest iOS runtime) while the app compiles, then installs the app, fails if it
+isn't still running 45 seconds after launch, and takes its bucket's key screens.
+**Build iOS Simulator app (Apple Silicon Mac)** then joins the buckets and uploads
+the app and a screenshot of its first screen (14-day retention), named like the
+Android preview's `sda-church-app-pr-<number>-<run>-arm-debug.apk`:
 
-- `sda-church-app-pr-<number>-<run>-arm64-simulator.zip` and `…-x86_64-simulator.zip`:
-  the app;
-- `sda-church-app-pr-<number>-<run>-<arch>-first-screen.png`: the screenshot;
-- `screens/ios/<screen>-<variant>.png`, in the Apple Silicon artifact only: the key
-  screens, described below.
+- `sda-church-app-pr-<number>-<run>-arm64-simulator.zip`: the app;
+- `sda-church-app-pr-<number>-<run>-arm64-first-screen.png`: the screenshot;
+- `screens/ios/<screen>-<variant>.png`: the key screens, described below.
 
 Pull requests into `release-candidate` don't run it, and neither do other pull
 requests into `main`, such as Dependabot's. To test a change to the workflow,
@@ -579,8 +579,8 @@ requests into `main`, such as Dependabot's. To test a change to the workflow,
 hand on your branch from the Actions tab. The workflow reads no secrets, so it is safe on pull requests.
 
 **Install a downloaded build on a Mac.** From the run's Artifacts section, download the
-artifact ending in `-x86_64` for an Intel Mac or `-arm64` for Apple Silicon, and unzip
-the download and then the `.zip` inside it to get the `.app`. Open the Simulator
+artifact ending in `-arm64`, and unzip the download and then the `.zip` inside it to get
+the `.app`. It runs on an Apple Silicon Mac; for an Intel Mac, see below. Open the Simulator
 (Xcode > Open Developer Tool > Simulator) and drag the `.app` onto the simulated
 iPhone, or run:
 
@@ -589,12 +589,38 @@ xcrun simctl install booted /path/to/the.app
 xcrun simctl launch booted org.nyccsda.app
 ```
 
+**On an Intel Mac.** The workflow builds only for Apple Silicon, which nearly every Mac
+in use has; Apple sold its last Intel Mac in 2023. The Intel build was dropped in 1.2.1:
+it took 25–49 minutes and only served the Simulator on an Intel Mac. On an Intel Mac,
+build the app yourself with `npm run build:ios:simulator` (**On a Mac**, above), which
+builds for the Mac's own processor. To build it in the workflow again:
+
+1. Add a job to `.github/workflows/ios-pr-preview.yml` modelled on `capture`, without
+   its matrix or key-screen steps, that runs on `macos-26-intel`, builds with
+   `ARCH: x86_64`, names its app `…-x86_64`, and uploads it as an artifact ending in
+   `-x86_64`.
+2. Update the test in `test/native-build-safety.test.ts` that checks the workflow
+   builds for Apple Silicon only.
+3. Once that's in `release-candidate`, add the new job's name to the
+   **Main protection** ruleset's required checks; see
+   [Changing a required check](admin-runbook.md#changing-a-required-check).
+
 #### Key screens
 
-The Apple Silicon job also screenshots the 30 screens listed in
-`test/screens/screens.json`, 81 shots in all, so a layout problem on iPhone shows up
-before release rather than in TestFlight (#331). `scripts/capture-ios-screens.cjs`
-takes each one:
+The five runners screenshot the 30 screens listed in `test/screens/screens.json`, 81
+shots in all, so a layout problem on iPhone shows up before release rather than in
+TestFlight (#331). Each runner takes one bucket (`--bucket <name>`): a group of related
+screens, such as the Bible reader's layout or the library, listed under `buckets` in
+`screens.json` with what each holds. Each runner checks its shots' text, and
+`scripts/merge-key-screens.cjs` joins the buckets into one `screens/` folder and makes
+the App Store copies. The release PR waits only for the slowest bucket.
+
+**Adding a key screen.** Give it the `bucket` for its part of the app, as `buckets`
+describes. A test fails if any bucket would take more than 6 minutes to capture; then
+move a related group of screens to a lighter bucket, or split one, and update the
+`bucket` list in `ios-pr-preview.yml`, which a test keeps in step with `screens.json`.
+GitHub's free plan runs five Mac jobs at once, so keep to five buckets.
+`scripts/capture-ios-screens.cjs` takes each shot:
 
 1. It saves the settings the app reads at startup into the app's storage: setup
    finished, the language, theme, and text size for that shot, and the screen to
@@ -606,8 +632,12 @@ takes each one:
    app, and the store builds never set it, so on a real phone the app never looks for
    a saved screen. A test checks that no other workflow sets it.
 2. It launches the app, waits for the screen to load, and saves
-   `screens/ios/<screen>-<variant>.png`. Each shot gets a fresh launch, so the 81 shots
-   take about 24 of the run's 50 minutes.
+   `screens/ios/<screen>-<variant>.png`. Each shot gets a fresh launch and a 10-second
+   wait (15 for the Bible), so a bucket's 13 to 22 shots take about 3–6 minutes. While it
+   waits, it takes a screenshot every 2 seconds and records in
+   `screens/settle-times.json` when each screen stopped changing, so the waits can be
+   shortened from measurements (#453). Three Simulators on one runner were tried and
+   were slower: the runner's 3 processors couldn't keep up.
 3. The status bar is fixed (9:41, full battery and signal), so images differ only when
    the app does. The iOS 26 Simulator draws the Dynamic Island into its screenshots,
    although a real iPhone's screenshots leave it out.
@@ -660,7 +690,7 @@ pass or fail them, and a test makes sure of it.
 
 **Human review.** Other layout problems, such as a cut-off label, need a person. On the
 release pull request into `main`, the iOS preview posts a notice when the pull request
-opens or gets a push (the run takes about 50 minutes) and removes the comment with the
+opens or gets a push (the run takes about 25 minutes) and removes the comment with the
 earlier, now out-of-date screenshots. When the run finishes, it replaces the notice with a
 comment linking that commit's screenshots. Its last job, **Screenshots reviewed**, waits
 in the `screenshot-review` environment until a **release-approvers** member approves.

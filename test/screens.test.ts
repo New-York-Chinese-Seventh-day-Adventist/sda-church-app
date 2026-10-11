@@ -1,7 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+const { mergeResults } = require('../scripts/merge-key-screens.cjs');
 const {
+  shotCost,
+  takeBucket,
+  settledAfter,
   SETTING_KEYS,
   loadConfig,
   planCaptures,
@@ -185,14 +189,101 @@ describe('saved settings', () => {
 describe('iOS PR preview', () => {
   const workflow = repoFile('.github/workflows/ios-pr-preview.yml');
 
-  it('captures the key screens once, on the Apple Silicon build', () => {
-    expect(workflow).toContain('node scripts/capture-ios-screens.cjs --out');
-    expect(workflow).toMatch(/Capture the key screens\n(?:\s+#.*\n)*\s+if: matrix\.arch == 'arm64'/);
+  it('runs one runner per bucket, each capturing and checking only its bucket', () => {
+    const buckets = /\n\s+bucket: \[([a-z, -]+)\]\n/.exec(workflow)![1].split(', ');
+    expect(buckets).toEqual(Object.keys(config.buckets));
+    expect(workflow).toMatch(/capture-ios-screens\.cjs --out [^\n]+\n\s+--bucket \$\{\{ matrix\.bucket \}\}\n/);
+    expect(workflow).toMatch(/check-screens\.cjs --dir [^\n]+\n\s+--bucket \$\{\{ matrix\.bucket \}\}\n/);
+  });
+
+  it('joins the buckets in the required job, which fails rather than skips when a bucket fails', () => {
+    const merge = workflow.slice(workflow.indexOf('\n  simulator:\n'), workflow.indexOf('\n  announce:\n'));
+    expect(merge).toContain('name: Build iOS Simulator app (Apple Silicon Mac)');
+    expect(merge).toContain('needs: capture');
+    // A skipped required check counts as passed, so this job must still run
+    // after a failed part, and then fail.
+    expect(merge).toMatch(/if: >-\n\s+!cancelled\(\) && \(/);
+    expect(merge).toContain("needs.capture.result != 'success'");
+    expect(merge).toContain('node scripts/merge-key-screens.cjs --out');
+    // The review comment and earlier-run checks look for this artifact name.
+    expect(merge).toMatch(/name: ios-pr-preview-.*-arm64\n/);
   });
 
   it('reads no secrets and keeps a read-only token', () => {
     expect(workflow).not.toMatch(/secrets\./);
     expect(workflow).toMatch(/permissions:\n\s+contents: read\n/);
+  });
+});
+
+describe('key-screen buckets', () => {
+  it('puts every screen in a bucket that says what it holds, at most five buckets', () => {
+    // GitHub's free plan runs five Mac jobs at once, one per bucket.
+    expect(Object.keys(config.buckets).length).toBeLessThanOrEqual(5);
+    for (const [bucket, holds] of Object.entries(config.buckets)) {
+      expect(holds).toMatch(/^[A-Z].{20,}\.$/);
+      expect(shots.some((shot: { bucket: string }) => shot.bucket === bucket)).toBe(true);
+    }
+    for (const screen of config.screens) {
+      expect({ screen: screen.name, known: Object.hasOwn(config.buckets, screen.bucket) }).toEqual({
+        screen: screen.name,
+        known: true,
+      });
+    }
+  });
+
+  it('keeps every bucket under 6 minutes of capture, so no runner holds up the release', () => {
+    // Over the limit, move a related group of screens to a lighter bucket, or
+    // split one, as screens.json's $comment says.
+    for (const bucket of Object.keys(config.buckets)) {
+      const seconds = takeBucket(shots, bucket, config).reduce((sum: number, shot: any) => sum + shotCost(shot), 0);
+      expect({ bucket, minutes: Math.round(seconds / 6) / 10, over: seconds > 360 }).toMatchObject({ bucket, over: false });
+    }
+  });
+
+  it('takes one bucket, every shot without one, and rejects an unknown bucket', () => {
+    expect(takeBucket(shots, 'bible-reading', config).every((shot: { bucket: string }) => shot.bucket === 'bible-reading')).toBe(true);
+    expect(takeBucket(shots, undefined, config)).toBe(shots);
+    expect(() => takeBucket(shots, 'bibel', config)).toThrow('No bucket "bibel"');
+  });
+
+  it('joins the buckets\' results in list order, flagging a shot no bucket checked', () => {
+    const [a, b, c] = shots;
+    const merged = mergeResults(
+      [a, b, c],
+      [
+        {
+          checks: [{ file: c.file, problems: [] }, { file: a.file, problems: ['x'] }],
+          timings: [{ shot: c.name, settledAfter: 4 }],
+          ocr: { [`/Users/runner/work/_temp/ios-pr-preview/screens/${a.file}`]: [{ text: 'A' }] },
+        },
+        { checks: [], timings: [{ shot: a.name, settledAfter: 2 }], ocr: {} },
+      ],
+    );
+    expect(merged.checks).toEqual([
+      { file: a.file, problems: ['x'] },
+      { file: b.file, problems: ['no bucket checked it'] },
+      { file: c.file, problems: [] },
+    ]);
+    expect(merged.timings.map((timing: { shot: string }) => timing.shot)).toEqual([a.name, c.name]);
+    expect(merged.ocr).toEqual({ [a.file]: [{ text: 'A' }] });
+  });
+});
+
+describe('settle times', () => {
+  const samples = (sames: boolean[]) => sames.map((same, index) => ({ seconds: index + 1, same }));
+
+  it('is the earliest sample from which every later one matched the final shot', () => {
+    expect(settledAfter(samples([false, false, true, true, true]), 6)).toBe(3);
+    expect(settledAfter(samples([true, true, true]), 4)).toBe(1);
+  });
+
+  it('ignores a sample that matched only before the screen changed again', () => {
+    expect(settledAfter(samples([true, false, true, true]), 5)).toBe(3);
+  });
+
+  it('is the final shot when even the last sample differed', () => {
+    expect(settledAfter(samples([false, true, false]), 10)).toBe(10);
+    expect(settledAfter([], 10)).toBe(10);
   });
 });
 
@@ -351,7 +442,7 @@ describe('Screenshot review', () => {
     expect(announce).toContain('github.run_attempt == 1');
     expect(announce).toContain('<!-- key-screens-review pending sha=$SHA -->');
     expect(announce).toContain('gh api -X DELETE "repos/$REPO/issues/comments/$id"');
-    expect(announce).toContain('about 50 minutes');
+    expect(announce).toContain('about 25 minutes');
   });
 
   it.each([
