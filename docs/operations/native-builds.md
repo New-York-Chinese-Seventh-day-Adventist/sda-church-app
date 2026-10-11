@@ -147,7 +147,9 @@ build, not a `package.json` edit. Pinning the runner (the current workflows use
 deliberate update when GitHub retires that image. Expo SDK 58 needs Xcode 26.6 or
 later: with Xcode 26.2, its `ExpoModulesJSI` framework fails to compile. The iOS PR
 preview uses the same Xcode as the signed build, so a toolchain problem shows up on a
-release PR before a signed build. The direct workflows keep build
+release PR before a signed build. Change it in `ios-compile-cache.yml` too, including its
+cache keys, which name the Xcode version (a test checks it matches the preview); the
+first build after starts a new compile cache. The direct workflows keep build
 orchestration visible in this repository and avoid another credential boundary.
 
 ## Expo 58 Android prebuild
@@ -563,9 +565,10 @@ each release PR into `main` without signing, on Apple Silicon runners (`macos-26
 arm64), with the same Xcode as the signed iOS build. It runs five `capture` jobs at
 once, **Key screens (`<group>`)**, one per key-screen group:
 
-- The `worship-and-you` runner, which has the lightest group, compiles the app once
-  and shares it with the others as an artifact. Its simulated iPhone boots during the
-  compile.
+- The `worship-and-you` runner, which has the lightest group, compiles the app once,
+  reusing what it can from the compile cache (below), and shares it with the others as
+  an artifact. It boots its own simulated iPhone after the compile when it restored a
+  compile cache, and during the compile when there was none.
 - The other four install packages, start booting their iPhones, and wait for the shared
   app, giving up at once if the compiling runner fails.
 - Each then installs the app on the simulated iPhone that `test/screens/screens.json`
@@ -592,66 +595,114 @@ Measured in October 2026:
 | --- | --- |
 | One runner took every key screen (average of 13 runs) | 47 min |
 | Five runners, each compiling the app | 40 min |
-| Five runners, one compile shared: the current setup ([run 38109635541](https://github.com/CodeSammich/sda-church-app/actions/runs/38109635541) and [run 38114551220](https://github.com/CodeSammich/sda-church-app/actions/runs/38114551220)) | 25.2 min average (22.4 and 28.0) |
+| Five runners, one compile shared, no compile cache ([run 38109635541](https://github.com/CodeSammich/sda-church-app/actions/runs/38109635541) and [run 38114551220](https://github.com/CodeSammich/sda-church-app/actions/runs/38114551220)) | 25.2 min average (22.4 and 28.0) |
+| The current setup, with a matching compile cache ([run 38151475093](https://github.com/CodeSammich/sda-church-app/actions/runs/38151475093) and [run 38154712058](https://github.com/CodeSammich/sda-church-app/actions/runs/38154712058)) | 19.0 min average (14.8 and 23.2) |
 
-In those two runs:
+With no compile cache to restore, the current setup boots the compiling runner's iPhone
+during the compile, as in the 25.2-minute runs.
+
+In the faster of the runs with a matching compile cache:
 
 | Step | Time |
 | --- | --- |
-| Setup, packages, and CocoaPods on the compiling runner | 2.0–2.2 min |
-| Compile, once | 12.7 min average (10.4 and 14.9) |
-| Each other runner: download the shared app | 0.2–0.4 min after the compile |
-| Each runner: install the app and check it launches | 1.1–1.6 min |
-| Each group's key screens | 2.8–6.3 min |
-| Text checks | 0.5–1.6 min |
-| Joining the groups | 0.7 min |
+| Setup, packages, and CocoaPods on the compiling runner | 2.1 min |
+| Compile, once | 2.3 min |
+| Each other runner: download the shared app | 0.3–0.6 min after the compile |
+| Compiling runner: boot its iPhone, install the app, check it launches | 3.8 min |
+| Each other runner: install the app and check it launches | 1.1–1.7 min |
+| Each group's key screens | 3.4–5.2 min |
+| Text checks | 0.6–1.3 min |
+| Joining the groups | 0.5 min |
 
-The two runs differ mostly in the compile, which varies from run to run. Each **Key
-screens** job times out after 40 minutes; the longest took 27.2.
+In the slower one, the compiling runner was slow throughout: 3 minutes just to list its
+simulated iPhones, then 3.7 to compile and 6.0 to boot, install, and launch, so it finished
+last. After a library update, the compile reuses less of the cache: 3.7 to 6.1 minutes in
+the compile-only runs under **Compile cache**, so expect a run a few minutes longer.
+Each **Key screens** job times out after 40 minutes; the longest took 27.2.
 
 From the logs of earlier runs:
 
-- The compile step took 6.4 to 14.9 minutes for the same code. About 3 minutes of that
-  is the iPhone booting alongside it (below). GitHub doesn't say which machine a run got
-  or how busy it was, so the rest can't be traced from the logs.
+- Without a cache, the compile step took 6.4 to 14.9 minutes for the same code. Part of
+  that was the iPhone booting alongside it, which no longer happens (below). GitHub
+  doesn't say which machine a run got or how busy it was, so the rest can't be traced
+  from the logs.
 - A simulated iPhone's first boot takes about 5.5 minutes, 3.8 of them iOS's one-time
   data migration for location services, and on these 3-processor runners it slows
   whatever runs alongside it. Started with the package installs, it slowed them from
-  about half a minute to as much as 7.7. So each runner starts it in the background after
-  installing packages: on the compiling runner, just before the compile, which hides it;
-  on the others, while they wait for the app.
-- On the compiling runner, the boot still costs about 3 minutes. Xcode began its first
-  build task 2.8 to 4.2 minutes into the build step (5 runs), against 0.5 to 0.9 without
-  a boot (4 runs). Starting the boot once Xcode was building was tried
-  ([run 38116114906](https://github.com/CodeSammich/sda-church-app/actions/runs/38116114906)):
-  Xcode started at once, but the compile took about that much longer. Booting only after
-  the compile would put the whole boot on that runner's path, so it would finish last.
+  about half a minute to as much as 7.7. Started with the compile, it held up Xcode's
+  start by about 3 minutes, and a build from a matching compile cache took 10.8 minutes
+  instead of 2.3 ([run 38149745424](https://github.com/CodeSammich/sda-church-app/actions/runs/38149745424)).
+  So the four runners that wait for the app boot their iPhones after installing
+  packages, while they wait, and the compiling runner boots its own after the compile.
+  With no cache to restore, though, booting after an 11.4-minute compile left that
+  runner finishing last, at 28.6 minutes
+  ([run 38152553765](https://github.com/CodeSammich/sda-church-app/actions/runs/38152553765)),
+  so then it boots during the compile.
 - Installing the app on a booted iPhone usually takes about a minute, but once took 11.4
   minutes. The log shows only when `simctl install` returned, so the cause is unknown; if
   it recurs, look there first.
 - The launch step prints the boot's own log, with timestamps, under **Simulated iPhone
   boot log**, to show what a slow boot was waiting on.
 
-**No compile cache, for now.** A ccache for the compile was tried in October 2026
-(#455) and left out. Xcode compiles the app's native libraries (React Native's core and
-most of Expo's modules arrive precompiled; the rest is C, C++, and Objective-C, mostly in
-react-native-screens, Reanimated, and Worklets, plus Swift in Expo's modules). From
-Xcode's first compile task to its last:
+**Compile cache.** The app's own code is JavaScript, which Xcode doesn't compile, and
+React Native's core and most of Expo's modules arrive precompiled. What Xcode compiles is
+the rest of the native libraries: C, C++, and Objective-C, mostly in react-native-screens,
+Reanimated, and Worklets, plus Swift in Expo's modules. These change only when a library
+is updated. So the compiling runner uses ccache, which stores each compiled C, C++, and
+Objective-C file and reuses it when nothing that went into it has changed. Swift is
+always compiled.
 
-| Compile cache | Compiling, average | Range |
+- `ios-compile-cache.yml` builds the app the same way on every push to `main` and saves
+  the cache, dropping files no build has used for 30 days, such as those from library
+  versions the app no longer uses. Twice a week it only restores the newest cache,
+  because GitHub deletes a cache no one has used for 7 days.
+- The preview restores the newest cache for the same native libraries, or else `main`'s
+  newest for the same Xcode. The first is keyed on the hash of `ios/Podfile.lock`, which
+  CocoaPods writes with every native library and its version. A new Xcode starts a new
+  cache.
+- The preview prints its build's hits under **Show how much the compile cache saved**.
+
+Measured in October 2026, the build step alone, with nothing else running on the runner
+(compile-only runs, listed in #455):
+
+| Compile cache | Runs | Build step |
 | --- | --- | --- |
-| None (6 runs) | 6.5 min | 5.8–8.1 min |
-| Empty, filled while compiling (2 runs) | 8.8 min | 8.7–8.9 min |
-| Every C, C++, and Objective-C file found in it (1 run) | 2.0 min | |
+| None | 2 | 9.8 and 13.0 min |
+| Empty | 2 | 11.2 and 12.7 min |
+| Matching: all 453 C, C++, and Objective-C files reused | 1 | 2.3 min |
+| From before #444's updates to Expo, Reanimated, and safe-area-context: 70% reused | 3 | 3.7 to 6.1 min |
 
-So a filled cache saved about 4.5 minutes, and an empty one cost about 2.3. To keep pull
-requests from planting compiled code in it, only `main` could fill it, and only for the
-exact same native dependencies, so a release PR would save time only when its native
-dependencies matched `main`'s: about half of the releases from 0.34.0 to 1.2.0. That
-saving was weighed against keeping a cache workflow warm and secure, and left for #455.
-For ccache to work at all, React Native's `ccache-clang.sh` also needs `CCACHE_BINARY`
-in the environment: Xcode passes that build setting to script phases but not to the
-compiler. Xcode's own build caching, which also covers Swift, hasn't been tried.
+**An older cache can't put an outdated file in the build.** ccache doesn't compare
+against the last build. For each file it hashes the compiler, the flags, the source, and
+every header the file includes, and reuses a stored result only on an exact match;
+anything else is compiled fresh. React Native's `ccache.conf` relaxes a few checks for
+speed, such as on Xcode's own system headers, which is why a new Xcode starts a new
+cache. To force a fresh compile anyway, delete the `ccache-ios-sim-…` caches under
+**Actions → Caches**.
+
+**A pull request can't poison it.** Cache poisoning means getting one's own compiled code
+into a cache that a later build trusts. Here:
+
+- only `ios-compile-cache.yml`, on `main` in this repository, saves the cache, so it holds
+  only code that was reviewed and merged. GitHub doesn't let a pull request's run write a
+  cache that `main`'s runs read;
+- that workflow reads no secrets and has a read-only token;
+- the preview only restores the cache, in ccache's read-only mode, so nothing a pull
+  request compiles is stored, even on its own runner;
+- the signed store builds never use ccache or the cache, and compile from scratch. Even
+  a bad cache could affect only the unsigned preview, never what reaches the stores.
+
+`test/native-build-safety.test.ts` fails if the cache workflow runs anywhere but `main`,
+reads a secret, or builds on its scheduled run; if the preview saves the cache or isn't
+read-only; if a signed build uses it; if a restore key is broader than the Xcode version;
+or if the two workflows' install and build commands differ.
+
+Both workflows set `USE_CCACHE=1`, which makes React Native's CocoaPods setup compile
+through its `ccache-clang.sh`, and put `CCACHE_BINARY` in the environment: that script
+calls ccache by it, and Xcode passes the build setting of that name to script phases but
+not to the compiler, so without it every compile quietly skips ccache. Xcode's own build
+caching, which also covers Swift, hasn't been tried. The cache is empty until the first
+push to `main` after it was added, so that release's own PR compiles everything.
 
 **Install a downloaded build on a Mac.** From the run's Artifacts section, download the
 artifact ending in `-arm64`, and unzip the download and then the `.zip` inside it to get
@@ -778,7 +829,7 @@ pass or fail them, and a test makes sure of it.
 
 **Human review.** Other layout problems, such as a cut-off label, need a person. On the
 release pull request into `main`, the iOS preview posts a notice when the pull request
-opens or gets a push (the run takes about 25 minutes) and removes the comment with the
+opens or gets a push (the run takes 15 to 25 minutes) and removes the comment with the
 earlier, now out-of-date screenshots. When the run finishes, it replaces the notice with a
 comment linking that commit's screenshots. Its last job, **Screenshots reviewed**, waits
 in the `screenshot-review` environment until a **release-approvers** member approves.

@@ -129,8 +129,8 @@ clear whether the release is a patch, minor, or major. The click-by-click steps 
    included feature PRs into its description. This is the code maintainer's
    responsibility, not the fork contributor's. Do not rely on a reviewer to repair the
    merge commit message at the last moment.
-4. The release PR runs the slow checks below (the slowest, **iOS PR preview**, takes
-   about 25 minutes), and **Screenshots reviewed** waits for a `release-approvers`
+4. The release PR runs the slow checks below (**iOS PR preview** takes 15 to 25
+   minutes, and **Android audio e2e** about 20), and **Screenshots reviewed** waits for a `release-approvers`
    member to approve the screenshots. Merge it once every check and the review pass.
    Merging it into `main` closes the issues and deletes `release-candidate`, and
    **Release - After Merge** creates it again from `main`.
@@ -233,6 +233,18 @@ GitHub's code scanning default setup and have no workflow file.
 - **Screenshots reviewed** waits until a `release-approvers` member approves the
   screenshots in the `screenshot-review` environment; see
   [Approving the screenshots](operations/admin-runbook.md#approving-the-screenshots).
+- The compiling runner reuses the compiled native code that `iOS compile cache` saved on
+  `main`, read-only.
+
+### `iOS compile cache` (`.github/workflows/ios-compile-cache.yml`)
+
+- No check. Runs on every push to `main` in this repository, twice a week, and by hand on
+  `main`.
+- On a push, builds the iOS Simulator app with ccache and saves the compiled C, C++, and
+  Objective-C, which **iOS PR preview** reuses. Twice a week it only restores the cache,
+  because GitHub deletes a cache unused for 7 days. Only this workflow saves the cache,
+  and the signed store builds never use it; see
+  [Compile cache](operations/native-builds.md#ios-pr-preview-unsigned-simulator-builds).
 
 ### `Android audio e2e` (`.github/workflows/android-audio-e2e.yml`)
 
