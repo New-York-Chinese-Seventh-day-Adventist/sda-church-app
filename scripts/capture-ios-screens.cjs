@@ -16,9 +16,9 @@
  *
  *   node scripts/capture-ios-screens.cjs --pick-device   Prints the configured iPhone's UDID, creating it if needed
  *   node scripts/capture-ios-screens.cjs --out <dir>     Captures every screen into <dir>
- *   node scripts/capture-ios-screens.cjs --out <dir> --shard 2/4
- *                                                        Captures only the second of four parts, for one
- *                                                        of several runners; merge-key-screens.cjs joins them
+ *   node scripts/capture-ios-screens.cjs --out <dir> --bucket bible-reading
+ *                                                        Captures only that bucket's screens, for one of
+ *                                                        several runners; merge-key-screens.cjs joins them
  *
  * The app must already be installed on that iPhone. The Simulator only runs on
  * macOS with Xcode.
@@ -79,25 +79,21 @@ const ROUTE_KEY = 'screenshot-route';
 const loadConfig = (file = join(projectRoot, 'test/screens/screens.json')) =>
   JSON.parse(readFileSync(file, 'utf8'));
 
-/**
- * Reads a part such as "2/4" into { index: 2, count: 4 }. Without one, the
- * whole list is one part.
- */
-const parseShard = (value) => {
-  if (!value) return { index: 1, count: 1 };
-  const match = /^(\d+)\/(\d+)$/.exec(value);
-  const shard = match && { index: Number(match[1]), count: Number(match[2]) };
-  if (!shard || shard.index < 1 || shard.index > shard.count) {
-    throw new Error(`--shard takes a part such as 2/4, not "${value}".`);
-  }
-  return shard;
-};
+// A shot's rough cost in seconds: its wait, plus about 5 to relaunch the app
+// and take the screenshot.
+const shotCost = (shot) => shot.wait + 5;
 
 /**
- * One part of a list of shots: every count-th shot, starting at the index-th,
- * so slow screens, such as the Bible's, spread across the parts.
+ * The shots of one bucket in test/screens/screens.json: a group of related
+ * screens captured together on one runner. Without a bucket, every shot.
  */
-const takeShard = (shots, { index, count }) => shots.filter((_, position) => position % count === index - 1);
+const takeBucket = (shots, bucket, config) => {
+  if (!bucket) return shots;
+  if (!Object.hasOwn(config.buckets, bucket)) {
+    throw new Error(`No bucket "${bucket}"; screens.json has ${Object.keys(config.buckets).join(', ')}.`);
+  }
+  return shots.filter((shot) => shot.bucket === bucket);
+};
 
 /** Lists every shot: its name, file, deep link, settings, and checks. */
 const planCaptures = (config) =>
@@ -106,6 +102,8 @@ const planCaptures = (config) =>
       const overrides = config.variants[variant];
       if (!overrides) throw new Error(`Screen "${screen.name}" uses unknown variant "${variant}".`);
       return {
+        screen: screen.name,
+        bucket: screen.bucket,
         name: `${screen.name}-${variant}`,
         file: `ios/${screen.name}-${variant}.png`,
         route: screen.path,
@@ -294,7 +292,7 @@ const statusBarClear = async (file) => {
 
 const CHECKS = { statusBarClear };
 
-const capture = async (outDir, shard = parseShard()) => {
+const capture = async (outDir, bucket) => {
   const config = loadConfig();
   const bundleId = JSON.parse(readFileSync(join(projectRoot, 'app.json'), 'utf8')).expo.ios.bundleIdentifier;
   const device = pickDevice(config);
@@ -312,7 +310,7 @@ const capture = async (outDir, shard = parseShard()) => {
   const sampleDir = mkdtempSync(join(tmpdir(), 'key-screen-samples-'));
   const started = Date.now();
 
-  for (const shot of takeShard(planCaptures(config), shard)) {
+  for (const shot of takeBucket(planCaptures(config), bucket, config)) {
     spawnSync('xcrun', ['simctl', 'terminate', udid, bundleId]); // Not running is fine.
     const manifest = manifestPath(dataContainer, bundleId);
     mkdirSync(dirname(manifest), { recursive: true });
@@ -369,9 +367,9 @@ const capture = async (outDir, shard = parseShard()) => {
   rmSync(sampleDir, { recursive: true, force: true });
   writeFileSync(join(outDir, 'settle-times.json'), `${JSON.stringify(timings, null, 2)}\n`);
 
-  // A part has only some of the shots; merge-key-screens.cjs makes these once
-  // the parts are joined.
-  for (const copy of shard.count === 1 ? planAppStore(config) : []) {
+  // A bucket has only some of the shots; merge-key-screens.cjs makes these
+  // once the buckets are joined.
+  for (const copy of bucket ? [] : planAppStore(config)) {
     if (!captured.has(copy.name)) {
       failures.push(`${copy.file}: its shot "${copy.name}" wasn't captured`);
       continue;
@@ -382,7 +380,7 @@ const capture = async (outDir, shard = parseShard()) => {
   }
 
   const minutes = ((Date.now() - started) / 60000).toFixed(1);
-  const part = shard.count === 1 ? '' : `, part ${shard.index} of ${shard.count}`;
+  const part = bucket ? `, bucket ${bucket}` : '';
   const summary = [
     `### Key screens (${device.name}, ${device.runtime}${part})`,
     '',
@@ -413,10 +411,10 @@ if (require.main === module) {
     };
     const outDir = argument('--out');
     if (!outDir) {
-      console.error('Usage: node scripts/capture-ios-screens.cjs --pick-device | --out <dir> [--shard <part>/<parts>]');
+      console.error('Usage: node scripts/capture-ios-screens.cjs --pick-device | --out <dir> [--bucket <bucket>]');
       process.exit(2);
     }
-    capture(resolve(outDir), parseShard(argument('--shard'))).catch((error) => {
+    capture(resolve(outDir), argument('--bucket')).catch((error) => {
       console.error(error);
       process.exit(1);
     });
@@ -424,8 +422,8 @@ if (require.main === module) {
 }
 
 module.exports = {
-  parseShard,
-  takeShard,
+  shotCost,
+  takeBucket,
   settledAfter,
   looksBlank,
   looksLikeSplash,

@@ -110,7 +110,7 @@ Review rules for both pull-request rulesets:
 | `CodeQL`, `Analyze (actions)`, `Analyze (javascript-typescript)` | GitHub code scanning default setup (no workflow file) | `main` |
 | `Build Android debug APK (ARM)` | `android-pr-preview.yml` | `main` |
 | `Bible audio on an Android emulator` | `android-audio-e2e.yml` | `main` |
-| `Key screens on a simulated iPhone (part 1 of 5)` through `(part 5 of 5)`, and `Build iOS Simulator app (Apple Silicon Mac)`, which joins them | `ios-pr-preview.yml` | `main` |
+| `Build iOS Simulator app (Apple Silicon Mac)`, which joins the `Key screens (<bucket>)` jobs and fails if any of them failed, so they need no entries of their own and a new bucket needs no ruleset change | `ios-pr-preview.yml` | `main` |
 | `Screenshots reviewed` | `ios-pr-preview.yml`: waits until someone in **release-approvers** approves the screenshots in the `screenshot-review` environment; see [Approving the screenshots](#approving-the-screenshots) | `main` |
 
 A skipped check counts as passed; for example, `sync` usually shows as skipped.
@@ -128,7 +128,7 @@ from merging there anyway.
   workflow must first be in `release-candidate`, because that branch is the head of the
   release PR.
 - **A check's name is its job's `name`,** or the job ID when there is no name. A matrix
-  job's name includes the matrix values, such as `Key screens on a simulated iPhone (part 1 of 5)`.
+  job's name includes the matrix values, such as `Key screens (bible-reading)`.
 - **Renaming or removing a job needs a matching ruleset change** in the same release;
   otherwise merges block on the old name.
 - **`android-pr-preview.yml` runs from `main`'s copy of the workflow**, because it uses
@@ -627,10 +627,10 @@ summary links to it. Fork pull requests are skipped. See
 **Workflow:** **iOS PR preview**, which runs automatically on release pull requests
 into `main`, and can be run manually on any branch.
 
-It builds the app without signing for an Apple Silicon Mac on five runners at once. Each
-launches it on a simulated iPhone, captures a fifth of the key screens in
-`test/screens/screens.json` (81 screenshots of 30 screens), and checks their text with
-`scripts/check-screens.cjs`; a last job joins the parts. The run takes about 25
+It builds the app without signing for an Apple Silicon Mac on one runner per key-screen
+bucket, five at once. Each launches it on a simulated iPhone, captures its bucket of the
+key screens in `test/screens/screens.json` (81 screenshots of 30 screens in all), and
+checks their text with `scripts/check-screens.cjs`; a last job joins the buckets. The run takes about 25
 minutes. On a release pull request, a comment
 links the screenshots, and the **Screenshots reviewed** check waits until an approver
 has looked at them; see [Approving the screenshots](#approving-the-screenshots).

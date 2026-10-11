@@ -222,12 +222,12 @@ GitHub's code scanning default setup and have no workflow file.
 
 ### `iOS PR preview` (`.github/workflows/ios-pr-preview.yml`)
 
-- Checks: `Key screens on a simulated iPhone (part 1 of 5)` through `(part 5 of 5)`,
-  `Build iOS Simulator app (Apple Silicon Mac)`, and `Screenshots reviewed`. Runs on the
-  release PR into `main`, and by hand on any branch.
-- Builds the app for the iOS Simulator without signing on five runners at once. Each
-  launches it, screenshots a fifth of the key screens in `test/screens/screens.json`, and
-  checks their text; `Build iOS Simulator app (Apple Silicon Mac)` joins the parts.
+- Checks: `Build iOS Simulator app (Apple Silicon Mac)` and `Screenshots reviewed`. Runs on
+  the release PR into `main`, and by hand on any branch.
+- Builds the app for the iOS Simulator without signing on one runner per key-screen
+  bucket (`Key screens (<bucket>)`). Each launches it, screenshots its bucket of the key
+  screens in `test/screens/screens.json`, and checks their text;
+  `Build iOS Simulator app (Apple Silicon Mac)` joins the buckets and fails if any failed.
 - **Screenshots reviewed** waits until a `release-approvers` member approves the
   screenshots in the `screenshot-review` environment; see
   [Approving the screenshots](operations/admin-runbook.md#approving-the-screenshots).

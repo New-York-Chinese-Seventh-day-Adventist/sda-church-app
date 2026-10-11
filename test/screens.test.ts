@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 
 const { mergeResults } = require('../scripts/merge-key-screens.cjs');
 const {
-  parseShard,
-  takeShard,
+  shotCost,
+  takeBucket,
   settledAfter,
   SETTING_KEYS,
   loadConfig,
@@ -189,17 +189,14 @@ describe('saved settings', () => {
 describe('iOS PR preview', () => {
   const workflow = repoFile('.github/workflows/ios-pr-preview.yml');
 
-  it('splits the key screens across parallel runners, each capturing and checking its own part', () => {
-    const parts = JSON.parse(/\n\s+part: (\[[\d, ]+\])\n/.exec(workflow)![1]);
-    expect(parts).toEqual(parts.map((_: number, index: number) => index + 1));
-    // GitHub's free plan runs five Mac jobs at once.
-    expect(parts.length).toBeLessThanOrEqual(5);
-    const shard = `--shard \${{ matrix.part }}/${parts.length}`;
-    expect(workflow).toMatch(new RegExp(`capture-ios-screens\\.cjs --out [^\\n]+\\n\\s+${shard.replace(/[$/{}.]/g, '\\$&')}`));
-    expect(workflow).toMatch(new RegExp(`check-screens\\.cjs --dir [^\\n]+\\n\\s+${shard.replace(/[$/{}.]/g, '\\$&')}`));
+  it('runs one runner per bucket, each capturing and checking only its bucket', () => {
+    const buckets = /\n\s+bucket: \[([a-z, -]+)\]\n/.exec(workflow)![1].split(', ');
+    expect(buckets).toEqual(Object.keys(config.buckets));
+    expect(workflow).toMatch(/capture-ios-screens\.cjs --out [^\n]+\n\s+--bucket \$\{\{ matrix\.bucket \}\}\n/);
+    expect(workflow).toMatch(/check-screens\.cjs --dir [^\n]+\n\s+--bucket \$\{\{ matrix\.bucket \}\}\n/);
   });
 
-  it('joins the parts in the required job, which fails rather than skips when a part fails', () => {
+  it('joins the buckets in the required job, which fails rather than skips when a bucket fails', () => {
     const merge = workflow.slice(workflow.indexOf('\n  simulator:\n'), workflow.indexOf('\n  announce:\n'));
     expect(merge).toContain('name: Build iOS Simulator app (Apple Silicon Mac)');
     expect(merge).toContain('needs: capture');
@@ -218,25 +215,38 @@ describe('iOS PR preview', () => {
   });
 });
 
-describe('splitting the key screens into parts', () => {
-  it('gives every shot to exactly one part, alternating so slow screens spread out', () => {
-    const parts = [1, 2, 3, 4, 5].map((index) => takeShard(shots, { index, count: 5 }));
-    expect(parts.flat().map((shot: { name: string }) => shot.name).sort()).toEqual(
-      shots.map((shot: { name: string }) => shot.name).sort(),
-    );
-    expect(Math.max(...parts.map((part) => part.length)) - Math.min(...parts.map((part) => part.length))).toBeLessThanOrEqual(1);
-    expect(parts[1][0]).toBe(shots[1]);
-    expect(parts[1][1]).toBe(shots[6]);
+describe('key-screen buckets', () => {
+  it('puts every screen in a bucket that says what it holds, at most five buckets', () => {
+    // GitHub's free plan runs five Mac jobs at once, one per bucket.
+    expect(Object.keys(config.buckets).length).toBeLessThanOrEqual(5);
+    for (const [bucket, holds] of Object.entries(config.buckets)) {
+      expect(holds).toMatch(/^[A-Z].{20,}\.$/);
+      expect(shots.some((shot: { bucket: string }) => shot.bucket === bucket)).toBe(true);
+    }
+    for (const screen of config.screens) {
+      expect({ screen: screen.name, known: Object.hasOwn(config.buckets, screen.bucket) }).toEqual({
+        screen: screen.name,
+        known: true,
+      });
+    }
   });
 
-  it('reads a part such as 2/5, and is the whole list without one', () => {
-    expect(parseShard('2/5')).toEqual({ index: 2, count: 5 });
-    expect(parseShard(undefined)).toEqual({ index: 1, count: 1 });
-    expect(() => parseShard('6/5')).toThrow('--shard');
-    expect(() => parseShard('two')).toThrow('--shard');
+  it('keeps every bucket under 6 minutes of capture, so no runner holds up the release', () => {
+    // Over the limit, move a related group of screens to a lighter bucket, or
+    // split one, as screens.json's $comment says.
+    for (const bucket of Object.keys(config.buckets)) {
+      const seconds = takeBucket(shots, bucket, config).reduce((sum: number, shot: any) => sum + shotCost(shot), 0);
+      expect({ bucket, minutes: Math.round(seconds / 6) / 10, over: seconds > 360 }).toMatchObject({ bucket, over: false });
+    }
   });
 
-  it('joins the parts\' results in list order, flagging a shot no part checked', () => {
+  it('takes one bucket, every shot without one, and rejects an unknown bucket', () => {
+    expect(takeBucket(shots, 'bible-reading', config).every((shot: { bucket: string }) => shot.bucket === 'bible-reading')).toBe(true);
+    expect(takeBucket(shots, undefined, config)).toBe(shots);
+    expect(() => takeBucket(shots, 'bibel', config)).toThrow('No bucket "bibel"');
+  });
+
+  it('joins the buckets\' results in list order, flagging a shot no bucket checked', () => {
     const [a, b, c] = shots;
     const merged = mergeResults(
       [a, b, c],
@@ -251,7 +261,7 @@ describe('splitting the key screens into parts', () => {
     );
     expect(merged.checks).toEqual([
       { file: a.file, problems: ['x'] },
-      { file: b.file, problems: ['no part checked it'] },
+      { file: b.file, problems: ['no bucket checked it'] },
       { file: c.file, problems: [] },
     ]);
     expect(merged.timings.map((timing: { shot: string }) => timing.shot)).toEqual([a.name, c.name]);

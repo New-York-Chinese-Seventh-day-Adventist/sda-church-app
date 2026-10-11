@@ -559,13 +559,13 @@ works on Intel and Apple Silicon Macs. On Windows or Linux, the command explains
 needs a Mac.
 
 **In GitHub Actions.** The **iOS PR preview** workflow (`ios-pr-preview.yml`) builds
-each release PR into `main` without signing, on five Apple Silicon runners (`macos-26`,
-arm64) at once, with the same Xcode as the signed iOS build. Each runner, a part of the
-`capture` job named **Key screens on a simulated iPhone (part N of 5)**, starts booting
+each release PR into `main` without signing, on one Apple Silicon runner (`macos-26`,
+arm64) per key-screen bucket, five at once, with the same Xcode as the signed iOS build.
+Each runner, a `capture` job named **Key screens (`<bucket>`)**, starts booting
 the simulated iPhone that `test/screens/screens.json` names (an iPhone 17 Pro Max, on
 the newest iOS runtime) while the app compiles, then installs the app, fails if it
-isn't still running 45 seconds after launch, and takes its fifth of the key screens.
-**Build iOS Simulator app (Apple Silicon Mac)** then joins the five parts and uploads
+isn't still running 45 seconds after launch, and takes its bucket's key screens.
+**Build iOS Simulator app (Apple Silicon Mac)** then joins the buckets and uploads
 the app and a screenshot of its first screen (14-day retention), named like the
 Android preview's `sda-church-app-pr-<number>-<run>-arm-debug.apk`:
 
@@ -609,9 +609,17 @@ builds for the Mac's own processor. To build it in the workflow again:
 
 The five runners screenshot the 30 screens listed in `test/screens/screens.json`, 81
 shots in all, so a layout problem on iPhone shows up before release rather than in
-TestFlight (#331). Each takes every fifth shot (`--shard N/5`), about 16, so slow Bible
-screens spread across them, and checks their text; `scripts/merge-key-screens.cjs` then
-joins the parts into one `screens/` folder and makes the App Store copies.
+TestFlight (#331). Each runner takes one bucket (`--bucket <name>`): a group of related
+screens, such as the Bible reader's layout or the library, listed under `buckets` in
+`screens.json` with what each holds. Each runner checks its shots' text, and
+`scripts/merge-key-screens.cjs` joins the buckets into one `screens/` folder and makes
+the App Store copies. The release PR waits only for the slowest bucket.
+
+**Adding a key screen.** Give it the `bucket` for its part of the app, as `buckets`
+describes. A test fails if any bucket would take more than 6 minutes to capture; then
+move a related group of screens to a lighter bucket, or split one, and update the
+`bucket` list in `ios-pr-preview.yml`, which a test keeps in step with `screens.json`.
+GitHub's free plan runs five Mac jobs at once, so keep to five buckets.
 `scripts/capture-ios-screens.cjs` takes each shot:
 
 1. It saves the settings the app reads at startup into the app's storage: setup
@@ -625,7 +633,7 @@ joins the parts into one `screens/` folder and makes the App Store copies.
    a saved screen. A test checks that no other workflow sets it.
 2. It launches the app, waits for the screen to load, and saves
    `screens/ios/<screen>-<variant>.png`. Each shot gets a fresh launch and a 10-second
-   wait (15 for the Bible), so a part's 16 or so shots take about 4–5 minutes. While it
+   wait (15 for the Bible), so a bucket's 13 to 22 shots take about 3–6 minutes. While it
    waits, it takes a screenshot every 2 seconds and records in
    `screens/settle-times.json` when each screen stopped changing, so the waits can be
    shortened from measurements (#453). Three Simulators on one runner were tried and

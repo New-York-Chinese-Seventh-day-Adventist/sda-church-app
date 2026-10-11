@@ -21,9 +21,9 @@
  * enlarged and with more contrast, before reporting it.
  *
  *   node scripts/check-screens.cjs --dir <screens folder>   The folder holding ios/*.png
- *   node scripts/check-screens.cjs --dir <screens folder> --shard 2/4
- *                                                         Checks only that part's shots, as captured by
- *                                                         capture-ios-screens.cjs --shard 2/4
+ *   node scripts/check-screens.cjs --dir <screens folder> --bucket bible-reading
+ *                                                         Checks only that bucket's shots, as captured by
+ *                                                         capture-ios-screens.cjs --bucket bible-reading
  *
  * Writes ocr.json and checks.json into that folder, and a summary to the step
  * summary. Exits 1 if any rule fails.
@@ -32,7 +32,7 @@ const { execFileSync } = require('node:child_process');
 const { appendFileSync, existsSync, mkdtempSync, writeFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
-const { loadConfig, parseShard, planCaptures, takeShard } = require('./capture-ios-screens.cjs');
+const { loadConfig, planCaptures, takeBucket } = require('./capture-ios-screens.cjs');
 
 // Vision's languages for each app language, most important first. Bible screens
 // in English also show Chinese, so English reads both.
@@ -249,10 +249,11 @@ const main = async () => {
   };
   const dir = argument('--dir') && resolve(argument('--dir'));
   if (!dir) {
-    console.error('Usage: node scripts/check-screens.cjs --dir <screens folder> [--shard <part>/<parts>]');
+    console.error('Usage: node scripts/check-screens.cjs --dir <screens folder> [--bucket <bucket>]');
     process.exit(2);
   }
-  const shots = takeShard(planChecks(loadConfig()), parseShard(argument('--shard')));
+  const config = loadConfig();
+  const shots = takeBucket(planChecks(config), argument('--bucket'), config);
   const text = await readText(dir, shots);
   writeFileSync(join(dir, 'ocr.json'), JSON.stringify(text, null, 1));
 
