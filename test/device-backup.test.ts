@@ -27,20 +27,29 @@ describe('device backups', () => {
   it('leave out the copies the app can download again, which go through services/CacheStore.ts', () => {
     const source = (file: string) => readFileSync(join(process.cwd(), file), 'utf8');
     expect(source('services/CacheStore.ts')).toContain('new Directory(Paths.cache, folder)');
-    for (const file of ['services/BulletinService.ts', 'app/(tabs)/index.tsx', 'features/sabbath-school/LessonDownloads.ts']) {
+    for (const file of ['services/BulletinService.ts', 'app/(tabs)/index.tsx', 'features/sabbath-school/LessonDownloads.ts', 'services/VerseOfTheDayWidget.android.ts']) {
       expect([file, source(file).includes("from '@/services/CacheStore'"), /\bAsyncStorage\b/.test(source(file))]).toEqual([file, true, false]);
     }
   });
 
-  it('leave out downloaded Bible audio on Android, and nothing else', () => {
+  it('leave out downloaded Bible audio and the widget’s verses on Android, and nothing else', () => {
     expect(app.plugins).toContain('./plugins/withAndroidBackupRules');
-    expect(EXCLUDED).toEqual([{ domain: 'file', path: 'bible-audio' }]);
-    const exclude = '<exclude domain="file" path="bible-audio"/>';
-    // Android 11 and lower, and both of Android 12's sections.
-    expect(getFullBackupContent().split(exclude)).toHaveLength(2);
-    expect(getDataExtractionRules().split(exclude)).toHaveLength(3);
-    expect(getDataExtractionRules()).toMatch(/<cloud-backup>\s*<exclude[^>]*>\s*<\/cloud-backup>/);
-    expect(getDataExtractionRules()).toMatch(/<device-transfer>\s*<exclude[^>]*>\s*<\/device-transfer>/);
+    expect(EXCLUDED).toEqual([
+      { domain: 'file', path: 'bible-audio' },
+      { domain: 'sharedpref', path: 'expo.modules.widgets.xml' },
+      { domain: 'sharedpref', path: 'verse_widget_theme.xml' },
+    ]);
+    for (const exclude of [
+      '<exclude domain="file" path="bible-audio"/>',
+      '<exclude domain="sharedpref" path="expo.modules.widgets.xml"/>',
+      '<exclude domain="sharedpref" path="verse_widget_theme.xml"/>',
+    ]) {
+      // Android 11 and lower, and both of Android 12's sections.
+      expect(getFullBackupContent().split(exclude)).toHaveLength(2);
+      expect(getDataExtractionRules().split(exclude)).toHaveLength(3);
+    }
+    expect(getDataExtractionRules()).toMatch(/<cloud-backup>(\s*<exclude[^>]*>)+\s*<\/cloud-backup>/);
+    expect(getDataExtractionRules()).toMatch(/<device-transfer>(\s*<exclude[^>]*>)+\s*<\/device-transfer>/);
     // An <include> would stop everything else being backed up, AsyncStorage included.
     expect(`${getFullBackupContent()}${getDataExtractionRules()}`).not.toContain('<include');
   });

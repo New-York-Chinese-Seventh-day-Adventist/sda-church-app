@@ -61,7 +61,8 @@ Android runs `expo prebuild` and then Gradle on a GitHub-hosted Linux runner
 (`npm run build:android` and `npm run build:android:apk`); a committed config plugin,
 `plugins/withAndroidLocalSigning.js`, teaches the generated Gradle project to use a
 keystore supplied through environment variables, and
-`plugins/withAndroidPhonePortrait.js` keeps phones in portrait (see
+`plugins/withAndroidPhonePortrait.js` keeps phones in portrait, and
+`plugins/withAndroidVerseWidget.js` adds the home screen widget (see
 [Versions and maintenance](#versions-and-maintenance)). iOS runs Expo prebuild and Xcode on a
 GitHub-hosted macOS runner, in its own workflow, `.github/workflows/native-ios-build.yml`.
 The church added its Apple signing secrets to the `production` Environment in September
@@ -1411,6 +1412,48 @@ smallest width is under 600dp, so tablets and unfolded foldables turn freely. An
 ignores orientation locks on screens 600dp or wider for apps that target API 36, and Play
 Console flags apps that set one (#426). Whether to support iPad is a separate decision
 (#324).
+
+The Android home screen widget for the verse of the day (#235) is built with
+`expo-widgets`. `plugins/withAndroidVerseWidget.js` runs only the Android half of its
+config plugin, because the full plugin also adds an iOS widget extension and app group,
+which would need their own signing. `package.json` keeps `expo-widgets` and `@expo/ui` out
+of iOS autolinking, so the iPhone app doesn't change. The plugin also has Android redraw
+the widget every hour, translates its name in the widget list, and makes the widget's
+receiver the one in `modules/verse-widget`, a local Expo module for Android only:
+
+- **Light and dark mode.** The layout takes the app's colors (`constants/ThemeColors.ts`,
+  which `constants/Themes.ts` uses too) in the phone's current mode, and Android doesn't
+  redraw a widget when the phone switches modes. So the receiver draws the layout in both
+  modes and pairs each light-mode color with the dark-mode color in the same place, and
+  Android 12 and later switch between them on their own.
+- **The verse.** `expo-widgets` has no font family, line spacing, or line fitting, so the
+  receiver lays the verse out itself, as YouVersion's widget looks: the phone's serif font,
+  lines 1.5 times the type size apart, and only the whole lines that fit the widget's size.
+  It measures the text as Android's widget text draws it and makes each line a one-line
+  text. A verse that runs on stops at the end of a whole line, with no "…". On a widget
+  too small for a line, the translation gives way first, then the verse. Running
+  `adb shell setprop log.tag.VerseWidget DEBUG` logs each fit.
+- **Redraws.** `expo-widgets`' own redraw (`updateSnapshot` or `reload`) wouldn't go through
+  the receiver, so the app never calls it. It stores the week of verses as the widget's
+  initial props, which doesn't draw, and then asks the module to redraw the widget.
+- **Taps.** `expo-widgets` sends a tap on one of the widget's buttons to the receiver,
+  which opens the verse in the app or the phone's share sheet, or flips that widget
+  between light and dark. Each tap flips the widget's colors. When the new look matches
+  the phone's mode, the widget goes back to following the phone. The receiver keeps
+  each widget's choice in the `verse_widget_theme` shared preferences, by widget ID.
+
+Gradle runs Metro twice more for the widget (`generateExpoWidgetsBundle` and
+`generateExpoWidgetsLayoutRegistry`). The second builds the layout the widget shows
+before the app first runs, from `features/verse-of-the-day/VerseOfTheDayWidget.tsx`, with
+only relative imports: `@/` paths and packages are empty there. Gradle doesn't watch the
+layout's files for it. So after changing them, delete
+`node_modules/expo-widgets/android/build/generated/expo-widgets` before building in a
+reused `android/` project; CI builds from scratch.
+When updating `expo-widgets`, check that its Android plugin files are still in
+`plugin/build/android/` (`test/verse-of-the-day-widget.test.ts` runs them on an empty
+project), that the app still builds, and then try the widget on an emulator: add it
+from the home screen's widget list before and after opening the app, tap it and its share
+button, change the app's language, and switch the phone between light and dark mode.
 
 Before release, run `npx expo install --check`, `npm run doctor`, and `npm run check`.
 Then build and test signed binaries on physical iPhone and Android devices, with the
