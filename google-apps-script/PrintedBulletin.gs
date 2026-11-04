@@ -356,6 +356,15 @@ var PRINTED_BIBLE_CHAPTER_COUNTS = Object.freeze({
 var PRINTED_OFFERING_TRANSLATION_CACHE = {};
 
 function onOpen() {
+  var openedAt = new Date().getTime();
+  // The menu first: a simple trigger stops at 30 seconds, and an open that
+  // ran out of time in the upkeep below once left staff with no menu at all.
+  var ui = SpreadsheetApp.getUi();
+  ui
+    .createMenu('Printed Bulletin')
+    .addItem('Create Google Doc…', 'createPrintedBulletinFromPrompt')
+    .addItem('Fonts…', 'openPrintedBulletinFontsDialog')
+    .addToUi();
   try {
     maintainBulletinScheduleOnOpen_();
   } catch (error) {
@@ -376,12 +385,14 @@ function onOpen() {
       Logger.log('Bulletin column check failed: ' + error);
     }
   }
-  var ui = SpreadsheetApp.getUi();
-  ui
-    .createMenu('Printed Bulletin')
-    .addItem('Create Google Doc…', 'createPrintedBulletinFromPrompt')
-    .addItem('Fonts…', 'openPrintedBulletinFontsDialog')
-    .addToUi();
+  // Last, and only with time to spare: it's usually one Document Property
+  // read, but a rewrite after a deploy takes seconds (#639).
+  var used = new Date().getTime() - openedAt;
+  if (used < HYMN_BANK_OPEN_BUDGET_MS) {
+    ensureHymnBankTabSafely_();
+  } else if (typeof Logger !== 'undefined') {
+    Logger.log('Skipped the Hymn Bank check: this open has used ' + used + ' ms.');
+  }
   if (!ui.alert || !ui.ButtonSet || !ui.ButtonSet.OK) {
     return;
   }
@@ -1317,7 +1328,9 @@ function createPrintedBulletinWordCopy(request) {
     lineHeight = PRINTED_BULLETIN_WORD_COPY.lineHeight;
   }
   var fonts = readPrintedBulletinFonts_();
-  var parts = Utilities.unzip(response.getBlob());
+  // A .docx is a zip, but Drive labels it as Word, and Utilities.unzip takes
+  // only a blob labelled application/zip.
+  var parts = Utilities.unzip(response.getBlob().setContentType('application/zip'));
   var styles = parts.filter(function (part) {
     return part.getName() === 'word/styles.xml';
   })[0];
