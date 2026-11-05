@@ -835,7 +835,7 @@ describe('iPad key screens (#324)', () => {
     const checks = planChecks(config, 'ipad');
     expect(checks.map((shot: { name: string }) => shot.name)).toEqual(ipadNames);
     const bible = checks.find((shot: { name: string }) => shot.name === 'bible-dual-default');
-    expect(bible.mustShowLines).toEqual(expect.arrayContaining(['BSB', 'CUV']));
+    expect(bible.mustShowLines).toEqual(expect.arrayContaining(['BSB', '[Cc]UV']));
     const portrait = checks.find((shot: { name: string }) => shot.name === 'home-default');
     const landscape = checks.find((shot: { name: string }) => shot.name === 'home-landscape');
     expect(regionsFor(portrait).tabs).toBeDefined();
@@ -1148,6 +1148,17 @@ describe('launching again after a stuck launch', () => {
       expect(relaunch).toBeGreaterThan(source.indexOf("problems.push('the app still shows its splash screen')"));
       expect(relaunch).toBeLessThan(source.indexOf('for (const check of shot.checks) {'));
     }
+  });
+
+  it("launches an iOS shot once more when its record says the app didn't do what it started", () => {
+    // 1.7.0's iPad audio stayed buffering at 0:00 on half its runs, with the
+    // network fine. The record is read after the later shot, and checked once.
+    const source = repoFile('scripts/capture-ios-screens.cjs');
+    const retry = source.indexOf('if (recordCheck.problems.length && launch < LAUNCHES) {');
+    expect(retry).toBeGreaterThan(source.indexOf('if (shot.later) {'));
+    expect(retry).toBeLessThan(source.indexOf('timings.push('));
+    expect(source.match(/await recorded\.check\(/g)).toHaveLength(1);
+    expect(source).toContain('const { problems: wrong, notes = [] } = recordCheck;');
   });
 
   it('lists each relaunch in the summary, and warns on the run', () => {
