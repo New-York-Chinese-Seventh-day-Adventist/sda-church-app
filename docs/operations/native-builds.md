@@ -868,7 +868,7 @@ and the copies pass all 123.
 
 #### Key screens
 
-The five runners screenshot the 68 screens listed in `test/screens/screens.json`, 149
+The five runners screenshot the 69 screens listed in `test/screens/screens.json`, 149
 iPhone shots in all, so a layout problem on iPhone shows up before release rather than in
 TestFlight (#331). Each runner then takes its group's iPad shots; see
 [iPad key screens](#ipad-key-screens). Each runner takes one group (`--group <name>`) of related
@@ -923,7 +923,8 @@ iPhone or Android, or 8 on the iPad. The limit is a reminder to prune, not a rul
    about (`getScreenshotState`, #456): `state=load-failed`, a bulletin that couldn't
    load, or `section=program`, the page scrolled to its worship program. So can the
    hymnal page's: `section=hymns`, scrolled past its carousel to its hymns, where the
-   header shows the hymnal's name (#797).
+   header shows the hymnal's name (#797), and New Member & Visitor's: `section=cards`,
+   scrolled past its Address & Service Times to its cards (#793).
 
    **Made-up data.** These screenshots, the text read from them, and the run's
    downloads are public, so the pages that show members' names or faces show made-up

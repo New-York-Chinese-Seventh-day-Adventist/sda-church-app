@@ -81,7 +81,8 @@ export const getScreenshotPopup = <T extends string>(
  * it's one the screen knows: the bulletin's `state=load-failed`, a bulletin
  * that couldn't load, or its `section=program`, scrolled to the worship
  * program (#456), or the hymnal page's `section=hymns`, scrolled to its hymns,
- * where the header shows the hymnal's name (#797). A capture can't scroll, and
+ * where the header shows the hymnal's name (#797), or New Member & Visitor's
+ * `section=cards`, scrolled to its cards (#793). A capture can't scroll, and
  * no tap can bring the others about on a build runner. As with
  * `popup=`, it's always null outside a key-screens build.
  */

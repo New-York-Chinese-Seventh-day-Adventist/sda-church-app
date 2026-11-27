@@ -155,6 +155,7 @@ describe('key screen list (test/screens/screens.json)', () => {
   it('asks a screen only for a state or section it knows, from its path (#456)', () => {
     const screenFiles: Record<string, string> = {
       'home/bulletin': 'app/(tabs)/home/bulletin.tsx',
+      'home/discover': 'app/(tabs)/home/discover.tsx',
       // The route shows the hymnal page, which reads the path.
       'home/hymnal-selection': 'features/hymnal/HymnalScreen.tsx',
     };
@@ -163,6 +164,7 @@ describe('key screen list (test/screens/screens.json)', () => {
       'bulletin-announcements',
       'bulletin-load-failed',
       'bulletin-program',
+      'discover-cards',
       'hymnal-hymns',
     ]);
     for (const screen of asking) {
