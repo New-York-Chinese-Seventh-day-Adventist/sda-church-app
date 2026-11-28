@@ -10,6 +10,7 @@ import {
   type LessonDownloadProgress,
 } from '@/features/sabbath-school/LessonDownloads';
 import { recordForScreenshot } from '@/services/ScreenshotRoute';
+import { useAfterSheetCloses } from '@/hooks/useAfterSheetCloses';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { showAppAlert, type LocalizedText } from '@/components/AppAlert';
 import { Platform } from 'react-native';
@@ -35,10 +36,15 @@ const ERROR_TITLE: LocalizedText = {
  * instead where the phone has no PDF viewer, where the download fails, and
  * when there's no PDF yet (the age group's website). Offline with no copy, the
  * popup says there's no connection. The web opens it in the browser, as before.
+ *
+ * The viewer or the browser opens only once the popup, a sheet, has finished
+ * closing: iOS can't show Quick Look over a sheet still sliding away (#867).
+ * Give `onSheetClosed` to the popup as `onClosed`.
  */
 export function useChildrenLessonOpener(language: SupportedLanguage) {
   const [dialog, setDialog] = useState<ChildrenLessonDialogState | null>(null);
   const request = useRef<AbortController | null>(null);
+  const { afterSheetCloses, onSheetClosed } = useAfterSheetCloses();
 
   const cancel = useCallback(() => {
     request.current?.abort();
@@ -76,7 +82,11 @@ export function useChildrenLessonOpener(language: SupportedLanguage) {
           setDialog({ title, progress: null, offline: true });
           return;
         }
+        const sheetClosed = afterSheetCloses();
         setDialog(null);
+        await sheetClosed;
+        // Left the screen while the popup closed: nothing opens.
+        if (signal.aborted) return;
         // Why the browser opens instead of the viewer, for the key screens'
         // record (#551): no PDF this week, a failed download, or no viewer.
         let browserReason = isChildrenLessonPdf(lesson.url) ? 'download-failed' : 'no-pdf';
@@ -105,8 +115,8 @@ export function useChildrenLessonOpener(language: SupportedLanguage) {
         if (request.current === controller) request.current = null;
       }
     },
-    [language],
+    [afterSheetCloses, language],
   );
 
-  return { cancel, dialog, open };
+  return { cancel, dialog, onSheetClosed, open };
 }

@@ -296,6 +296,7 @@ export default function SabbathSchoolScreen() {
           setScreenshotDialog(null);
           childrenLesson.cancel();
         }}
+        onClosed={childrenLesson.onSheetClosed}
         progress={lessonDialog?.progress ?? null}
         title={lessonDialog?.title ?? ''}
         visible={!!lessonDialog}

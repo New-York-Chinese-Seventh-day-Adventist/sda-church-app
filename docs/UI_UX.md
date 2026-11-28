@@ -528,6 +528,12 @@ simple, blended colors.
     (`test/app-sheet.test.ts`), so moving to the stable API later changes one file.
   - Show one sheet at a time, and close a sheet before showing an alert: a centred
     dialog draws in the app's own window, under a native sheet.
+  - **Something native after a sheet**, such as Quick Look or the in-app browser, opens
+    only once the sheet has finished closing. iOS presents a screen only over one that's
+    staying. The children's lesson's Quick Look failed while its sheet still slid
+    away, so the lesson opened in the browser instead (#867). `AppSheet`'s `onClosed`
+    says when a sheet has gone, and `useAfterSheetCloses` (`hooks/useAfterSheetCloses.ts`)
+    waits for it. If the sheet never says so, it goes on after 600 ms anyway.
 - **Dialogs:** Every popup is the app's own, never the system's alert (`Alert.alert`),
   which on Android looks unlike the rest of the app. A dialog is centred, with the shared
   corners and canvas (`getPopupSurfaceStyle`), and at most 65% of the screen tall at any

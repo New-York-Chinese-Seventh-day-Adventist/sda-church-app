@@ -12,10 +12,10 @@ import {
   SHORT_SHEET_SECOND_DETENT,
 } from '@/components/SheetDetents';
 import { customDarkTheme, customLightTheme } from '@/constants/Themes';
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { createElement } from 'react';
+import { createElement, useState } from 'react';
 import { Dimensions, Platform, StyleSheet, Text } from 'react-native';
 import { renderWithPreferences } from './helpers/render-preferences';
 import { getSheetHosts } from './helpers/sheets';
@@ -190,6 +190,60 @@ describe('AppSheet (#867)', () => {
     expect(getSheetHosts(screen)).toHaveLength(0);
     expect(screen.getByText('Sleep timer')).toBeTruthy();
     expect(screen.getByTestId('test-sheet')).toBeTruthy();
+  });
+
+  // A sheet the X closes, which says when it has finished closing.
+  function ClosingSheet({ onClosed }: Readonly<{ onClosed: () => void }>) {
+    const [visible, setVisible] = useState(true);
+    return createElement(AppSheet, {
+      children: createElement(Text, null, 'Finding this week’s lesson…'),
+      closeLabel: 'Close',
+      onClosed,
+      onDismiss: () => setVisible(false),
+      testID: 'test-sheet',
+      title: 'Junior (ages 10–12)',
+      visible,
+    });
+  }
+
+  describe('says once that it has finished closing, for what opens next (#867)', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    it('when the native sheet says it has gone', async () => {
+      const onClosed = jest.fn();
+      const screen = await renderWithPreferences(createElement(ClosingSheet, { onClosed }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+      const [sheet] = getSheetHosts(screen);
+      expect(sheet.props.isOpen).toBe(false);
+      expect(onClosed).not.toHaveBeenCalled();
+
+      await act(async () => (sheet.props.onDidDisappear as () => void)());
+      expect(onClosed).toHaveBeenCalledTimes(1);
+      expect(getSheetHosts(screen)).toHaveLength(0);
+      await act(() => jest.advanceTimersByTimeAsync(2000));
+      expect(onClosed).toHaveBeenCalledTimes(1);
+    });
+
+    it("after a fallback when it never does", async () => {
+      const onClosed = jest.fn();
+      const screen = await renderWithPreferences(createElement(ClosingSheet, { onClosed }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+      await act(() => jest.advanceTimersByTimeAsync(500));
+      expect(onClosed).not.toHaveBeenCalled();
+      await act(() => jest.advanceTimersByTimeAsync(1500));
+      expect(onClosed).toHaveBeenCalledTimes(1);
+      expect(getSheetHosts(screen)).toHaveLength(0);
+    });
+
+    it('on the web, once hidden', async () => {
+      jest.replaceProperty(Platform, 'OS', 'web');
+      const onClosed = jest.fn();
+      const screen = await renderWithPreferences(createElement(ClosingSheet, { onClosed }));
+      expect(onClosed).not.toHaveBeenCalled();
+      await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+      expect(onClosed).toHaveBeenCalledTimes(1);
+    });
   });
 });
 
