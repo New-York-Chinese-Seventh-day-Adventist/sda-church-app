@@ -99,6 +99,25 @@ the component.
 | **Arrow Border** | #374151 | #EBCD78 | Highlight boundary around the metallic affordance. |
 | **Arrow Foreground** | #374151 | #181202 | Dark icon over the metallic fill. |
 
+### Grid Menu Card Text Size
+
+**Rule:** grid cards (Home, New Member & Visitor) stay two a row at every text size. The
+title, the icon and the card grow with the text size until the longest word of the
+grid's titles no longer fits a half-width card, then stop there, together. Never stack
+the cards one per row, never break a word, and never let the icon outgrow the title.
+
+- `components/GridMenuCard.tsx` enforces it (`fitGridMenuCardTextScale`). It measures
+  the grid's words on the device, at the app's text size times the phone's.
+  `test/grid-menu-card-text-scale.test.ts` and the Discover and Home key screens check
+  it.
+- Long Chinese titles mark their words with a zero-width space, as 本週 / 安息日學 /
+  課程, so they break only between words and grow further before they stop (#797).
+- Why: two cards a row is the church's choice for these pages (#387). Until 1.9.2 the
+  title stopped at 1.25× while the icon and card grew on, so at 200% the icons were big
+  and the titles small.
+- The same rule is in [Home](#1-home-the-pulse) and in
+  [Text size](accessibility/README.md#text-size). Change all three together.
+
 ### External Service Links
 
 Links to YouTube, Spotify, Zoom, and other external services use the provider's
@@ -126,8 +145,8 @@ the in-app browser. There, a phone can show a blank page until the whole file ha
 which can take a minute on a slow connection. On iOS and Android, the app downloads
 them itself instead:
 
-- a popup appears as soon as the person taps, and shows the download's progress
-  ("Downloading · 5.1 of 14.2 MB"), with an X that stops it;
+- a sheet appears as soon as the person taps, and shows the download's progress
+  ("Downloading · 5.1 of 14.2 MB"), with an X that stops it (#867);
 - the file is kept in the cache directory while it's current, so it opens at once the
   next time, even offline. Nothing downloads without a tap, so people who don't use
   a feature never download its files;
@@ -136,7 +155,7 @@ them itself instead:
   downloaded copy, not a link, so it's outside `constants/ExternalLinks.ts`.
 
 If the phone has no viewer, or the download fails, the file's address opens in the
-in-app browser as before; if it fails because the phone is offline, the popup says
+in-app browser as before; if it fails because the phone is offline, the sheet says
 there's no connection instead. The web keeps opening files in a new tab. Anything new that
 opens a big file should work the same way. The children's Sabbath School lessons came
 first ([#529](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/529));
@@ -152,18 +171,24 @@ is the second use, for later rather than to open now. It's downloaded and delete
 page, **Offline Bible Audio** in the You tab, which **Listen offline** in the Bible's audio
 settings opens. The page is a tree of the whole Bible, its Testaments, their sections,
 closed until tapped, and their books, for one narrator; opened from the Bible, it shows
-the book being read. Each row says what it holds: its size, how far along its download
-is, part of it, or all of it. Narrators are named language first, as "English – Souer
+the book being read, and a section that holds some of its books, not all, opens, so they
+show (#806). Each row says what it holds: its size, how far along its download is, part
+of it, such as "1 of 66 books downloaded · 774.4 MB not yet downloaded" (未下載, not 尚餘,
+which read as the phone's free space), or all of it. A size never breaks across lines.
+Narrators are named language first, as "English – Souer
 (BSB)" or "Mandarin (Chinese Union Version)", and listed in one order, as the translation
 picker lists their translations (`constants/BibleAudioNarrators.ts`); the Bible's audio
 settings name the English ones the same way. A row's download
-progress shows at once, with an X that stops it. It goes on when the page closes, and
+progress shows at once, with an X that stops it; while it waits for Wi-Fi, only the X
+shows, and to use mobile data instead, the member stops it and downloads again, which
+asks. It goes on when the page closes, and
 with the phone locked or the app in the background, since the whole Bible takes a while:
 the phone itself downloads it (#611), on Wi-Fi only unless the member chose mobile data.
 Meanwhile a notification can show it, with Stop, as **Notifications** below says: the
 app's own on Android 14 and later, and the system's download notification on Android 13
-and lower; on the iPhone, a word when it's done. Deleting goes by the same rows, after the app's popup
-asks, naming what it deletes and its size. It stays in the documents directory until the
+and lower; on the iPhone, a word when it's done. Deleting goes by the same rows: a trash can with the
+word Delete under it, not beside it, so it's no wider than the icons beside it on a small
+phone (#806). The app's popup asks first, naming what it deletes and its size. It stays in the documents directory until the
 member deletes it, rather than in the cache, and the size of each choice shows before it
 starts. Over mobile data,
 the app's popup asks first: Use mobile data, Wait for Wi-Fi, or Cancel; and a download
@@ -188,6 +213,36 @@ offline:
 
 `services/BibleAudioDownloadTip.ts` decides when.
 
+When the phone has no connection and the chapter isn't downloaded, the audio bar says
+so while the listener waits
+([#801](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/801)),
+in one short line: "No connection · not downloaded" (沒有網路 · 未下載, worded as
+Offline Bible Audio words it). The player keeps trying meanwhile, and plays by itself
+once the connection is back.
+- **Where:** in place of the progress bar until audio plays, on one line, with the
+  audio bar growing to fit it if it ever wraps. It's text, not a button: a small phone's
+  audio bar has no room for another.
+- **Its link:** "not downloaded" is a link, underlined in the theme's main color, with a
+  44-point target in a row as tall, clear of the buttons above. Screen readers hear "Not
+  downloaded. Open Offline Bible Audio". It opens a popup, titled "No connection" with
+  the X in its title row, that says the chapter isn't saved on the phone and that next
+  time it's online it can download chapters in Offline Bible Audio, with one button,
+  Open Offline Bible Audio, which opens that page at the book being read, as Listen
+  offline does. The popup and the page both work offline, though a download can only
+  start with a connection.
+- **The one-time tip:** the first time the connection drops while Bible audio plays a
+  chapter that isn't downloaded, with the app open, the same popup shows by itself, once
+  ever, and only for someone who has never had Bible audio on the phone. Starting to
+  listen while already offline isn't a drop. Nothing else announces it: no sound, no
+  notification, and nothing while the app is in the background.
+  `services/BibleAudioOfflineTip.ts` decides when.
+- **When it goes:** as soon as audio plays, the connection comes back, or the listener
+  pauses, since nothing plays by itself after a pause. A drop the player rides out on
+  what it has already loaded shows no line. While the line shows, the play button shows
+  pause, since the player is still on, and a tap stops it. Screen readers on Android
+  announce the line as it appears. The web doesn't show it.
+  `services/BibleAudioOfflineLine.ts` decides when.
+
 ### Key Principles & Exceptions:
 
 1.  **Brand Neutrality:** External service destinations use official provider assets
@@ -199,6 +254,10 @@ offline:
 3.  **Iconography:** Icons across all pillars utilize consistent stroke weights and
     monochrome styling. This provides a "premium" feel and ensures accessibility across
     both light and dark modes.
+4.  **Only what does something looks pressable:** a small card with an icon and a
+    label reads as a button, so content that opens nothing, such as About
+    Denomination's three pillars, sits on the page as an icon over its label, with no
+    card or border (`components/PillarList.tsx`, #819).
 
 #### Elevation & Modern
 
@@ -292,7 +351,10 @@ simple, blended colors.
     page's top matches its bottom. Their icons are grey, like the tab bar's other tabs;
     blue, or gold in the dark theme, marks what opens a list or shows a state: the back
     button, the translation button's names and arrow, like the Bible card's pills, and
-    the saved-verse button once a verse is saved. The translation button has no 文A icon
+    the saved-verse button once a verse is saved. A page's title stays on one line,
+    drawn a little smaller where it must be, down to 80%, and past that wraps only
+    between its words, in Chinese too: at 150%, 中文讚美詩 — 505 版 beside the
+    search button left 版 alone on a line (#797). The translation button has no 文A icon
     (from 1.7.0): each translation's language badge, EN or 繁, about the icon's size and
     in the pills' colors, says which language it is, and leaves room for the names.
   - **Contrast (#669):** high contrast, the white and night blue above, is the default.
@@ -342,10 +404,12 @@ simple, blended colors.
     - the text size step shows John 3:16 at the chosen size, above the four sizes. Sizes
       between them are under You → Text size, which the step says.
   - The language and theme cards sit one a row, so their pictures have room.
-  - The You tab's Language and Theme popups show the same cards, with each choice's
-    description under its name (`components/SettingChoices.tsx`), as its Contrast popup
-    shows the contrast pictures. Each stays a popup, not a page of its own: one choice
-    doesn't need a page.
+  - The You tab's Language and Theme sheets show the same cards
+    (`components/SettingChoices.tsx`), as its Contrast sheet shows the contrast
+    pictures: Theme's with each choice's description under its name, and Language's
+    with each language named only in its own language, as setup does (#867), since a
+    second line in English filled half of each card. Each stays a sheet, not a page of
+    its own: one choice doesn't need a page.
 - **Absolute Positioning & Offset:** Global navigation elements are positioned absolute.
   To prevent initial overlap, screens must apply a `paddingTop` equal to the total header
   height from `useGlobalHeaderHeight()`: the status bar plus 64px at 100% text size.
@@ -355,15 +419,130 @@ simple, blended colors.
   header's buttons) takes only a hairline in the theme's subtle outline token and one soft
   shadow (`getFloatingSurfaceStyle`). Do not add strong dividers or decorative glass
   effects.
-- **Popups:** Every popup is the app's own, never the system's alert (`Alert.alert`),
-  which on Android looks unlike the rest of the app. A popup is centred, with the shared
+- **Popups are bottom sheets** ([#867](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/867)),
+  following Apple's and Google's guidance. Both platforms use a sheet for
+  supplementary content such as settings, pickers and details, and a centred dialog
+  only for short alerts and questions
+  ([Apple: Sheets](https://developer.apple.com/design/human-interface-guidelines/sheets);
+  [Material: Bottom sheets](https://m3.material.io/components/bottom-sheets/overview)).
+  A sheet comes up from the bottom, where a thumb reaches, and is the platform's own:
+  iOS's sheet and Android's Material bottom sheet, which VoiceOver and TalkBack know.
+  - **Which popups are sheets:** every popup that shows settings, a list to pick from or
+    details: the Bible's Reader languages, book, chapter and verse lists, a verse's
+    details and its hymns, Audio settings and the sleep timer; You's Text size,
+    Language, Theme, Contrast and Share the App; Offline Bible Audio's narrators; Give's
+    Other Sponsors; and a children's lesson's download, which shows a task's progress,
+    and Android's guidance is not to block the app with a progress dialog
+    ([Android: Dialogs](https://developer.android.com/develop/ui/views/components/dialogs)).
+  - **Centred dialogs stay** for questions and alerts: `showAppAlert`'s (Use mobile
+    data?, deleting a download, Not enough space, and the like), the Bible's "No
+    connection" (#801), the web's install prompt and interrupted-audio note. **Full
+    screens stay** where chosen: saved verses, so more of them show at once (#750),
+    first-launch setup, and the contrast question after an update (#708).
+  - **How tall a sheet opens** (`height` on `AppSheet`, `components/SheetDetents.ts`):
+    - **Fit to content** for a short sheet: it's the height of what's in it, up to
+      about half the screen. Material's sheets fit their content by default
+      (`behavior_fitToContents` is true), and a sheet resting lower "should have enough
+      height to indicate there is extra content"
+      ([Material Components: Bottom sheet](https://github.com/material-components/material-components-android/blob/master/docs/components/BottomSheet.md)).
+    - **Half height (the medium detent)** only when the top part is useful by itself
+      and the rest is more of the same. Apple's example is the share sheet, with "the
+      most relevant items within the medium detent… To view more items, people can
+      scroll or expand the sheet"
+      ([Apple: Sheets](https://developer.apple.com/design/human-interface-guidelines/sheets)).
+      The sheet expands to its content's height, or full height.
+    - **Full height (the large detent)** when the content is more useful whole: a
+      choice made by comparing every option, a form, anything you'd otherwise scroll to
+      understand. Apple: "you might not want to support the medium detent if a sheet's
+      content is more useful when it displays at full height" (Sheets).
+    - **The current choice shows when a sheet opens, always.** A list that scrolls
+      scrolls to it (`useRevealWhenSelected`, `RevealIfSelected`, and `PopupFlatList`'s
+      `selectedIndex` in `components/PopupScrollView.tsx`).
+    - **Scrolling a half-height sheet expands it first**, then scrolls its content:
+      each platform's default. Apple: "A resizable sheet expands when people scroll its
+      contents or drag the grabber" (Sheets); Material's nested scrolling
+      (`behavior_draggableOnNestedScroll`, true by default) does the same.
+    - The height is a share of the screen, so it doesn't grow with the text size; the
+      content scrolls instead.
+    - Each sheet's height, and why:
+      - Language, Theme, Contrast: full height. A choice made by comparing the
+        pictures; the current one shows.
+      - Reader languages: full height. Comparing translations, with its switches at
+        the foot.
+      - Text size: its whole content's height, up to full, held while it's open, so the
+        preview and buttons don't move as the text grows.
+      - Share the App: its whole height, so the whole code shows to scan.
+      - Offline Bible Audio's narrators: their whole height, to compare what's on the
+        phone.
+      - Give's Other Sponsors: its whole height, so the church's EIN at its foot, which
+        a grant needs, shows.
+      - The Bible's book, chapter and verse lists: half height, the current one in the
+        middle; the rest is more of the same. On the iPhone and iPad the book list still
+        opens at its top
+        ([#876](https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/issues/876)).
+      - A verse's details and its hymns: fit, or half height when long; the verse and
+        its buttons first, its original language and notes below.
+      - Audio settings: fit, or half height when long; the narrators first, Listen
+        offline and the source below.
+      - Sleep timer, a children's lesson's download: fit; they're short.
+  - **Closing and resizing:** an X in the title row, a tap on the dimmed page above,
+    a swipe down, and Android's Back. A grabber at the top also expands the sheet on a
+    tap, so dragging is never needed; on Android, a double tap on it closes the sheet,
+    as Material's does. Scrolling up a half-height sheet expands it first.
+  - **Where the X goes:** where each platform puts a sheet's close button. On the
+    iPhone and iPad, the leading (left) edge, with the title centred. Apple's Sheets,
+    updated 2026-03-24: "for sheets with a single view, the Cancel button belongs on the
+    leading edge of the top toolbar." On Android, the trailing (right) edge. Material's
+    bottom sheet has no close button: its parts are a container, an optional drag handle
+    and the scrim, and it closes by a tap outside, a swipe or Back
+    ([Material Components: Bottom sheet](https://github.com/material-components/material-components-android/blob/master/docs/components/BottomSheet.md)).
+    So the app keeps an X for older members where Material's modal side sheet, its sheet
+    with a title row, puts its close icon button: at the title row's trailing end,
+    opposite an optional back button
+    ([Side sheet](https://github.com/material-components/material-components-android/blob/master/docs/components/SideSheet.md)).
+    The web's popups keep theirs at the end too (`PopupHeader`).
+  - **Look:** the platform's own corners, and the colour of the floating bars
+    (`floatingSurface`): white, or the warm off-white in standard contrast, in the
+    light theme; the brand's night blue, or near-black in standard contrast, in the
+    dark. So a sheet stands out from the dimmed page as the tab bar does from the page,
+    with no outline of its own. The grabber and the dim follow the app's theme, not
+    only the phone's, as the keyboard and the system's pickers do: the app tells the
+    system its light or dark (`Appearance.setColorScheme`), or leaves it to the phone
+    under System.
+  - **iPad and tablets:** the iPad shows Apple's centred form sheet, which the system
+    sizes, as Apple's guidance prefers for iPadOS; the detents and grabber apply only
+    at a narrow width, such as Slide Over. An Android tablet shows a bottom sheet at
+    most 640 dp wide, Material's default.
+  - **The web has no native sheets**, so its popups stay centred, with the shared
+    corners and canvas (`getPopupSurfaceStyle`), and at most 65% of the screen tall
+    (`POPUP_MAX_HEIGHT_FRACTION`).
+  - **With animations off** (Android's Remove animations, iOS's Reduce Motion), a sheet
+    appears in place at once. react-native-screens' Android sheet stayed below the
+    screen then, with only its dim showing, so the app patches it before each Android
+    build (`scripts/patch-react-native-screens.cjs`).
+  - **One component:** `AppSheet` (`components/AppSheet.tsx`) draws every sheet, with
+    react-native-screens' `FormSheet`. It's from that package's experimental API
+    (`react-native-screens/experimental`), its only native sheet that isn't a route:
+    the stable one, Expo Router's `presentation: 'formSheet'`, would make every popup a
+    route, and draws no grabber on Android. Only `AppSheet` imports it
+    (`test/app-sheet.test.ts`), so moving to the stable API later changes one file.
+  - Show one sheet at a time, and close a sheet before showing an alert: a centred
+    dialog draws in the app's own window, under a native sheet.
+- **Dialogs:** Every popup is the app's own, never the system's alert (`Alert.alert`),
+  which on Android looks unlike the rest of the app. A dialog is centred, with the shared
   corners and canvas (`getPopupSurfaceStyle`), and at most 65% of the screen tall at any
-  text size, scrolling beyond that. First-launch setup and the contrast question after an
-  update are full-screen steps, not popups, so the limit doesn't apply to them. One that only says something has an X in its title row
-  and no Close button. One that asks a question has its answers as buttons, stacked so
+  text size, scrolling beyond that. One that only says something has an X in its title
+  row and no Close button. One that asks a question has its answers as buttons, stacked so
   large text fits, the main one first and Cancel last, and no X; a tap outside it answers
   Cancel. Code shows a notice or question with `showAppAlert`
   (`components/AppAlert.tsx`), and `test/app-alert.test.ts` fails on a system alert.
+- **Switches:** A setting that's on or off, such as the Bible's Dual-language reading and
+  pinyin, is one row: its name, a line about it, and a switch. A tap anywhere on the row
+  turns it on or off, since older members tap the words, not the small switch (#798). A
+  screen reader hears one switch, with its name, the line as its hint, and whether it's
+  on. Code draws it with `SwitchRow` (`components/SwitchRow.tsx`); Offline Bible Audio's
+  Download notifications row, below, was already one control, with the same switch
+  (`MenuCardSwitchVisual`). `test/switch-row.test.ts` fails on a switch drawn alone.
 - **Notifications:** The app's notifications are few, quiet, and only ones the member asked
   for (Tenet 7). Today there's one kind: a Bible audio download the member started (#610).
   - **What they say, by phone.** None is needed for a download to go on in the
@@ -398,6 +577,21 @@ simple, blended colors.
     posts a notification.
   - **Anything new,** such as announcements (#562) or event reminders (#49), needs its own
     decision, and an update to this policy, first.
+  - **Not one of these: the media controls** the phone shows while Bible audio plays, on
+    the lock screen and in the notification shade. They name the chapter as the recording
+    reads it, as a shared verse does (#723), such as 約翰福音 第 3 章 for the Chinese Union
+    Version or John 3 for the BSB, and under it the narrator in the app's language, as
+    Offline Bible Audio names it, such as 粵語（和合本）, never the host a chapter streams
+    from (#804). When the next chapter starts, the same controls change their words and
+    their progress bar starts again. The app doesn't publish them again mid-playback:
+    that makes a new media session, and Android's shade drops its player when the old
+    one goes. On Android, paused controls can't be swiped away until the app is closed
+    from the recent apps screen. Android doesn't let anyone dismiss a media notification while
+    its playback service runs in the foreground
+    ([Android 14 behavior changes](https://developer.android.com/about/versions/14/behavior-changes-all#non-dismissable-notifications)),
+    and expo-audio 58 keeps that service in the foreground while paused, where Media3's
+    own service lets it go 10 minutes after a pause
+    ([`DEFAULT_FOREGROUND_SERVICE_TIMEOUT_MS`](https://developer.android.com/reference/androidx/media3/session/MediaSessionService#DEFAULT_FOREGROUND_SERVICE_TIMEOUT_MS())).
 - **Future-Proofing:** It shifts your design from "Standard App" to a custom "Digital
   Sanctuary."
 
@@ -454,12 +648,15 @@ shows the phone's pages larger and roomier, not more on each page:
   tab bar would sit at the top, over the header, so the app draws its own at the bottom.
 - **A third column of book covers** in a library shelf's grid once the column is 600
   points wide (`getLibraryGridColumns`), so covers stay a sensible size. Other grids,
-  such as Home's cards, keep two columns, which the column keeps a phone-like shape.
-- **Popups at most 560 points wide** (`POPUP_MAX_WIDTH` in `styles/PopupStyles.ts`),
-  centered as on a phone (`usePopupWidthStyle`, or `getPopupWidthStyle` for a popup with
-  side margins). Give a popup that number, never a percentage width with a `maxWidth`:
-  on iOS, Paper splits the two between its views, and an iPad popup filled 90% of the
-  screen with its content in part of it.
+  such as Home's cards, keep two columns, which the column keeps a phone-like shape,
+  at every text size ([Grid Menu Card Text Size](#grid-menu-card-text-size)).
+- **Sheets the system's size:** the iPad's centred form sheet, and an Android tablet's
+  bottom sheet at most 640 dp wide (#867). **Dialogs at most 560 points wide**
+  (`POPUP_MAX_WIDTH` in `styles/PopupStyles.ts`), centered as on a phone
+  (`usePopupWidthStyle`, or `getPopupWidthStyle` for a dialog with side margins). Give a
+  dialog that number, never a percentage width with a `maxWidth`: on iOS, Paper splits
+  the two between its views, and an iPad popup filled 90% of the screen with its content
+  in part of it.
 - **Tab labels under their icons**, as on a phone. React Navigation's default puts each
   label beside its icon on a wide screen, far from it on a tablet.
 - **Every way up on a large screen, portrait on phones.** The iPad turns to any
@@ -485,6 +682,13 @@ of cards for **Watch Livestream**, **Weekly Bulletin**, **Tithe & Offering**, **
 **This Week's Lesson** (Sabbath School lessons for adults and children), and **New Member
 & Visitor**. Giving, the hymnals, and the staff list (**Meet Our Team**, under New Member &
 Visitor) live here.
+
+**Cards at large text sizes:** the cards stay two a row at every text size. Their
+title, icon and card grow with the text size and stop together where the longest word
+of their titles fills a half-width card. They never stack one per row, and no word
+breaks. This is a design rule: see
+[Grid Menu Card Text Size](#grid-menu-card-text-size), enforced in
+`components/GridMenuCard.tsx`.
 
 **Android home screen widget (#235):** **Today's Verse** can also sit on an Android
 phone's home screen, laid out like YouVersion's Verse of the Day widget: the heading, the

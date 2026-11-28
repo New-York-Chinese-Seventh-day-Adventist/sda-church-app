@@ -1,7 +1,7 @@
 {
   "name": "sda-church-app",
   "main": "expo-router/entry",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "homepage": "https://app.nyccsda.org",
   "scripts": {
     "build:web": "node scripts/ensure-build-dir.mjs && expo export --platform web --clear --output-dir build/web",
@@ -15,8 +15,6 @@
     "extract:rv1909-adventist-manifest": "node scripts/extract-wordproject-audio-manifest.mjs rv1909",
     "sync-version": "node public/sync-version.js",
     "generate:qr": "node scripts/generate-qr.mjs",
-    "generate:qr:queens": "npm run generate:qr -- --output build/qr/queens_adventist_giving_qr_code_368x368.jpg",
-    "generate:qr:brooklyn": "npm run generate:qr -- --output build/qr/brooklyn_adventist_giving_qr_code_368x368.jpg",
     "test": "jest --runInBand",
     "test:integration:bulletin": "node test/integration/bulletin-api.mjs",
     "test:integration:external": "node test/integration/external-dependencies.mjs",
@@ -91,6 +89,11 @@
   },
   "expo": {
     "autolinking": {
+      "android": {
+        "buildFromSource": [
+          "expo-audio"
+        ]
+      },
       "ios": {
         "exclude": [
           "expo-widgets",
@@ -121,7 +124,7 @@
           "\\.web\\.test\\.ts$"
         ],
         "transformIgnorePatterns": [
-          "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|react-native-paper|react-native-safe-area-context))",
+          "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|react-native-paper|react-native-safe-area-context|opencc-js/dist/esm-lib))",
           "/node_modules/react-native-reanimated/plugin/"
         ]
       },
@@ -138,7 +141,7 @@
           "<rootDir>/test/**/*.web.test.ts"
         ],
         "transformIgnorePatterns": [
-          "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|react-native-paper|react-native-safe-area-context))",
+          "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|react-native-paper|react-native-safe-area-context|opencc-js/dist/esm-lib))",
           "/node_modules/react-native-reanimated/plugin/"
         ]
       }

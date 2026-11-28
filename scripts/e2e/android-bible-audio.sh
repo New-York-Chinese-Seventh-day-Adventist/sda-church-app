@@ -184,14 +184,22 @@ seek_to_fraction() {
   sh_ input tap $(point_in "$SEEK_BOUNDS" "$1") >/dev/null
 }
 
-# This app's media session: its playback state, position in ms, and title.
+# This app's media session: its playback state, position in ms, when it last
+# reported that position (ms since boot), and title.
+# The title line is the chapter, the narrator and the album, joined by ", ".
+# The chapter is named in the recording's words (#804), and every scenario
+# plays the CUV, so it reads "詩篇 第 118 章, Mandarin (Chinese Union Version),
+# Bible audio" in this English app, not "Psalm 118". A chapter is matched by
+# its whole name and the comma after it, which test/bible-names.test.ts checks
+# against the app's titles.
 session() {
   sh_ dumpsys media_session | awk '
     /package=/ { ours = ($0 ~ /package=org\.nyccsda\.app/) }
     ours && /state=PlaybackState/ {
       match($0, /\{state=[A-Z_]+/); state = substr($0, RSTART + 7, RLENGTH - 7)
       match($0, /position=[0-9]+/); position = substr($0, RSTART + 9, RLENGTH - 9)
-      if (state != "NONE") { print "state=" state; print "position=" position }
+      match($0, /updated=[0-9]+/); updated = substr($0, RSTART + 8, RLENGTH - 8)
+      if (state != "NONE") { print "state=" state; print "position=" position; print "updated=" updated }
     }
     ours && /description=/ { sub(/.*description=/, ""); print "title=" $0 }'
 }
@@ -240,13 +248,14 @@ run() { # name function
 
 # Neither HelloAO's host nor the church's can be resolved, so Genesis 1 plays
 # from the Internet Archive, its third copy (#749), as soon as the player
-# reports both failures.
+# reports both failures. The title doesn't name the host (#804); the e2e
+# build logs it.
+playing_from_archive() { playing_with_title '創世記 第 1 章,' && app_log_has 'Bible reader: audio from archive.org'; }
 scenario_primary_host_down() {
   open_chapter GEN 1
   locate_controls || { echo 'no play button'; return 1; }
   tap_play_pause
-  wait_until 90 'Genesis 1 playing from the Internet Archive' \
-    playing_with_title '(Internet Archive)' || return 1
+  wait_until 90 'Genesis 1 playing from the Internet Archive' playing_from_archive || return 1
   app_log_has 'Bible audio source failed to load; trying the next configured source.' ||
     { echo 'no failover logged'; return 1; }
 }
@@ -261,13 +270,13 @@ scenario_next_chapter_screen_off() {
   tap_play_pause
   wait_until 60 'Psalm 117 playing' is_playing || return 1
   screen_off
-  wait_until 150 'Psalm 118 playing with the screen off' playing_with_title ' 118 ' || return 1
+  wait_until 150 'Psalm 118 playing with the screen off' playing_with_title '詩篇 第 118 章,' || return 1
   screen_is_off || { echo 'the screen turned on'; return 1; }
   foreground_service || { echo 'the media foreground service stopped'; return 1; }
 }
 
 # A dead zone: Play offline, lock the screen, and wait. When the connection
-# comes back, audio starts without an unlock.
+# comes back, audio starts without an unlock, and the reader never left John 3.
 scenario_dead_zone_screen_off() {
   open_chapter JHN 3
   locate_controls || { echo 'no play button'; return 1; }
@@ -275,6 +284,9 @@ scenario_dead_zone_screen_off() {
   sleep 2
   tap_play_pause
   sleep 3
+  # The player says why nothing plays (#801).
+  ATTR=text TRIES=15 element_bounds 'No connection ·[^"]*' >/dev/null ||
+    { echo 'no line saying there is no connection'; return 1; }
   screen_off
   sleep 90
   is_playing && { echo 'playing while offline'; return 1; }
@@ -282,16 +294,24 @@ scenario_dead_zone_screen_off() {
   wait_until 60 'John 3 playing after the connection returned' is_playing || return 1
   screen_is_off || { echo 'the screen turned on'; return 1; }
   foreground_service || { echo 'the media foreground service stopped'; return 1; }
+  stayed_on_chapter
 }
 
 # The connection drops mid-chapter: the same host reloads where it stopped,
-# and playback resumes there once the connection returns.
+# and playback resumes there once the connection returns. The reader stays on
+# Psalm 78 throughout.
 scenario_mid_chapter_offline() {
   open_chapter PSA 78
   locate_controls || { echo 'no play button'; return 1; }
   tap_play_pause
   wait_until 60 'Psalm 78 playing' is_playing || return 1
   network off
+  # This is the run's first drop while playing, before any download, so the
+  # one-time tip about listening offline shows (#801), once the app hears of
+  # the drop, which can take a few seconds. A tap outside closes it.
+  wait_until 20 'the one-time offline tip on the first drop' \
+    app_log_has 'Bible reader: showing the one-time offline tip' || return 1
+  seek_to_fraction 0.75 || { echo 'no seek bar'; return 1; }
   sleep 1
   seek_to_fraction 0.75 || { echo 'no seek bar'; return 1; }
   wait_until 60 'the mid-chapter reload' \
@@ -302,9 +322,11 @@ scenario_mid_chapter_offline() {
   position=$(session_field position)
   [ "${position:-0}" -ge 240000 ] ||
     { echo "resumed at ${position}ms instead of where it stopped"; return 1; }
+  stayed_on_chapter
 }
 
-# Pausing and resuming a playing chapter continues from the same place.
+# Pausing and resuming a playing chapter continues from the same place, and
+# so does Play after the app is closed and opened again.
 scenario_pause_and_resume() {
   open_chapter JHN 1
   locate_controls || { echo 'no play button'; return 1; }
@@ -321,6 +343,18 @@ scenario_pause_and_resume() {
   resumed_at=$(session_field position)
   [ "${resumed_at:-0}" -ge "${paused_at:-0}" ] && [ "${resumed_at:-0}" -gt 0 ] ||
     { echo "resumed at ${resumed_at}ms after pausing at ${paused_at}ms"; return 1; }
+  # Closed and opened again, John 1 picks up where it was paused, not at 0:00
+  # (#803). The session's position can trail the player's by a moment.
+  tap_play_pause
+  wait_until 20 'John 1 paused again' is_paused || return 1
+  paused_at=$(session_field position)
+  open_chapter JHN 1
+  locate_controls || { echo 'no play button after the restart'; return 1; }
+  tap_play_pause
+  wait_until 60 'John 1 playing after the restart' is_playing || return 1
+  resumed_at=$(session_field position)
+  [ "${paused_at:-0}" -gt 3000 ] && [ "${resumed_at:-0}" -ge $(( ${paused_at:-0} - 1500 )) ] ||
+    { echo "after the restart, started at ${resumed_at}ms; it was paused at ${paused_at}ms"; return 1; }
 }
 
 # Earbuds' previous and next (#543). Started in Leviticus 2: previous more
@@ -335,24 +369,81 @@ scenario_previous_before_start() {
   open_chapter LEV 2
   locate_controls || { echo 'no play button'; return 1; }
   tap_play_pause
-  wait_until 60 'Leviticus 2 playing' playing_with_title ' 2 ' || return 1
+  wait_until 60 'Leviticus 2 playing' playing_with_title '利未記 第 2 章,' || return 1
   sleep 6
-  title_has ' 2 ' || { echo "moved to $(session_field title) by itself"; return 1; }
+  title_has '利未記 第 2 章,' || { echo "moved to $(session_field title) by itself"; return 1; }
   media_key KEYCODE_MEDIA_PREVIOUS
   media_key KEYCODE_MEDIA_PAUSE
-  wait_until 20 'Leviticus 2 restarted and paused' paused_with_title ' 2 ' || return 1
+  wait_until 20 'Leviticus 2 restarted and paused' paused_with_title '利未記 第 2 章,' || return 1
   position_under 3000 || { echo "previous left Leviticus 2 at $(session_field position)ms"; return 1; }
   media_key KEYCODE_MEDIA_PREVIOUS
-  wait_until 20 'Leviticus 1 after previous at the start' title_has ' 1 ' || return 1
+  wait_until 20 'Leviticus 1 after previous at the start' title_has '利未記 第 1 章,' || return 1
   media_key KEYCODE_MEDIA_NEXT
-  wait_until 20 'Leviticus 2 after next' title_has ' 2 ' || return 1
+  wait_until 20 'Leviticus 2 after next' title_has '利未記 第 2 章,' || return 1
+}
+
+# The media notification after a chapter change (#804). 1.9.2's first builds
+# published the controls again at each change, which builds a new media
+# session: Android's shade dropped the player when the old one was released,
+# though audio played on, and its play button later stopped working. Each
+# chapter now plays on the same session, which hears the player through
+# scripts/patch-expo-audio.cjs.
+#
+# The shade's play and pause buttons call the session's transport controls, as
+# `cmd media_session monitor` does; uiautomator can't read the shade while its
+# progress bar moves. Once the session hears that playback resumed, Media3
+# reports the position every 3 seconds while it plays, which the shade's bar
+# follows. Before the patch, it never did again after a pause. The shade logs
+# when it drops a player.
+session_tag() {
+  sh_ cmd media_session list-sessions | sed -n "s/.*tag=\([^,]*\), package=$PKG\$/\1/p" | head -1
+}
+notification_press() { # play|pause
+  local tag
+  tag=$(session_tag)
+  [ -n "$tag" ] || { echo 'no media session'; return 1; }
+  { sleep 2; echo "$1"; sleep 2; echo q; } | adb_ shell cmd media_session monitor "$tag" >/dev/null 2>&1
+}
+session_count() { sh_ dumpsys media_session | grep -c -x "      package=$PKG"; }
+reported_since() { [ "$(session_field updated)" != "$1" ]; }
+shade_dropped_player() {
+  adb_ logcat -d | tr -d '\r' |
+    grep -E "MediaDataManager.*(session destroyed for|Removing still-active player) 0\|$PKG\|" >/dev/null
+}
+notification_follows() { # title
+  local count updated
+  count=$(session_count)
+  [ "$count" = 1 ] || { echo "$count media sessions after the chapter change"; return 1; }
+  notification_press pause || return 1
+  wait_until 20 'paused from the notification' paused_with_title "$1" || return 1
+  notification_press play || return 1
+  wait_until 20 'playing from the notification' playing_with_title "$1" || return 1
+  sleep 2
+  updated=$(session_field updated)
+  wait_until 10 'the session reporting its position while it plays' reported_since "$updated" || return 1
+  media_key KEYCODE_MEDIA_PAUSE
+  wait_until 20 'paused by the pause key' is_paused || return 1
+  media_key KEYCODE_MEDIA_PLAY
+  wait_until 20 'playing by the play key' playing_with_title "$1" || return 1
+  # A pause in the app gives the audio focus back. The notification's play
+  # still works after it; expo-audio refused it while audio was off.
+  tap_play_pause
+  wait_until 20 'paused in the app' is_paused || return 1
+  notification_press play || return 1
+  wait_until 20 'playing from the notification after a pause in the app' playing_with_title "$1" || return 1
+  if shade_dropped_player; then
+    echo "the shade dropped the media player, though audio played on"
+    return 1
+  fi
 }
 
 # Bible audio downloaded to listen offline (#556): download 2 Thessalonians,
 # three short chapters (1.2 MB in Mandarin), in Offline Bible Audio, which the
 # audio settings popup's Listen offline row opens at the book's section, then
 # play it with no connection, and move to the next chapter and back with the
-# media keys. The popup's row says "Offline Bible Audio, 帖撒羅尼迦後書
+# media keys. After the first move, the media notification follows (see
+# notification_follows above): with every chapter on the phone, no failover
+# makes a new player there. The popup's row says "Offline Bible Audio, 帖撒羅尼迦後書
 # downloaded" once it's there; on the page, the book's row is "2 Thessalonians,
 # Downloaded · 1.2 MB", and its button "Download 2 Thessalonians, 1.2 MB".
 book_in_popup() { ui_dump | grep -E 'content-desc="Offline Bible Audio, 帖撒羅尼迦後書 downloaded' >/dev/null; }
@@ -367,7 +458,18 @@ scenario_downloaded_book_offline() {
     # Already downloaded: the X, or back, closes the popup.
     sh_ input keyevent KEYCODE_BACK >/dev/null
   else
-    point=$(element_center 'Offline Bible Audio, [^"]*') || { echo 'no Listen offline row'; return 1; }
+    # In the half-height Audio settings sheet (#867), the row can sit at the
+    # fold with only a sliver showing: a swipe up the sheet expands it, or
+    # scrolls, until the row shows. Then the tap goes a quarter of the way
+    # across, since the scroll hint's ⌄ sits centred over a list's bottom row,
+    # and a tap on it scrolls rather than opening the row.
+    local row
+    row=$(element_bounds 'Offline Bible Audio, [^"]*') || { echo 'no Listen offline row'; return 1; }
+    if [ $(awk '{ print $4 - $2 }' <<< "$row") -lt 120 ]; then
+      sh_ input swipe "$FINGER_X" "$(awk '{ print $2 - 40 }' <<< "$row")" "$FINGER_X" "$(awk '{ y = $2 - 640; print (y < 100 ? 100 : y) }' <<< "$row")" 400 >/dev/null
+      sleep 2
+    fi
+    point=$(element_center 'Offline Bible Audio, [^"]*' 0.25) || { echo 'no Listen offline row'; return 1; }
     # shellcheck disable=SC2086
     sh_ input tap $point >/dev/null
     point=$(element_center 'Download 2 Thessalonians, [^"]*') || { echo 'no Download button for the book'; return 1; }
@@ -386,14 +488,15 @@ scenario_downloaded_book_offline() {
   sleep 2
   locate_controls || { echo 'no play button'; return 1; }
   tap_play_pause
-  wait_until 30 '2 Thessalonians 1 playing offline' playing_with_title ' 1 ' || return 1
+  wait_until 30 '2 Thessalonians 1 playing offline' playing_with_title '帖撒羅尼迦後書 第 1 章,' || return 1
   media_key KEYCODE_MEDIA_NEXT
-  wait_until 20 '2 Thessalonians 2 playing offline' playing_with_title ' 2 ' || return 1
+  wait_until 20 '2 Thessalonians 2 playing offline' playing_with_title '帖撒羅尼迦後書 第 2 章,' || return 1
+  notification_follows '帖撒羅尼迦後書 第 2 章,' || return 1
   # Previous goes back a chapter in a chapter's first seconds, and restarts it after.
   media_key KEYCODE_MEDIA_PREVIOUS
   sleep 1
-  title_has ' 2 ' && media_key KEYCODE_MEDIA_PREVIOUS
-  wait_until 20 '2 Thessalonians 1 playing offline again' playing_with_title ' 1 ' || return 1
+  title_has '帖撒羅尼迦後書 第 2 章,' && media_key KEYCODE_MEDIA_PREVIOUS
+  wait_until 20 '2 Thessalonians 1 playing offline again' playing_with_title '帖撒羅尼迦後書 第 1 章,' || return 1
 }
 
 # What the reader decided (#561), oldest first: one decision a line, such as
@@ -407,6 +510,14 @@ reader_line_after() { # regex [after-line]
   reader_log | awk -v after="${2:-0}" -v re="$1" 'NR > after && $0 ~ re { print NR; exit }'
 }
 reader_has_after() { [ -n "$(reader_line_after "$1" "${2:-0}")" ]; }
+# Whether the reader stayed on its chapter, as it must while the audio fails
+# over: a failed player's replacement once named a chapter from the old one's
+# queue, and the reader moved there for a few seconds (#802).
+stayed_on_chapter() {
+  local moved
+  moved=$(reader_log | sed -n 's/^following the audio to //p' | head -1)
+  [ -z "$moved" ] || { echo "the reader moved to $moved while the audio failed over"; return 1; }
+}
 
 # The verse the bundled times say is being read at a position, with the
 # reader's half-second lead (services/BibleAudioTimings.ts).
@@ -594,7 +705,7 @@ scenario_follow_after_screen_off() {
   tap_play_pause
   wait_until 60 'Psalm 117 marked' reader_has_after '^PSA 117:[0-9]+ is being read' || return 1
   screen_off
-  wait_until 150 'Psalm 118 playing with the screen off' playing_with_title ' 118 ' || return 1
+  wait_until 150 'Psalm 118 playing with the screen off' playing_with_title '詩篇 第 118 章,' || return 1
   local mark
   mark=$(reader_lines)
   wake

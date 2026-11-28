@@ -33,7 +33,7 @@ Contents:
 - [Chinese script](#chinese-script)
 - [Digital mobile bulletin behavior](#digital-mobile-bulletin-behavior)
 - [Printed bulletin generation](#printed-bulletin-generation)
-- [Printed edge cases and content rules](#printed-edge-cases-and-content-rules), including [Giving QR slots](#giving-qr-slots)
+- [Printed edge cases and content rules](#printed-edge-cases-and-content-rules), including [Footer QR codes](#footer-qr-codes)
 - [Deployment and verification](#deployment-and-verification)
 - [Troubleshooting matrix](#troubleshooting-matrix)
 - [Change checklist](#change-checklist)
@@ -81,10 +81,10 @@ the church's Workspace terms during annual maintenance.
 | `google-apps-script/BulletinApi.gs` | Public API, expected sheet columns, data joins, privacy filtering, and metadata translations |
 | `google-apps-script/BulletinScheduleMaintenance.gs` | Background `onOpen` maintenance, header protection, validation, hiding, and quarter expansion |
 | `google-apps-script/ScheduleAssignmentChecks.gs` | Same-day roster conflict highlights and Name Dictionary unknown-name warnings |
-| `google-apps-script/PrintedBulletin.gs` | Shared printed-bulletin code: Sheet menu and prompts, data preparation, Google Doc creation, page and table helpers, and the shared cover, giving, announcement, hymn, Bible, and QR helpers |
+| `google-apps-script/PrintedBulletin.gs` | Shared printed-bulletin code: Sheet menu and prompts, data preparation, Google Doc creation, page and table helpers, the Sabbath School and Tithe & Offering footers every layout shares, and the shared cover, Tithe & Offering, announcement, hymn, Bible, and QR helpers |
 | `google-apps-script/PrintedCommunionBulletin.gs` | Communion service content both locations print: fixed Communion/Foot Washing readings, response hymn, and ceremony panels |
 | `google-apps-script/PrintedQueensBulletin.gs` | Queens Regular and Queens Communion page layouts |
-| `google-apps-script/PrintedBrooklynBulletin.gs` | Brooklyn cover, Zoom, Sabbath School, worship, Communion, and giving footer layouts, and placing the Sabbath Encouragement spread |
+| `google-apps-script/PrintedBrooklynBulletin.gs` | Brooklyn cover, Zoom, Sabbath School, worship, and Communion layouts, and placing the Sabbath Encouragement spread |
 | `google-apps-script/PrintedHymnLookup.gs` | Fills in a printed hymn's missing language, number and title, from `HymnalData.gs` |
 | `google-apps-script/SabbathEncouragement.gs` | 52-page Brooklyn encouragement rotation containing Ellen White quotations plus Bible/editorial/other source material, machine translation, direct Bible replacement, and the bilingual printed spread |
 | `google-apps-script/appsscript.json` | Apps Script runtime and web-app manifest |
@@ -100,6 +100,7 @@ the church's Workspace terms during annual maintenance.
 | `test/apps-script-word-copy.test.ts` | The Word copy for printing on a Mac (#627) |
 | `test/apps-script-hymnal-data.test.ts` | The generated `HymnalData.gs` and the printed hymn lookup (#619) |
 | `test/apps-script-announcements.test.ts`, `test/apps-script-dialog-announcements.test.ts` | `Weekly Data`'s announcements, and the **Create Word Doc…** dialog's (#562) |
+| `tools/printed-bulletin-preview/`, `test/printed-bulletin-preview.test.ts` | The [printed bulletin preview](#printed-bulletin-preview): a fake Google Docs, made-up weeks, and the page images and fit checks of the **Printed Bulletin Preview** workflow (#844) |
 | `test/apps-script-live-check.test.ts` | The deploy's check for code edited outside git (`scripts/apps-script-live-check.cjs`) |
 | `test/bulletin-changeovers.test.ts` | The monitor's cleanup issues for retired changeovers (`scripts/bulletin-changeovers.cjs`) |
 | `test/integration/bulletin-api.mjs` | Opt-in read-only production API contract check |
@@ -803,7 +804,7 @@ The printed bulletin and the text staff read in the spreadsheet use different
 Chinese scripts on purpose (#565):
 
 - **Printed bulletins are in Traditional Chinese.** That covers the church
-  name, headings, Bible book names, the schedule, the giving notes, and the
+  name, headings, Bible book names, the schedule, the Tithe & Offering notes, and the
   Sabbath Encouragement. The bulletin is formal, and most of the people who read
   it on paper are older members. Younger readers mostly use the app, which shows
   either script. What staff type (names, titles, announcements) prints as
@@ -995,15 +996,18 @@ never solve overflow by clipping the center of either panel.
 
 Queens Regular is two physical pages:
 
-1. left: Church at Study; right: Church at Worship, with the giving footer;
+1. left: Church at Study; right: Church at Worship, with
+   [the footers](#the-sabbath-school-and-tithe--offering-footers) below them;
 2. left: announcements/schedule; right: shared cover.
 
 Queens Holy Communion is four physical pages in imposed order:
 
 1. left: announcements/back; right: cover;
-2. left: Church at Study; right intentionally blank;
-3. left intentionally blank; right: Church at Worship, followed by the vertical
-   giving section with the QR codes;
+2. left: Church at Study, with the
+   [Sabbath School footer](#the-sabbath-school-and-tithe--offering-footers)
+   under its verses; right intentionally blank;
+3. left intentionally blank; right: Church at Worship, with the Tithe & Offering
+   footer below it;
 4. left: Foot Washing; right: the complete Holy Communion service.
 
 The Communion ceremony has fixed references and fixed order. The `Weekly Data`
@@ -1016,12 +1020,49 @@ Brooklyn Regular is three physical pages:
 
 1. left: fellowship/service locations; right: shared three-location cover plus
    Mandarin-only Zoom information;
-2. left: Brooklyn Sabbath School; right: Brooklyn Sabbath Worship, with giving;
+2. left: Brooklyn Sabbath School; right: Brooklyn Sabbath Worship, with the
+   same [footers](#the-sabbath-school-and-tithe--offering-footers) as Queens
+   Regular;
 3. bilingual Sabbath Encouragement spread.
 
 The Brooklyn cover uses Brooklyn as the primary address while still highlighting
 all three locations. The Zoom rows are two on top and one centered below, with
 the topic before the day/time.
+
+### The Sabbath School and Tithe & Offering footers
+
+Queens Regular, Queens Holy Communion, and Brooklyn Regular share two footers
+(#833): the **Sabbath School footer** under Sabbath School, and the **Tithe &
+Offering footer** under worship.
+
+```text
+   Sabbath School footer                Tithe & Offering footer
+                                    ───────────────────────────────────
+         [app QR code]                  Tithes & Offerings | 什一奉獻…
+           下載 APP                     現金奉獻：…  (Chinese notes)
+      Download Mobile App               Cash offerings: …  (English)
+```
+
+- **Sabbath School footer (left half):** the Download Mobile App code on its
+  own. The app isn't only a way to give, so its code sits apart from the Tithe &
+  Offering notes. It also has room for a code that could later open the week's
+  verse in the app (#768).
+- **Tithe & Offering footer (right half):** the Tithes & Offerings heading and
+  the cash-offering notes, under a rule over that half only. The bulletin prints
+  no code for gifts by bank transfer or card: people make them in the app's
+  **Tithe & Offering** page.
+
+The rule is the first line of the right-half cell, so it never crosses the
+fold. The notes are inset 6 points from each side, so a full line stays about
+20 points from the sheet edge. A code turned on later (only Zelle is listed,
+reserved for #384) gets its own 80-point column beside the notes, which narrows
+them, so check the fit with a long week before deploying it.
+
+Queens Holy Communion puts each footer on its own doc page, because the left
+half of its worship doc page folds to the blank page 6. The Sabbath School
+footer goes under Church at Study and its verses (page 2), and the Tithe &
+Offering footer under Church at Worship (page 3), which face each other in the
+folded booklet as they do in Queens Regular.
 
 ### Type
 
@@ -1032,8 +1073,8 @@ The pastor's rules for the printed bulletin (#603):
   gives the Latin font to everything and then the Chinese font to each run of
   Chinese characters and punctuation.
 - No text is smaller than 10 points. Body and table text is 10 points with
-  single line spacing (0.9 for the giving notes), panel titles 13, the
-  announcement and giving headings 11, and the Sabbath Encouragement's headings
+  single line spacing (0.9 for the Tithe & Offering notes), panel titles 13, the
+  announcement and Tithe & Offering headings 11, and the Sabbath Encouragement's headings
   12. Long announcements stay at 10 points; shorten them in the Doc.
 - A panel title's Chinese line sits right above its English line, with single
   spacing between them.
@@ -1255,25 +1296,17 @@ changed line. A new snapshot needs both lists made again. The English column
 still translates the Simplified snapshot, so its Bible references keep
 matching `SABBATH_BIBLE_BOOKS_`.
 
-### Giving QR slots
+### Footer QR codes
 
-The code keeps three physical slots in stable order:
+The [footers](#the-sabbath-school-and-tithe--offering-footers) print these codes:
 
-```text
-1. Mobile App
-2. ACH/card
-3. Zelle
-```
-
-A reserved slot prints nothing but keeps its space, so turning a code on or off
-doesn't reflow the bulletin. The same rules apply to Queens Regular, Queens Holy
-Communion, and Brooklyn:
-
-- **Mobile App** prints. Unlike the giving codes, it never falls back to the
-  placeholder image: if its code isn't found, the slot stays blank.
-- **ACH/card** always prints.
-- **Zelle** stays reserved in Queens until the treasury confirms the address
-  (#384). Brooklyn has no Zelle destination, so its third slot is always empty.
+- **Mobile App**, in the Sabbath School footer of every layout. It never falls back to the
+  placeholder image: if its code isn't found, the space stays blank.
+- **No ACH/card code.** Gifts by bank transfer or card are made in the app's
+  **Tithe & Offering** page, so the bulletin stopped printing that code (#833).
+- **Zelle**, in the Tithe & Offering footer, stays reserved in Queens until
+  the treasury confirms the address (#384), and a reserved code takes no room. Brooklyn has no Zelle destination,
+  so it never prints one.
 
 Asset file names end in `_368x368.jpg`; the mobile-app caption is
 `Download Mobile App | 下載 APP`. The script finds each code by its exact file name
@@ -1284,7 +1317,7 @@ advanced service, which finds a shared drive's files for viewers too
 ([Bulletin inputs in Google Drive](../architecture.md#bulletin-inputs-in-google-drive)).
 
 The QR workflow generates `mobile_app_qr_code_368x368.jpg`, pointing at
-`https://app.nyccsda.org/download`, and uploads it to Drive with the giving codes
+`https://app.nyccsda.org/download`, and uploads it to Drive
 ([Admin Runbook](admin-runbook.md#bulletin-qr-codes)).
 
 **The mobile app code** (#323). The code leads to the store pages, so the script
@@ -1299,6 +1332,127 @@ deploy. If a printed code stops working:
    file, not an old placeholder.
 3. Generate test bulletins for Queens (Regular and Holy Communion) and Brooklyn,
    and scan the printed code with an Android phone and an iPhone.
+
+## Printed bulletin preview
+
+A pull request into `release-candidate` or `main` that changes
+`google-apps-script/` gets a preview of every printed layout before it
+merges (#844). The **Printed Bulletin Preview** workflow
+(`.github/workflows/printed-bulletin-preview.yml`) runs the pull request's
+printed-bulletin code with made-up data against a fake Google Docs, with no
+Google account, sheet, or secret, and draws each page in headless Chrome. It
+makes Queens Regular, Queens Holy Communion, and Brooklyn Regular, each for an
+ordinary week and a long one (a long sermon title, two singers, a reading of
+several verses, and four announcements).
+
+**Where the pages are.** On the pull request, open the **Printed bulletin
+preview** check's **Details**, then **Summary**. Its first line, **Download the
+page images**, downloads the **printed-bulletin-preview** zip (kept 14 days):
+a folder per layout with `page-1.png`, `page-2.png`, and so on, and
+`summary.md`. Below it, the summary lists the pages drawn and the room left in
+points at the foot of each booklet half, on this branch and on the base branch.
+Each page image is labelled with its own numbers, and a dashed red line marks
+the bottom margin. A pull request from a fork gets a read-only token, so the
+workflow can't comment on it.
+
+**When it fails.** The run fails if:
+
+- any text is under 10 points;
+- a table or image is wider than the page, or than the booklet half or cell it
+  sits in (a table may run into its cell's padding, as the 360-point tables do
+  in a 368-point half);
+- a booklet half that fit on the base branch no longer does, or one already
+  over there grows by more than a point; or
+- the renderers use something the fake Google Docs doesn't have, or ask for a
+  Bible chapter or picture it has no made-up copy of. The error says which
+  file in `tools/printed-bulletin-preview/` to add it to.
+
+Heights are compared with the base because they're approximate. On today's
+code, one half already reads over in the long week: Brooklyn's Sabbath
+Encouragement page, whose English is made-up filler about three times the
+Chinese length. A real Doc decides whether it fits; the run fails only if it
+grows. The base is drawn with the same tool and made-up data as the branch,
+so a fix to the preview itself moves both, and a half that then fits fails
+again if it overflows.
+
+**Running it locally.** After `npm ci`, from the repository:
+
+```bash
+node tools/printed-bulletin-preview/preview.cjs
+```
+
+It needs Chrome or Chromium (`CHROME_PATH` names one) and a Chinese font. The
+workflow draws the Chinese in the bulletin's own font, UoqMunThenKhung, which
+it downloads from [Google Fonts](https://fonts.google.com/specimen/UoqMunThenKhung);
+put that file in a folder and pass `--fonts <folder>` to match its numbers.
+Without it, any installed Chinese font stands in (on Ubuntu,
+`sudo apt-get install fonts-noto-cjk`), and lines can break a little
+differently. The pages go to `build/printed-bulletin-preview/`. It compares with
+where the branch left `upstream/release-candidate` (or
+`origin/release-candidate`); `--base <ref>` picks another, `--base none` none,
+and `--only queens-regular,brooklyn-regular` some of the layouts. The made-up
+weeks are in `made-up-data.cjs`: invented names only.
+
+**What it can't show.** It imitates Google Docs, so:
+
+- Liberation stands in for Times New Roman and Arial (the same widths), and
+  Chrome breaks lines, not Docs, so a line can break a little differently;
+- line heights are modelled from each font's metrics, not measured in Docs;
+- the QR codes, the logo, and the cover pictures are grey boxes, at the sizes
+  the script sets. A cover picture's height comes from its shape, which isn't
+  in the repository, so it's measured and kept in `IMAGE_SIZES` in
+  `made-up-data.cjs`: the Last Supper is 947 × 749 px (3.33 × 2.63 in
+  printed), and the church sketch 1253 × 674 px. A new cover picture needs
+  its size there too;
+- it doesn't model how Docs moves a table row or paragraph to the next page, or
+  the Word copy that's printed; and
+- the data is made up, so a real week can be longer.
+
+So a passing run doesn't replace checking a real Doc after the deploy (see
+[Deployment and verification](#deployment-and-verification)).
+
+### Songti TC preview
+
+The bulletin is printed from its [Word copy](#printing-the-final-version) on
+a Mac, in Songti TC, a font that comes only with macOS. So the release PR into
+`main` also gets the **Printed Bulletin Songti Preview** workflow
+(`.github/workflows/printed-bulletin-songti-preview.yml`, #852). It draws the
+same layouts and pages on a macOS runner (`preview.cjs --word-copy`) as the
+Word copy prints:
+
+- Chinese is drawn in Songti TC, which is preinstalled on GitHub's macOS 26
+  image (`/System/Library/Fonts/Supplemental/Songti.ttc`), not downloaded on
+  demand; and
+- every paragraph without a picture gets the Word copy's exact line height:
+  `PRINTED_BULLETIN_WORD_COPY.lineHeight` (1.15) times its largest size, times
+  its line spacing.
+
+It starts after the iOS key screens' batches are done: a Linux job waits for the
+**iOS key screens join** of the same commit, so the Mac job never holds a Mac
+while the iOS batches wait for their shared app. It can also be started by hand
+from **Actions**. Its run summary opens with **Download the Songti TC page
+images** (the **printed-bulletin-preview-songti-tc** zip), then the same table
+as the Linux preview.
+
+It isn't a required check, but it fails, after uploading the pages and the
+summary, when:
+
+- a booklet half no longer fits, by the same rules as the
+  [Linux preview](#printed-bulletin-preview): one that fit on the base branch
+  and no longer does, or one already over that grows. A half over on the base
+  too is a note, not a failure; or
+- Songti TC isn't on the runner. The type changes the layout too much to pass
+  on another font, so the pages are still drawn, in the font macOS falls back
+  to, and the summary and the error say "Songti TC not found on this runner;
+  pages drawn with" that font, "Fix the job."
+
+Apple's license allows its fonts only on Apple hardware, so the font stays
+inside the macOS job: it's never copied into the repository, an artifact, or
+another job. Only the drawn pages leave.
+
+It's still the preview's own layout in Chrome, not Word's, so it's an
+approximation; a real print of the Word copy is the final check. Run locally
+with `--word-copy` on a Mac; elsewhere a stand-in font draws the Chinese.
 
 ## Deployment and verification
 
@@ -1387,7 +1541,7 @@ changes the URL and requires a coordinated mobile-app update.
 | All Chinese, or all English, prints in the wrong font | `PRINTED_BULLETIN_CJK_FONT` or `PRINTED_BULLETIN_LATIN_FONT` names a font Docs doesn't offer, typed by hand | Choose a font in **Printed Bulletin → Fonts…**, or **Default** |
 | Bible reference repeats English in Chinese slot | Renderer bypassed bilingual helper | Use `formatBibleReferenceForPrint_` and the deterministic Chinese book map |
 | Hymn English appears in Chinese slot | A manually supplied Chinese value was overwritten | Preserve the supplied side; only the missing side may use `PrintedHymnLookup.gs` and `HymnalData.gs` |
-| QR slot is blank | The slot is reserved (Zelle, or Brooklyn's third slot), the deployed script predates the mobile app code, or that code isn't in Drive | Check [Giving QR slots](#giving-qr-slots) and the Drive file name before changing the layout |
+| A QR code is missing | The slot is reserved (Zelle in Queens; Brooklyn has none), the deployed script predates the mobile app code, or that code isn't in Drive | Check [Footer QR codes](#footer-qr-codes) and the Drive file name before changing the layout |
 | A pastor or elder prints without a title, or Communion rows print `TBD` | The name isn't in the `Leadership` tab, is spelled differently from the schedule or the `Name Dictionary`, or the tab or its `Pastors`/`Elders` header was renamed (a header must hold only the title) | Fix the [`Leadership` tab](#the-leadership-tab); **Extensions → Apps Script → Executions** logs a missing tab or column. No deploy is needed |
 | Brooklyn Communion is unavailable | Intentional safety/layout restriction | Use Queens Holy Communion or Brooklyn Regular; do not re-enable without a dedicated layout review |
 | Apps Script deploy fails after working previously | Workspace session-control reauthorization | Verify Trusted Apps and Exempt Trusted apps policy before rotating credentials |
@@ -1401,6 +1555,8 @@ Before changing a bulletin field, sheet column, or layout:
 - update the mobile-app type/UI when the public JSON changes;
 - update the three-sheet/header documentation;
 - add or update deterministic tests;
+- for a printed layout change, look at the pull request's
+  [printed bulletin preview](#printed-bulletin-preview) pages;
 - run the relevant Apps Script and mobile tests;
 - approve the Apps Script deploy that the release's merge into `main` starts;
 - build/upload an APK only when native app code changes; and

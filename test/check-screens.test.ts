@@ -58,27 +58,28 @@ describe('popup shots (#372)', () => {
     expect(checkShot(shot('text-size-xl'), textSize)).toEqual([]);
   });
 
-  it('catch the audio settings popup back at the bottom of the screen', () => {
-    // What Vision read on the 1.3.2 release PR, where the popup still sat at
-    // the bottom, its title 47% of the way down, and the Listen offline
-    // row added since (#556).
+  it('catch the audio settings back in the middle of the screen, since it is a bottom sheet (#867)', () => {
+    // What Vision read on the 1.3.2 release PR, where the popup sat at the
+    // bottom, its title 47% of the way down, and the Listen offline row
+    // added since (#556): a bottom sheet's place again since #867.
     const atBottom = [
       ...(samples.bottomSheet['bible-audio-settings-zh'] as Line[]),
       line('離線收聽', 0.9),
       line('離線聖經音訊', 0.94),
     ];
-    expect(checkShot(shot('bible-audio-settings-zh'), atBottom)).toEqual([
-      '/^有聲書設定$/ is 47% of the way down, not at most 40%',
-    ]);
-    // Centred like the others: everything about 20% higher.
+    expect(checkShot(shot('bible-audio-settings-zh'), atBottom)).toEqual([]);
+    // Centred, as from 1.3.2 to #867: everything about 20% higher.
     const centred = atBottom.map(({ text, box }) => ({ text, box: [box[0], box[1] - 0.2, box[2], box[3]] }));
-    expect(checkShot(shot('bible-audio-settings-zh'), centred)).toEqual([]);
+    expect(checkShot(shot('bible-audio-settings-zh'), centred)).toEqual([
+      '/^有聲書設定$/ is 27% of the way down, not at least 40%',
+    ]);
   });
 
   it("catch the verse's footnote back below its Greek (#745)", () => {
     const popup = (footnoteTop: number) => [
       line('1 Corinthians 15:5', 0.24),
       line('Footnote 1', footnoteTop),
+      line('That is, Peter', footnoteTop + 0.03),
       line('Koine Greek (Original)', 0.45),
       line('Source: Statistical Restoration Greek New Testament. Edited by', 0.55),
       line('Licensed CC BY 4.0.', 0.6),
@@ -87,6 +88,11 @@ describe('popup shots (#372)', () => {
     expect(checkShot(shot('bible-verse-footnote-default'), popup(0.36))).toEqual([]);
     expect(checkShot(shot('bible-verse-footnote-default'), popup(0.64))).toEqual([
       '/^Footnote/ is not above /\\bKoine Greek \\(Original\\)/',
+    ]);
+    // So does the footnote's text (#861's run 46129151454 checks it on the
+    // iPhone, where Share Verse is a scroll away).
+    expect(checkShot(shot('bible-verse-footnote-default'), popup(0.36).filter(({ text }) => text !== 'That is, Peter'))).toEqual([
+      'no line matches /^That is, Peter\\b/',
     ]);
     // The Greek itself has to show too.
     expect(checkShot(shot('bible-verse-footnote-default'), popup(0.36).filter(({ text }) => !text.startsWith('Koine')))).toEqual([
@@ -250,22 +256,83 @@ describe('screen rules', () => {
   it("catches the previous Bible's book names after a link opens the CUV (#373)", () => {
     // The book list, which names the CUV's books with the app's English in
     // parentheses since #723; the pill names the book in English whichever
-    // names are loaded.
-    const after = shot('bible-cuv-after-spanish-default');
-    const list = (names: string[]) => names.map((name, index) => line(name, 0.3 + index * 0.06));
-    expect(checkShot(after, list(['創世記 (Genesis)', '出埃及記 (Exodus)', '利未記 (Leviticus)']))).toEqual([]);
-    // Vision, reading English first, may miss the Chinese.
-    expect(checkShot(after, list(['(Genesis)', '(Exodus)', '(Leviticus)', '(Numbers)']))).toEqual([]);
+    // names are loaded. Since #867 it's a sheet that opens with the current
+    // book, Psalms, in the middle, under its section heading (#807): on
+    // Android so far, so these are Android's rules.
+    const after = planChecks(loadConfig(), 'android').find(
+      (candidate: { name: string }) => candidate.name === 'bible-cuv-after-spanish-default',
+    );
+    const list = (names: string[]) => names.map((name, index) => line(name, 0.6 + index * 0.05));
+    const cuv = ['以斯帖記 (Esther)', 'Poetry and Wisdom', '約伯記 (Job)', '詩篇 (Psalms)', '箴言 (Proverbs)'];
+    expect(checkShot(after, list(cuv))).toEqual([]);
+    // RapidOCR may miss the Chinese.
+    expect(checkShot(after, list(['(Esther)', 'Poetry and Wisdom', '(Job)', '(Psalms)', '(Proverbs)']))).toEqual([]);
     // The Spanish names, kept after the link.
-    expect(checkShot(after, list(['Génesis (Genesis)', 'Éxodo (Exodus)', 'Levítico (Leviticus)']))).toEqual([
+    expect(checkShot(after, list(['Ester (Esther)', 'Poetry and Wisdom', 'Job (Job)', 'Salmos (Psalms)', 'Proverbios (Proverbs)']))).toEqual([
+      '"Salmos (Psalms)" matches /Salmos/, which must not show',
+      '"Proverbios (Proverbs)" matches /^Proverbios\\b/, which must not show',
+      '"Ester (Esther)" matches /^Ester\\b/, which must not show',
+    ]);
+    // The list before #723, with no English.
+    expect(checkShot(after, list(['以斯帖記', 'Poetry and Wisdom', '約伯記', '詩篇', '箴言']))).toEqual([
+      'no line matches /[(（]Job\\b/',
+      'no line matches /[(（]Job\\b/',
+      'no line matches /[(（]Psalms\\b/',
+      'no line matches /[(（]Proverbs\\b/',
+    ]);
+    // The heading below Job.
+    expect(checkShot(after, list(['約伯記 (Job)', 'Poetry and Wisdom', '詩篇 (Psalms)', '箴言 (Proverbs)']))).toEqual([
+      '/\\bWisdom\\b/ is not above /[(（]Job\\b/',
+    ]);
+  });
+
+  it('checks the top of the iPhone\'s book list, which still opens there (#876)', () => {
+    // What Vision read on release PR #861's run 46129151454: the sheet opened
+    // at the top of the list, as the popup did before #867.
+    const iphone = shot('bible-cuv-after-spanish-default');
+    const read = ['Old Testament', 'Law', '(Genesis)', '(Exodus)', '(Leviticus)', '(Numbers)', 'History', '(Joshua)'];
+    const list = (names: string[]) => names.map((name, index) => line(name, 0.6 + index * 0.04));
+    expect(checkShot(iphone, list(read))).toEqual([]);
+    // The Spanish names, kept after the link.
+    expect(checkShot(iphone, list(['Law', 'Génesis (Genesis)', 'Éxodo (Exodus)', 'Levítico (Leviticus)']))).toEqual([
       '"Éxodo (Exodus)" matches /^[EÉ]xodo\\b/, which must not show',
       '"Levítico (Leviticus)" matches /^Lev[ií]tico\\b/, which must not show',
     ]);
-    // The list before #723, with no English.
-    expect(checkShot(after, list(['創世記', '出埃及記', '利未記']))).toEqual([
-      'no line matches /[(（]Genesis\\b/',
-      'no line matches /[(（]Exodus\\b/',
-      'no line matches /[(（]Leviticus\\b/',
+    // Law below Genesis.
+    expect(checkShot(iphone, list(['(Genesis)', 'Law', '(Exodus)', '(Leviticus)']))).toEqual([
+      '/\\bLaw\\b/ is not above /[(（]Genesis\\b/',
+    ]);
+  });
+
+  it("checks the iPad's book list by its History heading, since Vision misses the short Law there (#807, #876)", () => {
+    const ipad = planChecks(loadConfig(), 'ipad').find(
+      (candidate: { name: string }) => candidate.name === 'bible-cuv-after-spanish-landscape',
+    );
+    // What Vision read on release PR #861's run 46129151454.
+    const read = ['Old Testament', '(Genesis)', '(Exodus)', '(Leviticus)', '(Numbers)', '(Deuteronomy)', 'History', '(Joshua)'];
+    const list = (names: string[]) => names.map((name, index) => line(name, 0.27 + index * 0.05));
+    expect(checkShot(ipad, list(read))).toEqual([]);
+    expect(checkShot(ipad, list(read.filter((name) => name !== 'History')))).toEqual(['no line matches /\\bHistory\\b/']);
+    expect(checkShot(ipad, list([...read.slice(0, 6), '(Joshua)', 'History']))).toEqual([
+      '/\\bHistory\\b/ is not above /[(（]Joshua\\b/',
+    ]);
+  });
+
+  it('checks the linked hymn\'s 505 chip at 200% on the page scrolled to it, below the tab bar unscrolled (#810)', () => {
+    // On release PR #861's run 46025141242, the title and the note under it
+    // pushed the chip behind the tab bar, where Vision read its top as this.
+    const tabs = ['Home', 'Bible', 'Explore', 'You'].map((label) => line(label, 0.956));
+    const unscrolled = ['SDA', 'Hymnal', '12. Joyful,', 'Joyful, We', 'Adore Thee', 'The sheet music', 'T. nhina'];
+    const hymnalXl = shot('hymnal-xl');
+    expect(checkShot(hymnalXl, [...tabs, ...unscrolled.map((text, index) => line(text, 0.25 + index * 0.06))])).toEqual([]);
+    const scrolled = shot('hymnal-scrolled-xl');
+    expect(checkShot(scrolled, [...tabs, line('Adore Thee', 0.13), line('文A Chinese 505 · 16', 0.31)])).toEqual([]);
+    // The chip cut short, or a list of every hymn.
+    expect(checkShot(scrolled, [...tabs, line('Adore Thee', 0.13), line('文A Chinese 505 ·', 0.31)])).toEqual([
+      'no line matches /\\b505\\W+16$/',
+    ]);
+    expect(checkShot(scrolled, [...tabs, line('文A Chinese 505 · 16', 0.31), line('13. New Songs of', 0.5)])).toEqual([
+      '"13. New Songs of" matches /\\b13\\. New Songs/, which must not show',
     ]);
   });
 
@@ -671,5 +738,81 @@ describe("the Sabbath countdown, with the colon Vision may read as full-width (#
     const rule = 'no line matches /^(\\S{1,3} ?)?\\d{1,2}[:：]\\d\\d[:：]\\d\\d$/';
     expect(checkShot(ipad, withCountdown('5d 12:13'))).toEqual([rule]);
     expect(checkShot(ipad, withCountdown('5d 12;13:02'))).toEqual([rule]);
+  });
+});
+
+describe('card titles that grow with the text size (1.9.2)', () => {
+  // What RapidOCR read on release-candidate's Android key screens before
+  // 1.9.2 (https://github.com/New-York-Chinese-Seventh-day-Adventist/sda-church-app/actions/runs/46077462765),
+  // where the cards' titles stopped at 1.25× while their icons grew (#387).
+  const androidShots = planChecks(loadConfig(), 'android');
+  const androidShot = (name: string) => androidShots.find((candidate: { name: string }) => candidate.name === name);
+  const discoverAt3x: Line[] = [
+    {text: "9:41", box: [0.033, 0.000, 0.143, 0.030]},
+    {text: "New Member", box: [0.028, 0.143, 0.872, 0.076]},
+    {text: "& Visitor", box: [0.037, 0.220, 0.554, 0.062]},
+    {text: "About", box: [0.081, 0.360, 0.153, 0.028]},
+    {text: "Locations &", box: [0.554, 0.362, 0.269, 0.023]},
+    {text: "Denomination", box: [0.085, 0.391, 0.317, 0.024]},
+    {text: "History", box: [0.550, 0.390, 0.179, 0.031]},
+    {text: "Meet Our", box: [0.085, 0.637, 0.215, 0.023]},
+    {text: "Joining the", box: [0.550, 0.635, 0.264, 0.030]},
+    {text: "Home", box: [0.096, 0.922, 0.139, 0.024]},
+    {text: "Bible", box: [0.325, 0.919, 0.124, 0.028]},
+    {text: "Explore", box: [0.529, 0.922, 0.168, 0.026]},
+    {text: "You", box: [0.787, 0.921, 0.099, 0.027]},
+  ];
+  const homeZhAt150: Line[] = [
+    {text: "今日經文", box: [0.268, 0.050, 0.468, 0.063]},
+    {text: "分享經文", box: [0.436, 0.289, 0.239, 0.032]},
+    {text: "查閱經文", box: [0.421, 0.368, 0.253, 0.033]},
+    {text: "安息日快樂！", box: [0.350, 0.498, 0.274, 0.025]},
+    {text: "22:30:43", box: [0.289, 0.529, 0.425, 0.041]},
+    {text: "紐約", box: [0.443, 0.579, 0.114, 0.030]},
+    {text: "觀看直播", box: [0.096, 0.664, 0.161, 0.021]},
+    {text: "每週週報", box: [0.557, 0.664, 0.160, 0.021]},
+    {text: "首頁", box: [0.125, 0.932, 0.083, 0.024]},
+    {text: "聖經", box: [0.344, 0.932, 0.087, 0.023]},
+    {text: "探索", box: [0.568, 0.931, 0.087, 0.025]},
+    {text: "您", box: [0.812, 0.932, 0.049, 0.022]},
+  ];
+  const widen = (lines: Line[], text: string, width: number) =>
+    lines.map((each) => (each.text === text ? { ...each, box: [each.box[0], each.box[1], width, each.box[3]] } : each));
+  const moveLeft = (lines: Line[], text: string, left: number) =>
+    lines.map((each) => (each.text === text ? { ...each, box: [left, each.box[1], each.box[2], each.box[3]] } : each));
+  // What it read with the titles growing to the largest size that fits two
+  // cards a row (https://github.com/CodeSammich/sda-church-app/actions/runs/46087123574).
+  const grown = widen(discoverAt3x, 'Denomination', 0.364);
+
+  it('catch a title that stayed small at 3.2× text', () => {
+    expect(checkShot(androidShot('discover-xl-android-font-max'), discoverAt3x)).toEqual([
+      '/\\bDenomination$/ is 32% of the width wide, not at least 34%',
+    ]);
+    expect(checkShot(androidShot('discover-xl-android-font-max'), grown)).toEqual([]);
+  });
+
+  it('catch the cards no longer two a row at 3.2× text', () => {
+    // A card a row puts "Locations" at the left, under "Denomination".
+    expect(checkShot(androidShot('discover-xl-android-font-max'), moveLeft(grown, 'Locations &', 0.085))).toEqual([
+      '/^Locations\\b/ starts 9% of the way across, not at least 50%',
+    ]);
+    expect(checkShot(shot('discover-xl-ios-large-text'), moveLeft(grown, 'Locations &', 0.085))).toEqual([
+      '/^Locations\\b/ starts 9% of the way across, not at least 50%',
+    ]);
+    expect(checkShot(shot('discover-xl-ios-large-text'), grown)).toEqual([]);
+  });
+
+  it("catch Home's Chinese card titles held small, or no longer two a row, at 150% on the Android phone", () => {
+    expect(checkShot(androidShot('home-zh-large'), homeZhAt150)).toEqual([
+      '/^觀看直播$/ is 16% of the width wide, not at least 20%',
+    ]);
+    // 4 characters of 22.5 points, on the 384-point phone: 25%.
+    const grownZh = widen(homeZhAt150, '觀看直播', 0.253);
+    expect(checkShot(androidShot('home-zh-large'), grownZh)).toEqual([]);
+    expect(checkShot(androidShot('home-zh-large'), moveLeft(grownZh, '每週週報', 0.094))).toEqual([
+      '/^每週週報$/ starts 9% of the way across, not at least 50%',
+    ]);
+    // The iPhone's wider screen leaves less of a margin, so it isn't checked there.
+    expect(checkShot(shot('home-zh-large'), homeZhAt150)).toEqual([]);
   });
 });

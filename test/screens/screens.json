@@ -1,5 +1,5 @@
 {
-  "$comment": "The app's key screens, captured from each platform's preview build: the iPhone's (#331) and Android's (#372). Each screen opens by deep link (sdachurchapp://<path>) after its settings are saved; each variant adds the settings listed under variants. A variant that changes one platform's own settings (iosTextSize on the iPhone; fontScale and displayScale on Android) is taken only there, and a screen with platforms only on those. Screenshots are named <platform>/<screen>-<variant>.png. checks lists automatic image checks for a screen, mustShowLines regular expressions that some line of its text must match (or { line, minLeft } for a line that must also start at least minLeft of the way across, such as right-aligned text), mustNotShowLines ones that no line may match, variantRules more of either for one variant (a rule written { line, platforms } applies on those platforms only, such as a line the Android phone's smaller screen leaves below the fold), and tabs false for a screen without the tab bar, such as the Bible while reading (scripts/check-screens.cjs); appStore lists, per App Store language, the iPhone shots to upload, in order, appStoreIpad the iPad's, from the screens that list ipadVariants (#324), googlePlay, per Google Play language, the Android ones (at most 8), and googlePlayTablet the Android tablet's, from the screens that list androidTabletVariants (#695); and oneOff, the store sets of languages taken only in a hand-started one-off run (#692), each derived from these lists. Each screen's group names the related screens it is captured with, on one of up to five runners at once (#453): put a new screen in the group for its part of the app, as groups describes. A test fails if a group would take more than 9 minutes on the iPhone or Android, or 8 on the iPad. That limit is a reminder to prune, not a rule: first drop variants that repeat what another shot already shows and screens no longer worth a check, spend the time saved on screens and states no shot covers yet (#456), then move some related screens to a lighter group or split one, and if a group is still over after that, raise the limit. Leave out screens that show members' names or photos, unless a key-screens build shows made-up data on them, as it does on the bulletin and the Team page (services/KeyScreensFixtures.ts, #456): Fellowships shows the church building in place of its photos of members, and has no one's name in it, and Sabbath Worship has neither; test/screens.test.ts allows only these four. A path's popup= opens one of that screen's popups or dialogs, in the preview build only (#372); its shot skips the tab and verse-button checks, which the popup covers or dims. The Bible's play=1 starts its audio the same way (#551), and the bulletin's state=load-failed, section=program and section=announcements show a bulletin that couldn't load (#456), and its worship program (#456) or announcements (#562) scrolled into view. A screen's record names what the app saves of such an action, which scripts/key-screen-records.cjs checks, saying when the network was the cause of a failure; later takes a second screenshot that many seconds after the first, <platform>/<screen>-<variant>-later.png; and mustAdvance is a regular expression for a time, its first two groups the minutes and seconds, that must have moved on in the later shot by at least half that time. Every download a reviewer opens stays under the 50 MB Chrome looks inside, with no app in it: Chrome blocked the one download that held the screenshots and the unsigned app (#484), and called 1.7.0's 349 MB of iPhone and iPad shots dangerous. scripts/pack-review-downloads.cjs packs each device's shots as palette PNGs, in parts if need be, and fails the join if they'd need more parts than the workflow uploads (\"Downloads under 50 MB\" in docs/operations/native-builds.md).",
+  "$comment": "The app's key screens, captured from each platform's preview build: the iPhone's (#331) and Android's (#372). Each screen opens by deep link (sdachurchapp://<path>) after its settings are saved; each variant adds the settings listed under variants. A variant that changes one platform's own settings (iosTextSize on the iPhone; fontScale and displayScale on Android) is taken only there, and a screen with platforms only on those. Screenshots are named <platform>/<screen>-<variant>.png. checks lists automatic image checks for a screen, mustShowLines regular expressions that some line of its text must match (or { line, minLeft } for a line that must also start at least minLeft of the way across, such as right-aligned text, or { line, minWidth } for one at least minWidth of the screen's width wide, such as a title that must grow with the text size), mustNotShowLines ones that no line may match, variantRules more of either for one variant (a rule written { line, platforms } applies on those platforms only, such as a line the Android phone's smaller screen leaves below the fold), and tabs false for a screen without the tab bar, such as the Bible while reading (scripts/check-screens.cjs); appStore lists, per App Store language, the iPhone shots to upload, in order, appStoreIpad the iPad's, from the screens that list ipadVariants (#324), googlePlay, per Google Play language, the Android ones (at most 8), and googlePlayTablet the Android tablet's, from the screens that list androidTabletVariants (#695); and oneOff, the store sets of languages taken only in a hand-started one-off run (#692), each derived from these lists. Each screen's group names the related screens it is captured with, on one of up to five runners at once (#453): put a new screen in the group for its part of the app, as groups describes. A test fails if a group would take more than 9 minutes on the iPhone or Android, or 8 on the iPad. That limit is a reminder to prune, not a rule: first drop variants that repeat what another shot already shows and screens no longer worth a check, spend the time saved on screens and states no shot covers yet (#456), then move some related screens to a lighter group or split one, and if a group is still over after that, raise the limit. Leave out screens that show members' names or photos, unless a key-screens build shows made-up data on them, as it does on the bulletin and the Team page (services/KeyScreensFixtures.ts, #456): Fellowships shows the church building in place of its photos of members, and has no one's name in it, and Sabbath Worship has neither; test/screens.test.ts allows only these four. A path's popup= opens one of that screen's popups or dialogs, in the preview build only (#372); its shot skips the tab and verse-button checks, which the popup covers or dims. The Bible's play=1 starts its audio the same way (#551), and the bulletin's state=load-failed, section=program and section=announcements show a bulletin that couldn't load (#456), and its worship program (#456) or announcements (#562) scrolled into view. A screen's record names what the app saves of such an action, which scripts/key-screen-records.cjs checks, saying when the network was the cause of a failure; later takes a second screenshot that many seconds after the first, <platform>/<screen>-<variant>-later.png; and mustAdvance is a regular expression for a time, its first two groups the minutes and seconds, that must have moved on in the later shot by at least half that time. Every download a reviewer opens stays under the 50 MB Chrome looks inside, with no app in it: Chrome blocked the one download that held the screenshots and the unsigned app (#484), and called 1.7.0's 349 MB of iPhone and iPad shots dangerous. scripts/pack-review-downloads.cjs packs each device's shots as palette PNGs, in parts if need be, and fails the join if they'd need more parts than the workflow uploads (\"Downloads under 50 MB\" in docs/operations/native-builds.md).",
   "ios": {
     "device": "iPhone 17 Pro Max"
   },
@@ -29,7 +29,9 @@
     "large": { "textScale": 1.5 },
     "es-default-text": { "language": "es", "textScale": 1.25 },
     "es-large": { "language": "es", "textScale": 1.5 },
+    "zh-large": { "language": "zh", "textScale": 1.5 },
     "xl": { "textScale": 2 },
+    "xl-dark": { "textScale": 2, "theme": "dark" },
     "ios-large-text": { "iosTextSize": "accessibility-large" },
     "zh": { "language": "zh" },
     "zh-cn": { "language": "zh-cn" },
@@ -77,10 +79,10 @@
     {
       "name": "home",
       "group": "home",
-      "$comment": "xl-ios-large-text and es-xl-ios-large-text: the app at 200% with the iPhone's accessibility-large text (2×), held to 3.2× by the combined cap, as with Android's largest font at 200%, where the tab labels used to wrap (#380); xl-android-font-max and es-xl-android-font-max are that case itself, with the same rules, except that the Android phone's narrower screen may wrap the heading between its words; and android-display-large is Android's largest display size. Their verse-card buttons and heading must show whole words, not “Shar” or “Versícul / o” (#385). The verse changes daily, and a long one, such as John 1:1 or Genesis 1:27 in English or most verses in Spanish, pushes one button or both below the shot, so no rule requires a button. English instead requires its heading whole on one line and fails on a line ending in a cut-off button word, such as “Shar” or “Rea”; Spanish requires its heading, with or without the accent, which OCR can miss when the photo's cross runs behind it. The tab-label check fails on a wrapped label, or one pushed up out of the tab bar's area by an overgrown bar. Not the iPhone's very largest size: at about 6× in all, page titles break mid-word, which isn't a useful baseline. es-large is Spanish at 150% on the phones: on the Android phone's 384 points, \"Compartir\" didn't fit beside Leer Versículo and broke mid-word, so the buttons stack wherever a word wouldn't fit (#324). The Sabbath countdown is three lines, with no date (#593): \"Sabbath starts in\" (or \"Happy Sabbath!\" during the Sabbath), the timer on a line of its own, and the place. default, es-large, zh and zh-cn require the label whole and the timer, and fail on a date line. zh, zh-cn and es require the place in their own language, 紐約, 纽约 or Nueva York, NY (#729). The timer's rule allows up to three characters before it, for the days: Vision can read the iPhone's Courier \"1d\" as \"ld\" or \"la\", and RapidOCR can drop the space after it, as it dropped the one before \"in\" on the Android tablet (#695). The check of Chinese dates written out by hand moved to sabbath-school's zh shot.",
+      "$comment": "xl-ios-large-text and es-xl-ios-large-text: the app at 200% with the iPhone's accessibility-large text (2×), held to 3.2× by the combined cap, as with Android's largest font at 200%, where the tab labels used to wrap (#380); xl-android-font-max and es-xl-android-font-max are that case itself, with the same rules, except that the Android phone's narrower screen may wrap the heading between its words; and android-display-large is Android's largest display size. Their verse-card buttons and heading must show whole words, not “Shar” or “Versícul / o” (#385). The verse changes daily, and a long one, such as John 1:1 or Genesis 1:27 in English or most verses in Spanish, pushes one button or both below the shot, so no rule requires a button. English instead requires its heading whole on one line and fails on a line ending in a cut-off button word, such as “Shar” or “Rea”; Spanish requires its heading, with or without the accent, which OCR can miss when the photo's cross runs behind it. The tab-label check fails on a wrapped label, or one pushed up out of the tab bar's area by an overgrown bar. Not the iPhone's very largest size: at about 6× in all, page titles break mid-word, which isn't a useful baseline. es-large is Spanish at 150% on the phones: on the Android phone's 384 points, \"Compartir\" didn't fit beside Leer Versículo and broke mid-word, so the buttons stack wherever a word wouldn't fit (#324). zh-large is Traditional Chinese at 150%, in place of English there, which es-large and the 200% shots cover: on the Android phone, and on a 411-point Pixel, 分享經文 and 查閱經文 broke as 分享經 / 文 beside each other, since Chinese can break between any two characters and the icons grow with the text, so the buttons stack there too, and each label must show whole, with no line ending in 分享經 or 查閱經 and no 文 alone (#797). On the Android phone it also shows the first two cards below the countdown, two a row, whose titles grow with the text, as their icons do, up to the largest size at which the widest word fits a card: 每週週報 must start past the middle, beside 觀看直播, and 觀看直播 must be at least 20% of the screen's width, where it's 25%; until 1.9.2 it was 16%, held to 1.25× (#387) and shrunk from there to fit 本週安息日學課程, one word to the card, beside another card. The Sabbath countdown is three lines, with no date (#593): \"Sabbath starts in\" (or \"Happy Sabbath!\" during the Sabbath), the timer on a line of its own, and the place. default, es-large, zh and zh-cn require the label whole and the timer, and fail on a date line. zh, zh-cn and es require the place in their own language, 紐約, 纽约 or Nueva York, NY (#729). The timer's rule allows up to three characters before it, for the days: Vision can read the iPhone's Courier \"1d\" as \"ld\" or \"la\", and RapidOCR can drop the space after it, as it dropped the one before \"in\" on the Android tablet (#695). The check of Chinese dates written out by hand moved to sabbath-school's zh shot.",
       "path": "",
       "checks": ["themeStatusBarIcons"],
-      "variants": ["default", "dark", "large", "ios-large-text", "zh", "zh-cn", "es", "es-large", "xl-ios-large-text", "es-xl-ios-large-text", "xl-android-font-max", "es-xl-android-font-max", "android-display-large", "standard-contrast", "standard-contrast-dark"],
+      "variants": ["default", "dark", "zh-large", "ios-large-text", "zh", "zh-cn", "es", "es-large", "xl-ios-large-text", "es-xl-ios-large-text", "xl-android-font-max", "es-xl-android-font-max", "android-display-large", "standard-contrast", "standard-contrast-dark"],
       "ipadVariants": ["default", "landscape", "landscape-xl", "zh", "zh-cn"],
       "androidTabletVariants": ["default", "zh", "zh-cn", "landscape"],
       "variantRules": {
@@ -89,6 +91,7 @@
           "mustNotShowLines": ["\\b(Sh|Sha|Shar|Re|Rea|Ve|Ver|Vers)$"]
         },
         "default": { "mustShowLines": ["^(Sabbath starts ?in|Happy Sabbath!?)$", "^(\\S{1,3} ?)?\\d{1,2}[:：]\\d\\d[:：]\\d\\d$"], "mustNotShowLines": ["^(Friday|Saturday), "] },
+        "zh-large": { "mustShowLines": ["分享經文", "查閱經文", { "line": "^觀看直播$", "minWidth": 0.2, "platforms": ["android"] }, { "line": "^每週週報$", "minLeft": 0.5, "platforms": ["android"] }], "mustNotShowLines": ["(分享|查閱)經$", "^文$"] },
         "es-large": { "mustShowLines": ["Compartir$", "^(El S.bado comienza en|.?Feliz S.bado!?)$", "^(\\S{1,3} ?)?\\d{1,2}[:：]\\d\\d[:：]\\d\\d$"], "mustNotShowLines": ["\\bCompar(t|ti)?$", "^(tir|ir)\\b"] },
         "es-xl-ios-large-text": { "mustShowLines": ["^Vers[ií]culo(\\b|de\\b)"] },
         "xl-android-font-max": {
@@ -169,13 +172,13 @@
     {
       "name": "bible-cuv-after-spanish",
       "group": "bible-text",
-      "$comment": "The Spanish Bible was open with the CUV underneath, then a link opens the CUV. Its book names must replace the Spanish ones, which once stayed until a restart (#373). The interface is English, as when the bug showed. The book pill names the book in the app's language since #723, Psalms whichever translation's names are loaded, so the shot opens the book list instead, by popup=book in the preview build, where the CUV's names show with the app's in parentheses: 創世記 (Genesis). A stale list would read Génesis (Genesis), Éxodo (Exodus). Vision reads an English shot in English first and may miss the Chinese, so the rules need only the English after its parenthesis, which the list showed none of before #723; the text readers may drop an accent.",
+      "$comment": "The Spanish Bible was open with the CUV underneath, then a link opens the CUV. Its book names must replace the Spanish ones, which once stayed until a restart (#373). The interface is English, as when the bug showed. The book pill names the book in the app's language since #723, Psalms whichever translation's names are loaded, so the shot opens the book list instead, by popup=book in the preview build, where the CUV's names show with the app's in parentheses: 創世記 (Genesis). A stale list would read Génesis (Genesis), Éxodo (Exodus). Vision reads an English shot in English first and may miss the Chinese, so the rules need only the English after its parenthesis, which the list showed none of before #723; the text readers may drop an accent. The books sit under Testament and section headings (#807), in the app's language, so Law must show above Genesis. On the iPad, Vision may read the dimmed page beside the popup into a line, so the headings aren't anchored, and it missed the short, grey Law there, though it shows (run 46025141242), so there History must show above Joshua instead. Since #867 the book list is a sheet that opens at half height with the current book, Psalms, in the middle, so the rules check the books around it, with Poetry and Wisdom above Job, and that no Spanish name shows there (Proverbios, Eclesiastés, Ester). On the iPhone and iPad the sheet still opens at the top of the list (#876), as the popup did before #867, so there the rules check the top as they did: Law above Genesis on the iPhone, and History above Joshua on the iPad, where Vision misses the short, grey Law. When #876 is fixed, give them Android's rules.",
       "path": "bible?bookId=PSA&chapter=23&translationId=cmn_cuv&popup=book",
       "settings": { "translation": "spa_r09", "dualLanguage": true, "supportingTranslation": "cmn_cuv", "pinyin": false },
       "variants": ["default"],
       "ipadVariants": ["landscape"],
-      "mustShowLines": ["[(（]Genesis\\b", "[(（]Exodus\\b", "[(（]Leviticus\\b"],
-      "mustNotShowLines": ["Salmos", "^[EÉ]xodo\\b", "^Lev[ií]tico\\b", "^N[uú]meros\\b"]
+      "mustShowLines": [{ "line": "\\bWisdom\\b", "above": "[(（]Job\\b", "platforms": ["android"] }, { "line": "[(（]Job\\b", "platforms": ["android"] }, { "line": "[(（]Psalms\\b", "platforms": ["android"] }, { "line": "[(（]Proverbs\\b", "platforms": ["android"] }, { "line": "\\bLaw\\b", "above": "[(（]Genesis\\b", "platforms": ["ios"] }, { "line": "\\bHistory\\b", "above": "[(（]Joshua\\b", "platforms": ["ipad"] }, { "line": "[(（]Genesis\\b", "platforms": ["ios", "ipad"] }, { "line": "[(（]Exodus\\b", "platforms": ["ios", "ipad"] }, { "line": "[(（]Leviticus\\b", "platforms": ["ios", "ipad"] }],
+      "mustNotShowLines": ["Salmos", "^[EÉ]xodo\\b", "^Lev[ií]tico\\b", "^N[uú]meros\\b", "^Proverbios\\b", "^Eclesiast[eé]s\\b", "^Ester\\b"]
     },
     {
       "name": "bible-cuvs",
@@ -220,18 +223,18 @@
     {
       "name": "bible-verse-popup",
       "group": "bible-reading",
-      "$comment": "The popup a tapped verse opens, opened by popup=verse in the preview build (#372): the reference as its title beside an X, with no Close button (#464). A popup covers or dims the tab bar and chapter controls, so those aren't checked. The original-language Greek ships with the app, so its credit must show, with the license CC BY 4.0 requires (it may wrap onto its own line). Luke 2:14, not John 3:16, which no hymn names: eight hymns are on this verse, so the popup's Hymns button must show beside Share Verse (#456). With Save, the three buttons share the iPad's 560-point popup at 150%, so Share Verse wraps inside its button there, onto two lines. Vision reads the share icon before Share Verse as <.",
+      "$comment": "The popup a tapped verse opens, opened by popup=verse in the preview build (#372): the reference as its title beside an X, with no Close button (#464). A popup covers or dims the tab bar and chapter controls, so those aren't checked. The original-language Greek ships with the app, so its credit must show, with the license CC BY 4.0 requires (it may wrap onto its own line). Luke 2:14, not John 3:16, which no hymn names: eight hymns are on this verse, so the popup's Hymns button must show beside Share Verse (#456). With Save, the three buttons share the iPad's 560-point popup at 150%, so Share Verse wraps inside its button there, onto two lines. Vision reads the share icon before Share Verse as <. standard-contrast-dark shows a sheet in the dark theme at standard contrast, the near-black of the floating bars (#867). Since #867 it's a sheet that opens at half height on a phone, where the Greek's source and license are below the fold, a scroll away; the phones check its Koine Greek label, and the iPad's form sheet, which shows it all, the credit. The iPad's form sheet (#867) is wider than the 560-point popup was, so Share Verse stays on one line there too.",
       "path": "bible?bookId=LUK&chapter=2&translationId=BSB&verseStart=14&verseEnd=14&popup=verse",
       "settings": { "dualLanguage": false, "pinyin": false },
-      "variants": ["default"],
+      "variants": ["default", "standard-contrast-dark"],
       "ipadVariants": ["landscape"],
-      "mustShowLines": ["^Luke 2:14$", { "line": "\\bShare Verse$", "platforms": ["ios", "android"] }, { "line": "\\bShare$", "platforms": ["ipad"] }, { "line": "^Verse$", "platforms": ["ipad"] }, "\\bHymns$", "^Source: Statistical Restoration Greek\\b", "\\bCC BY 4\\.0\\b"],
+      "mustShowLines": ["^Luke 2:14$", "\\bShare Verse$", "\\bHymns$", { "line": "^Koine Greek\\b", "platforms": ["ios", "android"] }, { "line": "^Source: Statistical Restoration Greek\\b", "platforms": ["ipad"] }, { "line": "\\bCC BY 4\\.0\\b", "platforms": ["ipad"] }],
       "mustNotShowLines": ["^Close$"]
     },
     {
       "name": "bible-verse-footnote",
       "group": "bible-reading",
-      "$comment": "A verse with a footnote in the popup a tapped verse opens, opened by popup=verse (#745): the footnote comes before the Greek. 1 Corinthians 15:5 is short, with a short footnote (\"That is, Peter\"), and no hymn names it, so with no Hymns button the Greek's credit still shows below the footnote on the iPhone, the iPad and the Android phone. bible-verse-popup checks the Hymns button on Luke 2:14, which has no footnote: one verse with both, John 20:16, filled the popup to its height limit on every device, with the credit below the fold (fork runs 45110485284 and 45110488597). The original-language Greek ships with the app, so its credit must show, with the license CC BY 4.0 requires (it may wrap onto its own line). Vision once read Greek in the credit as Graok, so the rule stops before it. Android's OCR drops spaces, reading 1Corinthians and Footnote1 (fork run 44996503813), and on the iPad, over the reader's text, Vision joins the Greek's label to the verse behind it (\"10 But by 1 Koine Greek (Original)\"), so that rule isn't anchored (fork run 44996349297). Vision reads the share icon before Share Verse as <.",
+      "$comment": "A verse with a footnote in the popup a tapped verse opens, opened by popup=verse (#745): the footnote comes before the Greek. 1 Corinthians 15:5 is short, with a short footnote (\"That is, Peter\"), and no hymn names it, so with no Hymns button the Greek's credit still shows below the footnote on the iPhone, the iPad and the Android phone. bible-verse-popup checks the Hymns button on Luke 2:14, which has no footnote: one verse with both, John 20:16, filled the popup to its height limit on every device, with the credit below the fold (fork runs 45110485284 and 45110488597). The original-language Greek ships with the app, so its credit must show, with the license CC BY 4.0 requires (it may wrap onto its own line). Vision once read Greek in the credit as Graok, so the rule stops before it. Android's OCR drops spaces, reading 1Corinthians and Footnote1 (fork run 44996503813), and on the iPad, over the reader's text, Vision joins the Greek's label to the verse behind it (\"10 But by 1 Koine Greek (Original)\"), so that rule isn't anchored (fork run 44996349297). Vision reads the share icon before Share Verse as <. Since #867, on a phone the half-height sheet keeps the Greek's credit a scroll away, so only the iPad checks it. On the iPhone, with the footnote, the Greek and its credit, Save and Share Verse sit just below the fold of the half-height sheet, a scroll away, so only the footnote and the Greek are checked there (#861's run 46129151454). #870's option B, moving Save and Share into the sheet's title row so they always show, is the real fix, in 1.10.0.",
       "path": "bible?bookId=1CO&chapter=15&translationId=BSB&verseStart=5&verseEnd=5&popup=verse",
       "settings": { "dualLanguage": false, "pinyin": false },
       "variants": ["default"],
@@ -239,21 +242,22 @@
       "mustShowLines": [
         "^1 ?Corinthians 15:5$",
         { "line": "^Footnote", "above": "\\bKoine Greek \\(Original\\)" },
-        "\\bShare Verse$",
-        "^Source: Statistical Restoration\\b",
-        "\\bCC BY 4\\.0\\b"
+        "^That is, Peter\\b",
+        { "line": "\\bShare Verse$", "platforms": ["android", "ipad"] },
+        { "line": "^Source: Statistical Restoration\\b", "platforms": ["ipad"] },
+        { "line": "\\bCC BY 4\\.0\\b", "platforms": ["ipad"] }
       ],
       "mustNotShowLines": ["^Close$"]
     },
     {
       "name": "bible-chapter-picker",
       "group": "bible-reading",
-      "$comment": "The chapter list, opened by popup=chapter, as the chapter pill would (#456): its title beside an X, then a row for each chapter. An English app reading the CUV names each chapter in both, 第 1 章 (Chapter 1) (#723). Vision reads an English shot in English first and may miss the Chinese, so the rules need only the English after its parenthesis.",
+      "$comment": "The chapter list, opened by popup=chapter, as the chapter pill would (#456): its title beside an X, then a row for each chapter. It's a bottom sheet (#867) that opens at half the screen, so on the iPhone and the Android phone its title must be at least 40% of the way down; the iPad shows a centred form sheet. An English app reading the CUV names each chapter in both, 第 1 章 (Chapter 1) (#723). Vision reads an English shot in English first and may miss the Chinese, so the rules need only the English after its parenthesis. It opens with the current chapter, Psalm 23, in the middle (#867), so chapters 22 and 23 must show. On the iPhone and iPad the sheet still opens at the top of the list (#876), so there chapters 1 and 2 must show, as before #867; Android checks 22 and 23. When #876 is fixed, give them Android's rules.",
       "path": "bible?bookId=PSA&chapter=23&translationId=cmn_cuv&popup=chapter",
       "settings": { "dualLanguage": false, "pinyin": false },
       "variants": ["default"],
       "ipadVariants": ["landscape"],
-      "mustShowLines": [{ "line": "^Chapter$", "maxTop": 0.4 }, "[(（]Chapter 1[)）]$", "[(（]Chapter 2[)）]$"],
+      "mustShowLines": [{ "line": "^Chapter$", "minTop": 0.4, "platforms": ["ios", "android"] }, { "line": "^Chapter$", "platforms": ["ipad"] }, { "line": "[(（]Chapter 22[)）]$", "platforms": ["android"] }, { "line": "[(（]Chapter 23[)）]$", "platforms": ["android"] }, { "line": "[(（]Chapter 1[)）]$", "platforms": ["ios", "ipad"] }, { "line": "[(（]Chapter 2[)）]$", "platforms": ["ios", "ipad"] }],
       "mustNotShowLines": ["^Close$"]
     },
     {
@@ -295,16 +299,16 @@
     {
       "name": "bible-audio-settings",
       "group": "bible-reading",
-      "$comment": "The audio settings popup, opened by popup=audio-settings in the preview build (#372): its title beside an X (#464), and the CUV's two audio languages, in English (the Google Play screenshot) and Chinese. The audio button behind it shows 國語, so the rules require lines only the popup shows. Vision misses the lone 粵語 label, so the Cantonese row is found by its credit, WordProject. It's centred like the other popups: until 1.3.2 it sat at the bottom, its title 47% of the way down where theirs are at 25 to 32%, so the title must be no farther down than 40%. Under the audio languages, Listen offline is one row that opens Offline Bible Audio in the You tab, where Bible audio is downloaded and deleted (#556); it must show, though the Android phone's shorter popup may leave the row below the fold.",
+      "$comment": "The audio settings popup, opened by popup=audio-settings in the preview build (#372): its title beside an X (#464), and the CUV's two audio languages, in English (the Google Play screenshot) and Chinese. The audio button behind it shows 國語, so the rules require lines only the popup shows. Vision misses the lone 粵語 label, so the Cantonese row is found by its credit, WordProject. Like the other popups that aren't questions, it's a bottom sheet (#867), where it sat until 1.3.2: on the iPhone and the Android phone its title must be at least 40% of the way down, where a centred popup's sat at 25 to 32%; the iPad shows Apple's centred form sheet. Under the audio languages, Listen offline is one row that opens Offline Bible Audio in the You tab, where Bible audio is downloaded and deleted (#556); it must show, though the Android phone's shorter popup may leave the row below the fold.",
       "path": "bible?bookId=PSA&chapter=23&translationId=cmn_cuv&popup=audio-settings",
       "settings": { "dualLanguage": true, "supportingTranslation": "BSB", "pinyin": false },
       "variants": ["default", "zh"],
       "ipadVariants": ["landscape"],
       "mustShowLines": ["^WordProject$"],
       "variantRules": {
-        "default": { "mustShowLines": [{ "line": "^Audio settings$", "maxTop": 0.4 }, "^Audio language$", "^Listen offline$", { "line": "^Offline Bible Audio$", "platforms": ["ios"] }], "mustNotShowLines": ["^Close$", "^Whole Bible$"] },
-        "zh": { "mustShowLines": [{ "line": "^有聲書設定$", "maxTop": 0.4 }, "^朗讀語言$", "^離線收聽$", { "line": "^離線聖經音訊$", "platforms": ["ios"] }], "mustNotShowLines": ["^關閉$", "^整本聖經$"] },
-        "es": { "mustShowLines": [{ "line": "^Ajustes de audio$", "maxTop": 0.4 }, "^Idioma del audio$", "^Escuchar sin conexi.n$"], "mustNotShowLines": ["^Cerrar$", "^Toda la Biblia$"] }
+        "default": { "mustShowLines": [{ "line": "^Audio settings$", "minTop": 0.4, "platforms": ["ios", "android"] }, { "line": "^Audio settings$", "platforms": ["ipad"] }, "^Audio language$", "^Listen offline$", { "line": "^Offline Bible Audio$", "platforms": ["ios"] }], "mustNotShowLines": ["^Close$", "^Whole Bible$"] },
+        "zh": { "mustShowLines": [{ "line": "^有聲書設定$", "minTop": 0.4, "platforms": ["ios", "android"] }, { "line": "^有聲書設定$", "platforms": ["ipad"] }, "^朗讀語言$", "^離線收聽$", { "line": "^離線聖經音訊$", "platforms": ["ios"] }], "mustNotShowLines": ["^關閉$"] },
+        "es": { "mustShowLines": [{ "line": "^Ajustes de audio$", "minTop": 0.4, "platforms": ["ios", "android"] }, { "line": "^Ajustes de audio$", "platforms": ["ipad"] }, "^Idioma del audio$", "^Escuchar sin conexi.n$"], "mustNotShowLines": ["^Cerrar$", "^Toda la Biblia$"] }
       }
     },
     {
@@ -312,24 +316,33 @@
       "group": "bible-reading",
       "$comment": "Offline Bible Audio, where Bible audio is downloaded and deleted (#556), as the Bible's audio settings open it for Souer's English narration: the narrator, named language first (the user: people don't know who Souer is), then the whole Bible, the Old Testament, and its sections, closed, each with its book count and size. A key-screen build has nothing downloaded, so no row offers delete. Below the narrator, Download notifications (#610), the switch for the app's own download notifications, which both phones that capture have. The text readers may read a closed section's chevron with its title (\"> Law\") and drop the spaces in \"英語 – Souer\" and \"66 卷\", so the rules allow both. RapidOCR on Android can read the narrator line's dash in Chinese as a full-width －, and \"66 books\" without its space.",
       "path": "you/audio-downloads?narrator=souer",
-      "variants": ["default", "zh"],
+      "variants": ["default"],
       "ipadVariants": ["landscape"],
       "variantRules": {
-        "default": { "mustShowLines": ["^Offline Bible Audio$", "^English\\s*[-–－]\\s*Souer", "^Download notifications$", "^Whole Bible$", "^66\\s*books", "^Old Testament$", "(^|\\s)Law$", "^5 books"], "mustNotShowLines": ["^Downloaded", "^Genesis$"] },
-        "zh": { "mustShowLines": ["^離線聖經音訊$", "^英語\\s*[-–－]\\s*Souer", "^下載通知$", "^整本聖經$", "^66\\s*卷", "^舊約$", "(^|\\s)摩西五經$"], "mustNotShowLines": ["^已下載", "^創世記$"] }
+        "default": { "mustShowLines": ["^Offline Bible Audio$", "^English\\s*[-–－]\\s*Souer", "^Download notifications$", "^Whole Bible$", "^66\\s*books", "^Old Testament$", "(^|\\s)Law$", "^5 books"], "mustNotShowLines": ["^Downloaded", "^Genesis$"] }
       }
+    },
+    {
+      "name": "offline-bible-audio-book",
+      "group": "bible-reading",
+      "$comment": "Offline Bible Audio as the Bible's audio settings open it while Psalms is read, for the Chinese Union Version's Mandarin, in Chinese at 150% (#797): the page scrolls to the book's section, 詩歌智慧書, opened, with its name where the page's first line would be, just below the header, then Job and Psalms. When it left room for one row above the book, at 150% the section's name sat under the header's title. This took the place of offline-bible-audio's Chinese shot, the same layout as its English one. The text readers may read the section's chevron with its name.",
+      "path": "you/audio-downloads?narrator=cuv-mandarin&bookId=PSA",
+      "variants": ["zh-large"],
+      "ipadVariants": ["landscape-zh"],
+      "mustShowLines": ["(^|\\s)詩歌智慧書$", "^5\\s*卷", "^約伯記$", "^詩篇$"],
+      "mustNotShowLines": ["^已下載"]
     },
     {
       "name": "bible-audio-mobile-data",
       "group": "bible-reading",
-      "$comment": "The question Offline Bible Audio asks before a download on mobile data (#611), by popup=mobile-data in the preview build, for Souer's whole Bible: the app's own popup, not the system's alert, with its answers as stacked buttons, Use mobile data first and Cancel last, and no X. In Spanish at the largest text sizes, the title and the longest answer may wrap, on the iPhone a word to a line, but no answer may be cut short with an ellipsis, as Paper's one-line Button cut \"Usar datos m...\" (run 41714586130), and Cancelar must show in the popup: at the iPhone's largest, the title and answers once overflowed it, and Cancelar showed over the page below (run 41741902378). The title scrolls with the message now, above the answers. The text readers may read the curly apostrophe in \"You’re\" as a straight one, and drop the hyphen in \"Wi-Fi\".",
+      "$comment": "The question Offline Bible Audio asks before a download on mobile data (#611), by popup=mobile-data in the preview build, for Souer's whole Bible: the app's own popup, not the system's alert, with its answers as stacked buttons, Use mobile data first and Cancel last, and no X. In Spanish at the largest text sizes, the title and the longest answer may wrap, on the iPhone a word to a line, but no answer may be cut short with an ellipsis, as Paper's one-line Button cut \"Usar datos m...\" (run 41714586130), and Cancelar must show in the popup: at the iPhone's largest, the title and answers once overflowed it, and Cancelar showed over the page below (run 41741902378). The title scrolls with the message now, above the answers. The text readers may read the curly apostrophe in \"You’re\" as a straight one, and drop the hyphen in \"Wi-Fi\". Where the message wraps, the download's size stays on one line, its number and unit joined by a no-break space, so no line is its unit alone (#806).",
       "path": "you/audio-downloads?narrator=souer&popup=mobile-data",
       "variants": ["default", "es-xl-ios-large-text", "es-xl-android-font-max"],
       "ipadVariants": ["landscape"],
       "variantRules": {
         "default": { "mustShowLines": ["^Use mobile data\\?$", "^You.re on mobile data", "^Use mobile data$", "^Wait for Wi-?Fi$", "^Cancel$"], "mustNotShowLines": ["^Close$", "^CANCEL$", "^OK$"] },
-        "es-xl-ios-large-text": { "mustShowLines": ["^¿Usar\\b", "^Usar datos( móviles)?$", "^Esperar Wi-?Fi$", "^Cancelar$"], "mustNotShowLines": ["^Cerrar$", "(\\.\\.\\.|…)$"] },
-        "es-xl-android-font-max": { "mustShowLines": ["^¿Usar\\b", "^Usar datos( móviles)?$", "^Esperar Wi-?Fi$", "^Cancelar$"], "mustNotShowLines": ["^Cerrar$", "^CANCELAR$", "(\\.\\.\\.|…)$"] }
+        "es-xl-ios-large-text": { "mustShowLines": ["^¿Usar\\b", "^Usar datos( móviles)?$", "^Esperar Wi-?Fi$", "^Cancelar$"], "mustNotShowLines": ["^Cerrar$", "(\\.\\.\\.|…)$", "^[GM]B\\.?$"] },
+        "es-xl-android-font-max": { "mustShowLines": ["^¿Usar\\b", "^Usar datos( móviles)?$", "^Esperar Wi-?Fi$", "^Cancelar$"], "mustNotShowLines": ["^Cerrar$", "^CANCELAR$", "(\\.\\.\\.|…)$", "^[GM]B\\.?$"] }
       }
     },
     {
@@ -361,7 +374,7 @@
     {
       "name": "offline-bible-audio-narrator",
       "group": "bible-reading",
-      "$comment": "Offline Bible Audio's narrator popup, which lists every narrator to download with what's on the phone, by popup=narrator in the preview build (#324). A key-screen build has nothing downloaded. Its iPad shot checks the popup's width: when it was new, it had a percentage width, which on iOS fills 90% of an iPad. In the bible-text group, the compiling runner's, since the bible-reading group's phones are at their time limit.",
+      "$comment": "Offline Bible Audio's narrator popup, which lists every narrator to download with what's on the phone, by popup=narrator in the preview build (#324). A key-screen build has nothing downloaded. Its iPad shot checked the popup's width: when it was new, it had a percentage width, which on iOS fills 90% of an iPad. Since #867 it's a sheet, which the system sizes. In the bible-text group, the compiling runner's, since the bible-reading group's phones are at their time limit.",
       "path": "you/audio-downloads?narrator=souer&popup=narrator",
       "variants": ["default"],
       "ipadVariants": ["landscape"],
@@ -370,12 +383,12 @@
     {
       "name": "bible-audio-download-tip",
       "group": "bible-reading",
-      "$comment": "The audio settings popup as the marked audio button opens it when playback keeps stopping to load (#595), by popup=audio-download-tip in the preview build. The BSB has four narrators above Listen offline, so the popup scrolls down to it: the tip's line, and the Offline Bible Audio row below it, which opens the downloads (#556), must show. The line doesn't say \"keeps stopping\", which Android's check reserves for the system's crash dialog. On the iPad, the dimmed page shows beside the popup, and Vision can read its words into the tip's line, so the rule finds the tip anywhere in a line. Vision once missed the Offline Bible Audio row's title there while reading the line below it (run 41836240862), so either line of the row shows it.",
+      "$comment": "The audio settings popup as the marked audio button opens it when playback keeps stopping to load (#595), by popup=audio-download-tip in the preview build. The BSB has four narrators above Listen offline, so the popup scrolls down to it: the tip's line, and the Offline Bible Audio row below it, which opens the downloads (#556), must show. The line doesn't say \"keeps stopping\", which Android's check reserves for the system's crash dialog. On the iPad, the dimmed page shows beside the popup, and Vision can read its words into the tip's line, so the rule finds the tip anywhere in a line. Vision once missed the Offline Bible Audio row's title there while reading the line below it (run 41836240862), so either line of the row shows it. The page also shows beside the iPad's form sheet (#867), so there Listen offline is found anywhere in a line.",
       "path": "bible?bookId=JHN&chapter=3&translationId=BSB&popup=audio-download-tip",
       "settings": { "dualLanguage": false, "pinyin": false },
       "variants": ["default"],
       "ipadVariants": ["landscape"],
-      "mustShowLines": ["\\bPlayback often stops", "^Listen offline$", "^(Offline Bible Audio|Download a book, a section, or the whole Bible)$"]
+      "mustShowLines": ["\\bPlayback often stops", { "line": "^Listen offline$", "platforms": ["ios", "android"] }, { "line": "\\bListen offline\\b", "platforms": ["ipad"] }, "^(Offline Bible Audio|Download a book, a section, or the whole Bible)$"]
     },
     {
       "name": "bible-long-chapter",
@@ -565,7 +578,7 @@
     {
       "name": "hymnal-selection",
       "group": "worship-and-you",
-      "$comment": "The hymnal page (#413): a carousel of the hymnals, the app language's first, then the picked hymnal's search and its hymns, each 1985 or 505 hymn with the other hymnal's number, a verse chip beside it (an English hymn's own, and a 505 hymn's 1985 equivalent's in Chinese, such as 詩篇 100 on 505's 1), and the 1985 and 505 hymns' Piano only videos (#424). Vision reads the 文A icon in a chip as XA and a row's treble clef as a character, so those lines are matched anywhere.",
+      "$comment": "The hymnal page (#413): a carousel of the hymnals, the app language's first, then the picked hymnal's search and its hymns, each 1985 or 505 hymn with the other hymnal's number, a verse chip beside it (an English hymn's own, and a 505 hymn's 1985 equivalent's in Chinese, such as 詩篇 100 on 505's 1), and the 1985 and 505 hymns' Piano only videos (#424). The Chinese interface shows the 505's titles in Traditional, which the hymnal keeps in Simplified (#795): 1. 在主寶座前, not 在主宝座前. Vision reads the 文A icon in a chip as XA and a row's treble clef as a character, so those lines are matched anywhere.",
       "path": "home/hymnal-selection",
       "checks": ["lightStatusBarIcons"],
       "variants": ["default", "zh"],
@@ -575,26 +588,47 @@
           "mustShowLines": ["^SDA Hymnal\\b", "^1985 Edition$", "Search by number, title", "\\b1\\. Praise to the Lord", "\\bPsalm 103:2-5\\b", "\\b505\\W+5$"]
         },
         "zh": {
-          "mustShowLines": ["^中文讚美詩$", "^505 ?版$", "按編號或標題搜尋", "\\b1\\. ?在主", "詩篇 ?100", "英文\\W*82$", "鋼琴伴奏"]
+          "mustShowLines": ["^中文讚美詩$", "^505 ?版$", "按編號或標題搜尋", "\\b1\\. ?在主", "詩篇 ?100", "英文\\W*82$", "鋼琴伴奏"],
+          "mustNotShowLines": ["宝座"]
         }
       }
     },
     {
+      "name": "hymnal-hymns",
+      "group": "worship-and-you",
+      "$comment": "The hymnal page scrolled past its carousel to its hymns, by section=hymns in a key-screens build, where the header shows the hymnal's name in a chip beside the search button, in Chinese at 150% (#797): 中文讚美詩 — 505 版 on one line, a little smaller where it must be, never with 版 alone on a second line, as it was at 150% on an Android phone. Vision may read the dash as 一.",
+      "path": "home/hymnal-selection?section=hymns",
+      "variants": ["zh-large"],
+      "ipadVariants": ["landscape-zh"],
+      "mustShowLines": ["^中文讚美詩\\W*505 ?版$"],
+      "mustNotShowLines": ["^版$", "^505 ?版$"]
+    },
+    {
       "name": "hymnal",
       "group": "worship-and-you",
-      "$comment": "A link to one hymn, as from the bulletin: the hymnal page opens on the SDA Hymnal with just that hymn, marked, its Chinese 505 number, its With singing and Piano only videos (#424), and Show all hymns. At the app's 200% text size the Chinese 505 · 16 chip must still show its whole number (a long label wraps inside the chip), and the buttons stack, so they and Show all hymns may fall below the shot. The hymnal's name and the hymn's title wrap at 200% too, so there only their first words are required.",
+      "$comment": "A link to one hymn, as from the bulletin: the hymnal page opens on the SDA Hymnal with just that hymn, marked, saying under its title that its sheet music opens on a web page (#795), its Chinese 505 number, its With singing and Piano only videos (#424), and Show all hymns. At the app's 200% text size the hymnal's name, the hymn's title and the note under it wrap, so there only their first words are required, and the Chinese 505 · 16 chip, the buttons and Show all hymns fall below the tab bar; hymnal-scrolled checks the chip there.",
       "path": "home/english-hymnal?hymnNum=12",
       "checks": ["lightStatusBarIcons"],
       "variants": ["default", "xl"],
       "ipadVariants": ["default", "landscape"],
-      "mustShowLines": [{ "line": "\\b505\\W+16$", "platforms": ["ios"] }],
       "mustNotShowLines": ["\\b1\\. Praise to the Lord", "\\b13\\. New Songs"],
       "variantRules": {
         "default": {
-          "mustShowLines": ["^SDA Hymnal\\b", "\\b12\\. Joyful, Joyful", "\\bWith singing\\b", "\\bPiano only\\b", "^Show all hymns$", "\\b505\\W+16$"]
+          "mustShowLines": ["^SDA Hymnal\\b", "\\b12\\. Joyful, Joyful", "^The sheet music opens\\b", "\\bWith singing\\b", "\\bPiano only\\b", "^Show all hymns$", "\\b505\\W+16$"]
         },
         "xl": { "mustShowLines": ["^SDA\\b", "^12\\. Joyful\\b"] }
       }
+    },
+    {
+      "name": "hymnal-scrolled",
+      "group": "worship-and-you",
+      "platforms": ["ios"],
+      "$comment": "The same link to one hymn at the app's 200% text size, scrolled past the carousel to the hymn by section=hymns in a key-screens build. Its Chinese 505 · 16 chip must still show its whole number there (a long label wraps inside the chip). Unscrolled, the hymn's title and the note under it (#810) push the chip below the tab bar on the iPhone (run 46025141242), and on the smaller Android phone it was below it before. The hymn's title may sit under the header, and the buttons stack, so they and Show all hymns may fall below the shot: the chip's number is this hymn's alone. The iPad takes its 200% too, in landscape as every screen is, for a person to look over.",
+      "path": "home/english-hymnal?hymnNum=12&section=hymns",
+      "variants": ["xl"],
+      "ipadVariants": ["landscape-xl"],
+      "mustShowLines": [{ "line": "\\b505\\W+16$", "platforms": ["ios"] }],
+      "mustNotShowLines": ["\\b1\\. Praise to the Lord", "\\b13\\. New Songs"]
     },
     {
       "name": "hymnal-chinese",
@@ -633,7 +667,7 @@
     {
       "name": "bulletin-program",
       "group": "worship-and-you",
-      "$comment": "The made-up bulletin's worship program, scrolled into view by section=program, in a key-screens build only (#456): its heading near the top, then the rows with a person and a hymn or prayer under them, and the hymns' and the Bible verses' buttons. The program's first hymn has a Chinese title, so the Chinese shot shows it, and the offering prayer's name is withheld, which shows in the reader's language. Vision reads each button's icon before its label, as • or a character.",
+      "$comment": "The made-up bulletin's worship program, scrolled into view by section=program, in a key-screens build only (#456): its heading near the top, then the rows with a person and a hymn or prayer under them, and the hymns' and the Bible verses' buttons. The program's first hymn has a Chinese title, so the Chinese shot shows it, in Traditional although the hymnal keeps it in Simplified (#795), and the offering prayer's name is withheld, which shows in the reader's language. Vision reads each button's icon before its label, as • or a character.",
       "path": "home/bulletin?section=program",
       "variants": ["default", "zh"],
       "ipadVariants": ["landscape"],
@@ -642,8 +676,8 @@
           "mustShowLines": [{ "line": "^Worship Program$", "maxTop": 0.35 }, "^Doxology$", "^Jonathan P\\.$", "^12\\. Joyful, Joyful, We Adore Thee$", "^Psalms 46:1-3$", "\\bRead now$", "^Michael H\\.$"]
         },
         "zh": {
-          "mustShowLines": [{ "line": "^崇拜程序$", "maxTop": 0.35 }, "^16\\. ?快乐颂$", "^詩篇 ?46:1-3$", "立即閱讀$"],
-          "mustNotShowLines": ["Name withheld"]
+          "mustShowLines": [{ "line": "^崇拜程序$", "maxTop": 0.35 }, "^16\\. ?快樂頌$", "^詩篇 ?46:1-3$", "立即閱讀$"],
+          "mustNotShowLines": ["Name withheld", "快乐颂"]
         }
       },
       "changesDaily": true
@@ -696,22 +730,36 @@
     {
       "name": "discover",
       "group": "home",
-      "$comment": "xl-ios-large-text: the app at 200% with the iPhone's accessibility-large text, held to 3.2× by the combined cap. The two-column cards' titles stay at the default 1.25× (#387), so \"About Denomination\" must keep \"Denomination\" whole instead of breaking it as \"Den / omination\". xl-android-font-max is the same case on Android, at its largest font. es-default-text is Spanish at the app's default 125%: on the Android phone's 384 points, \"Compañerismo\" was wider than its card's title, so each card shrinks its grid's text just enough to keep the widest word whole (#324). Its ñ may read as another letter.",
+      "$comment": "xl-ios-large-text: the app at 200% with the iPhone's accessibility-large text, held to 3.2× by the combined cap. The cards stay two a row at every size (#387), so their titles, icons and heights grow with the text up to the largest size at which the grid's widest word fits a card, and stop there: \"About Denomination\" must keep \"Denomination\" whole instead of breaking it as \"Den / omination\", and \"Locations\" must start past the middle, beside it. On the Android phone \"Denomination\" must also be at least 34% of the screen's width: until 1.9.2 the titles stopped at the default 1.25× while the icons grew on, and it was 32%, small under a large icon; at its cap it's 36%. xl-android-font-max is the same case on Android, at its largest font. es-default-text is Spanish at the app's default 125%: on the Android phone's 384 points, \"Compañerismo\" was wider than its card's title, and the text shrank to fit (#324); the title now has its card's whole width, and it must still show whole. Its ñ may read as another letter.",
       "path": "home/discover",
       "variants": ["default", "zh", "es-default-text", "xl-ios-large-text", "xl-android-font-max"],
       "ipadVariants": ["default", "landscape"],
       "variantRules": {
         "es-default-text": { "mustShowLines": ["^Compa.erismo$"] },
-        "xl-ios-large-text": { "mustShowLines": ["\\bDenomination$"] },
-        "xl-android-font-max": { "mustShowLines": ["\\bDenomination$"] }
+        "xl-ios-large-text": { "mustShowLines": ["\\bDenomination$", { "line": "^Locations\\b", "minLeft": 0.5 }] },
+        "xl-android-font-max": { "mustShowLines": [{ "line": "\\bDenomination$", "minWidth": 0.34 }, { "line": "^Locations\\b", "minLeft": 0.5 }] }
       }
     },
     {
       "name": "about-sda",
       "group": "home",
+      "$comment": "About Denomination: its three pillars, plain content under the description, an icon over each label, with no card or border, which made them look like buttons that did nothing (#819). At the default 125%, \"Bible-Centered\" broke mid-word on an Android phone as \"Bible-Cente\" / \"red\"; it may break only after its hyphen, so it shows whole on one line or as Bible- over Centered, never ending a line in Cente or starting one with red. The Android phone's shot ends above the pillars, so only the iPhone's must show them; test/pillar-list.test.ts checks the Android phone's widths.",
       "path": "home/about-sda",
       "variants": ["default", "es"],
-      "ipadVariants": ["landscape"]
+      "ipadVariants": ["landscape"],
+      "variantRules": {
+        "default": {
+          "mustShowLines": [
+            { "line": "^(Bible-)?Centered$", "platforms": ["ios"] },
+            { "line": "^Faith & Love$", "platforms": ["ios"] },
+            { "line": "^Community$", "platforms": ["ios"] }
+          ],
+          "mustNotShowLines": ["Cente$", "^(t?e?red)$"]
+        },
+        "es": {
+          "mustShowLines": [{ "line": "^Fe y Amor$", "platforms": ["ios"] }, { "line": "^Comunidad$", "platforms": ["ios"] }]
+        }
+      }
     },
     {
       "name": "about-my-church",
@@ -800,31 +848,66 @@
     {
       "name": "text-size",
       "group": "worship-and-you",
-      "$comment": "The Text size dialog, opened by popup=text-size (#372): an X beside its title, and Reset the only button at its foot, with no Apply, since a size takes effect as it changes (#464). At 200% its text runs past the popups' height limit (POPUP_MAX_HEIGHT_FRACTION in styles/PopupStyles.ts), so the dialog stops there and its text scrolls, leaving room around it to tap. Its title is also on the You screen behind it, so the rules require lines only the dialog shows. The iPad saves no text size, so its shot shows the size a tablet starts at, 150%, and Reset returns there (#324).",
+      "$comment": "The Text size dialog, opened by popup=text-size (#372): an X beside its title, and Reset the only button at its foot, with no Apply, since a size takes effect as it changes (#464). It's a bottom sheet (#867) that opens at its content's height and keeps that height while open, so the preview doesn't jump as the text grows: at 200% it reaches full height and its text scrolls. Its title is also on the You screen behind it, so the rules require lines only the dialog shows. The iPad saves no text size, so its shot shows the size a tablet starts at, 150%, and Reset returns there (#324). zh-large is Traditional Chinese at 150%, where the sample, the last thing in the dialog, was cut off at its third line, 9:25, below the height limit (#797): the −5% and +5% buttons now sit either side of the slider where they fit, and the reference 約翰福音 9:25 moves to its line whole, which must show, ending the sample.",
       "path": "you?popup=text-size",
-      "variants": ["default", "xl"],
+      "variants": ["default", "xl", "zh-large"],
       "ipadVariants": ["default", "landscape", "landscape-xl"],
-      "mustShowLines": [
-        "^Current selection",
-        { "line": "^Reset to 125%", "platforms": ["ios", "android"] },
-        { "line": "^Reset to 150%", "platforms": ["ipad"] }
-      ],
       "variantRules": {
-        "default": { "mustShowLines": [{ "line": "^Current selection: 150%", "platforms": ["ipad"] }] }
+        "default": {
+          "mustShowLines": [
+            "^Current selection",
+            { "line": "^Reset to 125%", "platforms": ["ios", "android"] },
+            { "line": "^Reset to 150%", "platforms": ["ipad"] },
+            { "line": "^Current selection: 150%", "platforms": ["ipad"] }
+          ]
+        },
+        "xl": { "mustShowLines": ["^Current selection", "^Reset to 125%"] },
+        "landscape": { "mustShowLines": ["^Current selection", "^Reset to 150%"] },
+        "landscape-xl": { "mustShowLines": ["^Current selection", "^Reset to 150%"] },
+        "zh-large": { "mustShowLines": ["^目前選擇[:：] ?150%", "約翰福音 ?9[:：]25$", "^重設為 ?125%"], "mustNotShowLines": ["^9[:：]25$"] }
       },
       "mustNotShowLines": ["^Apply$", "^Close$"]
     },
     {
-      "$comment": "You → Contrast (#669): light mode and dark mode, each with high contrast, the default, and standard, with a picture of the tab bar in each. A setting, not a question, so it has an X, which Vision doesn't read as a word. Dark mode is below the fold on a phone.",
+      "$comment": "You → Contrast (#669): light mode and dark mode, each with high contrast, the default, and standard, with a picture of the tab bar in each. A setting, not a question, so it has an X, which Vision doesn't read as a word. Dark mode is below the fold on a phone. standard-contrast-dark opens it in the dark theme with dark mode set to Standard, the last option, which the sheet scrolls into view (#867): before that fix the sheet didn't scroll and it was out of reach.",
       "name": "contrast",
       "group": "worship-and-you",
       "path": "you?popup=contrast",
-      "variants": ["default", "zh"],
-      "ipadVariants": ["landscape"],
-      "mustNotShowLines": ["^Close$", "^Apply$"],
+      "variants": [
+        "default",
+        "zh",
+        "standard-contrast-dark"
+      ],
+      "ipadVariants": [
+        "landscape"
+      ],
+      "mustNotShowLines": [
+        "^Close$",
+        "^Apply$"
+      ],
       "variantRules": {
-        "default": { "mustShowLines": ["^Contrast$", "^Light mode$", "^High contrast$", "^Standard$"] },
-        "zh": { "mustShowLines": ["^對比度$", "^淺色模式$", "^高對比度$", "^標準$"] }
+        "default": {
+          "mustShowLines": [
+            "^Contrast$",
+            "^Light mode$",
+            "^High contrast$",
+            "^Standard$"
+          ]
+        },
+        "zh": {
+          "mustShowLines": [
+            "^對比度$",
+            "^淺色模式$",
+            "^高對比度$",
+            "^標準$"
+          ]
+        },
+        "standard-contrast-dark": {
+          "mustShowLines": [
+            "^Dark mode$",
+            "^Standard$"
+          ]
+        }
       }
     },
     {
@@ -914,22 +997,48 @@
     {
       "name": "language",
       "group": "worship-and-you",
-      "$comment": "The Language dialog, opened by popup=language (#372): an X beside its title and no Close button (#464), and each language a card with a picture of the tab bar in it (#681). Its title is also on the You screen behind it, so the rules require an option's description, which only the dialog shows. The pictures leave Simplified Chinese below the fold on a phone.",
+      "$comment": "The Language sheet, opened by popup=language (#372): an X beside its title and no Close button (#464), and each language a card with a picture of the tab bar in it (#681), named only in its own language (#867), so no English name such as Traditional Chinese under it. It opens at its whole height, so all four show at once. Its title is also on the You screen behind it, and English is the language the You screen names, so the rules require Español, which only the sheet shows. dark shows a sheet in the dark theme's high contrast, the night blue of the floating bars (#867).",
       "path": "you?popup=language",
-      "variants": ["default"],
+      "variants": ["default", "dark"],
       "ipadVariants": ["landscape"],
-      "mustShowLines": ["^Traditional Chinese"],
-      "mustNotShowLines": ["^Close$"]
+      "mustShowLines": ["^Español$"],
+      "mustNotShowLines": ["^Close$", "^Traditional Chinese", "^Simplified Chinese", "^Spanish$"]
     },
     {
       "name": "theme",
       "group": "worship-and-you",
-      "$comment": "The Theme dialog, opened by popup=theme: each theme a card with a picture of a page and its tab bar in it, light and dark side by side for System and Sunrise/Sunset (#681), with an X beside its title. Its title is also on the You screen behind it, so the rules require System's description, which only the dialog shows.",
+      "$comment": "The Theme dialog, opened by popup=theme: each theme a card with a picture of a page and its tab bar in it, light and dark side by side for System and Sunrise/Sunset (#681), with an X beside its title. Its title is also on the You screen behind it, so the rules require System's description, which only the dialog shows. xl-dark is the dark theme at 200% text: the sheet opens with Dark, the last option and the current one, scrolled into view with its description, which shows that a full-height sheet scrolls (#867). Before that fix it didn't, and Dark was cut off. On the iPhone the sheet doesn't scroll to its current choice yet (#876), as with the Bible's lists, so there xl-dark checks the options that show at its top, down to Light. At 200% the description can wrap after \"Always use the\", which the text readers read as a line of its own, so its rule matches either the start or the end (\"dark theme\"; \"light theme\" on iOS).",
       "path": "you?popup=theme",
-      "variants": ["default"],
-      "ipadVariants": ["landscape"],
-      "mustShowLines": ["^Follow your device"],
-      "mustNotShowLines": ["^Close$"]
+      "variants": [
+        "default",
+        "xl-dark"
+      ],
+      "ipadVariants": [
+        "landscape"
+      ],
+      "mustNotShowLines": [
+        "^Close$"
+      ],
+      "variantRules": {
+        "default": {
+          "mustShowLines": [
+            "^Follow your device"
+          ]
+        },
+        "landscape": {
+          "mustShowLines": [
+            "^Follow your device"
+          ]
+        },
+        "xl-dark": {
+          "mustShowLines": [
+            { "line": "^Dark$", "platforms": ["android"] },
+            { "line": "(^Always use the dark|\\bdark theme)\\b", "platforms": ["android"] },
+            { "line": "^Light$", "platforms": ["ios"] },
+            { "line": "(^Always use the light|\\blight theme)\\b", "platforms": ["ios"] }
+          ]
+        }
+      }
     },
     {
       "name": "licenses",
@@ -978,7 +1087,7 @@
         "$comment": "The audio settings over that Bible, opened by popup=audio-settings: Reina-Valera 1909's Spanish narration, Listen offline, and the preferred source, HelloAO first, then the church's copy (#770). Spanish's sets show it where English's show the CUV's Mandarin and Cantonese (Google Play) or the Bible with the Chinese interface (the App Store): Spanish and English, no Chinese (user, 2026-11-09). The sets taken before #770 show only NYCCSDA.org under Fuente preferida, with room below it on the iPhone and the Android phone.",
         "path": "bible?bookId=PSA&chapter=23&translationId=spa_r09&popup=audio-settings",
         "settings": { "dualLanguage": true, "supportingTranslation": "BSB", "pinyin": false },
-        "mustShowLines": [{ "line": "^Ajustes de audio$", "maxTop": 0.4 }, "Reina-Valera", "^Escuchar sin conexi.n$", "^HelloAO$"],
+        "mustShowLines": [{ "line": "^Ajustes de audio$", "minTop": 0.4, "platforms": ["ios", "android"] }, { "line": "^Ajustes de audio$", "platforms": ["ipad"] }, "Reina-Valera", "^Escuchar sin conexi.n$", "^HelloAO$"],
         "mustNotShowLines": ["^Cerrar$", "Mandar.n", "Canton.s"]
       }
     ],

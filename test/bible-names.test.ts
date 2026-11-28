@@ -5,6 +5,7 @@ import { getBookPillAbbreviation } from '@/services/BibleBookAbbreviations';
 import {
   formatBookName,
   formatBookReference,
+  formatChapterTitle,
   formatReference,
   formatTwoLanguageName,
   getBookListName,
@@ -191,7 +192,38 @@ describe('the Bible screen names books as #723 asks', () => {
     expect(share).toContain('const reference = `${book.name} ${chapterNum}:${rangeString}`;');
     expect(share).toContain('const message = `"${fullText}"\\n\\n— ${reference} (${translation})`;');
     expect(share).not.toMatch(/getBook\w+Name|formatBook\w+|formatReference|formatTwoLanguageName/);
-    // So does the lock screen's Now Playing title, which names the recording.
-    expect(source).toContain('`${book?.name || labels.bible} ${chapterNum}`,');
+    // So does the lock screen's Now Playing title, which names the recording,
+    // in its own words since #804: 約翰福音 第 3 章.
+    expect(source).toContain('formatChapterTitle(chapterBook.name, chapter, supportedTranslation.lang)');
+    expect(source).toContain('book ? getAudioChapterTitle(book, chapterNum) : `${labels.bible} ${chapterNum}`');
+  });
+});
+
+describe('A chapter on the lock screen and in the media notification (#804)', () => {
+  it("names the recording in its translation's words, as its chapter list does", () => {
+    expect(formatChapterTitle('約翰福音', 3, 'zh')).toBe('約翰福音 第 3 章');
+    expect(formatChapterTitle('约翰福音', 3, 'zh-cn')).toBe('约翰福音 第 3 章');
+    expect(formatChapterTitle('John', 3, 'en')).toBe('John 3');
+    expect(formatChapterTitle('Juan', 3, 'es')).toBe('Juan 3');
+  });
+
+  it('is what the Android audio e2e looks for, since every scenario plays the CUV', async () => {
+    // #821 changed these titles and the e2e's checks together, but the checks
+    // looked for "Psalm 118," while the CUV's chapter is 詩篇 第 118 章, so
+    // every title check on the 1.9.2 release PR timed out on a playing chapter.
+    const script = readFileSync('scripts/e2e/android-bible-audio.sh', 'utf8');
+    const checks = [...script.matchAll(/\b(?:playing_with_title|paused_with_title|title_has) '([^']+)'/g)].map(
+      ([, check]) => check,
+    );
+    expect(checks.length).toBeGreaterThanOrEqual(12);
+    const titles = new Set(
+      (await fetchBooks('cmn_cuv')).flatMap((book) =>
+        Array.from(
+          { length: book.numberOfChapters },
+          (_, index) => `${formatChapterTitle(book.name, index + 1, languageOf('cmn_cuv'))},`,
+        ),
+      ),
+    );
+    for (const check of checks) expect({ check, isChapterTitle: titles.has(check) }).toEqual({ check, isChapterTitle: true });
   });
 });

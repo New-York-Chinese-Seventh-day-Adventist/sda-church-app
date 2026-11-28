@@ -1,10 +1,15 @@
 import { AppIcon } from '@/components/AppIcon';
+import { SheetContext } from '@/components/SheetContext';
 import { useAppTheme } from '@/constants/Themes';
+import { MIN_TAP_TARGET } from '@/styles/ReaderStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   type ComponentRef,
+  createContext,
+  type ReactNode,
   forwardRef,
   useCallback,
+  useContext,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -16,6 +21,7 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   type ScrollViewProps,
   type StyleProp,
@@ -30,8 +36,12 @@ import {
  * scrolling, and a popup ends cleanly at its height limit. So while there's
  * more below, the bottom edge fades and a ⌄ in a circle sits above it; once the content
  * has scrolled, the top edge fades too; and the scroll bar flashes once when a
- * popup opens with more than fits. The hints are decorative: they don't take
- * taps or screen-reader focus.
+ * popup opens with more than fits. The fades are decorative and let taps
+ * through. The ⌄ looks like a button, so it is one: a tap on it scrolls down
+ * most of a page, and never reaches the row under it, which once opened
+ * 1 Samuel from the Bible's book list (#794). Its tap target is at least 44
+ * points square. Screen readers scroll a list themselves, so it's hidden from
+ * them, as the fades are.
  */
 
 // Within this many points of an edge counts as at it, so rounding doesn't
@@ -49,6 +59,16 @@ export const getScrollHints = ({ offset, viewport, content }: ScrollMetrics) => 
   above: viewport > 0 && offset > EDGE,
   below: viewport > 0 && offset + viewport < content - EDGE,
 });
+
+/**
+ * Where a tap on the ⌄ scrolls to: down a page, less the two fades, so what
+ * showed faded at the bottom ends up just below the top fade. A short popup
+ * still moves at least half its height, and it stops at the end.
+ */
+export const getScrollDownOffset = ({ offset, viewport, content }: ScrollMetrics) => {
+  const step = Math.max(viewport - 2 * FADE_HEIGHT, viewport / 2);
+  return Math.max(0, Math.min(offset + step, content - viewport));
+};
 
 // `color` with alpha 0, so a fade into it doesn't pass through grey.
 const transparent = (color: string) =>
@@ -69,6 +89,11 @@ export function usePopupScrollHints(handlers: ScrollHandlers = {}, flash?: () =>
   const hints = getScrollHints(metrics);
   const flashed = useRef(false);
   const { onLayout, onContentSizeChange, onScroll } = handlers;
+  // A sheet sizes itself to its content (#867).
+  const { reportScroll } = useContext(SheetContext);
+  useEffect(() => {
+    if (metrics.viewport > 0 || metrics.content > 0) reportScroll?.(metrics.viewport, metrics.content);
+  }, [metrics.content, metrics.viewport, reportScroll]);
 
   useEffect(() => {
     if (hints.below && !flashed.current) {
@@ -108,13 +133,20 @@ export function usePopupScrollHints(handlers: ScrollHandlers = {}, flash?: () =>
     scrollEventThrottle: handlers.scrollEventThrottle ?? 16,
   };
 
-  return { hints, scrollProps };
+  return { hints, metrics, scrollProps };
 }
 
-/** The fades and ⌄ over a popup's scrolling content, from usePopupScrollHints. */
-export function PopupScrollHints({ hints }: Readonly<{ hints: ReturnType<typeof getScrollHints> }>) {
+/**
+ * The fades and ⌄ over a popup's scrolling content, from usePopupScrollHints.
+ * onScrollDown scrolls the content when the ⌄ is tapped.
+ */
+export function PopupScrollHints({
+  hints,
+  onScrollDown,
+}: Readonly<{ hints: ReturnType<typeof getScrollHints>; onScrollDown: () => void }>) {
   const theme = useAppTheme();
-  const background = theme.colors.background;
+  // A sheet's own colour, or the canvas in a centred dialog.
+  const background = useContext(SheetContext).surfaceColor ?? theme.colors.background;
   const clear = transparent(background);
 
   return (
@@ -128,28 +160,104 @@ export function PopupScrollHints({ hints }: Readonly<{ hints: ReturnType<typeof 
         />
       )}
       {hints.below && (
+        // box-none: only the ⌄'s button takes taps; beside it, they reach the row.
         <View
           testID="popup-scroll-hint-below"
-          pointerEvents="none"
+          pointerEvents="box-none"
           importantForAccessibility="no-hide-descendants"
           accessibilityElementsHidden
-          style={[styles.fade, styles.bottom]}
+          style={styles.below}
         >
-          <LinearGradient colors={[clear, background]} style={StyleSheet.absoluteFill} />
-          <View style={[styles.circle, { backgroundColor: theme.colors.primary }]}>
-            <AppIcon
-              name="chevron-down"
-              size={CHEVRON_SIZE}
-              scaleWithText={false}
-              color={theme.colors.onPrimary}
-              pointerEvents="none"
-            />
-          </View>
+          <LinearGradient
+            pointerEvents="none"
+            colors={[clear, background]}
+            style={[styles.fade, styles.bottom]}
+          />
+          <Pressable
+            testID="popup-scroll-more"
+            onPress={onScrollDown}
+            style={({ pressed }) => [styles.more, pressed && styles.morePressed]}
+          >
+            <View style={[styles.circle, { backgroundColor: theme.colors.primary }]}>
+              <AppIcon
+                name="chevron-down"
+                size={CHEVRON_SIZE}
+                scaleWithText={false}
+                color={theme.colors.onPrimary}
+                pointerEvents="none"
+              />
+            </View>
+          </Pressable>
         </View>
       )}
     </>
   );
 }
+
+/**
+ * Where to scroll so a popup's current choice shows when it opens (#867):
+ * nowhere if it already shows from the top; otherwise with it in the middle,
+ * as far as the content goes.
+ */
+export const getRevealOffset = ({
+  top,
+  height,
+  viewport,
+  content,
+}: Readonly<{ top: number; height: number; viewport: number; content: number }>) => {
+  if (top + height <= viewport) return 0;
+  return Math.max(0, Math.min(top - (viewport - height) / 2, content - viewport));
+};
+
+// How long a popup's layout must stay still before its current choice is
+// scrolled into view: a sheet settles at its height after it opens.
+const REVEAL_SETTLE_MS = 150;
+
+type HostView = ComponentRef<typeof View>;
+
+/** A popup's ScrollView takes its current choice's view, to scroll it into view. */
+const PopupRevealContext = createContext<((view: HostView | null) => void) | null>(null);
+
+/**
+ * For a choice in a popup's list: when it's the current one, the popup
+ * scrolls it into view as it opens, so the current choice always shows
+ * (#867). Spread on the choice's own view.
+ */
+export function useRevealWhenSelected(selected: boolean) {
+  const reveal = useContext(PopupRevealContext);
+  const ref = useRef<HostView>(null);
+  const onLayout = useCallback(() => {
+    if (selected) reveal?.(ref.current);
+  }, [reveal, selected]);
+  return { ref, onLayout };
+}
+
+/** A row of a popup's list, scrolled into view as the popup opens when it's the current choice. */
+export function RevealIfSelected({ children, selected }: Readonly<{ children: ReactNode; selected: boolean }>) {
+  const { ref, onLayout } = useRevealWhenSelected(selected);
+  return (
+    <View ref={ref} onLayout={onLayout} collapsable={false}>
+      {children}
+    </View>
+  );
+}
+
+/** The ⌄'s height, and the fade's: what the hint covers at a list's foot. */
+const HINT_CLEARANCE = Math.max(FADE_HEIGHT, MIN_TAP_TARGET);
+
+/**
+ * In a sheet, room at the foot of the content for the ⌄ (#867): a sheet's
+ * last row can then always scroll clear of it. At half height the bottom
+ * row showing often sat under the ⌄, whose tap scrolls rather than opening
+ * the row (Audio settings' Offline Bible Audio).
+ */
+const useSheetFootRoom = (contentContainerStyle: StyleProp<ViewStyle>) => {
+  const inSheet = Boolean(useContext(SheetContext).reportScroll);
+  if (!inSheet) return contentContainerStyle;
+  const base = StyleSheet.flatten(contentContainerStyle) ?? {};
+  const own = base.paddingBottom ?? base.paddingVertical ?? base.padding ?? 0;
+  return [contentContainerStyle, { paddingBottom: (typeof own === 'number' ? own : 0) + HINT_CLEARANCE }];
+};
 
 // Around a popup's ScrollView or FlatList and its hints: it shrinks to the
 // popup's height limit as the list alone did, and minHeight 0 lets it shrink
@@ -170,38 +278,152 @@ export const PopupScrollView = forwardRef<ScrollViewRef, ScrollViewProps & { fra
   const scrollRef = useRef<ScrollViewRef>(null);
   useImperativeHandle(ref, () => scrollRef.current as ScrollViewRef);
   const flash = useCallback(() => scrollRef.current?.flashScrollIndicators(), []);
-  const { hints, scrollProps } = usePopupScrollHints(
+  const { hints, metrics, scrollProps } = usePopupScrollHints(
     { onLayout, onContentSizeChange, onScroll, scrollEventThrottle },
     flash,
   );
+  const scrollDown = () => scrollRef.current?.scrollTo({ y: getScrollDownOffset(metrics), animated: true });
+  const { nestedScrollEnabled } = useContext(SheetContext);
+
+  // The current choice, once the layout has settled, scrolled into view.
+  // Again each time the view settles at a new height, as a sheet does while
+  // it opens, until the member scrolls it.
+  const selected = useRef<HostView | null>(null);
+  const memberScrolled = useRef(false);
+  const revealedFor = useRef('');
+  const [selectedTick, setSelectedTick] = useState(0);
+  const reveal = useCallback((view: HostView | null) => {
+    if (memberScrolled.current || !view) return;
+    selected.current = view;
+    setSelectedTick((tick) => tick + 1);
+  }, []);
+  const { viewport: revealViewport, content: revealContent } = metrics;
+  useEffect(() => {
+    const view = selected.current;
+    const inner = scrollRef.current?.getInnerViewRef?.();
+    const key = `${revealViewport}:${revealContent}:${selectedTick}`;
+    if (memberScrolled.current || revealedFor.current === key) return;
+    if (!view || !inner || !(revealViewport > 0) || !(revealContent > 0)) return;
+    const timer = setTimeout(() => {
+      view.measureLayout(
+        inner as unknown as HostView,
+        (_x, top, _width, height) => {
+          if (memberScrolled.current) return;
+          revealedFor.current = key;
+          const y = getRevealOffset({ top, height, viewport: revealViewport, content: revealContent });
+          if (y > 0) scrollRef.current?.scrollTo({ y, animated: false });
+        },
+        () => undefined,
+      );
+    }, REVEAL_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [revealContent, revealViewport, selectedTick]);
+  const { onScrollBeginDrag } = props;
+  const onMemberScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      memberScrolled.current = true;
+      onScrollBeginDrag?.(event);
+    },
+    [onScrollBeginDrag],
+  );
+  const footRoom = useSheetFootRoom(props.contentContainerStyle);
 
   return (
-    <View style={[popupFrameStyle, frameStyle]}>
-      <ScrollView ref={scrollRef} {...props} {...scrollProps} />
-      <PopupScrollHints hints={hints} />
-    </View>
+    <PopupRevealContext.Provider value={reveal}>
+      <View style={[popupFrameStyle, frameStyle]}>
+        <ScrollView
+          ref={scrollRef}
+          nestedScrollEnabled={nestedScrollEnabled}
+          {...props}
+          {...scrollProps}
+          contentContainerStyle={footRoom}
+          onScrollBeginDrag={onMemberScroll}
+        />
+        <PopupScrollHints hints={hints} onScrollDown={scrollDown} />
+      </View>
+    </PopupRevealContext.Provider>
   );
 });
 
-/** A popup's FlatList, with the hints, as PopupScrollView is for a ScrollView. */
+/**
+ * A popup's FlatList, with the hints, as PopupScrollView is for a ScrollView.
+ * selectedIndex is the current choice's row, scrolled into view as the popup
+ * opens (#867).
+ */
 export function PopupFlatList<ItemT>({
   onLayout,
   onContentSizeChange,
   onScroll,
   scrollEventThrottle,
+  selectedIndex,
   ...props
-}: FlatListProps<ItemT>) {
+}: FlatListProps<ItemT> & { selectedIndex?: number }) {
   const listRef = useRef<FlatList<ItemT>>(null);
   const flash = useCallback(() => listRef.current?.flashScrollIndicators(), []);
-  const { hints, scrollProps } = usePopupScrollHints(
+  const { hints, metrics, scrollProps } = usePopupScrollHints(
     { onLayout, onContentSizeChange, onScroll, scrollEventThrottle },
     flash,
   );
+  const scrollDown = () =>
+    listRef.current?.scrollToOffset({ offset: getScrollDownOffset(metrics), animated: true });
+  const { nestedScrollEnabled } = useContext(SheetContext);
+
+  // The current choice, once the layout has settled, in the middle of the
+  // list: again each time the list settles at a new height, as a sheet does
+  // while it opens (iOS stopped short at chapter 9 of 23 when it scrolled
+  // once, before the sheet had its height), until the member scrolls it.
+  const memberScrolled = useRef(false);
+  const revealedFor = useRef('');
+  useEffect(() => {
+    if (memberScrolled.current || selectedIndex === undefined || selectedIndex < 1) return;
+    if (!(metrics.viewport > 0) || !(metrics.content > 0)) return;
+    const key = `${metrics.viewport}:${selectedIndex}`;
+    if (revealedFor.current === key) return;
+    const timer = setTimeout(() => {
+      if (memberScrolled.current) return;
+      revealedFor.current = key;
+      listRef.current?.scrollToIndex({ animated: false, index: selectedIndex, viewPosition: 0.5 });
+    }, REVEAL_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [metrics.content, metrics.viewport, selectedIndex]);
+  const { onScrollBeginDrag } = props;
+  const onMemberScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      memberScrolled.current = true;
+      onScrollBeginDrag?.(event);
+    },
+    [onScrollBeginDrag],
+  );
+  // A row not drawn yet: scroll near it, by the rows' average height, then to it.
+  const onScrollToIndexFailed = useCallback(
+    ({ averageItemLength, index }: { averageItemLength: number; index: number }) => {
+      listRef.current?.scrollToOffset({ animated: false, offset: averageItemLength * index });
+      setTimeout(
+        () => listRef.current?.scrollToIndex({ animated: false, index, viewPosition: 0.5 }),
+        REVEAL_SETTLE_MS,
+      );
+    },
+    [],
+  );
+  const footRoom = useSheetFootRoom(props.contentContainerStyle);
 
   return (
     <View style={popupFrameStyle}>
-      <FlatList ref={listRef} {...props} {...scrollProps} />
-      <PopupScrollHints hints={hints} />
+      <FlatList
+        ref={listRef}
+        nestedScrollEnabled={nestedScrollEnabled}
+        onScrollToIndexFailed={onScrollToIndexFailed}
+        // Every row down to the current choice and a screen past it is drawn
+        // at once, so the list can scroll to it. On iOS a book list, whose
+        // headings make rows of two heights, stopped short at Esther when it
+        // had to guess where unseen rows were (#867).
+        initialNumToRender={selectedIndex !== undefined && selectedIndex > 0 ? selectedIndex + 15 : undefined}
+        {...props}
+        {...scrollProps}
+        contentContainerStyle={footRoom}
+        onScrollBeginDrag={onMemberScroll}
+      />
+      <PopupScrollHints hints={hints} onScrollDown={scrollDown} />
     </View>
   );
 }
@@ -214,12 +436,25 @@ const styles = StyleSheet.create({
     right: 0,
   },
   top: { top: 0 },
-  bottom: {
+  bottom: { bottom: 0 },
+  // The fade at the bottom, and above it the ⌄'s button, which is taller.
+  below: {
     alignItems: 'center',
     bottom: 0,
+    height: Math.max(FADE_HEIGHT, MIN_TAP_TARGET),
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
+  // The ⌄ sits 4 points above the bottom edge, as it did before it took taps.
+  more: {
+    alignItems: 'center',
+    height: MIN_TAP_TARGET,
     justifyContent: 'flex-end',
     paddingBottom: 4,
+    width: MIN_TAP_TARGET,
   },
+  morePressed: { opacity: 0.7 },
   circle: {
     alignItems: 'center',
     borderRadius: CIRCLE_SIZE / 2,

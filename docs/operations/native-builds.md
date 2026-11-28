@@ -868,8 +868,8 @@ and the copies pass all 123.
 
 #### Key screens
 
-The five runners screenshot the 63 screens listed in `test/screens/screens.json`, 142
-shots in all, so a layout problem on iPhone shows up before release rather than in
+The five runners screenshot the 68 screens listed in `test/screens/screens.json`, 149
+iPhone shots in all, so a layout problem on iPhone shows up before release rather than in
 TestFlight (#331). Each runner then takes its group's iPad shots; see
 [iPad key screens](#ipad-key-screens). Each runner takes one group (`--group <name>`) of related
 screens, such as the Bible reader's layout or the library, listed under `groups` in
@@ -921,7 +921,9 @@ iPhone or Android, or 8 on the iPad. The limit is a reminder to prune, not a rul
    Sabbath School's `popup=lesson-viewer` downloads the Beginner student lesson and
    opens it, as a tap would. The bulletin's path can ask for a state no tap brings
    about (`getScreenshotState`, #456): `state=load-failed`, a bulletin that couldn't
-   load, or `section=program`, the page scrolled to its worship program.
+   load, or `section=program`, the page scrolled to its worship program. So can the
+   hymnal page's: `section=hymns`, scrolled past its carousel to its hymns, where the
+   header shows the hymnal's name (#797).
 
    **Made-up data.** These screenshots, the text read from them, and the run's
    downloads are public, so the pages that show members' names or faces show made-up
@@ -1712,6 +1714,21 @@ the code. Since #428 it also removes unused resources
 JavaScript loads by name, so Expo's bundler lists them in a `keep.xml` file and the
 shrinker keeps everything on that list. If an image is missing only from a release
 build, check that it's listed in `android/app/build/generated/res/react/release/raw/keep.xml`.
+
+Android's media notification needs a patch to expo-audio 58 (#804). expo-audio wraps
+the player it gives the media session in `MetadataInjectingPlayer`, which passes on only
+two of the player's events, so the session never heard that the next chapter started,
+that a seek moved the position, or that playback resumed. The notification's progress
+bar and play button are drawn from what the session last heard.
+`scripts/patch-expo-audio.cjs` adds the missing calls to expo-audio's Kotlin source in
+`node_modules`. Expo 58 links a prebuilt copy of each module by default, which the patch
+can't reach, so `package.json` has Android build expo-audio from source
+(`expo.autolinking.android.buildFromSource`).
+`scripts/build-android-native.mjs` runs the patch before every Android build,
+and stops if it no longer fits the installed expo-audio. `test/expo-audio-patch.test.ts`
+fails when an expo-audio or Media3 update needs the patch checked again. Delete the
+patch once expo-audio passes every call on itself. A build started another way, such as
+`npx expo run:android`, needs `node scripts/patch-expo-audio.cjs` first.
 
 Phones stay in portrait on both platforms. On the iPhone, `"orientation": "portrait"` in
 `app.json` does it. The iPad turns every way (#324): its own

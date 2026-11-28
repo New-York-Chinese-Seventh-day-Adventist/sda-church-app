@@ -8,12 +8,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const sourceRoots = ['app', 'components', 'styles'];
+// features/ holds whole screens too, such as the hymnal page, whose title and
+// rows must follow the saved size as the app's own screens do (#797).
+const sourceRoots = ['app', 'components', 'features', 'styles'];
 const sourcePattern = /\.(?:ts|tsx)$/;
 const prohibitedPatterns = [
   {
     reason: 'raw typography metric',
     pattern: /\b(?:fontSize|lineHeight)\s*:\s*\d+(?:\.\d+)?\b/g,
+    // The Android home screen widget, which Android draws outside the app,
+    // at the phone's own text size; the app's setting can't reach it.
+    allowedFiles: ['features/verse-of-the-day/VerseOfTheDayWidgetLayout.tsx'],
   },
   {
     // Except the header's own cap (#368). It limits only the phone's text size,
@@ -24,10 +29,24 @@ const prohibitedPatterns = [
   },
   {
     // Text that turns off the phone's text size must apply it itself. Only the
-    // grid cards do, to hold their two-column titles at 1.25× (#387).
+    // grid cards do, so they can measure their titles' words at the size
+    // they're drawn, and stop growing where the widest one fills a card.
     reason: 'phone text size turned off',
     pattern: /\ballowFontScaling\b/g,
     allowedFiles: ['components/GridMenuCard.tsx'],
+  },
+  {
+    // A fixed limit on the text size, such as the grid cards' 1.25× until
+    // 1.9.2, which a regular expression can't see applied: at 200% their icons
+    // and cards grew while their titles stayed small. The app's few fixed
+    // limits live in constants/AppPreferences.ts and
+    // hooks/useGlobalHeaderHeight.ts, outside these folders, and
+    // docs/accessibility/README.md lists each one. A limit worked out from
+    // what fits, as the grid cards' is now (fitGridMenuCardTextScale: two cards
+    // a row, by design, up to the largest size their widest word fits), is no
+    // constant, and this allows it.
+    reason: 'text-size cap',
+    pattern: /\bconst\s+(?=[A-Z0-9_]*(?:TEXT|FONT))(?=[A-Z0-9_]*(?:MAX|CAP))[A-Z0-9_]+\s*=/g,
   },
   {
     reason: 'compact Bible-reader scale cap',
@@ -68,5 +87,5 @@ if (violations.length) {
   violations.forEach((violation) => console.error(`- ${violation}`));
   process.exitCode = 1;
 } else {
-  console.log('Text-scale coverage passed across app, components, and styles.');
+  console.log(`Text-scale coverage passed across ${sourceRoots.join(', ')}.`);
 }

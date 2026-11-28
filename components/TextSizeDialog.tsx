@@ -8,12 +8,12 @@ import {
   TEXT_SCALE_STEP,
   type TextScale,
 } from '@/constants/AppPreferences';
-import { PopupHeader } from '@/components/PopupHeader';
+import { AppSheet } from '@/components/AppSheet';
 import { PopupScrollView } from '@/components/PopupScrollView';
 import { LanguageContext } from '@/constants/LanguageContext';
+import { unbroken } from '@/constants/LineBreaks';
 import { useTextSize } from '@/constants/TextSizeContext';
 import { useAppTheme } from '@/constants/Themes';
-import { getPopupSurfaceStyle, usePopupMaxHeight, usePopupWidthStyle } from '@/styles/PopupStyles';
 import { createElement, useContext, useEffect, useRef, useState } from 'react';
 import {
   type GestureResponderEvent,
@@ -21,9 +21,12 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  type StyleProp,
+  useWindowDimensions,
   View,
+  type ViewStyle,
 } from 'react-native';
-import { Dialog, Portal, Text } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 
 interface TextSizeDialogProps {
   onDismiss: () => void;
@@ -41,7 +44,8 @@ const labelsByLanguage = {
     increase: 'Increase text size by five percent',
     previewAt: (percent: number) =>
       `Text size preview at ${percent} percent`,
-    previewText: '“I was blind, but now I see.” — John 9:25',
+    previewQuote: '“I was blind, but now I see.” —',
+    previewReference: 'John 9:25',
     saveError: 'Text size could not be saved. Please try again.',
     close: 'Close',
     reset: (percent: number) => `Reset to ${percent}%`,
@@ -55,7 +59,8 @@ const labelsByLanguage = {
     decrease: '將字體大小減少百分之五',
     increase: '將字體大小增加百分之五',
     previewAt: (percent: number) => `${percent}% 字體大小預覽`,
-    previewText: '「我從前是眼瞎的，如今能看見了。」— 約翰福音 9:25',
+    previewQuote: '「我從前是眼瞎的，如今能看見了。」—',
+    previewReference: '約翰福音 9:25',
     saveError: '無法儲存字體大小。請再試一次。',
     close: '關閉',
     reset: (percent: number) => `重設為 ${percent}%`,
@@ -69,7 +74,8 @@ const labelsByLanguage = {
     decrease: '将字体大小减少百分之五',
     increase: '将字体大小增加百分之五',
     previewAt: (percent: number) => `${percent}% 字体大小预览`,
-    previewText: '“我从前是眼瞎的，如今能看见了。”— 约翰福音 9:25',
+    previewQuote: '“我从前是眼瞎的，如今能看见了。”—',
+    previewReference: '约翰福音 9:25',
     saveError: '无法保存字体大小。请再试一次。',
     close: '关闭',
     reset: (percent: number) => `重置为 ${percent}%`,
@@ -85,12 +91,44 @@ const labelsByLanguage = {
     increase: 'Aumentar el tamaño del texto en cinco por ciento',
     previewAt: (percent: number) =>
       `Vista previa del texto al ${percent} por ciento`,
-    previewText: '“Yo era ciego y ahora veo.” — Juan 9:25',
+    previewQuote: '“Yo era ciego y ahora veo.” —',
+    previewReference: 'Juan 9:25',
     saveError: 'No se pudo guardar el tamaño del texto. Inténtalo de nuevo.',
     close: 'Cerrar',
     reset: (percent: number) => `Restablecer al ${percent}%`,
   },
 } as const;
+
+// The −5% and +5% buttons' label is about 2.1 em wide in bold, as measured on
+// the iPhone at 200%; 2.3 leaves a margin. Each button adds 10 points of padding
+// and a 1-point border a side, and is at least 64 points wide. The slider
+// beside them keeps at least 120 points, to drag on.
+const STEP_LABEL_EMS = 2.3;
+const STEP_LABEL_FONT_SIZE = 14;
+const STEP_BUTTON_MIN_WIDTH = 64;
+const STEP_BUTTON_CHROME_WIDTH = 2 * 10 + 2 * 1;
+const STEP_GAP = 12;
+const SLIDER_BESIDE_MIN_WIDTH = 120;
+// The dialog's content sits 24 points in from each side.
+const CONTENT_PADDING = 24;
+
+/**
+ * Whether the −5% and +5% buttons sit either side of the slider, as Android's
+ * own font size setting has them, rather than in a row of their own below it
+ * with 100% and 200% under the slider's ends: wherever the slider keeps
+ * SLIDER_BESIDE_MIN_WIDTH beside them, in a row `rowWidth` points wide with
+ * the dialog's text at `textScale` (the app's size times the phone's). At 150%
+ * the two rows pushed the sample below the dialog's height limit on a phone,
+ * cut off at its third line (#797); one row is about 80 points shorter, and
+ * the description already says 100% to 200%.
+ */
+export const textSizeStepsFitBesideSlider = (rowWidth: number, textScale: number) => {
+  const button = Math.max(
+    STEP_BUTTON_MIN_WIDTH,
+    STEP_LABEL_EMS * STEP_LABEL_FONT_SIZE * Math.max(1, textScale) + STEP_BUTTON_CHROME_WIDTH,
+  );
+  return rowWidth - 2 * (button + STEP_GAP) >= SLIDER_BESIDE_MIN_WIDTH;
+};
 
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
@@ -140,6 +178,7 @@ interface TextScaleStepActionProps {
   disabled: boolean;
   label: string;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 const TextScaleStepAction = ({
@@ -147,6 +186,7 @@ const TextScaleStepAction = ({
   disabled,
   label,
   onPress,
+  style,
 }: TextScaleStepActionProps) => {
   const theme = useAppTheme();
 
@@ -163,6 +203,7 @@ const TextScaleStepAction = ({
           borderColor: theme.colors.outline,
           opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
         },
+        style,
       ]}
     >
       <Text
@@ -187,8 +228,14 @@ export const TextSizeDialog = ({ onDismiss, visible }: TextSizeDialogProps) => {
   } = useTextSize();
   const textScale = preferredTextScale ?? drawnTextScale;
   const theme = useAppTheme();
-  const popupMaxHeight = usePopupMaxHeight();
-  const popupWidthStyle = usePopupWidthStyle();
+  const { fontScale, width: windowWidth } = useWindowDimensions();
+  // The sheet's width, measured; until then, the screen's, up to a centred
+  // popup's on the web.
+  const [contentWidth, setContentWidth] = useState(0);
+  const stepsBesideSlider = textSizeStepsFitBesideSlider(
+    (contentWidth || Math.min(windowWidth, 560)) - 2 * CONTENT_PADDING,
+    Math.max(1, drawnTextScale * fontScale),
+  );
   const labels = labelsByLanguage[language] ?? labelsByLanguage.en;
   // The size the slider shows. While a finger drags the slider, it runs ahead
   // of the app's size, which changes when the finger lifts.
@@ -278,187 +325,40 @@ export const TextSizeDialog = ({ onDismiss, visible }: TextSizeDialogProps) => {
     setPercent(nextPercent);
   };
 
+  // Either side of the slider where they fit, else in a row of their own.
+  const stepStyle = stepsBesideSlider ? styles.stepActionBeside : undefined;
+  const decreaseStep = (
+    <TextScaleStepAction
+      accessibilityLabel={labels.decrease}
+      disabled={draftScale === TEXT_SCALE_MIN}
+      label="−5%"
+      onPress={() => adjustBySteps(-1)}
+      style={stepStyle}
+    />
+  );
+  const increaseStep = (
+    <TextScaleStepAction
+      accessibilityLabel={labels.increase}
+      disabled={draftScale === TEXT_SCALE_MAX}
+      label="+5%"
+      onPress={() => adjustBySteps(1)}
+      style={stepStyle}
+    />
+  );
+
   return (
-    <Portal>
-      <Dialog
-        testID="text-size-dialog"
-        visible={visible}
-        onDismiss={onDismiss}
-        style={[
-          popupWidthStyle,
-          { maxHeight: popupMaxHeight },
-          getPopupSurfaceStyle(theme),
-        ]}
-      >
-        <PopupHeader
-          closeLabel={labels.close}
-          onClose={onDismiss}
-          style={styles.header}
-          title={labels.title}
-          variant="headlineSmall"
-        />
-        <Dialog.ScrollArea
-          style={styles.scrollArea}
-          testID="text-size-dialog-scroll-area"
-        >
-          <PopupScrollView contentContainerStyle={styles.scrollContent}>
-            <Text variant="bodyMedium">{labels.description}</Text>
-            <Text
-              variant="titleMedium"
-              accessibilityLiveRegion="polite"
-              style={styles.currentValue}
-            >
-              {labels.current(currentPercent)}
-            </Text>
-
-            {Platform.OS === 'web' ? (
-              <View style={styles.nativeSliderRow}>
-                <View style={styles.webSlider}>
-                  {createElement('input', {
-                    'aria-label': labels.slider,
-                    'aria-valuemax': TEXT_SCALE_MAX * 100,
-                    'aria-valuemin': TEXT_SCALE_MIN * 100,
-                    'aria-valuenow': currentPercent,
-                    'aria-valuetext': labels.percent(currentPercent),
-                    max: TEXT_SCALE_MAX * 100,
-                    min: TEXT_SCALE_MIN * 100,
-                    onInput: (event: { currentTarget: { value: string } }) =>
-                      setPercent(Number(event.currentTarget.value)),
-                    onKeyDown: handleWebSliderKeyDown,
-                    step: stepPercent,
-                    style: {
-                      accentColor: theme.colors.primary,
-                      cursor: 'pointer',
-                      height: 44,
-                      width: '100%',
-                    },
-                    type: 'range',
-                    value: currentPercent,
-                  })}
-                </View>
-              </View>
-            ) : (
-              <View style={styles.nativeSliderRow}>
-                <View
-                  accessible
-                  accessibilityActions={[
-                    { name: 'increment', label: labels.increase },
-                    { name: 'decrement', label: labels.decrease },
-                  ]}
-                  accessibilityLabel={labels.slider}
-                  accessibilityRole="adjustable"
-                  accessibilityValue={{
-                    max: TEXT_SCALE_MAX * 100,
-                    min: TEXT_SCALE_MIN * 100,
-                    now: currentPercent,
-                    text: labels.percent(currentPercent),
-                  }}
-                  focusable
-                  onAccessibilityAction={(event) => {
-                    if (event.nativeEvent.actionName === 'increment') {
-                      adjustBySteps(1);
-                    } else if (event.nativeEvent.actionName === 'decrement') {
-                      adjustBySteps(-1);
-                    }
-                  }}
-                  onLayout={handleTrackLayout}
-                  onMoveShouldSetResponder={() => true}
-                  onResponderGrant={(event) => updateFromTouch(event)}
-                  onResponderMove={(event) => updateFromTouch(event)}
-                  onResponderRelease={(event) => updateFromTouch(event, true)}
-                  // Keep the drag from the dialog's scrolling, and apply the
-                  // size if the system takes the touch anyway.
-                  onResponderTerminationRequest={() => false}
-                  onResponderTerminate={() => applyScale(draftScale)}
-                  onStartShouldSetResponder={() => true}
-                  style={styles.nativeSlider}
-                >
-                  <View
-                    pointerEvents="none"
-                    style={[
-                      styles.nativeTrack,
-                      { backgroundColor: theme.colors.surfaceVariant },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.nativeTrackFill,
-                        {
-                          backgroundColor: theme.colors.primary,
-                          width: `${progress * 100}%`,
-                        },
-                      ]}
-                    />
-                  </View>
-                  <View
-                    pointerEvents="none"
-                    style={[
-                      styles.nativeThumb,
-                      {
-                        backgroundColor: theme.colors.primary,
-                        left: clamp(
-                          trackWidth * progress - 10,
-                          0,
-                          Math.max(0, trackWidth - 20),
-                        ),
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
-            )}
-
-            <View style={styles.rangeLabels} accessible={false}>
-              <Text variant="labelMedium">100%</Text>
-              <Text variant="labelMedium">200%</Text>
-            </View>
-            <View style={styles.stepActionsRow}>
-              <TextScaleStepAction
-                accessibilityLabel={labels.decrease}
-                disabled={draftScale === TEXT_SCALE_MIN}
-                label="−5%"
-                onPress={() => adjustBySteps(-1)}
-              />
-              <TextScaleStepAction
-                accessibilityLabel={labels.increase}
-                disabled={draftScale === TEXT_SCALE_MAX}
-                label="+5%"
-                onPress={() => adjustBySteps(1)}
-              />
-            </View>
-            <View
-              accessibilityLabel={labels.previewAt(currentPercent)}
-              style={[
-                styles.preview,
-                {
-                  backgroundColor: theme.colors.surfaceVariant,
-                  borderColor: theme.colors.outlineVariant,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: theme.colors.onSurface,
-                  fontFamily: 'PlusJakartaSans-Regular',
-                  fontSize: scaleTypographyMetric(16, draftScale),
-                  lineHeight: scaleTypographyMetric(24, draftScale),
-                }}
-              >
-                {labels.previewText}
-              </Text>
-            </View>
-            {applyError && (
-              <Text
-                accessibilityLiveRegion="assertive"
-                role="alert"
-                style={[styles.errorText, { color: theme.colors.error }]}
-                variant="bodyMedium"
-              >
-                {applyError}
-              </Text>
-            )}
-          </PopupScrollView>
-        </Dialog.ScrollArea>
+    // It opens at its content's height, so the whole preview shows, and keeps
+    // that height, so the preview and the buttons don't move under the finger
+    // as the app's text grows (#867).
+    <AppSheet
+      testID="text-size-dialog"
+      visible={visible}
+      onDismiss={onDismiss}
+      closeLabel={labels.close}
+      title={labels.title}
+      height="content"
+      holdHeight
+      footer={
         <View style={styles.actions}>
           <TextDialogAction
             disabled={draftScale === defaultTextScale}
@@ -466,8 +366,166 @@ export const TextSizeDialog = ({ onDismiss, visible }: TextSizeDialogProps) => {
             onPress={() => applyScale(defaultTextScale)}
           />
         </View>
-      </Dialog>
-    </Portal>
+      }
+    >
+      <PopupScrollView
+        testID="text-size-dialog-scroll"
+        contentContainerStyle={styles.scrollContent}
+        onLayout={(event) => setContentWidth(event.nativeEvent.layout.width)}
+      >
+        <Text variant="bodyMedium">{labels.description}</Text>
+        <Text
+          variant="titleMedium"
+          accessibilityLiveRegion="polite"
+          style={styles.currentValue}
+        >
+          {labels.current(currentPercent)}
+        </Text>
+
+        <View style={[styles.nativeSliderRow, stepsBesideSlider && styles.sliderRowWithSteps]}>
+          {stepsBesideSlider && decreaseStep}
+          {Platform.OS === 'web' ? (
+            <View style={styles.webSlider}>
+              {createElement('input', {
+                'aria-label': labels.slider,
+                'aria-valuemax': TEXT_SCALE_MAX * 100,
+                'aria-valuemin': TEXT_SCALE_MIN * 100,
+                'aria-valuenow': currentPercent,
+                'aria-valuetext': labels.percent(currentPercent),
+                max: TEXT_SCALE_MAX * 100,
+                min: TEXT_SCALE_MIN * 100,
+                onInput: (event: { currentTarget: { value: string } }) =>
+                  setPercent(Number(event.currentTarget.value)),
+                onKeyDown: handleWebSliderKeyDown,
+                step: stepPercent,
+                style: {
+                  accentColor: theme.colors.primary,
+                  cursor: 'pointer',
+                  height: 44,
+                  width: '100%',
+                },
+                type: 'range',
+                value: currentPercent,
+              })}
+            </View>
+          ) : (
+            <View
+              accessible
+              accessibilityActions={[
+                { name: 'increment', label: labels.increase },
+                { name: 'decrement', label: labels.decrease },
+              ]}
+              accessibilityLabel={labels.slider}
+              accessibilityRole="adjustable"
+              accessibilityValue={{
+                max: TEXT_SCALE_MAX * 100,
+                min: TEXT_SCALE_MIN * 100,
+                now: currentPercent,
+                text: labels.percent(currentPercent),
+              }}
+              focusable
+              onAccessibilityAction={(event) => {
+                if (event.nativeEvent.actionName === 'increment') {
+                  adjustBySteps(1);
+                } else if (event.nativeEvent.actionName === 'decrement') {
+                  adjustBySteps(-1);
+                }
+              }}
+              onLayout={handleTrackLayout}
+              onMoveShouldSetResponder={() => true}
+              onResponderGrant={(event) => updateFromTouch(event)}
+              onResponderMove={(event) => updateFromTouch(event)}
+              onResponderRelease={(event) => updateFromTouch(event, true)}
+              // Keep the drag from the dialog's scrolling, and apply the
+              // size if the system takes the touch anyway.
+              onResponderTerminationRequest={() => false}
+              onResponderTerminate={() => applyScale(draftScale)}
+              onStartShouldSetResponder={() => true}
+              style={styles.nativeSlider}
+            >
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.nativeTrack,
+                  { backgroundColor: theme.colors.surfaceVariant },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.nativeTrackFill,
+                    {
+                      backgroundColor: theme.colors.primary,
+                      width: `${progress * 100}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.nativeThumb,
+                  {
+                    backgroundColor: theme.colors.primary,
+                    left: clamp(
+                      trackWidth * progress - 10,
+                      0,
+                      Math.max(0, trackWidth - 20),
+                    ),
+                  },
+                ]}
+              />
+            </View>
+          )}
+          {stepsBesideSlider && increaseStep}
+        </View>
+
+        {!stepsBesideSlider && (
+          <>
+            <View style={styles.rangeLabels} accessible={false}>
+              <Text variant="labelMedium">100%</Text>
+              <Text variant="labelMedium">200%</Text>
+            </View>
+            <View style={styles.stepActionsRow}>
+              {decreaseStep}
+              {increaseStep}
+            </View>
+          </>
+        )}
+        <View
+          accessibilityLabel={labels.previewAt(currentPercent)}
+          style={[
+            styles.preview,
+            {
+              backgroundColor: theme.colors.surfaceVariant,
+              borderColor: theme.colors.outlineVariant,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: theme.colors.onSurface,
+              fontFamily: 'PlusJakartaSans-Regular',
+              fontSize: scaleTypographyMetric(16, draftScale),
+              lineHeight: scaleTypographyMetric(24, draftScale),
+            }}
+          >
+            {/* The reference moves to the next line whole, never as
+                約翰福音 with 9:25 alone below it (#797). */}
+            {`${labels.previewQuote} ${unbroken(labels.previewReference)}`}
+          </Text>
+        </View>
+        {applyError && (
+          <Text
+            accessibilityLiveRegion="assertive"
+            role="alert"
+            style={[styles.errorText, { color: theme.colors.error }]}
+            variant="bodyMedium"
+          >
+            {applyError}
+          </Text>
+        )}
+      </PopupScrollView>
+    </AppSheet>
   );
 };
 
@@ -498,14 +556,6 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 12,
   },
-  // Paper gives a dialog's first child a 24-point top margin; with the X's
-  // 48-point row, 16 keeps the title where Paper's own title sits.
-  header: {
-    marginBottom: 8,
-    marginTop: 16,
-    paddingLeft: 24,
-    paddingRight: 12,
-  },
   nativeSlider: {
     flex: 1,
     height: 44,
@@ -535,8 +585,14 @@ const styles = StyleSheet.create({
   },
   stepActionsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: STEP_GAP,
     marginTop: 12,
+  },
+  sliderRowWithSteps: {
+    gap: STEP_GAP,
+  },
+  stepActionBeside: {
+    flex: 0,
   },
   stepActionText: {
     flexShrink: 1,
@@ -569,14 +625,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 4,
   },
-  scrollArea: {
-    borderBottomWidth: 0,
-    marginBottom: 0,
-    paddingHorizontal: 0,
-  },
   scrollContent: {
     paddingBottom: 4,
-    paddingHorizontal: 24,
+    paddingHorizontal: CONTENT_PADDING,
     paddingTop: 8,
   },
 });

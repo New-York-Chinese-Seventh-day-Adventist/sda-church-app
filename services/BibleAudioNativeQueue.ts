@@ -1,4 +1,10 @@
-import type { AudioPlayer, AudioPlaylist, AudioPlaylistStatus, AudioSource } from 'expo-audio';
+import type {
+  AudioPlayer,
+  AudioPlaylist,
+  AudioPlaylistStatus,
+  AudioSource,
+} from 'expo-audio';
+import { logForAudioE2e } from './AudioE2eLog';
 import type {
   BibleAudioQueueItem,
   BibleAudioSourceError,
@@ -87,8 +93,14 @@ export class BibleAudioNativeQueue {
       if (this.playlist !== playlist) return;
       const index = this.eventTrackIndex(status);
       this.publish(this.status(status, index));
+      this.logSource(this.snapshot.activeSourceUrl);
       const track = this.tracks[index];
       if (track && track !== this.lastMetadataTrack) {
+        // The next chapter's name and narrator, on the media session it
+        // already has (#804). Publishing the controls again would build a new
+        // session, and Android's shade drops its player when the old one is
+        // released, though playback goes on. The session hears the track
+        // change and the position itself: scripts/patch-expo-audio.cjs.
         try {
           this.updateMetadata();
         } catch (error) {
@@ -131,10 +143,7 @@ export class BibleAudioNativeQueue {
       // The event emitter can already be gone when native cleanup races React.
     }
     this.subscription = undefined;
-    this.tracks = [];
-    this.pendingIndexShift = 0;
-    this.frontInsertCounts = [];
-    this.lastMetadataTrack = undefined;
+    this.forgetTracks();
     this.snapshot = idleStatus();
     this.destroyRetiredPlaylists();
     destroyPlaylist(playlist);
@@ -148,6 +157,21 @@ export class BibleAudioNativeQueue {
   addSourceErrorListener(listener: (event: BibleAudioSourceError) => void) {
     this.sourceErrorListeners.add(listener);
     return { remove: () => { this.sourceErrorListeners.delete(listener); } };
+  }
+
+  // The audio e2e's failure details name the host that was playing, which
+  // the lock screen's title no longer does (#804).
+  private loggedSourceUrl?: string;
+  private logSource(url: string | undefined) {
+    if (!url || url === this.loggedSourceUrl) return;
+    this.loggedSourceUrl = url;
+    let host = '';
+    try {
+      host = new URL(url).hostname;
+    } catch {
+      // Not a URL the e2e needs to name.
+    }
+    logForAudioE2e(`audio from ${host || 'the phone'}`);
   }
 
   private destroyRetiredPlaylists() {
@@ -176,6 +200,11 @@ export class BibleAudioNativeQueue {
       // The emitter may already have been released with the playlist.
     }
     this.subscription = undefined;
+    // The track list numbers the retired playlist's queue. The fresh one starts
+    // at index 0, which in that queue is the farthest chapter queued before the
+    // one playing, so its first status would name that chapter (Luke 5 while
+    // John 5 failed over), and the reader would follow it there (#802).
+    this.forgetTracks();
     // One of the two newest failed playlists may still own the lock screen.
     // An older one handed it over while two newer playlists loaded and failed.
     this.retiredPlaylists.push(playlist);
@@ -197,10 +226,17 @@ export class BibleAudioNativeQueue {
       // The emitter may already have been released with the playlist.
     }
     this.subscription = undefined;
+    this.forgetTracks();
+    this.snapshot = idleStatus();
+  }
+
+  // Forgets which chapter each native track is, and the inserts still being
+  // counted, for a queue that is being emptied or replaced.
+  private forgetTracks() {
     this.tracks = [];
     this.pendingIndexShift = 0;
     this.frontInsertCounts = [];
-    this.snapshot = idleStatus();
+    this.lastMetadataTrack = undefined;
   }
 
   private callNative<T>(operation: string, call: (playlist: AudioPlaylist) => T): T | undefined {
@@ -266,10 +302,7 @@ export class BibleAudioNativeQueue {
       this.mount();
     }
     this.callNative('replace', playlist => {
-      this.tracks = [];
-      this.pendingIndexShift = 0;
-      this.frontInsertCounts = [];
-      this.lastMetadataTrack = undefined;
+      this.forgetTracks();
       playlist.clear();
       if (source) {
         this.tracks.push(undefined);
@@ -349,6 +382,9 @@ export class BibleAudioNativeQueue {
       throw new Error(`Bible audio playlist seekTo failed: ${message}`, { cause });
     }
   }
+  // Each call builds a new media session on Android, so the queue only
+  // publishes the controls for a new recording (initializeBibleAudioPlayback),
+  // never as the playlist moves on through its chapters. See mount().
   setActiveForLockScreen(...args: Parameters<AudioPlayer['setActiveForLockScreen']>) {
     this.callNative('setActiveForLockScreen', playlist => playlist.setActiveForLockScreen(...args));
   }
