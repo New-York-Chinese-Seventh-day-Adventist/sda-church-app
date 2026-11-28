@@ -10,6 +10,7 @@ import {
   previewChildrenLesson,
   pruneChildrenLessons,
 } from '@/features/sabbath-school/LessonDownloads';
+import { SHEET_CLOSED_FALLBACK_MS } from '@/hooks/useAfterSheetCloses';
 import { useChildrenLessonOpener } from '@/hooks/useChildrenLessonOpener';
 import { act, fireEvent, renderHook } from '@testing-library/react-native';
 import { File } from 'expo-file-system';
@@ -368,5 +369,73 @@ describe("a tap on a children's lesson", () => {
     await act(() => result.current.open('junior', TITLE));
     expect(result.current.dialog).toEqual({ title: TITLE, progress: null, offline: true });
     expect(openURL).not.toHaveBeenCalled();
+  });
+
+  // iOS can't show Quick Look over a sheet still sliding away: the lesson
+  // opened in the browser instead, "preview-failed" (#867).
+  describe('once the popup, a sheet, has finished closing', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    const advance = (ms: number) => act(() => jest.advanceTimersByTimeAsync(ms));
+
+    // Taps a lesson that downloads, until its popup closes.
+    const tapUntilThePopupCloses = async () => {
+      find.mockResolvedValue({ url: PDF });
+      mockDownloads();
+      const preview = jest.spyOn(File.prototype, 'preview');
+      const hook = await renderHook(() => useChildrenLessonOpener('en'));
+      await act(async () => {
+        void hook.result.current.open('junior', TITLE);
+      });
+      // If it's still downloading, a millisecond at a time, well within the
+      // wait's fallback.
+      for (let step = 0; step < 50 && hook.result.current.dialog; step += 1) await advance(1);
+      expect(hook.result.current.dialog).toBeNull();
+      return { ...hook, preview };
+    };
+
+    it('open the viewer only when the popup says it has closed, and only once', async () => {
+      const { preview, result } = await tapUntilThePopupCloses();
+      await advance(1);
+      expect(preview).not.toHaveBeenCalled();
+
+      await act(async () => result.current.onSheetClosed());
+      await advance(1);
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(preview).toHaveBeenCalledWith({ mimeType: 'application/pdf', title: TITLE });
+
+      // The sheet saying so again, or the fallback's time passing, opens nothing more.
+      await act(async () => result.current.onSheetClosed());
+      await advance(SHEET_CLOSED_FALLBACK_MS * 2);
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(openURL).not.toHaveBeenCalled();
+    });
+
+    it('open the viewer after a short wait if the popup never says it has closed, and only once', async () => {
+      const { preview, result } = await tapUntilThePopupCloses();
+      await advance(SHEET_CLOSED_FALLBACK_MS - 100);
+      expect(preview).not.toHaveBeenCalled();
+
+      await advance(200);
+      expect(preview).toHaveBeenCalledTimes(1);
+      // The sheet's word, late, opens nothing more.
+      await act(async () => result.current.onSheetClosed());
+      await advance(SHEET_CLOSED_FALLBACK_MS);
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(openURL).not.toHaveBeenCalled();
+    });
+
+    it('still open the lesson in the browser when the viewer fails', async () => {
+      const { preview, result } = await tapUntilThePopupCloses();
+      preview.mockRejectedValue(new Error('Quick Look could not open'));
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      await act(async () => result.current.onSheetClosed());
+      await advance(1);
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(openURL).toHaveBeenCalledTimes(1);
+      expect(openURL).toHaveBeenCalledWith(PDF, expect.anything(), expect.anything());
+      expect(warn).toHaveBeenCalledWith('Children Sabbath School lesson preview failed:', expect.any(Error));
+    });
   });
 });

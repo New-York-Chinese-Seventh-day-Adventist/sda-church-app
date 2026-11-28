@@ -55,13 +55,22 @@ type ChildrenLessonDialogProps = Readonly<{
   visible: boolean;
   /** The X, or a tap outside: stops the lookup and the download. */
   onCancel: () => void;
+  /** Once it has finished closing, so the lesson opens only then (#867). */
+  onClosed?: () => void;
 }>;
 
 /**
  * Shown from the tap on a children's lesson until it opens (#529): the lookup,
  * then the PDF's download, which can take a minute on a phone connection.
  */
-export function ChildrenLessonDialog({ offline = false, onCancel, progress, title, visible }: ChildrenLessonDialogProps) {
+export function ChildrenLessonDialog({
+  offline = false,
+  onCancel,
+  onClosed,
+  progress,
+  title,
+  visible,
+}: ChildrenLessonDialogProps) {
   const { language } = useContext(LanguageContext);
   const labels = copy[language] || copy.en;
   const theme = useAppTheme();
@@ -75,6 +84,7 @@ export function ChildrenLessonDialog({ offline = false, onCancel, progress, titl
       testID="children-lesson-dialog"
       visible={visible}
       onDismiss={onCancel}
+      onClosed={onClosed}
       closeLabel={labels.close}
       title={title}
       headerVariant="titleLarge"

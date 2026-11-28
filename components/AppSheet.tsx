@@ -53,6 +53,8 @@ import { FormSheet } from 'react-native-screens/experimental';
  *   on Android), a tap on the dim, a swipe down, Android's Back. The grabber
  *   (iOS's own, Android's Material drag handle) also expands the sheet on a
  *   tap, so dragging is never needed; on Android a double tap on it closes it.
+ *   `onClosed` says when a sheet has finished closing, for whatever opens
+ *   next and is native, such as Quick Look (hooks/useAfterSheetCloses.ts).
  * - **Look:** the platform's own corners, and the colour of the app's floating
  *   bars (`floatingSurface`: white or the warm off-white in the light theme,
  *   night blue or near-black in the dark, by Contrast), so a sheet stands out
@@ -69,6 +71,12 @@ type AppSheetProps = Readonly<{
   visible: boolean;
   /** The X, a tap outside, a swipe down, or Back. */
   onDismiss: () => void;
+  /**
+   * Once the sheet has finished closing, its animation over: iOS presents
+   * something native, such as Quick Look, only once the sheet has gone
+   * (useAfterSheetCloses). Called once for each close.
+   */
+  onClosed?: () => void;
   title: string;
   /** The X's screen-reader label, "Close" in the app's language. */
   closeLabel: string;
@@ -135,8 +143,10 @@ const NOTHING_MEASURED = { root: 0, body: 0, inner: 0, viewport: 0, content: 0 }
 const LARGE_ONLY: readonly number[] = [1];
 
 function NativeSheet(props: AppSheetProps) {
-  const { children, footer, height = 'auto', holdHeight, onDismiss, testID, visible } = props;
+  const { children, footer, height = 'auto', holdHeight, onClosed, onDismiss, testID, visible } = props;
   const theme = useAppTheme();
+  const onClosedRef = useRef(onClosed);
+  onClosedRef.current = onClosed;
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const android = Platform.OS === 'android';
@@ -164,6 +174,8 @@ function NativeSheet(props: AppSheetProps) {
   const [detents, setDetents] = useState<SheetDetents>(initialDetents);
   const [detentIndex, setDetentIndex] = useState(0);
   const held = useRef(false);
+  // Open, or still closing: not yet said to have closed.
+  const presented = useRef(false);
   const measured = useRef({ ...NOTHING_MEASURED });
   const [measureTick, setMeasureTick] = useState(0);
 
@@ -171,6 +183,7 @@ function NativeSheet(props: AppSheetProps) {
   useEffect(() => {
     if (!visible) return;
     setMounted(true);
+    presented.current = true;
     setDetentIndex(0);
     held.current = false;
     measured.current = { ...NOTHING_MEASURED };
@@ -178,12 +191,19 @@ function NativeSheet(props: AppSheetProps) {
     // Only on opening, or at a new size: initialDetents reads these.
   }, [detentKey, formSheet, height, visible]);
 
-  // Closing: the content stays until the sheet has gone.
+  // Closing: the content stays until the sheet has gone, and onClosed then
+  // comes once, when the sheet says so or, if it never does, the fallback.
+  const closed = useCallback(() => {
+    if (!presented.current) return;
+    presented.current = false;
+    setMounted(false);
+    onClosedRef.current?.();
+  }, []);
   useEffect(() => {
     if (visible || !mounted) return;
-    const timer = setTimeout(() => setMounted(false), UNMOUNT_FALLBACK_MS);
+    const timer = setTimeout(closed, UNMOUNT_FALLBACK_MS);
     return () => clearTimeout(timer);
-  }, [mounted, visible]);
+  }, [closed, mounted, visible]);
 
   const fractions = detents;
 
@@ -293,7 +313,7 @@ function NativeSheet(props: AppSheetProps) {
       onNativeDismiss={onDismiss}
       onDetentChanged={(event) => setDetentIndex(Math.max(0, event.nativeEvent.index))}
       onDidDisappear={() => {
-        if (!visible) setMounted(false);
+        if (!visible) closed();
       }}
     >
       <SheetContext.Provider value={sheetContext}>
@@ -310,8 +330,14 @@ function NativeSheet(props: AppSheetProps) {
  * app had before #867: the canvas, the shared corners, and the height limit.
  */
 function CentredPopup(props: AppSheetProps) {
-  const { children, footer, onDismiss, testID, visible } = props;
+  const { children, footer, onClosed, onDismiss, testID, visible } = props;
   const theme = useAppTheme();
+  // Nothing native follows a popup on the web: it has closed once it's hidden.
+  const wasVisible = useRef(visible);
+  useEffect(() => {
+    if (wasVisible.current && !visible) onClosed?.();
+    wasVisible.current = visible;
+  }, [onClosed, visible]);
   const popupMaxHeight = usePopupMaxHeight();
   const popupWidthStyle = usePopupWidthStyle();
   return (
